@@ -5,7 +5,7 @@ import PyPDF2
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-pdf_path = os.path.join(basedir, 'RecipesPDF', "Year 7 Food Booklet Term 1 (St Mary's) (1).pdf")
+pdf_path = os.path.join(basedir, 'RecipesPDF', "Year 7 Recipe Book.pdf")
 
 if not os.path.exists(pdf_path):
     print(f"PDF not found at: {pdf_path}")
