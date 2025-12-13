@@ -123,7 +123,7 @@ def require_role(*allowed_roles):
             
             if user.role not in allowed_roles:
                 flash(f'You do not have permission to access this page. Required role: {", ".join(allowed_roles)}')
-                return redirect(url_for('class_ingredients'))
+                return redirect(url_for('recbk'))
             
             return f(*args, **kwargs)
         return decorated_function
