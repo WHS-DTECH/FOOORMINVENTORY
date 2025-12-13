@@ -478,6 +478,19 @@ def class_ingredients():
         most_used_staff.sort(key=lambda x: most_used_staff_codes.index(x['code']))
         staff = most_used_staff + other_staff
         
+        # If no pre-selected staff from booking, try to match current user's name to a staff member
+        if not staff_code and current_user.is_authenticated:
+            user_name_parts = current_user.name.split()
+            if len(user_name_parts) >= 2:
+                # Try to match first name and last name
+                user_first = user_name_parts[0]
+                user_last = user_name_parts[-1]
+                for s in staff:
+                    if (s['first_name'].lower() == user_first.lower() and 
+                        s['last_name'].lower() == user_last.lower()):
+                        staff_code = s['code']
+                        break
+        
         # Get most used classes (top 5 by booking count)
         c.execute('''SELECT class_code, COUNT(*) as booking_count FROM class_bookings 
                     GROUP BY class_code ORDER BY booking_count DESC LIMIT 5''')
