@@ -35,6 +35,9 @@ def remove_junk_recipes(conn):
         r'design your own',
         r'recipe writing sheet',
         r'●.*●.*●',  # Multiple bullet points (likely page headers)
+        r'^year \d+.*food technology\s*$',  # Just year/food tech header
+        r'^making activity\s*:?\s*$',  # Blank "Making Activity" with no name
+        r'forfar bridies.*makes 2 bridies',  # Incomplete Forfar Bridies parse
     ]
     
     deleted = []
@@ -42,6 +45,13 @@ def remove_junk_recipes(conn):
         recipe_id, name, instructions = row
         name_lower = name.lower() if name else ''
         inst_lower = instructions.lower() if instructions else ''
+        
+        # Skip recipes with very short names (likely junk)
+        if name and len(name.strip()) < 3:
+            print(f"Deleting recipe with too-short name: '{name}'")
+            c.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
+            deleted.append(name)
+            continue
         
         # Check if name or instructions match junk patterns
         is_junk = False

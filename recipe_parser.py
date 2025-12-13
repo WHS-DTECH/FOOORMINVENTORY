@@ -97,10 +97,42 @@ def parse_recipes_from_text(text):
         # Section headers may have trailing spaces or internal splits (e.g. "Ingredi ents")
         alpha = ''.join(ch for ch in line_lower if ch.isalpha())
         if alpha.startswith('ingredients') or line_lower.startswith('ingredients'):
+            # If we have no recipe started yet but hit ingredients, look back for a title
+            if not recipe_data or not recipe_data.get('name'):
+                title = None
+                for j in range(1, 10):
+                    idx = i - j
+                    if idx < 0:
+                        break
+                    cand = lines[idx].strip()
+                    if cand and len(cand) > 3 and len(cand) < 100:
+                        low = cand.lower()
+                        # Skip headers and junk
+                        if not any(skip in low for skip in ['learning objective', 'keywords', 'equipment', 'method', 'week ', 'page ', 'food technology', 'by the end']):
+                            title = cand
+                            break
+                if title and not recipe_data:
+                    recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
             current_section = 'ingredients'
             i += 1
             continue
         if alpha.startswith('equipment') or line_lower.startswith('equipment'):
+            # If we have no recipe started yet but hit equipment, look back for a title
+            if not recipe_data or not recipe_data.get('name'):
+                title = None
+                for j in range(1, 10):
+                    idx = i - j
+                    if idx < 0:
+                        break
+                    cand = lines[idx].strip()
+                    if cand and len(cand) > 3 and len(cand) < 100:
+                        low = cand.lower()
+                        # Skip headers and junk
+                        if not any(skip in low for skip in ['learning objective', 'keywords', 'ingredients', 'method', 'week ', 'page ', 'food technology', 'by the end']):
+                            title = cand
+                            break
+                if title and not recipe_data:
+                    recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
             current_section = 'equipment'
             i += 1
             continue
