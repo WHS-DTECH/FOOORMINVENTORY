@@ -117,8 +117,27 @@ def fix_recipe_names(conn):
         name = re.sub(r'^Year\s*\d+\s+Food Technology\s+\d+\s*', '', name, flags=re.I)
         
         # Fix spacing issues like "Chee se" -> "Cheese", "Mushr oom" -> "Mushroom"
-        # Fix broken words: 1-6 letters, space, 1-4 letters at word boundary
-        name = re.sub(r'\b(\w{1,6})\s+(\w{1,4})\b', r'\1\2', name)
+        # But don't join common connector words (and, or, with, etc.)
+        # Split into words and check each pair
+        words = name.split()
+        fixed_words = []
+        i = 0
+        while i < len(words):
+            if i < len(words) - 1:
+                current = words[i]
+                next_word = words[i + 1]
+                # Skip if next word is a common connector
+                connectors = ['and', 'or', 'with', '&', 'in', 'on', 'de', 'a', 'the']
+                if next_word.lower() not in connectors and len(current) <= 6 and len(next_word) <= 4:
+                    # Check if this looks like a broken word (both parts short)
+                    if len(current) + len(next_word) <= 10:  # Reasonable word length
+                        # Join them and skip next
+                        fixed_words.append(current + next_word)
+                        i += 2
+                        continue
+            fixed_words.append(words[i])
+            i += 1
+        name = ' '.join(fixed_words)
         
         # Clean up extra spaces
         name = re.sub(r'\s+', ' ', name).strip()
