@@ -582,15 +582,17 @@ def upload():
                         # Recipe name already exists, skip it
                         skipped_count += 1
 
-            # Run cleaners after insert
-            dup_deleted = remove_duplicate_recipes()
-            nonfood_deleted = remove_nonfood_recipes()
+            # Run cleaners after insert (temporarily disabled for debugging)
+            # dup_deleted = remove_duplicate_recipes()
+            # nonfood_deleted = remove_nonfood_recipes()
+            dup_deleted = []
+            nonfood_deleted = []
 
             message = f'Saved {saved_count} new recipe(s).'
             if skipped_count > 0:
                 message += f' Skipped {skipped_count} duplicate(s).'
-            if len(dup_deleted) > 0 or len(nonfood_deleted) > 0:
-                message += f' Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.'
+            # if len(dup_deleted) > 0 or len(nonfood_deleted) > 0:
+            #     message += f' Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.'
             
             flash(message, 'success')
             return redirect(url_for('recipes_page'))
