@@ -114,7 +114,6 @@
           <input type="number" id="desiredServings" value="{{ pre_servings or 24 }}" min="1" />
           <div style="margin-top:8px">
             <button id="calcBtn">Calculate for Desired Serving Size</button>
-            <button id="downloadBtn" style="margin-left:8px;">Download shopping list (CSV)</button>
             <button id="saveBtn" style="margin-left:8px;">Save booking</button>
           </div>
         </div>
@@ -262,28 +261,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   const calcBtn = document.getElementById('calcBtn');
   if(calcBtn) calcBtn.addEventListener('click', calculate);
-
-  const downloadBtn = document.getElementById('downloadBtn');
-  if(downloadBtn) downloadBtn.addEventListener('click', function(){
-    const sel = document.getElementById('recipeSelect');
-    const rid = sel ? sel.value : null;
-    const desiredEl = document.getElementById('desiredServings');
-    const desired = desiredEl ? (parseFloat(desiredEl.value) || 24) : 24;
-    if(!rid) { alert('Select a recipe first'); return; }
-    fetch('/class_ingredients/download', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({recipe_id: rid, desired_servings: desired})
-    }).then(r=>{
-      if(!r.ok) return r.json().then(j=> { throw new Error(j.error || 'Download failed')});
-      return r.text();
-    }).then(text=>{
-      const blob = new Blob([text], {type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `shopping_${rid}.csv`;
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    }).catch(e=> alert('Error: ' + e.message));
-  });
 
   const saveBtn = document.getElementById('saveBtn');
   if(saveBtn) saveBtn.addEventListener('click', function(){
