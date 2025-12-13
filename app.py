@@ -21,6 +21,9 @@ except ImportError:
 from recipe_parser import parse_recipes_from_text, format_recipe, parse_ingredient_line
 from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
 
+cd ~/FOOORMINVENTORY
+nano app.py
+
 # Load environment variables
 load_dotenv()
 
@@ -28,6 +31,10 @@ load_dotenv()
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app = Flask(__name__)
+# Database path
+basedir = os.path.abspath(os.path.dirname(__file__))
+DATABASE = os.path.join(basedir, 'recipes.db')
+
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 
 # Configure Flask-Login
@@ -63,7 +70,7 @@ def load_user(user_id):
 # Initialize database
 def init_db():
     # Create DB and include `equipment` column to avoid ALTER on every upload
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS recipes
                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,7 +104,7 @@ def init_db():
                 pass
 
     # Ensure teachers and classes tables exist (setup_database.py normally creates these)
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS teachers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -281,7 +288,7 @@ def admin():
         stream = io.StringIO(file_content)
         reader = csv.DictReader(stream)
         rows = []
-        with sqlite3.connect('recipes.db') as conn:
+        with sqlite3.connect(DATABASE) as conn:
             c = conn.cursor()
             try:
                 for row in reader:
@@ -317,7 +324,7 @@ def uploadclass():
     stream = io.StringIO(file_content)
     reader = csv.DictReader(stream)
     rows = []
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         for row in reader:
             # Map expected fields, allow flexible header names
@@ -353,7 +360,7 @@ def uploadclass():
 @app.route('/staff')
 @require_role('VP')
 def staff():
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('SELECT code, last_name, first_name, title, email FROM teachers ORDER BY last_name, first_name')
@@ -364,7 +371,7 @@ def staff():
 @app.route('/classes')
 @require_role('VP')
 def classes_page():
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('SELECT * FROM classes ORDER BY ClassCode, LineNo')
@@ -384,7 +391,7 @@ def class_ingredients():
     date_required = request.form.get('date_required') if request.method == 'POST' else None
     period = request.form.get('period') if request.method == 'POST' else None
     
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         
@@ -459,7 +466,7 @@ def class_ingredients_download():
     if not recipe_id:
         return jsonify({'error':'recipe_id required'}), 400
 
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('SELECT id, name, ingredients, serving_size FROM recipes WHERE id = ?', (recipe_id,))
@@ -515,7 +522,7 @@ def class_ingredients_save():
     period = data.get('period')
     recipe_id = data.get('recipe_id')
     desired = int(data.get('desired_servings') or 24)
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (?, ?, ?, ?, ?, ?)',
                   (staff_code, class_code, date_required, period, recipe_id, desired))
@@ -554,7 +561,7 @@ def upload():
                 }), 400
             
             # Save recipes to database
-            with sqlite3.connect('recipes.db') as conn:
+            with sqlite3.connect(DATABASE) as conn:
                 c = conn.cursor()
                 for recipe in recipes_found:
                     c.execute(
@@ -612,7 +619,7 @@ def upload():
     # Convert equipment text into a list
     equipment_list = [item.strip() for item in equipment_text.split('\n') if item.strip()]
 
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         c.execute(
             "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
@@ -653,7 +660,7 @@ def shoplist():
     next_week = week_offset + 1
     week_label = f"Week of {dates[0]['nz_date']} to {dates[4]['nz_date']}"
     
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         
@@ -706,7 +713,7 @@ def generate_shopping_list():
     if not booking_ids:
         return jsonify({'error': 'No bookings selected'}), 400
     
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         
@@ -826,7 +833,7 @@ def recipes_page():
     cuisine = request.args.get('cuisine', '').strip()
     difficulty = request.args.get('difficulty', '').strip()
     
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         
@@ -895,7 +902,7 @@ def update_recipe_tags(recipe_id):
     cuisine = data.get('cuisine', '')
     difficulty = data.get('difficulty', '')
     
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         c.execute('''UPDATE recipes 
                     SET dietary_tags = ?, cuisine = ?, difficulty = ?
@@ -908,7 +915,7 @@ def update_recipe_tags(recipe_id):
 @app.route('/recbk')
 def recbk():
     q = request.args.get('q', '').strip()
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         if q:
@@ -947,7 +954,7 @@ def recipe_detail(recipe_id):
         # Delete photo action
         if request.form.get('delete_photo'):
             import os
-            with sqlite3.connect('recipes.db') as conn:
+            with sqlite3.connect(DATABASE) as conn:
                 c = conn.cursor()
                 c.execute('SELECT photo FROM recipes WHERE id = ?', (recipe_id,))
                 row = c.fetchone()
@@ -974,13 +981,13 @@ def recipe_detail(recipe_id):
             # overwrite if exists
             photo.save(path)
             # store relative path in DB
-            with sqlite3.connect('recipes.db') as conn:
+            with sqlite3.connect(DATABASE) as conn:
                 c = conn.cursor()
                 c.execute('UPDATE recipes SET photo = ? WHERE id = ?', (filename, recipe_id))
             return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
     # GET: show recipe
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment, photo, dietary_tags, cuisine, difficulty FROM recipes WHERE id = ?', (recipe_id,))
@@ -1183,14 +1190,14 @@ def edit_recipe(recipe_id):
                             equipment.append(p)
 
         # Update DB
-        with sqlite3.connect('recipes.db') as conn:
+        with sqlite3.connect(DATABASE) as conn:
             c = conn.cursor()
             c.execute('UPDATE recipes SET name = ?, ingredients = ?, instructions = ?, serving_size = ?, equipment = ? WHERE id = ?',
                       (name, json.dumps(ingredients), instructions, serving, json.dumps(equipment), recipe_id))
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
     # GET - load recipe
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment FROM recipes WHERE id = ?', (recipe_id,))
@@ -1346,7 +1353,7 @@ def remove_duplicate_recipes(conn=None):
     """Remove duplicate recipes based on normalized name+instructions, keep earliest id."""
     close_conn = False
     if conn is None:
-        conn = sqlite3.connect('recipes.db')
+        conn = sqlite3.connect(DATABASE)
         close_conn = True
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -1397,7 +1404,7 @@ def remove_nonfood_recipes(conn=None):
 
     close_conn = False
     if conn is None:
-        conn = sqlite3.connect('recipes.db')
+        conn = sqlite3.connect(DATABASE)
         close_conn = True
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -1677,7 +1684,7 @@ def load_recipe_from_url():
 @require_role('VP', 'DK', 'MU')
 def booking_calendar():
     """Show booking calendar with all class bookings."""
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('''
@@ -1707,7 +1714,7 @@ def export_ical():
     """Export bookings as iCal format for Google Calendar import."""
     from datetime import datetime
     
-    with sqlite3.connect('recipes.db') as conn:
+    with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('''
