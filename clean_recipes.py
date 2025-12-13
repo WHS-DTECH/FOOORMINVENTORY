@@ -92,7 +92,7 @@ def remove_duplicate_recipes(conn):
 
 
 def fix_recipe_names(conn):
-    """Fix recipe names with spacing issues."""
+    """Fix recipe names with spacing issues and remove prefixes."""
     c = conn.cursor()
     c.execute('SELECT id, name FROM recipes')
     rows = c.fetchall()
@@ -100,13 +100,23 @@ def fix_recipe_names(conn):
     fixed = []
     for row in rows:
         recipe_id, name = row
-        # Fix spacing issues like "Chee se" -> "Cheese"
-        fixed_name = re.sub(r'(\w)\s+(\w)(?=\s|$)', r'\1\2', name)
+        original_name = name
         
-        if fixed_name != name:
-            print(f"Fixing name: '{name}' -> '{fixed_name}'")
-            c.execute('UPDATE recipes SET name = ? WHERE id = ?', (fixed_name, recipe_id))
-            fixed.append(name)
+        # Remove prefixes like "Making Activity 1:", "Year7 Food Technology 43"
+        name = re.sub(r'^Making Activity\s+\d+:\s*', '', name, flags=re.I)
+        name = re.sub(r'^Year\s*\d+\s+Food Technology\s+\d+\s*', '', name, flags=re.I)
+        
+        # Fix spacing issues like "Chee se" -> "Cheese", "Mushr oom" -> "Mushroom"
+        # Look for single letters followed by space and more letters
+        name = re.sub(r'(\w)\s+(\w)', r'\1\2', name)
+        
+        # Clean up extra spaces
+        name = re.sub(r'\s+', ' ', name).strip()
+        
+        if name != original_name:
+            print(f"Fixing name: '{original_name}' -> '{name}'")
+            c.execute('UPDATE recipes SET name = ? WHERE id = ?', (name, recipe_id))
+            fixed.append(original_name)
     
     conn.commit()
     return fixed
