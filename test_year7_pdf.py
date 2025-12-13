@@ -18,7 +18,7 @@ with open(pdf_path, 'rb') as f:
     print(f"Total pages: {len(pdf_reader.pages)}\n")
     
     # Check pages where recipes should be
-    pages_to_check = [26, 32, 36, 49]
+    pages_to_check = [25, 26, 27, 32, 36, 48, 49, 50]
     
     for page_num in pages_to_check:
         if page_num <= len(pdf_reader.pages):
