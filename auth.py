@@ -7,6 +7,7 @@ from flask_login import UserMixin
 from functools import wraps
 from flask import session, redirect, url_for, flash
 import sqlite3
+import os
 
 # Role definitions based on staff codes
 ROLE_PERMISSIONS = {
@@ -84,7 +85,9 @@ def get_user_by_google_id(google_id):
 def get_staff_code_from_email(email):
     """Look up staff code from teacher email in database."""
     try:
-        with sqlite3.connect('recipes.db') as conn:
+        # Use absolute path to database
+        db_path = os.path.join(os.path.dirname(__file__), 'recipes.db')
+        with sqlite3.connect(db_path) as conn:
             c = conn.cursor()
             c.execute('SELECT code FROM teachers WHERE email = ?', (email,))
             result = c.fetchone()
