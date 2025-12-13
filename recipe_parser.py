@@ -54,6 +54,7 @@ def parse_recipes_from_text(text):
                 # Look back for a plausible title within previous 15 lines
                 # Collect all non-junk lines, then pick the best title candidate
                 candidates = []
+                print(f"DEBUG: Found ingredient line: {line[:50]}")
                 for j in range(1, 15):
                     idx = i - j
                     if idx < 0:
@@ -64,10 +65,14 @@ def parse_recipes_from_text(text):
                     if not cand:
                         continue
                     
+                    print(f"DEBUG: Looking at line -{j}: '{cand[:60]}'")
+                    
                     # Skip obvious junk
                     if low.isdigit():
+                        print(f"  -> Skipped (digit)")
                         continue
                     if any(k in low for k in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
+                        print(f"  -> Skipped (junk keyword)")
                         continue
                     
                     # Check if it's an ingredient line (stop looking back)
