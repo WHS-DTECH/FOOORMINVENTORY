@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weekly Shopping List</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <nav class="navbar no-print">
+    <div class="nav-left">
+      <a href="/" class="nav-brand">🍳 Food Room</a> |
+      <a href="/recipes">Recipes</a> |
+      <a href="/recbk">Recipe Book</a> |
+      <a href="/class_ingredients">Class Ingredients</a> |
+      <a href="/booking">Booking Calendar</a> |
+      <a href="/shoplist">Shopping List</a>
+      {% if current_user.is_admin() %}
+        | <a href="/admin">Admin</a>
+      {% endif %}
+    </div>
+    <div class="nav-right">
+      {% if current_user.is_authenticated %}
+        <span class="user-info">{{ current_user.name }}<span class="badge badge-{{ current_user.role }}">{{ current_user.role }}</span></span> | <a href="/logout" class="logout-link">Logout</a>
+      {% else %}
+        <a href="/login" class="login-link">Login</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <div class="week-nav no-print">
+    <span class="label">{{ week_label }}</span>
+    <a href="/shoplist?week={{ prev_week }}">Previous Week</a>
+    <a href="/shoplist?week={{ next_week }}">Next Week</a>
+  </div>
+
+  <h1 class="no-print">Weekly Booking Grid</h1>
+  <table class="grid no-print">
+    <thead>
+      <tr>
+        <th>Period</th>
+        {% for d in dates %}
+          <th>{{ d.day_name }}<br><span class="small-muted">{{ d.nz_date }}</span></th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for period in range(1,6) %}
+        <tr>
+          <td><span class="period">P{{ period }}</span></td>
+          {% for d in dates %}
+            {% set key = d.date + '_P' + period|string %}
+            {% set booking = grid.get(key) %}
+            <td>
+              {% if booking %}
+                <div class="booking" data-booking-id="{{ booking.id }}">
+                  <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
+                  <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
+                  <div class="booking-meta">Teacher: {{ booking.last_name or booking.staff_code or '—' }}{% if booking.first_name %}, {{ booking.first_name }}{% endif %}</div>
+                  <div class="booking-meta">Servings: {{ booking.desired_servings or '—' }}</div>
+                  <div class="booking-meta">{{ d.nz_date }}</div>
+                  <div class="booking-meta">Tap to select</div>
+                </div>
+              {% else %}
+                <div class="empty">—</div>
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="bottom-layout">
+    <div class="panel no-print">
+      <h3>Selected Bookings</h3>
+      <div class="actions" style="margin-bottom: 12px;">
+        <button class="primary" onclick="autoGenerateWeek()" style="background: #28a745;">🚀 Auto-Generate Week</button>
+        <button onclick="selectAllWeek()">Select Entire Week</button>
+        <button onclick="clearAllSelections()">Clear Selection</button>
+      </div>
+      <ul class="selected-list" id="selectedList"></ul>
+      <div class="notice" id="selectionNotice">No bookings selected. Tap cells above or use "Auto-Generate Week".</div>
+    </div>
+
+    <div class="shopping-list" id="shoppingList">
+      <div class="actions no-print" style="margin-bottom: 12px;">
+        <button class="primary" onclick="generateShoppingList()">Generate Shopping List</button>
+        <button onclick="exportShoppingListCsv()">Export CSV</button>
+        <button onclick="window.print()">Print Shopping List</button>
+      </div>
+      <h2>Shopping List</h2>
+      <div class="week-label">{{ week_label }}</div>
+      <div id="listContent" class="small-muted">Click "Auto-Generate Week" to instantly create a shopping list for all bookings this week.</div>
+    </div>
+  </div>
+
+  <div class="preview-banner no-print" style="margin-top: 12px;">Buttons and grid will not appear when printing; only the shopping list is printed.</div>
+
+  <script>
+    const bookings = {{ bookings|tojson }};
+    const recipes = {{ recipes|tojson }};
+    const dates = {{ dates|tojson }};
+    const weekLabel = {{ week_label|tojson }};
+
+    const selection = new Set();
+    const unitAliases = {
+      g: 'g', gram: 'g', grams: 'g', kg: 'kg', kilogram: 'kg', kilograms: 'kg',
+      ml: 'ml', millilitre: 'ml', milliliter: 'ml', milliliters: 'ml', millilitres: 'ml',
+      l: 'l', litre: 'l', liters: 'l', litres: 'l',
+      tsp: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp',
+      tbsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp',
+      cup: 'cup', cups: 'cup'
+    };
+
+    const produceUnitless = ['apple','banana','orange','onion','carrot','potato','pepper','capsicum','egg'];
+
+    const validUnits = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'pcs', 'oz', 'lb', 'pt', 'qt', 'gal'];
+
+    function normalizeUnit(unit) {
+      if (!unit) return '';
+      const key = unit.toString().trim().toLowerCase();
+      const normalized = unitAliases[key] || key;
+      // Only return the unit if it's in our valid units list
+      return validUnits.includes(normalized) ? normalized : '';
+    }
+
+    function parseNumber(val) {
+      if (val === null || val === undefined || val === '') return null;
+      const num = parseFloat(String(val).replace(',', '.'));
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function collapseDuplicateWords(str) {
+      if (!str) return '';
+      return str.replace(/\b(\w+)(\s+\1)+\b/gi, '$1');
+    }
+
+    function normalizeName(name) {
+      if (!name) return '';
+      let clean = name.toLowerCase().trim();
+      clean = clean.replace(/\([^)]*\)/g, '');
+      clean = clean.replace(/\s+/g, ' ');
+      clean = collapseDuplicateWords(clean);
+      const alias = {
+        capsicums: 'capsicum', peppers: 'pepper', tomatoes: 'tomato', potatoes: 'potato', onions: 'onion', eggs: 'egg'
+      };
+      if (alias[clean]) clean = alias[clean];
+      return clean;
+    }
+
+    function formatQtyUnit(totalQty, unit) {
+      if (totalQty === null || totalQty === undefined) return '';
+      const u = normalizeUnit(unit);
+      let qty = totalQty;
+      if (u === 'g' && qty >= 1000) {
+        const kg = qty / 1000;
+        return `${kg.toFixed(kg >= 10 ? 1 : 2).replace(/\.0+$/, '')} kg`;
+      }
+      if (u === 'ml' && qty >= 1000) {
+        const liters = qty / 1000;
+        return `${liters.toFixed(liters >= 10 ? 1 : 2).replace(/\.0+$/, '')} L`;
+      }
+      if (u === 'ml') return `${Math.round(qty)} ml`;
+      if (u === 'g') return `${Math.round(qty)} g`;
+      if (u === 'pcs' && qty === Math.floor(qty)) return `${qty} pcs`;
+      if (u) return `${qty.toFixed(2).replace(/\.0+$/, '')} ${u}`;
+      return `${qty.toFixed(2).replace(/\.0+$/, '')}`;
+    }
+
+    function applyUnitlessHeuristic(name, unit) {
+      if (unit) return unit;
+      const base = normalizeName(name);
+      if (produceUnitless.includes(base)) return 'pcs';
+      // Common liquid/weight items that should have units
+      const liquids = ['milk', 'water', 'oil', 'cream', 'juice'];
+      const weighted = ['flour', 'sugar', 'butter', 'margarine', 'cheese', 'nuts', 'sultanas', 'carrots', 'oats'];
+      if (liquids.includes(base)) return 'ml';
+      if (weighted.includes(base)) return 'g';
+      return '';
+    }
+
+    function convertToBase(qty, unit) {
+      const u = normalizeUnit(unit);
+      if (u === 'kg') return { qty: qty * 1000, unit: 'g' };
+      if (u === 'g') return { qty, unit: 'g' };
+      if (u === 'l') return { qty: qty * 1000, unit: 'ml' };
+      if (u === 'ml') return { qty, unit: 'ml' };
+      if (u === 'tsp') return { qty: qty * 5, unit: 'ml' };
+      if (u === 'tbsp') return { qty: qty * 15, unit: 'ml' };
+      if (u === 'cup') return { qty: qty * 250, unit: 'ml' };
+      return { qty, unit: u };
+    }
+
+    function parseIngredient(raw) {
+      const result = { qty: parseNumber(raw.quantity), unit: normalizeUnit(raw.unit), name: raw.ingredient || '' };
+      
+      // Skip instruction-like text
+      const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i];
+      if (skipPatterns.some(p => p.test(result.name))) {
+        return { qty: 0, unit: '', name: '' };
+      }
+      
+      // Always try to strip quantity/unit prefix from name, even if qty/unit are provided
+      const m = result.name.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)\s+(.+)/);
+      if (m) {
+        const potentialQty = parseNumber(m[1]);
+        const potentialUnit = normalizeUnit(m[2]);
+        const restOfName = m[3];
+        
+        // Only use extracted values if qty wasn't already set
+        if (!result.qty && potentialQty) {
+          result.qty = potentialQty;
+        }
+        
+        // Only set unit if it wasn't already set AND the extracted unit looks valid
+        if (!result.unit && potentialUnit) {
+          result.unit = potentialUnit;
+        }
+        
+        // Always use the rest of the name (without the prefix)
+        result.name = restOfName;
+      }
+      
+      result.unit = applyUnitlessHeuristic(result.name, result.unit);
+      result.name = collapseDuplicateWords(result.name.trim());
+      return result;
+    }
+
+    function getTeacherLabel(b) {
+      if (b.last_name) {
+        return b.first_name ? `${b.last_name}, ${b.first_name}` : b.last_name;
+      }
+      return b.staff_code || 'Unknown teacher';
+    }
+
+    function updateSelectionDisplay() {
+      const listEl = document.getElementById('selectedList');
+      const notice = document.getElementById('selectionNotice');
+      listEl.innerHTML = '';
+      if (selection.size === 0) {
+        notice.style.display = 'block';
+        return;
+      }
+      notice.style.display = 'none';
+      const selectedBookings = bookings.filter(b => selection.has(b.id)).sort((a, b) => {
+        if (a.date_required === b.date_required) return a.period - b.period;
+        return a.date_required.localeCompare(b.date_required);
+      });
+      selectedBookings.forEach(b => {
+        const li = document.createElement('li');
+        const teacher = getTeacherLabel(b);
+        const dateObj = dates.find(d => d.date === b.date_required);
+        const day = dateObj ? `${dateObj.day_name} ${dateObj.nz_date}` : b.date_required;
+        li.textContent = `${teacher} | ${b.class_code || ''} | ${b.recipe_name || ''} | P${b.period} | ${day} | servings ${b.desired_servings || '—'}`;
+        listEl.appendChild(li);
+      });
+    }
+
+    function toggleBooking(id) {
+      if (selection.has(id)) selection.delete(id); else selection.add(id);
+      document.querySelectorAll(`[data-booking-id]`).forEach(el => {
+        const bid = parseInt(el.dataset.bookingId, 10);
+        if (selection.has(bid)) el.classList.add('selected'); else el.classList.remove('selected');
+      });
+      updateSelectionDisplay();
+    }
+
+    function selectAllWeek() {
+      bookings.forEach(b => selection.add(b.id));
+      document.querySelectorAll('[data-booking-id]').forEach(el => el.classList.add('selected'));
+      updateSelectionDisplay();
+    }
+
+    function clearAllSelections() {
+      selection.clear();
+      document.querySelectorAll('[data-booking-id]').forEach(el => el.classList.remove('selected'));
+      updateSelectionDisplay();
+      document.getElementById('listContent').textContent = 'Generate the shopping list to see items here.';
+    }
+
+    function aggregateItems() {
+      const ingredientMap = new Map();
+      const teacherMap = new Map();
+
+      selection.forEach(id => {
+        const booking = bookings.find(b => b.id === id);
+        if (!booking) return;
+        const recipe = recipes[booking.recipe_id];
+        if (!recipe || !Array.isArray(recipe.ingredients)) return;
+        const baseServings = parseNumber(recipe.serving_size) || 1;
+        const targetServings = parseNumber(booking.desired_servings) || baseServings;
+        const scale = targetServings / baseServings;
+        const teacherKey = getTeacherLabel(booking);
+        if (!teacherMap.has(teacherKey)) teacherMap.set(teacherKey, new Map());
+        const teacherItems = teacherMap.get(teacherKey);
+
+        recipe.ingredients.forEach(rawIng => {
+          const parsed = parseIngredient(rawIng);
+          // Skip empty/instruction items
+          if (!parsed.name || parsed.qty === 0) return;
+          const qty = parsed.qty || 1;
+          const scaledQty = qty * scale;
+          const base = convertToBase(scaledQty, parsed.unit);
+          const nameKey = normalizeName(parsed.name);
+          const displayName = collapseDuplicateWords(parsed.name.trim()) || 'Item';
+          const overallEntry = ingredientMap.get(nameKey) || { name: displayName, qty: 0, unit: base.unit };
+          // Always use cleaned name
+          overallEntry.name = displayName;
+          if (overallEntry.unit && base.unit && overallEntry.unit === base.unit) {
+            overallEntry.qty += base.qty;
+          } else if (!overallEntry.unit) {
+            overallEntry.qty += base.qty;
+            overallEntry.unit = base.unit;
+          } else {
+            overallEntry.qty += base.qty;
+          }
+          ingredientMap.set(nameKey, overallEntry);
+
+          const teacherEntry = teacherItems.get(nameKey) || { name: displayName, qty: 0, unit: base.unit };
+          // Always use cleaned name
+          teacherEntry.name = displayName;
+          if (teacherEntry.unit && base.unit && teacherEntry.unit === base.unit) {
+            teacherEntry.qty += base.qty;
+          } else if (!teacherEntry.unit) {
+            teacherEntry.qty += base.qty;
+            teacherEntry.unit = base.unit;
+          } else {
+            teacherEntry.qty += base.qty;
+          }
+          teacherItems.set(nameKey, teacherEntry);
+        });
+      });
+
+      return { ingredientMap, teacherMap };
+    }
+
+    function renderShoppingList() {
+      const target = document.getElementById('listContent');
+      target.innerHTML = '';
+      if (selection.size === 0) {
+        target.textContent = 'Select bookings then generate the shopping list.';
+        return;
+      }
+      const { ingredientMap, teacherMap } = aggregateItems();
+      const overall = Array.from(ingredientMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      
+      // Add summary stats
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'shopping-summary';
+      summaryDiv.innerHTML = `
+        <div style="background: #e7f3ff; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+          <strong>📊 Summary:</strong> ${overall.length} unique ingredients | ${selection.size} bookings | ${teacherMap.size} teachers
+        </div>
+      `;
+      
+      const overallList = document.createElement('ul');
+      overallList.className = 'shopping-items';
+      overall.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${formatQtyUnit(item.qty, item.unit)} ${item.name}`.trim();
+        overallList.appendChild(li);
+      });
+
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(summaryDiv);
+      const overallTitle = document.createElement('div');
+      overallTitle.innerHTML = '<strong>All bookings</strong>';
+      wrapper.appendChild(overallTitle);
+      wrapper.appendChild(overallList);
+
+      const teacherContainer = document.createElement('div');
+      const sortedTeachers = Array.from(teacherMap.keys()).sort((a, b) => a.localeCompare(b));
+      sortedTeachers.forEach(t => {
+        const block = document.createElement('div');
+        block.className = 'teacher-block';
+        const heading = document.createElement('div');
+        heading.innerHTML = `<strong>${t}</strong>`;
+        block.appendChild(heading);
+        const list = document.createElement('ul');
+        list.className = 'shopping-items';
+        const entries = Array.from(teacherMap.get(t).values()).sort((a, b) => a.name.localeCompare(b.name));
+        entries.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = `${formatQtyUnit(item.qty, item.unit)} ${item.name}`.trim();
+          list.appendChild(li);
+        });
+        block.appendChild(list);
+        teacherContainer.appendChild(block);
+      });
+
+      wrapper.appendChild(teacherContainer);
+      target.appendChild(wrapper);
+    }
+
+    function generateShoppingList() {
+      renderShoppingList();
+    }
+
+    function autoGenerateWeek() {
+      selectAllWeek();
+      generateShoppingList();
+      // Scroll to shopping list
+      document.getElementById('shoppingList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function exportShoppingListCsv() {
+      if (selection.size === 0) {
+        alert('Select bookings first.');
+        return;
+      }
+      const { ingredientMap, teacherMap } = aggregateItems();
+      let csv = `Week,,${weekLabel}\n`;
+      csv += '\nAll bookings\n';
+      csv += 'Qty,Unit,Item\n';
+      Array.from(ingredientMap.values()).sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
+        csv += `${item.qty},${item.unit || ''},"${item.name}"\n`;
+      });
+      csv += '\nBy teacher\n';
+      Array.from(teacherMap.keys()).sort((a,b) => a.localeCompare(b)).forEach(t => {
+        csv += `"${t}"\n`;
+        Array.from(teacherMap.get(t).values()).sort((a,b) => a.name.localeCompare(b.name)).forEach(item => {
+          csv += `${item.qty},${item.unit || ''},"${item.name}"\n`;
+        });
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'shopping_list.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-booking-id]').forEach(el => {
+        el.addEventListener('click', () => toggleBooking(parseInt(el.dataset.bookingId, 10)));
+      });
+      updateSelectionDisplay();
+    });
+  </script>
+</body>
+</html>
