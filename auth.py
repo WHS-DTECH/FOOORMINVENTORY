@@ -10,6 +10,7 @@ import sqlite3
 import os
 
 # Role definitions based on staff codes
+# Legacy fallback - now permissions are stored in database
 ROLE_PERMISSIONS = {
     'VP': {
         'name': 'Vice Principal',
@@ -28,6 +29,23 @@ ROLE_PERMISSIONS = {
         'routes': ['recbk']
     }
 }
+
+
+def get_role_permissions_from_db(role):
+    """Get list of routes a role has access to from database."""
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), 'recipes.db')
+        with sqlite3.connect(db_path) as conn:
+            c = conn.cursor()
+            c.execute('SELECT route FROM role_permissions WHERE role = ?', (role,))
+            routes = [row[0] for row in c.fetchall()]
+            return routes
+    except Exception as e:
+        # Fallback to hardcoded permissions if database read fails
+        print(f"Error reading permissions from database: {e}")
+        if role in ROLE_PERMISSIONS:
+            return ROLE_PERMISSIONS[role]['routes']
+        return []
 
 
 class User(UserMixin):
@@ -50,9 +68,9 @@ class User(UserMixin):
     def has_access(self, endpoint):
         """Check if user has access to the given endpoint."""
         role = self.role
-        if role not in ROLE_PERMISSIONS:
-            return False
-        return endpoint in ROLE_PERMISSIONS[role]['routes']
+        # Get permissions from database
+        allowed_routes = get_role_permissions_from_db(role)
+        return endpoint in allowed_routes
     
     def is_admin(self):
         """Check if user is an admin (VP)."""

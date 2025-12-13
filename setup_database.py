@@ -72,6 +72,33 @@ def setup_database():
     '''
         )
 
+        # Create role_permissions table for dynamic access control
+        c.execute(
+            '''
+        CREATE TABLE IF NOT EXISTS role_permissions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            role TEXT NOT NULL,
+            route TEXT NOT NULL,
+            UNIQUE(role, route)
+        )
+    '''
+        )
+
+        # Insert default permissions
+        default_permissions = [
+            ('VP', 'recipes'), ('VP', 'recbk'), ('VP', 'class_ingredients'), 
+            ('VP', 'booking'), ('VP', 'shoplist'), ('VP', 'admin'),
+            ('DK', 'recipes'), ('DK', 'recbk'), ('DK', 'class_ingredients'), 
+            ('DK', 'booking'), ('DK', 'shoplist'),
+            ('MU', 'recipes'), ('MU', 'recbk'), ('MU', 'booking'), ('MU', 'shoplist'),
+            ('public', 'recbk')
+        ]
+        for role, route in default_permissions:
+            c.execute(
+                'INSERT OR IGNORE INTO role_permissions (role, route) VALUES (?, ?)',
+                (role, route)
+            )
+
         # Insert example teachers (optional) using INSERT OR IGNORE to avoid duplicates
         example_teachers = [
             ('VP', 'Pringle', 'Vanessa', 'Ms', 'vanessa.pringle@school.edu'),

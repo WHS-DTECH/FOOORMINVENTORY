@@ -357,6 +357,47 @@ def uploadclass():
     return render_template('admin.html', preview_data=rows)
 
 
+@app.route('/admin/permissions', methods=['GET', 'POST'])
+@require_role('VP')
+def admin_permissions():
+    """Manage role-based permissions."""
+    if request.method == 'POST':
+        role = request.form.get('role')
+        route = request.form.get('route')
+        action = request.form.get('action')  # 'add' or 'remove'
+        
+        if role and route and action:
+            with sqlite3.connect(DATABASE) as conn:
+                c = conn.cursor()
+                if action == 'add':
+                    c.execute('INSERT OR IGNORE INTO role_permissions (role, route) VALUES (?, ?)', (role, route))
+                    flash(f'Added {route} access for {role}', 'success')
+                elif action == 'remove':
+                    c.execute('DELETE FROM role_permissions WHERE role = ? AND route = ?', (role, route))
+                    flash(f'Removed {route} access for {role}', 'success')
+        
+        return redirect(url_for('admin_permissions'))
+    
+    # Get current permissions
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
+        permissions = {}
+        for row in c.fetchall():
+            role = row['role']
+            route = row['route']
+            if role not in permissions:
+                permissions[role] = []
+            permissions[role].append(route)
+    
+    # Available routes
+    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin']
+    roles = ['VP', 'DK', 'MU', 'public']
+    
+    return render_template('admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
+
+
 @app.route('/admin/clean_recipes', methods=['POST'])
 @require_role('VP')
 def clean_recipes_route():

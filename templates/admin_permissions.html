@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Permissions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Role Permissions Management</h1>
+    <p class="recipe-method-desc">Control which pages each role can access. Check a box to grant access, uncheck to remove access.</p>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div style="margin: 20px 0; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
+                {% for message in messages %}
+                    {{ message }}<br>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div style="margin: 20px 0;">
+        <a href="/admin" style="display: inline-block; padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">← Back to Admin</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <thead>
+                <tr style="background-color: #007bff; color: white;">
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Role</th>
+                    {% for route in routes %}
+                    <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">{{ route|title }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for role in roles %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; font-weight: bold; background-color: #f8f9fa; border: 1px solid #ddd;">
+                        {{ role }}
+                        {% if role == 'VP' %}
+                        <span style="font-size: 0.8em; color: #666;">(Admin)</span>
+                        {% elif role == 'DK' %}
+                        <span style="font-size: 0.8em; color: #666;">(Staff)</span>
+                        {% elif role == 'MU' %}
+                        <span style="font-size: 0.8em; color: #666;">(Limited)</span>
+                        {% elif role == 'public' %}
+                        <span style="font-size: 0.8em; color: #666;">(Public)</span>
+                        {% endif %}
+                    </td>
+                    {% for route in routes %}
+                    <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
+                        {% set has_permission = permissions.get(role, []) and route in permissions.get(role, []) %}
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="role" value="{{ role }}">
+                            <input type="hidden" name="route" value="{{ route }}">
+                            <input type="hidden" name="action" value="{% if has_permission %}remove{% else %}add{% endif %}">
+                            <button type="submit" style="
+                                background: none;
+                                border: none;
+                                cursor: pointer;
+                                font-size: 24px;
+                                padding: 0;
+                                {% if has_permission %}
+                                color: #28a745;
+                                {% else %}
+                                color: #dc3545;
+                                {% endif %}
+                            " title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">
+                                {% if has_permission %}✓{% else %}✗{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
+        <h3 style="margin-top: 0;">Route Descriptions</h3>
+        <ul style="line-height: 1.8;">
+            <li><strong>recipes:</strong> View and manage all recipes (full recipe management page)</li>
+            <li><strong>recbk:</strong> Recipe Book - Browse recipes in grid or table view</li>
+            <li><strong>class_ingredients:</strong> Class ingredients calculator and ingredient management</li>
+            <li><strong>booking:</strong> Class booking system for scheduling</li>
+            <li><strong>shoplist:</strong> Shopping list generator for classes</li>
+            <li><strong>admin:</strong> Administrative functions (staff/class upload, recipe management, permissions)</li>
+        </ul>
+    </div>
+
+    <div style="margin: 30px 0; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <h3 style="margin-top: 0;">⚠️ Important Notes</h3>
+        <ul style="line-height: 1.8;">
+            <li><strong>VP role</strong> should always have access to all pages including admin</li>
+            <li><strong>Admin page</strong> access should be restricted to trusted roles only</li>
+            <li>Changes take effect immediately</li>
+            <li>Users will see "Access Denied" if they try to access a page they don't have permission for</li>
+            <li>The <strong>public</strong> role applies to non-authenticated users</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
