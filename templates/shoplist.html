@@ -77,6 +77,7 @@
         <button class="primary" onclick="autoGenerateWeek()" style="background: #28a745;">🚀 Auto-Generate Week</button>
         <button onclick="selectAllWeek()">Select Entire Week</button>
         <button onclick="clearAllSelections()">Clear Selection</button>
+        <button class="primary" onclick="generateShoppingList()">Generate Shopping List</button>
       </div>
       <ul class="selected-list" id="selectedList"></ul>
       <div class="notice" id="selectionNotice">No bookings selected. Tap cells above or use "Auto-Generate Week".</div>
@@ -84,7 +85,6 @@
 
     <div class="shopping-list" id="shoppingList">
       <div class="actions no-print" style="margin-bottom: 12px;">
-        <button class="primary" onclick="generateShoppingList()">Generate Shopping List</button>
         <button onclick="exportShoppingListCsv()">Export CSV</button>
         <button onclick="window.print()">Print Shopping List</button>
       </div>
