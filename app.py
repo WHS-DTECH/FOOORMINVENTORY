@@ -605,14 +605,16 @@ def upload():
     instructions = request.form.get('instructions', '').strip()
     
     if not name or not instructions:
-        return "Recipe name and instructions required", 400
+        flash('Recipe name and instructions required', 'error')
+        return redirect(url_for('recipes_page'))
 
     # Validate serving_size
     serving_size_raw = request.form.get('serving_size', '').strip()
     try:
         serving_size = int(serving_size_raw) if serving_size_raw != '' else None
     except ValueError:
-        return "Invalid serving_size", 400
+        flash('Invalid serving size', 'error')
+        return redirect(url_for('recipes_page'))
 
     equipment_text = request.form.get('equipment', '')
 
@@ -621,6 +623,11 @@ def upload():
     units = request.form.getlist('unit[]')
     ingredients_names = request.form.getlist('ingredient[]')
 
+    # Check if ingredients were parsed
+    if not quantities or len(quantities) == 0:
+        flash('No ingredients found. Please click "Format Ingredients" button before saving.', 'error')
+        return redirect(request.referrer or url_for('recipes_page'))
+
     ingredients = []
     for q, u, ing in zip(quantities, units, ingredients_names):
         ingredients.append({"quantity": q, "unit": u, "ingredient": ing})
@@ -628,17 +635,22 @@ def upload():
     # Convert equipment text into a list
     equipment_list = [item.strip() for item in equipment_text.split('\n') if item.strip()]
 
-    with sqlite3.connect(DATABASE) as conn:
-        c = conn.cursor()
-        c.execute(
-            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
-            (name, json.dumps(ingredients), instructions, serving_size, json.dumps(equipment_list)),
-        )
-    # Run cleaners after form insert
-    dup_deleted = remove_duplicate_recipes()
-    nonfood_deleted = remove_nonfood_recipes()
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute(
+                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
+                (name, json.dumps(ingredients), instructions, serving_size, json.dumps(equipment_list)),
+            )
+        # Run cleaners after form insert
+        dup_deleted = remove_duplicate_recipes()
+        nonfood_deleted = remove_nonfood_recipes()
 
-    flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.')
+        flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.')
+    except Exception as e:
+        flash(f'Error saving recipe: {str(e)}', 'error')
+        return redirect(request.referrer or url_for('recipes_page'))
+        
     return redirect(url_for('recipes_page'))
 
 @app.route('/shoplist')
