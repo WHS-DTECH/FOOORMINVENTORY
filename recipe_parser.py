@@ -1,5 +1,7 @@
 """Recipe parser for extracting recipes from PDF documents."""
 
+import re
+
 
 def parse_recipes_from_text(text):
     """Parse recipes from PDF text that contain Ingredients, Equipment, and Method sections.
@@ -49,9 +51,9 @@ def parse_recipes_from_text(text):
                 return False
 
             if looks_like_ingredient(ll):
-                # Look back for a plausible title within previous 6 lines and join contiguous title lines
+                # Look back for a plausible title within previous 10 lines
                 parts = []
-                for j in range(1,7):
+                for j in range(1,10):
                     idx = i - j
                     if idx < 0:
                         break
@@ -63,8 +65,10 @@ def parse_recipes_from_text(text):
                             break
                         else:
                             continue
-                    if low.isdigit() or any(k in low for k in ['week', 'learning', 'object', 'method', 'ingredients', 'equipment']):
+                    # Skip lines that are clearly not titles
+                    if low.isdigit() or any(k in low for k in ['week ', 'learning', 'objective', 'equipment', 'page ', 'food technology']):
                         break
+                    # Don't break on "method" or "ingredients" without looking back - might be part of description
                     # stop if cand itself looks like an ingredient line
                     def _looks_like_ingredient(s):
                         if not s:
@@ -79,13 +83,22 @@ def parse_recipes_from_text(text):
                         return False
                     if _looks_like_ingredient(low):
                         break
+                    # Add candidate to title parts
                     parts.append(cand)
+                
                 if parts:
                     parts.reverse()
                     title = ' '.join(parts)
+                    # Clean up title - remove common prefixes/suffixes
+                    title = re.sub(r'\(per group of \d+\)', '', title).strip()
+                    title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
+                    # If title is too long or looks like description, take first reasonable line
+                    if len(title) > 100 or title.count('.') > 2:
+                        # Just use the last line before ingredients
+                        title = parts[-1]
                 else:
                     title = None
-                if not title:
+                if not title or len(title) < 3:
                     title = 'Unknown Recipe'
                 recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
                 current_section = 'ingredients'
