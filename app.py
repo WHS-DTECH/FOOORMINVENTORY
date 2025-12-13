@@ -638,15 +638,28 @@ def upload():
     try:
         with sqlite3.connect(DATABASE) as conn:
             c = conn.cursor()
+            
+            # Check if recipe name already exists
+            c.execute("SELECT id, name FROM recipes WHERE name = ?", (name,))
+            existing = c.fetchone()
+            if existing:
+                flash(f'Recipe "{name}" already exists in the database. Please use a different name or edit the existing recipe.', 'warning')
+                return redirect(request.referrer or url_for('recipes_page'))
+            
             c.execute(
                 "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
                 (name, json.dumps(ingredients), instructions, serving_size, json.dumps(equipment_list)),
             )
+            conn.commit()
+            
         # Run cleaners after form insert
         dup_deleted = remove_duplicate_recipes()
         nonfood_deleted = remove_nonfood_recipes()
 
-        flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.')
+        flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
+    except sqlite3.IntegrityError as e:
+        flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
+        return redirect(request.referrer or url_for('recipes_page'))
     except Exception as e:
         flash(f'Error saving recipe: {str(e)}', 'error')
         return redirect(request.referrer or url_for('recipes_page'))

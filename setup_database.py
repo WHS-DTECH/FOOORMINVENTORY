@@ -56,6 +56,22 @@ def setup_database():
     '''
         )
 
+        # Create class_bookings table for recipe bookings
+        c.execute(
+            '''
+        CREATE TABLE IF NOT EXISTS class_bookings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            staff_code TEXT,
+            class_code TEXT,
+            date_required TEXT,
+            period INTEGER,
+            recipe_id INTEGER,
+            desired_servings INTEGER,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    '''
+        )
+
         # Insert example teachers (optional) using INSERT OR IGNORE to avoid duplicates
         example_teachers = [
             ('VP', 'Pringle', 'Vanessa', 'Ms', 'vanessa.pringle@school.edu'),
