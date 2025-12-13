@@ -37,47 +37,222 @@
   </div>
 </nav>
 
-<h2>Admin: Upload Staff CSV</h2>
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    .admin-column {
+        padding: 25px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .admin-column h1 {
+        margin-top: 0;
+        font-size: 28px;
+        color: #333;
+        border-bottom: 3px solid #337ab7;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .admin-column h2 {
+        font-size: 20px;
+        color: #555;
+        margin-top: 25px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 6px;
+    }
+    .admin-column form {
+        margin: 15px 0;
+    }
+    .admin-column label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    .admin-column input[type="file"],
+    .admin-column input[type="url"] {
+        margin: 8px 0;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .admin-column input[type="url"] {
+        width: 100%;
+        max-width: 400px;
+    }
+    .admin-column button,
+    .admin-column input[type="submit"] {
+        padding: 10px 20px;
+        background-color: #337ab7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    .admin-column button:hover,
+    .admin-column input[type="submit"]:hover {
+        background-color: #286090;
+    }
+    .admin-column table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 13px;
+    }
+    .admin-column table th,
+    .admin-column table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .admin-column table th {
+        background-color: #337ab7;
+        color: white;
+        font-weight: 600;
+    }
+    .admin-column h3 {
+        font-size: 16px;
+        color: #666;
+        margin-top: 15px;
+    }
+    .recipe-method-desc {
+        margin: 10px 0;
+        color: #666;
+        font-size: 14px;
+    }
+    @media (max-width: 968px) {
+        .admin-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
-{% with messages = get_flashed_messages() %} 
-{% if messages %} 
-<div class="flash"> 
-  {% for message in messages %} 
-  <p>{{ message }}</p> 
-  {% endfor %} 
-</div> 
-{% endif %} 
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="flash">
+  {% for message in messages %}
+  <p>{{ message }}</p>
+  {% endfor %}
+</div>
+{% endif %}
 {% endwith %}
 
-<form method="POST" enctype="multipart/form-data"> <label for="staff_csv">Select CSV file:</label><br> <input type="file" id="staff_csv" name="staff_csv" accept=".csv" required><br><br> <button type="submit">Upload</button> </form>
+<div class="admin-container">
+    <div class="admin-grid">
+        
+        <!-- LEFT COLUMN: Class Setup -->
+        <div class="admin-column">
+            <h1>Class Setup</h1>
+            
+            <h2>Staff</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <label for="staff_csv">Select Staff CSV file:</label>
+                <input type="file" id="staff_csv" name="staff_csv" accept=".csv" required>
+                <button type="submit">Upload Staff CSV</button>
+            </form>
 
-{% if preview_data %} <h3>Preview of Uploaded Data</h3> <table> <thead> <tr> {% for key in preview_data[0].keys() %} <th>{{ key }}</th> {% endfor %} </tr> </thead> <tbody> {% for row in preview_data %} <tr> {% for value in row.values() %} <td>{{ value }}</td> {% endfor %} </tr> {% endfor %} </tbody> </table> {% endif %}
+            {% if preview_data %}
+            <h3>Preview of Uploaded Staff Data</h3>
+            <table>
+                <thead>
+                    <tr>
+                    {% for key in preview_data[0].keys() %}
+                        <th>{{ key }}</th>
+                    {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in preview_data %}
+                    <tr>
+                    {% for value in row.values() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
 
-<h2>Admin: Upload Class CSV</h2>
+            <h2>Class</h2>
+            <form action="/uploadclass" method="post" enctype="multipart/form-data">
+                <label for="csvfile">Select Class CSV file:</label>
+                <input type="file" id="csvfile" name="csvfile" accept=".csv" required>
+                <input type="submit" value="Upload Class CSV">
+            </form>
 
-{% with messages = get_flashed_messages() %} {% if messages %} 
-<div class="flash"> {% for message in messages %} 
-  <p>{{ message }}</p> {% endfor %} </div> {% endif %} {% endwith %}
+            {% if class_preview_data %}
+            <h3>Preview of Uploaded Class Data</h3>
+            <table>
+                <thead>
+                    <tr>
+                    {% for key in class_preview_data[0].keys() %}
+                        <th>{{ key }}</th>
+                    {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in class_preview_data %}
+                    <tr>
+                    {% for value in row.values() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
 
-<form action="/uploadclass" method="post" enctype="multipart/form-data"> 
-  <label for="csvfile">Choose CSV file to upload:</label> 
-  <input type="file" id="csvfile" name="csvfile" accept=".csv"> 
-  <input type="submit" value="Upload"> </form>
+        <!-- RIGHT COLUMN: Recipe Book Setup -->
+        <div class="admin-column">
+            <h1>Recipe Book Setup</h1>
+            
+            <h2>Upload Recipe (Form)</h2>
+            <p class="recipe-method-desc">Manually enter recipe details using a form.</p>
+            <form action="/" method="get">
+                <button type="submit">Open Recipe Upload Form</button>
+            </form>
 
-{% if preview_data %} <h3>Preview of Uploaded Data</h3> 
-<table> 
-  <thead> 
-    <tr> {% for key in preview_data[0].keys() %} 
-      <th>{{ key }}</th> 
-      {% endfor %} 
-    </tr> 
-  </thead> 
-  <tbody> {% for row in preview_data %} 
-    <tr> {% for value in row.values() %} 
-      <td>{{ value }}</td> 
-      {% endfor %} </tr> 
-      {% endfor %} </tbody> 
-    </table> {% endif %}
+            <h2>Upload Recipe (PDF)</h2>
+            <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <label for="pdfFile">Select PDF file:</label>
+                <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" required>
+                <button type="submit">Upload PDF</button>
+            </form>
+
+            <h2>Load Recipe (URL)</h2>
+            <p class="recipe-method-desc">Import recipe from a website URL.</p>
+            <form id="urlForm">
+                <label for="recipeUrl">Recipe URL:</label>
+                <input type="url" id="recipeUrl" name="recipeUrl" placeholder="e.g., https://recipes.co.nz/..." required>
+                <button type="submit">Load from URL</button>
+            </form>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+// URL form handler
+document.getElementById('urlForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const url = document.getElementById('recipeUrl').value;
+    alert('URL upload feature coming soon!\nURL: ' + url);
+});
+</script>
 
 </body>
 
