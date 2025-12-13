@@ -117,8 +117,8 @@ def fix_recipe_names(conn):
         name = re.sub(r'^Year\s*\d+\s+Food Technology\s+\d+\s*', '', name, flags=re.I)
         
         # Fix spacing issues like "Chee se" -> "Cheese", "Mushr oom" -> "Mushroom"
-        # Only fix when there are 1-2 letters, space, then 1-3 letters (broken words)
-        name = re.sub(r'\b(\w{1,2})\s+(\w{1,3})\b', r'\1\2', name)
+        # Fix broken words: 1-6 letters, space, 1-4 letters at word boundary
+        name = re.sub(r'\b(\w{1,6})\s+(\w{1,4})\b', r'\1\2', name)
         
         # Clean up extra spaces
         name = re.sub(r'\s+', ' ', name).strip()
