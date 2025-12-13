@@ -109,6 +109,10 @@ def parse_recipes_from_text(text):
                     if 'week ' in low and ':' in cand:
                         print(f"DEBUG: Skipping week header: {cand}")
                         continue
+                    # Skip continuation lines that aren't real titles
+                    if cand.startswith(('group of', ')', 'work in pairs')):
+                        print(f"DEBUG: Skipping continuation: {cand}")
+                        continue
                     # Prefer lines that look like recipe names (not too long, no excessive punctuation)
                     if 3 < len(cand) < 100 and cand.count('.') < 3:
                         # This looks like a good title
@@ -120,7 +124,7 @@ def parse_recipes_from_text(text):
                 
                 if title:
                     # Clean up title - remove common prefixes/suffixes
-                    title = re.sub(r'\(per group of \d+\)', '', title).strip()
+                    title = re.sub(r'\(per.*$', '', title).strip()  # Remove "(per..." to end
                     title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
                     title = re.sub(r'–\s*work in pairs', '', title, flags=re.I).strip()
                 else:
