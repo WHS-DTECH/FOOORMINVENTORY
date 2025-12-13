@@ -38,6 +38,11 @@ def remove_junk_recipes(conn):
         r'^year \d+.*food technology\s*$',  # Just year/food tech header
         r'^making activity\s*:?\s*$',  # Blank "Making Activity" with no name
         r'forfar bridies.*makes 2 bridies',  # Incomplete Forfar Bridies parse
+        r'food preparation',  # "Food preparation skills"
+        r'used in the',  # Partial sentences
+        r'^you\.$',  # Just "you."
+        r'salad:$',  # Ends with "salad:"
+        r'cous\.$',  # Just "Cous."
     ]
     
     deleted = []
