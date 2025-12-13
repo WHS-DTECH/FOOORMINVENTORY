@@ -5,6 +5,28 @@
   <title>Recipe Book</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
+    .view-toggle {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .view-toggle button {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: #f5f5f5;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .view-toggle button:hover {
+      background: #e0e0e0;
+    }
+    .view-toggle button.active {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
     .recipe-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -56,6 +78,41 @@
       height: 30px;
       background: linear-gradient(transparent, white);
     }
+    .recipe-table {
+      display: none;
+      margin-top: 20px;
+    }
+    .recipe-table table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    .recipe-table th,
+    .recipe-table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    .recipe-table th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+    .recipe-table a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .recipe-table a:hover {
+      text-decoration: underline;
+    }
+    .diet-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      margin: 2px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 3px;
+      font-size: 12px;
+    }
     .search-bar {
       max-width: 600px;
       margin: 20px 0;
@@ -75,6 +132,9 @@
       text-align: center;
       padding: 40px;
       color: #666;
+    }
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
@@ -104,6 +164,12 @@
   
   <h1>Recipe Book</h1>
   
+  <div class="view-toggle">
+    <span style="font-weight: 600; color: #666;">View:</span>
+    <button id="gridViewBtn" class="active" onclick="switchView('grid')">📱 Grid</button>
+    <button id="tableViewBtn" onclick="switchView('table')">📋 Table</button>
+  </div>
+
   <form class="search-bar" method="get" action="/recbk">
     <input type="search" name="q" placeholder="Search recipes by name or ingredient..." value="{{ q }}" />
     <button type="submit">Search</button>
@@ -117,7 +183,8 @@
   {% endif %}
 
   {% if rows %}
-  <div class="recipe-grid">
+  <!-- GRID VIEW (DEFAULT) -->
+  <div id="gridView" class="recipe-grid">
     {% for r in rows %}
       <div class="recipe-card" onclick="window.location.href='/recipe/{{ r.id }}'">
         <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
@@ -152,6 +219,59 @@
       </div>
     {% endfor %}
   </div>
+  
+  <!-- TABLE VIEW -->
+  <div id="tableView" class="recipe-table hidden">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Tags</th>
+          <th>Cuisine</th>
+          <th>Difficulty</th>
+          <th>Serves</th>
+          <th>Ingredients</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
+          <td>
+            {% if r.dietary_tags_list %}
+              {% for tag in r.dietary_tags_list %}
+                <span class="diet-tag">{{ tag }}</span>
+              {% endfor %}
+            {% else %}
+              <span style="color:#999;">—</span>
+            {% endif %}
+          </td>
+          <td>{{ r.cuisine or '—' }}</td>
+          <td>
+            {% if r.difficulty == 'Easy' %}
+              <span style="color:#28a745;">● Easy</span>
+            {% elif r.difficulty == 'Medium' %}
+              <span style="color:#ffc107;">● Medium</span>
+            {% elif r.difficulty == 'Hard' %}
+              <span style="color:#dc3545;">● Hard</span>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>{{ r.serving_size or '—' }}</td>
+          <td>
+            {% if r.ingredients %}
+              {{ r.ingredients|length }} items
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
   {% else %}
     <div class="no-results">
       <p style="font-size:18px;">No recipes found.</p>
@@ -162,5 +282,36 @@
       {% endif %}
     </div>
   {% endif %}
+
+<script>
+// View switcher with localStorage persistence
+function switchView(view) {
+  const gridView = document.getElementById('gridView');
+  const tableView = document.getElementById('tableView');
+  const gridBtn = document.getElementById('gridViewBtn');
+  const tableBtn = document.getElementById('tableViewBtn');
+  
+  if (view === 'grid') {
+    gridView.classList.remove('hidden');
+    tableView.classList.add('hidden');
+    gridBtn.classList.add('active');
+    tableBtn.classList.remove('active');
+    localStorage.setItem('recipeView', 'grid');
+  } else {
+    gridView.classList.add('hidden');
+    tableView.classList.remove('hidden');
+    gridBtn.classList.remove('active');
+    tableBtn.classList.add('active');
+    localStorage.setItem('recipeView', 'table');
+  }
+}
+
+// Load saved view preference on page load (default to grid)
+window.addEventListener('DOMContentLoaded', function() {
+  const savedView = localStorage.getItem('recipeView') || 'grid';
+  switchView(savedView);
+});
+</script>
+
 </body>
 </html>
