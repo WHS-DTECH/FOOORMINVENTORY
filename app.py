@@ -579,17 +579,12 @@ def upload():
             dup_deleted = remove_duplicate_recipes()
             nonfood_deleted = remove_nonfood_recipes()
 
-            return jsonify({
-                "success": True,
-                "message": f"Found and saved {len(recipes_found)} recipe(s). Cleaned duplicates and non-food entries.",
-                "recipes": [{"name": r["name"], "page": r["page"]} for r in recipes_found],
-                "cleaned": {
-                    "duplicates_deleted": dup_deleted,
-                    "nonfood_deleted": nonfood_deleted
-                }
-            })
+            recipe_names = ", ".join([r["name"] for r in recipes_found])
+            flash(f'Found and saved {len(recipes_found)} recipe(s): {recipe_names}. Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
+            return redirect(url_for('recipes_page'))
         except Exception as e:
-            return jsonify({"error": str(e)}), 400
+            flash(f'Error uploading PDF: {str(e)}', 'error')
+            return redirect(url_for('recipes_page'))
     
     # Handle form data upload
     name = request.form.get('name', '').strip()
