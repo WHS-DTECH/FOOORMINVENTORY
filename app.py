@@ -560,27 +560,39 @@ def upload():
                 flash(f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.', 'warning')
                 return redirect(url_for('recipes_page'))
             
-            # Save recipes to database
+            # Save recipes to database (skip duplicates)
+            saved_count = 0
+            skipped_count = 0
             with sqlite3.connect(DATABASE) as conn:
                 c = conn.cursor()
                 for recipe in recipes_found:
-                    c.execute(
-                        "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
-                        (
-                            recipe['name'],
-                            json.dumps(recipe.get('ingredients', [])),
-                            recipe.get('method', ''),
-                            recipe.get('serving_size'),
-                            json.dumps(recipe.get('equipment', []))
-                        ),
-                    )
+                    try:
+                        c.execute(
+                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
+                            (
+                                recipe['name'],
+                                json.dumps(recipe.get('ingredients', [])),
+                                recipe.get('method', ''),
+                                recipe.get('serving_size'),
+                                json.dumps(recipe.get('equipment', []))
+                            ),
+                        )
+                        saved_count += 1
+                    except sqlite3.IntegrityError:
+                        # Recipe name already exists, skip it
+                        skipped_count += 1
 
             # Run cleaners after insert
             dup_deleted = remove_duplicate_recipes()
             nonfood_deleted = remove_nonfood_recipes()
 
-            recipe_names = ", ".join([r["name"] for r in recipes_found])
-            flash(f'Found and saved {len(recipes_found)} recipe(s): {recipe_names}. Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
+            message = f'Saved {saved_count} new recipe(s).'
+            if skipped_count > 0:
+                message += f' Skipped {skipped_count} duplicate(s).'
+            if len(dup_deleted) > 0 or len(nonfood_deleted) > 0:
+                message += f' Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.'
+            
+            flash(message, 'success')
             return redirect(url_for('recipes_page'))
         except Exception as e:
             flash(f'Error uploading PDF: {str(e)}', 'error')
