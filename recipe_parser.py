@@ -41,9 +41,12 @@ def parse_recipes_from_text(text):
             def looks_like_ingredient(s):
                 if not s:
                     return False
+                # Skip single page numbers (1-3 digits alone)
+                if s.strip().isdigit() and len(s.strip()) <= 3:
+                    return False
                 if s[0].isdigit():
                     return True
-                for token in ['g ', 'ml', 'cup', 'tsp', 'tbsp', 'tablespoon', 'teaspoon', 'slice', 'large', 'small', 'packet']:
+                for token in ['g ', 'ml', 'cup', 'tsp', 'tbsp', 'tablespoon', 'teaspoon', 'slice', 'large', 'small', 'packet', 'can']:
                     if token in s:
                         return True
                 if s.startswith('•'):
