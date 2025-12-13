@@ -357,6 +357,32 @@ def uploadclass():
     return render_template('admin.html', preview_data=rows)
 
 
+@app.route('/admin/clean_recipes', methods=['POST'])
+@require_role('VP')
+def clean_recipes_route():
+    """Clean recipe database - remove junk and duplicates."""
+    try:
+        from clean_recipes import remove_junk_recipes, remove_duplicate_recipes, fix_recipe_names
+        
+        with sqlite3.connect(DATABASE) as conn:
+            # Run all cleaning operations
+            junk_deleted = remove_junk_recipes(conn)
+            dupes_deleted = remove_duplicate_recipes(conn)
+            names_fixed = fix_recipe_names(conn)
+            
+            # Get final count
+            c = conn.cursor()
+            c.execute('SELECT COUNT(*) FROM recipes')
+            total = c.fetchone()[0]
+            
+            message = f'Database cleaned! Removed {len(junk_deleted)} junk entries, {len(dupes_deleted)} duplicates, and fixed {len(names_fixed)} recipe names. Total recipes: {total}'
+            flash(message, 'success')
+    except Exception as e:
+        flash(f'Error cleaning database: {str(e)}', 'error')
+    
+    return redirect(url_for('admin'))
+
+
 @app.route('/staff')
 @require_role('VP')
 def staff():

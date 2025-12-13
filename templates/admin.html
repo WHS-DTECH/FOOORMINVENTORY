@@ -241,6 +241,12 @@
                 <input type="url" id="recipeUrl" name="recipeUrl" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/..." required>
                 <button type="submit" id="urlSubmitBtn">Load from URL</button>
             </form>
+
+            <h2>Clean Database</h2>
+            <p class="recipe-method-desc">Remove duplicate recipes, junk entries, and fix recipe names.</p>
+            <form action="/admin/clean_recipes" method="post" onsubmit="return confirm('This will clean the recipe database. Continue?');">
+                <button type="submit" style="background-color: #f0ad4e; border-color: #eea236;">🧹 Clean Recipe Database</button>
+            </form>
         </div>
         
     </div>
