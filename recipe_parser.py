@@ -57,7 +57,6 @@ def parse_recipes_from_text(text):
                 # Look back for a plausible title within previous 15 lines
                 # Collect all non-junk lines, then pick the best title candidate
                 candidates = []
-                print(f"DEBUG: Found ingredient line: {line[:50]}")
                 for j in range(1, 15):
                     idx = i - j
                     if idx < 0:
@@ -68,14 +67,10 @@ def parse_recipes_from_text(text):
                     if not cand:
                         continue
                     
-                    print(f"DEBUG: Looking at line -{j}: '{cand[:60]}'")
-                    
                     # Skip obvious junk
                     if low.isdigit():
-                        print(f"  -> Skipped (digit)")
                         continue
                     if any(k in low for k in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
-                        print(f"  -> Skipped (junk keyword)")
                         continue
                     
                     # Check if it's an ingredient line (stop looking back)
@@ -99,28 +94,19 @@ def parse_recipes_from_text(text):
                 
                 # Find best title from candidates
                 title = None
-                # DEBUG
-                if candidates:
-                    print(f"DEBUG: Found {len(candidates)} title candidates: {candidates[:5]}")
-                
                 for cand in candidates:
                     low = cand.lower()
                     # Skip section headers like "Week 9 :" 
                     if 'week ' in low and ':' in cand:
-                        print(f"DEBUG: Skipping week header: {cand}")
                         continue
                     # Skip continuation lines that aren't real titles
                     if cand.startswith(('group of', ')', 'work in pairs')):
-                        print(f"DEBUG: Skipping continuation: {cand}")
                         continue
                     # Prefer lines that look like recipe names (not too long, no excessive punctuation)
                     if 3 < len(cand) < 100 and cand.count('.') < 3:
                         # This looks like a good title
-                        print(f"DEBUG: Selected title: {cand}")
                         title = cand
                         break
-                    else:
-                        print(f"DEBUG: Rejected candidate: {cand} (len={len(cand)}, dots={cand.count('.')})")
                 
                 if title:
                     # Clean up title - remove common prefixes/suffixes
@@ -128,7 +114,6 @@ def parse_recipes_from_text(text):
                     title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
                     title = re.sub(r'–\s*work in pairs', '', title, flags=re.I).strip()
                 else:
-                    print("DEBUG: No valid title found, using Unknown Recipe")
                     title = 'Unknown Recipe'
                     
                 recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
