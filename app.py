@@ -536,11 +536,13 @@ def upload():
     # Check if PDF file is being uploaded
     if 'pdfFile' in request.files:
         if not PyPDF2:
-            return jsonify({"error": "PyPDF2 not installed"}), 400
+            flash('PyPDF2 not installed - cannot parse PDF files', 'error')
+            return redirect(url_for('recipes_page'))
         
         pdf_file = request.files.get('pdfFile')
         if not pdf_file or pdf_file.filename == '':
-            return jsonify({"error": "No PDF file selected"}), 400
+            flash('No PDF file selected', 'error')
+            return redirect(url_for('recipes_page'))
         
         try:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
@@ -555,10 +557,8 @@ def upload():
                     recipes_found.append(recipe)
             
             if not recipes_found:
-                return jsonify({
-                    "error": "No recipes found with Ingredients, Equipment, and Method sections",
-                    "pages_scanned": len(pdf_reader.pages)
-                }), 400
+                flash(f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.', 'warning')
+                return redirect(url_for('recipes_page'))
             
             # Save recipes to database
             with sqlite3.connect(DATABASE) as conn:
