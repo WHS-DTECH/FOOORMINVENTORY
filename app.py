@@ -251,7 +251,7 @@ def auth_callback():
         login_user(user, remember=True)
         flash(f'Welcome, {name}!', 'success')
         
-        return redirect(url_for('class_ingredients'))
+        return redirect(url_for('recbk'))
     
     except Exception as e:
         flash(f'Authentication error: {str(e)}')
