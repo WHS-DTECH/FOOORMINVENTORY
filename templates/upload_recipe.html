@@ -66,7 +66,12 @@
     window.addEventListener('load', function() {
         const ingredientText = document.getElementById('ingredient_text').value;
         if (ingredientText && ingredientText.trim().length > 0) {
-            setTimeout(() => parseIngredients(), 200);
+            console.log('Auto-parsing ingredients on page load...');
+            // Increased timeout to ensure DOM is fully ready
+            setTimeout(() => {
+                parseIngredients();
+                console.log('Ingredients parsed automatically');
+            }, 300);
         }
     });
     
