@@ -177,6 +177,10 @@
                 quantity = '1';
                 unit = 'to taste';
             }
+            if (quantity && !unit && ingredient) {
+                // Has quantity but no unit (e.g., "2 eggs") - default to appropriate unit
+                unit = 'item';
+            }
             
             const row = table.insertRow();
             row.innerHTML = `<td><input type="number" step="0.01" name="quantity[]" value="${quantity}" required></td>\n                    <td><input type="text" name="unit[]" value="${unit}" required></td>\n                    <td><input type="text" name="ingredient[]" value="${ingredient}" required></td>`;
