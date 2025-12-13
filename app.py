@@ -549,13 +549,17 @@ def upload():
             recipes_found = []
             
             # Extract all text and parse for recipes
+            print(f"DEBUG: PDF has {len(pdf_reader.pages)} pages")  # Debug
             for page_num, page in enumerate(pdf_reader.pages):
                 text = page.extract_text()
                 recipes = parse_recipes_from_text(text)
+                if recipes:
+                    print(f"DEBUG: Page {page_num + 1} found {len(recipes)} recipes: {[r['name'] for r in recipes]}")  # Debug
                 for recipe in recipes:
                     recipe['page'] = page_num + 1
                     recipes_found.append(recipe)
             
+            print(f"DEBUG: Total recipes found: {len(recipes_found)}")  # Debug
             if not recipes_found:
                 flash(f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.', 'warning')
                 return redirect(url_for('recipes_page'))
