@@ -21,14 +21,14 @@ except ImportError:
 from recipe_parser import parse_recipes_from_text, format_recipe, parse_ingredient_line
 from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
 
-cd ~/FOOORMINVENTORY
-nano app.py
 
 # Load environment variables
 load_dotenv()
 
 # Allow OAuth over HTTP for local development (DO NOT use in production)
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# Only enable in development, not production
+if os.getenv('FLASK_ENV') == 'development':
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app = Flask(__name__)
 # Database path
