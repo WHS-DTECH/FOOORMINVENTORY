@@ -626,7 +626,7 @@ def upload():
     # Check if ingredients were parsed
     if not quantities or len(quantities) == 0:
         flash('No ingredients found. Please click "Format Ingredients" button before saving.', 'error')
-        return redirect(url_for('recbk'))
+        return redirect(url_for('admin'))
 
     ingredients = []
     for q, u, ing in zip(quantities, units, ingredients_names):
@@ -644,7 +644,7 @@ def upload():
             existing = c.fetchone()
             if existing:
                 flash(f'Recipe "{name}" already exists in the database. Please use a different name or edit the existing recipe.', 'warning')
-                return redirect(url_for('recbk'))
+                return redirect(url_for('admin'))
             
             c.execute(
                 "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
@@ -659,10 +659,10 @@ def upload():
         flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
     except sqlite3.IntegrityError as e:
         flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
-        return redirect(url_for('recbk'))
+        return redirect(url_for('admin'))
     except Exception as e:
         flash(f'Error saving recipe: {str(e)}', 'error')
-        return redirect(url_for('recbk'))
+        return redirect(url_for('admin'))
         
     return redirect(url_for('recipes_page'))
 
