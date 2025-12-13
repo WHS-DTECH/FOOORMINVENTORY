@@ -981,14 +981,14 @@ def recbk():
         if q:
             term = f"%{q}%"
             c.execute(
-                "SELECT id, name, ingredients, instructions, serving_size, equipment FROM recipes "
+                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
                 "WHERE name LIKE ? OR ingredients LIKE ? "
                 "ORDER BY name COLLATE NOCASE",
                 (term, term),
             )
         else:
             c.execute(
-                "SELECT id, name, ingredients, instructions, serving_size, equipment FROM recipes "
+                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
                 "ORDER BY name COLLATE NOCASE"
             )
         rows = [dict(r) for r in c.fetchall()]
@@ -1003,6 +1003,10 @@ def recbk():
             r['equipment'] = json.loads(r.get('equipment') or '[]')
         except Exception:
             r['equipment'] = []
+        try:
+            r['dietary_tags_list'] = json.loads(r.get('dietary_tags') or '[]')
+        except Exception:
+            r['dietary_tags_list'] = []
 
     return render_template('recbk.html', rows=rows, q=q)
 
