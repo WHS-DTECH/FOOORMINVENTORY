@@ -91,16 +91,24 @@ def parse_recipes_from_text(text):
                 
                 # Find best title from candidates
                 title = None
+                # DEBUG
+                if candidates:
+                    print(f"DEBUG: Found {len(candidates)} title candidates: {candidates[:5]}")
+                
                 for cand in candidates:
                     low = cand.lower()
                     # Skip section headers like "Week 9 :" 
                     if 'week ' in low and ':' in cand:
+                        print(f"DEBUG: Skipping week header: {cand}")
                         continue
                     # Prefer lines that look like recipe names (not too long, no excessive punctuation)
                     if 3 < len(cand) < 100 and cand.count('.') < 3:
                         # This looks like a good title
+                        print(f"DEBUG: Selected title: {cand}")
                         title = cand
                         break
+                    else:
+                        print(f"DEBUG: Rejected candidate: {cand} (len={len(cand)}, dots={cand.count('.')})")
                 
                 if title:
                     # Clean up title - remove common prefixes/suffixes
@@ -108,6 +116,7 @@ def parse_recipes_from_text(text):
                     title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
                     title = re.sub(r'–\s*work in pairs', '', title, flags=re.I).strip()
                 else:
+                    print("DEBUG: No valid title found, using Unknown Recipe")
                     title = 'Unknown Recipe'
                     
                 recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
