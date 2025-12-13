@@ -51,25 +51,26 @@ def parse_recipes_from_text(text):
                 return False
 
             if looks_like_ingredient(ll):
-                # Look back for a plausible title within previous 10 lines
-                parts = []
-                for j in range(1,10):
+                # Look back for a plausible title within previous 15 lines
+                # Collect all non-junk lines, then pick the best title candidate
+                candidates = []
+                for j in range(1, 15):
                     idx = i - j
                     if idx < 0:
                         break
                     cand = lines[idx].strip()
                     low = cand.lower()
-                    # stop if we hit a heading or page number
+                    
                     if not cand:
-                        if parts:
-                            break
-                        else:
-                            continue
-                    # Skip lines that are clearly not titles
-                    if low.isdigit() or any(k in low for k in ['week ', 'learning', 'objective', 'equipment', 'page ', 'food technology']):
-                        break
-                    # Don't break on "method" or "ingredients" without looking back - might be part of description
-                    # stop if cand itself looks like an ingredient line
+                        continue
+                    
+                    # Skip obvious junk
+                    if low.isdigit():
+                        continue
+                    if any(k in low for k in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
+                        continue
+                    
+                    # Check if it's an ingredient line (stop looking back)
                     def _looks_like_ingredient(s):
                         if not s:
                             return False
@@ -81,25 +82,34 @@ def parse_recipes_from_text(text):
                         if s.startswith('•'):
                             return True
                         return False
+                    
                     if _looks_like_ingredient(low):
                         break
-                    # Add candidate to title parts
-                    parts.append(cand)
+                    
+                    # Add to candidates
+                    candidates.append(cand)
                 
-                if parts:
-                    parts.reverse()
-                    title = ' '.join(parts)
+                # Find best title from candidates
+                title = None
+                for cand in candidates:
+                    low = cand.lower()
+                    # Skip section headers like "Week 9 :" 
+                    if 'week ' in low and ':' in cand:
+                        continue
+                    # Prefer lines that look like recipe names (not too long, no excessive punctuation)
+                    if 3 < len(cand) < 100 and cand.count('.') < 3:
+                        # This looks like a good title
+                        title = cand
+                        break
+                
+                if title:
                     # Clean up title - remove common prefixes/suffixes
                     title = re.sub(r'\(per group of \d+\)', '', title).strip()
                     title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
-                    # If title is too long or looks like description, take first reasonable line
-                    if len(title) > 100 or title.count('.') > 2:
-                        # Just use the last line before ingredients
-                        title = parts[-1]
+                    title = re.sub(r'–\s*work in pairs', '', title, flags=re.I).strip()
                 else:
-                    title = None
-                if not title or len(title) < 3:
                     title = 'Unknown Recipe'
+                    
                 recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
                 current_section = 'ingredients'
                 # fall through to collect this ingredient line
