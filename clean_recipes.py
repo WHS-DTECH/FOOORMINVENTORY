@@ -107,15 +107,22 @@ def fix_recipe_names(conn):
         name = re.sub(r'^Year\s*\d+\s+Food Technology\s+\d+\s*', '', name, flags=re.I)
         
         # Fix spacing issues like "Chee se" -> "Cheese", "Mushr oom" -> "Mushroom"
-        # Look for single letters followed by space and more letters
-        name = re.sub(r'(\w)\s+(\w)', r'\1\2', name)
+        # Only fix when there are 1-2 letters, space, then 1-3 letters (broken words)
+        name = re.sub(r'\b(\w{1,2})\s+(\w{1,3})\b', r'\1\2', name)
         
         # Clean up extra spaces
         name = re.sub(r'\s+', ' ', name).strip()
         
         if name != original_name:
             print(f"Fixing name: '{original_name}' -> '{name}'")
-            c.execute('UPDATE recipes SET name = ? WHERE id = ?', (name, recipe_id))
+            # Check if this name already exists (duplicate after cleaning)
+            c.execute('SELECT id FROM recipes WHERE name = ? AND id != ?', (name, recipe_id))
+            existing = c.fetchone()
+            if existing:
+                print(f"  -> Would create duplicate, deleting this entry instead")
+                c.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
+            else:
+                c.execute('UPDATE recipes SET name = ? WHERE id = ?', (name, recipe_id))
             fixed.append(original_name)
     
     conn.commit()
