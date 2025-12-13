@@ -177,7 +177,7 @@ def auth_google():
     }
     
     # Use the full callback URL to avoid mismatches
-    redirect_uri = url_for('auth_callback', _external=True, _scheme='http')
+    redirect_uri = GOOGLE_REDIRECT_URI  # Use the configured URI from .env
     
     flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
     
@@ -198,7 +198,7 @@ def auth_callback():
     """Handle Google OAuth callback."""
     # Verify state for security
     state = session.get('oauth_state')
-    redirect_uri = session.get('redirect_uri', url_for('auth_callback', _external=True, _scheme='http'))
+    redirect_uri = session.get('redirect_uri', GOOGLE_REDIRECT_URI)  # Use configured URI
     
     if not state:
         flash('OAuth state mismatch. Please try logging in again.')
