@@ -41,6 +41,7 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.anonymous_user = lambda: type('AnonymousUser', (), {'is_authenticated': False})()
 
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
