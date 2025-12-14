@@ -209,6 +209,39 @@ button.primary:hover {
   background: #0a60e0;
 }
 
+/* Custom Button Styles */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-calculate {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.btn-calculate:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.btn-save {
+  background: #059669;
+  border-color: #059669;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.btn-save:hover {
+  background: #047857;
+  border-color: #047857;
+}
+
 /* Utility Classes */
 .small {
   font-size: 0.9em;
