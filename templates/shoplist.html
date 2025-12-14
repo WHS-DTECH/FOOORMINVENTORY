@@ -294,12 +294,28 @@
       // Clean up the name first
       let cleanName = result.name.trim();
       
-      // Handle fractions in the quantity field
-      if (raw.quantity && String(raw.quantity).match(/[½⅓⅔¼¾]|\d+\/\d+/)) {
-        result.qty = parseNumber(raw.quantity);
+      // Skip if this looks like concatenated ingredients (bad recipe data)
+      // e.g., "butter 2 Ripe Banana" has a number mid-string
+      if (/\s+\d+\s+[A-Z]/.test(cleanName)) {
+        // Try to extract just the first ingredient before the number
+        const match = cleanName.match(/^([^0-9]+?)(?=\s+\d)/);
+        if (match) {
+          cleanName = match[1].trim();
+        }
       }
       
-      // Strip instruction phrases from the name (e.g., "beaten in a cup", "chopped", etc.)
+      // Handle fractions in the quantity field (including Unicode fractions)
+      if (raw.quantity) {
+        const qtyStr = String(raw.quantity);
+        if (qtyStr.match(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅐⅛⅜⅝⅞]|\d+\s*\/\s*\d+|\d+\s+\d+\/\d+/)) {
+          result.qty = parseNumber(qtyStr);
+        }
+      }
+      
+      // Remove "or ..." alternatives BEFORE other cleaning
+      cleanName = cleanName.replace(/\s+or\s+.*/i, '').trim();
+      
+      // Strip instruction phrases from the name
       const instructionPatterns = [
         /[,–—-]\s*(beaten|mixed|chopped|diced|sliced|minced|crushed|grated|melted|softened|room temperature|cut into|finely|roughly|coarsely).*/gi,
         /\s+to taste$/i,
@@ -314,20 +330,77 @@
         cleanName = cleanName.replace(pattern, '');
       });
       
-      // Handle "or" alternatives - take the first option and strip "or ..." from name
-      // e.g., "butter or margarine" becomes "butter", "720 or white sugar" removes "or white sugar"
-      cleanName = cleanName.replace(/\s+or\s+.*/i, '').trim();
-      
-      // Skip if it's purely instructional text
+      // Skip if it's purely instructional text or empty
       const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i, /^beaten/i, /^mixed/i, /^chopped/i];
-      if (skipPatterns.some(p => p.test(cleanName))) {
+      if (skipPatterns.some(p => p.test(cleanName)) || !cleanName) {
         return { qty: 0, unit: '', name: '' };
       }
       
       result.name = cleanName;
       
-      // Always try to strip quantity/unit prefix from name, even if qty/unit are provided
-      const m = result.name.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)\s+(.+)/);
+      // Strip quantity/unit prefix from name if qty/unit already provided
+      // e.g., "360 ml cup Milk" with qty=360, unit=ml should become just "Milk"
+      if (result.qty && result.unit) {
+        // Remove leading number + unit pattern from name
+        result.name = result.name.replace(/^\d+(?:\.\d+)?\s*(?:g|kg|ml|l|tsp|t|tbsp|cup|c)\s+/i, '').trim();
+      }
+      
+      // Always try to strip quantity/unit prefix from name for unparsed cases
+      const m = result.name.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s+(.+)/);
+      if (m) {
+        const potentialQty = parseNumber(m[1]);
+        const potentialUnit = normalizeUnit(m[2]);
+        const restOfName = m[3];
+        
+        // Only use extracted values if qty wasn't already set
+        if (!result.qty && potentialQty) {
+          result.qty = potentialQty;
+        }
+        
+        // Only set unit if it wasn't already set AND the extracted unit looks valid
+        if (!result.unit && potentialUnit) {
+          result.unit = potentialUnit;
+        }
+        
+        // Always use the rest of the name (without the prefix)
+        result.name = restOfName;
+      }
+      
+      // Fix wrong unit assignments (flour in liters, etc.)
+      if (result.unit === 'l' || result.unit === 'ml') {
+        const dryGoods = ['flour', 'sugar', 'oats', 'rice', 'salt', 'baking powder', 'baking soda'];
+        if (dryGoods.some(item => result.name.toLowerCase().includes(item))) {
+          // Convert ml/l to grams (assuming 1ml = 1g for dry goods approximation)
+          if (result.unit === 'l') {
+            result.qty = result.qty * 1000;
+            result.unit = 'g';
+          } else if (result.unit === 'ml') {
+            result.unit = 'g';
+          }
+        }
+      }
+      
+      // If we have a quantity but no unit, try to infer it
+      if (result.qty && !result.unit) {
+        // Check if the quantity suggests grams (typically 50+)
+        if (result.qty >= 50 && result.qty <= 10000) {
+          const weightItems = ['butter', 'margarine', 'flour', 'sugar', 'cheese', 'chocolate', 'nuts', 'rice', 'pasta', 'oats', 'sultanas'];
+          if (weightItems.some(item => result.name.toLowerCase().includes(item))) {
+            result.unit = 'g';
+          }
+        }
+        // Check for liquids
+        const liquidItems = ['milk', 'water', 'oil', 'cream', 'juice', 'stock', 'broth', 'vinegar'];
+        if (liquidItems.some(item => result.name.toLowerCase().includes(item))) {
+          result.unit = result.qty >= 50 ? 'ml' : 'tbsp';
+        }
+      }
+      
+      result.unit = applyUnitlessHeuristic(result.name, result.unit);
+      result.name = collapseDuplicateWords(result.name.trim());
+      
+      return result;
+    }
       if (m) {
         const potentialQty = parseNumber(m[1]);
         const potentialUnit = normalizeUnit(m[2]);
