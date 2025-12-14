@@ -435,7 +435,8 @@
       
       // Fix wrong unit assignments (flour in liters, etc.)
       if (result.unit === 'l' || result.unit === 'ml') {
-        const dryGoods = ['flour', 'sugar', 'oats', 'rice', 'salt', 'baking powder', 'baking soda'];
+        const dryGoods = ['flour', 'sugar', 'oats', 'rice', 'salt', 'baking powder', 'baking soda', 
+                          'chocolate chips', 'chocolate', 'chips', 'wholemeal', 'white sugar', 'brown sugar'];
         if (dryGoods.some(item => result.name.toLowerCase().includes(item))) {
           // Convert ml/l to grams (assuming 1ml = 1g for dry goods approximation)
           if (result.unit === 'l') {
@@ -451,7 +452,8 @@
       if (result.qty && !result.unit) {
         // Check if the quantity suggests grams (typically 50+)
         if (result.qty >= 50 && result.qty <= 10000) {
-          const weightItems = ['butter', 'margarine', 'flour', 'sugar', 'cheese', 'chocolate', 'nuts', 'rice', 'pasta', 'oats', 'sultanas'];
+          const weightItems = ['butter', 'margarine', 'flour', 'sugar', 'cheese', 'chocolate', 'nuts', 
+                                'rice', 'pasta', 'oats', 'sultanas', 'chocolate chips', 'white sugar', 'brown sugar'];
           if (weightItems.some(item => result.name.toLowerCase().includes(item))) {
             result.unit = 'g';
           }
