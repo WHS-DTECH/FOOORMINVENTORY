@@ -85,9 +85,11 @@
     </div>
 
     <div class="shopping-list" id="shoppingList">
-      <div class="actions no-print" style="margin-bottom: 12px;">
-        <button onclick="exportShoppingListCsv()">Export CSV</button>
-        <button class="primary" onclick="window.print()">Print Shopping List</button>
+      <div class="actions no-print" style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button onclick="saveShoppingList()">💾 Save List</button>
+        <button onclick="loadShoppingList()">📂 Load Saved</button>
+        <button onclick="exportShoppingListCsv()">📄 Export CSV</button>
+        <button class="primary" onclick="window.print()">🖨️ Print</button>
       </div>
       <h2>Shopping List</h2>
       <div class="week-label">{{ week_label }}</div>
@@ -104,6 +106,9 @@
     const weekLabel = {{ week_label|tojson }};
 
     const selection = new Set();
+    const alreadyHaveItems = new Set();
+    const weekStart = '{{ dates[0].date }}';
+    
     const unitAliases = {
       g: 'g', gram: 'g', grams: 'g', kg: 'kg', kilogram: 'kg', kilograms: 'kg',
       ml: 'ml', millilitre: 'ml', milliliter: 'ml', milliliters: 'ml', millilitres: 'ml',
@@ -114,6 +119,40 @@
     };
 
     const produceUnitless = ['apple','banana','orange','onion','carrot','potato','pepper','capsicum','egg'];
+    
+    // Helper to categorize ingredients by store section
+    function categorizeIngredient(name) {
+      const nameLower = name.toLowerCase();
+      
+      const produce = ['apple', 'banana', 'orange', 'lemon', 'lime', 'tomato', 'potato', 'onion', 'garlic', 
+                       'carrot', 'lettuce', 'spinach', 'cabbage', 'broccoli', 'cauliflower', 'pepper', 'capsicum',
+                       'cucumber', 'zucchini', 'mushroom', 'avocado', 'celery', 'ginger', 'herb', 'parsley',
+                       'cilantro', 'basil', 'mint', 'thyme', 'rosemary', 'kale', 'chard', 'beetroot', 'pumpkin'];
+      
+      const dairy = ['milk', 'cream', 'butter', 'cheese', 'yogurt', 'yoghurt', 'sour cream', 'feta', 'mozzarella',
+                     'parmesan', 'cheddar', 'brie', 'cottage cheese', 'ricotta', 'halloumi'];
+      
+      const meat = ['chicken', 'beef', 'pork', 'lamb', 'turkey', 'bacon', 'sausage', 'mince', 'steak',
+                    'fish', 'salmon', 'tuna', 'prawn', 'shrimp', 'mussel', 'seafood'];
+      
+      const pantry = ['flour', 'sugar', 'rice', 'pasta', 'bread', 'cereal', 'oats', 'quinoa', 'couscous',
+                      'lentil', 'bean', 'chickpea', 'oil', 'vinegar', 'sauce', 'stock', 'broth',
+                      'honey', 'jam', 'peanut butter', 'nuts', 'almond', 'cashew', 'seed', 'spice',
+                      'salt', 'pepper', 'cumin', 'paprika', 'cinnamon', 'vanilla', 'cocoa', 'chocolate',
+                      'baking powder', 'baking soda', 'yeast', 'cornstarch', 'cornflour'];
+      
+      const frozen = ['frozen', 'ice cream', 'peas', 'corn', 'berries'];
+      const beverages = ['juice', 'soda', 'water', 'tea', 'coffee', 'wine', 'beer'];
+      
+      if (produce.some(item => nameLower.includes(item))) return 'Produce';
+      if (dairy.some(item => nameLower.includes(item))) return 'Dairy';
+      if (meat.some(item => nameLower.includes(item))) return 'Meat & Seafood';
+      if (pantry.some(item => nameLower.includes(item))) return 'Pantry';
+      if (frozen.some(item => nameLower.includes(item))) return 'Frozen';
+      if (beverages.some(item => nameLower.includes(item))) return 'Beverages';
+      
+      return 'Other';
+    }
 
     const validUnits = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'pcs', 'oz', 'lb', 'pt', 'qt', 'gal'];
 
@@ -335,6 +374,46 @@
       return { ingredientMap, teacherMap };
     }
 
+    async function toggleAlreadyHave(itemName, qty, unit) {
+      try {
+        const response = await fetch('/api/shopping-list/toggle-item', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            week_start: weekStart,
+            ingredient_name: itemName,
+            quantity: qty,
+            unit: unit
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          if (data.already_have) {
+            alreadyHaveItems.add(itemName);
+          } else {
+            alreadyHaveItems.delete(itemName);
+          }
+          renderShoppingList();
+        }
+      } catch (error) {
+        console.error('Error toggling item:', error);
+      }
+    }
+
+    async function loadAlreadyHaveStatus() {
+      try {
+        const response = await fetch('/api/shopping-list/get-status', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({week_start: weekStart})
+        });
+        const data = await response.json();
+        Object.keys(data.items).forEach(name => alreadyHaveItems.add(name));
+      } catch (error) {
+        console.error('Error loading status:', error);
+      }
+    }
+
     function renderShoppingList() {
       const target = document.getElementById('listContent');
       target.innerHTML = '';
@@ -343,33 +422,84 @@
         return;
       }
       const { ingredientMap, teacherMap } = aggregateItems();
-      const overall = Array.from(ingredientMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      const overall = Array.from(ingredientMap.values());
+      
+      // Group by category
+      const categorized = {};
+      overall.forEach(item => {
+        const category = categorizeIngredient(item.name);
+        if (!categorized[category]) categorized[category] = [];
+        categorized[category].push(item);
+      });
+      
+      // Sort categories and items within each category
+      const categoryOrder = ['Produce', 'Meat & Seafood', 'Dairy', 'Frozen', 'Pantry', 'Beverages', 'Other'];
+      const sortedCategories = categoryOrder.filter(cat => categorized[cat]);
       
       // Add summary stats
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'shopping-summary';
+      const notHaveCount = overall.filter(item => !alreadyHaveItems.has(item.name)).length;
       summaryDiv.innerHTML = `
         <div style="background: #e7f3ff; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-          <strong>📊 Summary:</strong> ${overall.length} unique ingredients | ${selection.size} bookings | ${teacherMap.size} teachers
+          <strong>📊 Summary:</strong> ${overall.length} unique ingredients | ${notHaveCount} needed | ${alreadyHaveItems.size} already have
         </div>
       `;
       
-      const overallList = document.createElement('ul');
-      overallList.className = 'shopping-items';
-      overall.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = `${formatQtyUnit(item.qty, item.unit)} ${item.name}`.trim();
-        overallList.appendChild(li);
-      });
-
       const wrapper = document.createElement('div');
       wrapper.appendChild(summaryDiv);
-      const overallTitle = document.createElement('div');
-      overallTitle.innerHTML = '<strong>All bookings</strong>';
+      
+      // Render categorized list
+      const overallTitle = document.createElement('h3');
+      overallTitle.textContent = 'Shopping List by Category';
+      overallTitle.style.cssText = 'margin-top: 16px; margin-bottom: 12px;';
       wrapper.appendChild(overallTitle);
-      wrapper.appendChild(overallList);
+      
+      sortedCategories.forEach(category => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.style.cssText = 'margin-bottom: 20px; border-left: 4px solid #0066cc; padding-left: 12px;';
+        
+        const categoryTitle = document.createElement('h4');
+        categoryTitle.textContent = category;
+        categoryTitle.style.cssText = 'margin: 8px 0; color: #0066cc;';
+        categoryDiv.appendChild(categoryTitle);
+        
+        const list = document.createElement('ul');
+        list.className = 'shopping-items';
+        list.style.cssText = 'list-style: none; padding-left: 0;';
+        
+        categorized[category].sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+          const li = document.createElement('li');
+          li.style.cssText = 'padding: 6px 0; display: flex; align-items: center; gap: 10px;';
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = alreadyHaveItems.has(item.name);
+          checkbox.style.cssText = 'width: 20px; height: 20px; cursor: pointer;';
+          checkbox.className = 'no-print';
+          checkbox.onclick = () => toggleAlreadyHave(item.name, item.qty, item.unit);
+          
+          const label = document.createElement('span');
+          label.textContent = `${formatQtyUnit(item.qty, item.unit)} ${item.name}`.trim();
+          if (alreadyHaveItems.has(item.name)) {
+            label.style.cssText = 'text-decoration: line-through; color: #999;';
+          }
+          
+          li.appendChild(checkbox);
+          li.appendChild(label);
+          list.appendChild(li);
+        });
+        
+        categoryDiv.appendChild(list);
+        wrapper.appendChild(categoryDiv);
+      });
 
       const teacherContainer = document.createElement('div');
+      teacherContainer.style.cssText = 'margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;';
+      const teacherHeading = document.createElement('h3');
+      teacherHeading.textContent = 'By Teacher';
+      teacherContainer.appendChild(teacherHeading);
+      
       const sortedTeachers = Array.from(teacherMap.keys()).sort((a, b) => a.localeCompare(b));
       sortedTeachers.forEach(t => {
         const block = document.createElement('div');
@@ -434,11 +564,143 @@
       URL.revokeObjectURL(url);
     }
 
+    async function saveShoppingList() {
+      if (selection.size === 0) {
+        alert('Generate a shopping list first.');
+        return;
+      }
+      
+      const listName = prompt('Enter a name for this shopping list:', `Shopping List ${new Date().toLocaleDateString()}`);
+      if (!listName) return;
+      
+      const { ingredientMap } = aggregateItems();
+      const items = Array.from(ingredientMap.values()).map(item => ({
+        name: item.name,
+        quantity: item.qty,
+        unit: item.unit,
+        category: categorizeIngredient(item.name)
+      }));
+      
+      try {
+        const response = await fetch('/api/shopping-list/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            list_name: listName,
+            week_label: weekLabel,
+            items: items
+          })
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert(`Shopping list "${listName}" saved successfully!`);
+        }
+      } catch (error) {
+        console.error('Error saving list:', error);
+        alert('Failed to save shopping list');
+      }
+    }
+
+    async function loadShoppingList() {
+      try {
+        const response = await fetch('/api/shopping-list/saved');
+        const data = await response.json();
+        
+        if (!data.lists || data.lists.length === 0) {
+          alert('No saved shopping lists found.');
+          return;
+        }
+        
+        let listHTML = '<h3>Select a saved shopping list:</h3><ul style="list-style: none; padding: 0;">';
+        data.lists.forEach(list => {
+          const date = new Date(list.created_at).toLocaleDateString();
+          listHTML += `<li style="padding: 8px; margin: 4px 0; border: 1px solid #ddd; cursor: pointer;" onclick="loadListById(${list.id})">
+            <strong>${list.list_name}</strong><br>
+            <small>${list.week_label || ''} - Created: ${date}</small>
+          </li>`;
+        });
+        listHTML += '</ul>';
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;';
+        modal.innerHTML = `<div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+          ${listHTML}
+          <button onclick="this.closest('div').parentElement.remove()" style="margin-top: 12px;">Close</button>
+        </div>`;
+        document.body.appendChild(modal);
+      } catch (error) {
+        console.error('Error loading lists:', error);
+        alert('Failed to load saved lists');
+      }
+    }
+
+    async function loadListById(listId) {
+      try {
+        const response = await fetch(`/api/shopping-list/load/${listId}`);
+        const data = await response.json();
+        
+        if (data.items) {
+          const target = document.getElementById('listContent');
+          target.innerHTML = '';
+          
+          const wrapper = document.createElement('div');
+          const title = document.createElement('h3');
+          title.textContent = data.list_name;
+          wrapper.appendChild(title);
+          
+          if (data.week_label) {
+            const weekInfo = document.createElement('p');
+            weekInfo.textContent = data.week_label;
+            weekInfo.style.cssText = 'color: #666; font-style: italic;';
+            wrapper.appendChild(weekInfo);
+          }
+          
+          // Group by category
+          const categorized = {};
+          data.items.forEach(item => {
+            const category = item.category || categorizeIngredient(item.name);
+            if (!categorized[category]) categorized[category] = [];
+            categorized[category].push(item);
+          });
+          
+          const categoryOrder = ['Produce', 'Meat & Seafood', 'Dairy', 'Frozen', 'Pantry', 'Beverages', 'Other'];
+          categoryOrder.filter(cat => categorized[cat]).forEach(category => {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.style.cssText = 'margin-bottom: 20px; border-left: 4px solid #0066cc; padding-left: 12px;';
+            
+            const categoryTitle = document.createElement('h4');
+            categoryTitle.textContent = category;
+            categoryTitle.style.cssText = 'margin: 8px 0; color: #0066cc;';
+            categoryDiv.appendChild(categoryTitle);
+            
+            const list = document.createElement('ul');
+            list.className = 'shopping-items';
+            
+            categorized[category].forEach(item => {
+              const li = document.createElement('li');
+              li.textContent = `${formatQtyUnit(item.quantity, item.unit)} ${item.name}`.trim();
+              list.appendChild(li);
+            });
+            
+            categoryDiv.appendChild(list);
+            wrapper.appendChild(categoryDiv);
+          });
+          
+          target.appendChild(wrapper);
+          document.querySelector('[style*="rgba(0,0,0,0.5)"]')?.remove();
+        }
+      } catch (error) {
+        console.error('Error loading list:', error);
+        alert('Failed to load shopping list');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('[data-booking-id]').forEach(el => {
         el.addEventListener('click', () => toggleBooking(parseInt(el.dataset.bookingId, 10)));
       });
       updateSelectionDisplay();
+      loadAlreadyHaveStatus();
     });
   </script>
 </body>

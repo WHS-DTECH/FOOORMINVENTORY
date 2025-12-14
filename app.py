@@ -962,6 +962,176 @@ def generate_shopping_list():
     })
 
 
+def categorize_ingredient(ingredient_name):
+    """Categorize ingredient by store section."""
+    name_lower = ingredient_name.lower()
+    
+    # Produce
+    produce = ['apple', 'banana', 'orange', 'lemon', 'lime', 'tomato', 'potato', 'onion', 'garlic', 
+               'carrot', 'lettuce', 'spinach', 'cabbage', 'broccoli', 'cauliflower', 'pepper', 'capsicum',
+               'cucumber', 'zucchini', 'mushroom', 'avocado', 'celery', 'ginger', 'herbs', 'parsley',
+               'cilantro', 'basil', 'mint', 'thyme', 'rosemary', 'kale', 'chard', 'beetroot', 'pumpkin']
+    
+    # Dairy
+    dairy = ['milk', 'cream', 'butter', 'cheese', 'yogurt', 'yoghurt', 'sour cream', 'feta', 'mozzarella',
+             'parmesan', 'cheddar', 'brie', 'cottage cheese', 'ricotta', 'halloumi']
+    
+    # Meat & Seafood
+    meat = ['chicken', 'beef', 'pork', 'lamb', 'turkey', 'bacon', 'sausage', 'mince', 'steak',
+            'fish', 'salmon', 'tuna', 'prawns', 'shrimp', 'mussels', 'seafood']
+    
+    # Pantry/Dry Goods
+    pantry = ['flour', 'sugar', 'rice', 'pasta', 'bread', 'cereal', 'oats', 'quinoa', 'couscous',
+              'lentils', 'beans', 'chickpeas', 'oil', 'vinegar', 'sauce', 'stock', 'broth',
+              'honey', 'jam', 'peanut butter', 'nuts', 'almonds', 'cashews', 'seeds', 'spice',
+              'salt', 'pepper', 'cumin', 'paprika', 'cinnamon', 'vanilla', 'cocoa', 'chocolate',
+              'baking powder', 'baking soda', 'yeast', 'cornstarch', 'cornflour']
+    
+    # Frozen
+    frozen = ['frozen', 'ice cream', 'peas', 'corn', 'berries mixed']
+    
+    # Beverages
+    beverages = ['juice', 'soda', 'water', 'tea', 'coffee', 'wine', 'beer']
+    
+    # Check categories
+    for item in produce:
+        if item in name_lower:
+            return 'Produce'
+    for item in dairy:
+        if item in name_lower:
+            return 'Dairy'
+    for item in meat:
+        if item in name_lower:
+            return 'Meat & Seafood'
+    for item in pantry:
+        if item in name_lower:
+            return 'Pantry'
+    for item in frozen:
+        if item in name_lower:
+            return 'Frozen'
+    for item in beverages:
+        if item in name_lower:
+            return 'Beverages'
+    
+    return 'Other'
+
+
+@app.route('/api/shopping-list/toggle-item', methods=['POST'])
+@require_role('VP', 'DK', 'MU')
+def toggle_shopping_item():
+    """Toggle 'already have' status for a shopping list item."""
+    data = request.get_json()
+    week_start = data.get('week_start')
+    ingredient_name = data.get('ingredient_name')
+    quantity = data.get('quantity', 0)
+    unit = data.get('unit', '')
+    
+    if not week_start or not ingredient_name:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        
+        # Check if item exists
+        c.execute('SELECT id, already_have FROM shopping_list_items WHERE week_start = ? AND ingredient_name = ?',
+                  (week_start, ingredient_name))
+        row = c.fetchone()
+        
+        if row:
+            # Toggle status
+            new_status = 0 if row[1] else 1
+            c.execute('UPDATE shopping_list_items SET already_have = ? WHERE id = ?', (new_status, row[0]))
+        else:
+            # Create new item with already_have = 1
+            category = categorize_ingredient(ingredient_name)
+            c.execute('''INSERT INTO shopping_list_items 
+                        (week_start, ingredient_name, quantity, unit, category, already_have)
+                        VALUES (?, ?, ?, ?, ?, 1)''',
+                      (week_start, ingredient_name, quantity, unit, category))
+            new_status = 1
+        
+        conn.commit()
+    
+    return jsonify({'success': True, 'already_have': new_status})
+
+
+@app.route('/api/shopping-list/get-status', methods=['POST'])
+@require_role('VP', 'DK', 'MU')
+def get_shopping_status():
+    """Get 'already have' status for items in a week."""
+    data = request.get_json()
+    week_start = data.get('week_start')
+    
+    if not week_start:
+        return jsonify({'error': 'Missing week_start'}), 400
+    
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('SELECT ingredient_name, already_have FROM shopping_list_items WHERE week_start = ? AND already_have = 1',
+                  (week_start,))
+        items = {row['ingredient_name']: row['already_have'] for row in c.fetchall()}
+    
+    return jsonify({'items': items})
+
+
+@app.route('/api/shopping-list/save', methods=['POST'])
+@require_role('VP', 'DK', 'MU')
+def save_shopping_list():
+    """Save a shopping list for reuse."""
+    data = request.get_json()
+    list_name = data.get('list_name', '').strip()
+    week_label = data.get('week_label', '')
+    items = data.get('items', [])
+    
+    if not list_name or not items:
+        return jsonify({'error': 'Missing list name or items'}), 400
+    
+    user_email = current_user.email if current_user.is_authenticated else 'unknown'
+    
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute('''INSERT INTO saved_shopping_lists (list_name, week_label, items, created_by)
+                    VALUES (?, ?, ?, ?)''',
+                  (list_name, week_label, json.dumps(items), user_email))
+        conn.commit()
+        list_id = c.lastrowid
+    
+    return jsonify({'success': True, 'list_id': list_id})
+
+
+@app.route('/api/shopping-list/saved', methods=['GET'])
+@require_role('VP', 'DK', 'MU')
+def get_saved_lists():
+    """Get all saved shopping lists."""
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('SELECT id, list_name, week_label, created_at FROM saved_shopping_lists ORDER BY created_at DESC')
+        lists = [dict(row) for row in c.fetchall()]
+    
+    return jsonify({'lists': lists})
+
+
+@app.route('/api/shopping-list/load/<int:list_id>', methods=['GET'])
+@require_role('VP', 'DK', 'MU')
+def load_saved_list(list_id):
+    """Load a saved shopping list."""
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('SELECT * FROM saved_shopping_lists WHERE id = ?', (list_id,))
+        row = c.fetchone()
+        
+        if not row:
+            return jsonify({'error': 'List not found'}), 404
+        
+        list_data = dict(row)
+        list_data['items'] = json.loads(list_data['items'])
+    
+    return jsonify(list_data)
+
+
 @app.route('/recipes')
 @require_role('VP', 'DK', 'MU')
 def recipes_page():

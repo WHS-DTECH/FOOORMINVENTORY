@@ -156,6 +156,45 @@ def setup_database():
             )
         ''')
 
+        # Create ingredient_inventory table for tracking stock levels
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS ingredient_inventory (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ingredient_name TEXT NOT NULL UNIQUE,
+                quantity REAL DEFAULT 0,
+                unit TEXT,
+                category TEXT DEFAULT 'Other',
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Create saved_shopping_lists table for reusing lists
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS saved_shopping_lists (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                list_name TEXT NOT NULL,
+                week_label TEXT,
+                items TEXT NOT NULL,
+                created_by TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Create shopping_list_items table for tracking "already have" status
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS shopping_list_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                week_start TEXT NOT NULL,
+                ingredient_name TEXT NOT NULL,
+                quantity REAL,
+                unit TEXT,
+                category TEXT DEFAULT 'Other',
+                already_have INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(week_start, ingredient_name)
+            )
+        ''')
+
     print("Database setup complete.")
 
 if __name__ == '__main__':
