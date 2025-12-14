@@ -183,8 +183,8 @@
         return parseFloat(fracMatch[1]) / parseFloat(fracMatch[2]);
       }
       
-      // Handle mixed numbers like "2 1/2" or "2½"
-      const mixedMatch = str.match(/^(\d+)\s*([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)$/);
+      // Handle mixed numbers like "2 1/2", "24 2/3" or "2½"
+      const mixedMatch = str.match(/^(\d+)\s+([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)$/);
       if (mixedMatch) {
         const whole = parseFloat(mixedMatch[1]);
         const frac = parseFraction(mixedMatch[2]);
@@ -215,13 +215,27 @@
     function normalizeName(name) {
       if (!name) return '';
       let clean = name.toLowerCase().trim();
-      clean = clean.replace(/\([^)]*\)/g, '');
-      clean = clean.replace(/\s+/g, ' ');
+      clean = clean.replace(/\([^)]*\)/g, ''); // Remove parentheses
+      clean = clean.replace(/\s+/g, ' '); // Collapse spaces
       clean = collapseDuplicateWords(clean);
-      const alias = {
-        capsicums: 'capsicum', peppers: 'pepper', tomatoes: 'tomato', potatoes: 'potato', onions: 'onion', eggs: 'egg'
+      
+      // Only apply pluralization normalization for exact matches to prevent incorrect merging
+      const exactAliases = {
+        'capsicums': 'capsicum',
+        'peppers': 'pepper', 
+        'tomatoes': 'tomato',
+        'potatoes': 'potato',
+        'onions': 'onion',
+        'eggs': 'egg',
+        'bananas': 'banana',
+        'apples': 'apple'
       };
-      if (alias[clean]) clean = alias[clean];
+      
+      // Only replace if the ENTIRE clean string matches
+      if (exactAliases[clean]) {
+        clean = exactAliases[clean];
+      }
+      
       return clean;
     }
 
