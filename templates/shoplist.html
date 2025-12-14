@@ -113,9 +113,9 @@
       g: 'g', gram: 'g', grams: 'g', kg: 'kg', kilogram: 'kg', kilograms: 'kg',
       ml: 'ml', millilitre: 'ml', milliliter: 'ml', milliliters: 'ml', millilitres: 'ml',
       l: 'l', litre: 'l', liters: 'l', litres: 'l',
-      tsp: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp',
-      tbsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp',
-      cup: 'cup', cups: 'cup'
+      t: 'tsp', tsp: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp',
+      tbsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp', tbs: 'tbsp',
+      cup: 'cup', cups: 'cup', c: 'cup'
     };
 
     const produceUnitless = ['apple','banana','orange','onion','carrot','potato','pepper','capsicum','egg'];
@@ -164,9 +164,46 @@
       return validUnits.includes(normalized) ? normalized : '';
     }
 
+    function parseFraction(str) {
+      if (!str) return 0;
+      str = String(str).trim();
+      
+      // Unicode fractions
+      const fractionMap = {
+        '½': 0.5, '⅓': 0.333, '⅔': 0.667, '¼': 0.25, '¾': 0.75,
+        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8, '⅙': 0.167,
+        '⅚': 0.833, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875
+      };
+      
+      if (fractionMap[str]) return fractionMap[str];
+      
+      // Handle "1/2" style fractions
+      const fracMatch = str.match(/^(\d+)\/(\d+)$/);
+      if (fracMatch) {
+        return parseFloat(fracMatch[1]) / parseFloat(fracMatch[2]);
+      }
+      
+      // Handle mixed numbers like "2 1/2" or "2½"
+      const mixedMatch = str.match(/^(\d+)\s*([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)$/);
+      if (mixedMatch) {
+        const whole = parseFloat(mixedMatch[1]);
+        const frac = parseFraction(mixedMatch[2]);
+        return whole + frac;
+      }
+      
+      return 0;
+    }
+
     function parseNumber(val) {
       if (val === null || val === undefined || val === '') return null;
-      const num = parseFloat(String(val).replace(',', '.'));
+      
+      const str = String(val).trim();
+      
+      // Try fraction parsing first
+      const fracResult = parseFraction(str);
+      if (fracResult > 0) return fracResult;
+      
+      const num = parseFloat(str.replace(',', '.'));
       return Number.isFinite(num) ? num : null;
     }
 
@@ -192,19 +229,25 @@
       if (totalQty === null || totalQty === undefined) return '';
       const u = normalizeUnit(unit);
       let qty = totalQty;
+      
+      // Convert large amounts to bigger units
       if (u === 'g' && qty >= 1000) {
         const kg = qty / 1000;
-        return `${kg.toFixed(kg >= 10 ? 1 : 2).replace(/\.0+$/, '')} kg`;
+        return `${kg.toFixed(kg >= 10 ? 0 : kg >= 1 ? 1 : 2).replace(/\.0+$/, '')} kg`;
       }
       if (u === 'ml' && qty >= 1000) {
         const liters = qty / 1000;
-        return `${liters.toFixed(liters >= 10 ? 1 : 2).replace(/\.0+$/, '')} L`;
+        return `${liters.toFixed(liters >= 10 ? 0 : liters >= 1 ? 1 : 2).replace(/\.0+$/, '')} L`;
       }
-      if (u === 'ml') return `${Math.round(qty)} ml`;
-      if (u === 'g') return `${Math.round(qty)} g`;
-      if (u === 'pcs' && qty === Math.floor(qty)) return `${qty} pcs`;
-      if (u) return `${qty.toFixed(2).replace(/\.0+$/, '')} ${u}`;
-      return `${qty.toFixed(2).replace(/\.0+$/, '')}`;
+      
+      // Round whole numbers, show decimals for fractions
+      if (qty === Math.floor(qty)) {
+        return u ? `${qty} ${u}` : `${qty}`;
+      }
+      
+      // Show up to 2 decimal places for fractional amounts
+      const formatted = qty.toFixed(2).replace(/\.?0+$/, '');
+      return u ? `${formatted} ${u}` : formatted;
     }
 
     function applyUnitlessHeuristic(name, unit) {
@@ -237,6 +280,11 @@
       // Clean up the name first
       let cleanName = result.name.trim();
       
+      // Handle fractions in the quantity field
+      if (raw.quantity && String(raw.quantity).match(/[½⅓⅔¼¾]|\d+\/\d+/)) {
+        result.qty = parseNumber(raw.quantity);
+      }
+      
       // Strip instruction phrases from the name (e.g., "beaten in a cup", "chopped", etc.)
       const instructionPatterns = [
         /[,–—-]\s*(beaten|mixed|chopped|diced|sliced|minced|crushed|grated|melted|softened|room temperature|cut into|finely|roughly|coarsely).*/gi,
@@ -244,18 +292,17 @@
         /\s+optional$/i,
         /\s+if needed$/i,
         /\s+for serving$/i,
-        /\s+for garnish$/i
+        /\s+for garnish$/i,
+        /\s+\(.*?\)$/g
       ];
       
       instructionPatterns.forEach(pattern => {
         cleanName = cleanName.replace(pattern, '');
       });
       
-      // Handle "or" alternatives - take the first option
-      if (cleanName.includes(' or ')) {
-        const parts = cleanName.split(' or ');
-        cleanName = parts[0].trim();
-      }
+      // Handle "or" alternatives - take the first option and strip "or ..." from name
+      // e.g., "butter or margarine" becomes "butter", "720 or white sugar" removes "or white sugar"
+      cleanName = cleanName.replace(/\s+or\s+.*/i, '').trim();
       
       // Skip if it's purely instructional text
       const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i, /^beaten/i, /^mixed/i, /^chopped/i];
