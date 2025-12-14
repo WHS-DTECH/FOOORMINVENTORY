@@ -1039,7 +1039,7 @@ def suggest_recipe():
         
         if not recipe_name:
             flash('Recipe name is required.', 'error')
-            return redirect(url_for('recipes'))
+            return redirect(url_for('recipes_page'))
         
         # Get VP email from database
         vp_email = None
@@ -1052,7 +1052,7 @@ def suggest_recipe():
         
         if not vp_email:
             flash('Could not find VP email address.', 'error')
-            return redirect(url_for('recipes'))
+            return redirect(url_for('recipes_page'))
         
         # Get current user info safely
         user_name = current_user.name if hasattr(current_user, 'name') else 'Unknown User'
@@ -1085,7 +1085,7 @@ Recipe Name: {recipe_name}
         traceback.print_exc()
         flash('There was an error submitting your suggestion. Please try again or contact the VP directly.', 'error')
     
-    return redirect(url_for('recipes'))
+    return redirect(url_for('recipes_page'))
 
 
 @app.route('/recbk')
