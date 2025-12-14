@@ -628,9 +628,14 @@ def class_ingredients_save():
         booking_id = c.lastrowid
     return jsonify({'success': True, 'booking_id': booking_id})
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 @require_role('VP')
 def upload():
+    # GET request - show the upload form
+    if request.method == 'GET':
+        return render_template('upload_recipe.html')
+    
+    # POST request - handle form submission
     # Check if PDF file is being uploaded
     if 'pdfFile' in request.files:
         if not PyPDF2:
