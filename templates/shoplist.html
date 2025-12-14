@@ -305,18 +305,48 @@
     }
 
     function parseIngredient(raw) {
-      // Debug logging
-      console.log('=== PARSING INGREDIENT ===');
-      console.log('RAW:', JSON.stringify(raw));
-      console.log('raw.quantity:', raw.quantity, 'type:', typeof raw.quantity);
-      console.log('raw.unit:', raw.unit);
-      console.log('raw.ingredient:', raw.ingredient);
+      let result = { qty: null, unit: '', name: '' };
       
-      let result = { qty: parseNumber(raw.quantity), unit: normalizeUnit(raw.unit), name: raw.ingredient || '' };
+      // The PDF parser stored data in wrong fields. Common patterns:
+      // 1. Everything in ingredient: "½ cup Wholemeal flour" with empty qty/unit
+      // 2. Ingredient has "t baking powder", unit has "¼", qty has "1.0"
+      // 3. Ingredient has "Cup sugar", unit has "1/2", qty has "1.0"
+      // 4. Ingredient has "or margarine", unit has "butter"
       
-      console.log('After initial parse - qty:', result.qty, 'unit:', result.unit, 'name:', result.name);
+      let fullText = (raw.ingredient || '').trim();
       
-      // Clean up the name first
+      // If ingredient field contains fraction/number + unit + name pattern, parse from there
+      // Match patterns like: "½ cup Wholemeal flour", "2/3 Cup sugar", "1/2 t baking powder"
+      const fullMatch = fullText.match(/^([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+|\d+\s+\d+\/\d+|\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s+(.+)$/i);
+      
+      if (fullMatch) {
+        // Pattern matched: extract qty, unit, name from ingredient field
+        result.qty = parseFraction(fullMatch[1]) || parseNumber(fullMatch[1]);
+        result.unit = normalizeUnit(fullMatch[2]);
+        result.name = fullMatch[3].trim();
+      } else if (fullText.match(/^([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)\s+(.+)$/)) {
+        // Just fraction + name (no unit word): "½ Wholemeal flour"
+        const fracMatch = fullText.match(/^([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)\s+(.+)$/);
+        result.qty = parseFraction(fracMatch[1]);
+        result.name = fracMatch[2].trim();
+      } else {
+        // Use the database fields as-is
+        result.qty = parseNumber(raw.quantity);
+        result.unit = normalizeUnit(raw.unit);
+        result.name = fullText;
+        
+        // But if unit field contains a fraction, it's probably misplaced
+        if (raw.unit && (raw.unit.match(/[½⅓⅔¼¾]/) || raw.unit.match(/^\d+\/\d+$/))) {
+          const fracQty = parseFraction(raw.unit);
+          if (fracQty > 0) {
+            // Multiply qty by the fraction in unit field
+            result.qty = (result.qty || 1) * fracQty;
+            result.unit = ''; // Clear the bogus unit
+          }
+        }
+      }
+      
+      // Clean up the name
       let cleanName = result.name.trim();
       
       // Skip if this looks like concatenated ingredients (bad recipe data)
@@ -329,12 +359,22 @@
         }
       }
       
-      // Handle fractions in the quantity field (including Unicode fractions)
-      if (raw.quantity) {
-        const qtyStr = String(raw.quantity);
-        if (qtyStr.match(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅐⅛⅜⅝⅞]|\d+\s*\/\s*\d+|\d+\s+\d+\/\d+/)) {
-          result.qty = parseNumber(qtyStr);
+      // Handle fractions in the name field (if still there after initial parsing)
+      // Match "t baking powder" where "t" should be extracted as unit
+      const unitInName = cleanName.match(/^([a-z])\s+(.+)$/i);
+      if (unitInName && !result.unit) {
+        const potentialUnit = normalizeUnit(unitInName[1]);
+        if (potentialUnit) {
+          result.unit = potentialUnit;
+          cleanName = unitInName[2].trim();
         }
+      }
+      
+      // Match "Cup sugar" or "cup Milk" where unit is capitalized in name
+      const capUnitInName = cleanName.match(/^(cup|tsp|tbsp|t)\s+(.+)$/i);
+      if (capUnitInName && !result.unit) {
+        result.unit = normalizeUnit(capUnitInName[1]);
+        cleanName = capUnitInName[2].trim();
       }
       
       // Remove "or ..." alternatives - handle both "butter or margarine" and "or margarine"
@@ -425,9 +465,6 @@
       
       result.unit = applyUnitlessHeuristic(result.name, result.unit);
       result.name = collapseDuplicateWords(result.name.trim());
-      
-      console.log('FINAL RESULT:', JSON.stringify(result));
-      console.log('=========================\n');
       
       return result;
     }
