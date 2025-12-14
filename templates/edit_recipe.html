@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Recipe</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
@@ -22,6 +23,20 @@
 
     <label>Serving Size</label>
     <input type="text" name="serving_size" value="{{ recipe.serving_size or '' }}" />
+
+    <label>Dietary Tags (comma-separated: e.g., Vegetarian, Gluten-Free, Dairy-Free)</label>
+    <input type="text" name="dietary_tags" value="{{ recipe.dietary_tags or '' }}" placeholder="e.g., Vegetarian, Gluten-Free" />
+
+    <label>Cuisine</label>
+    <input type="text" name="cuisine" value="{{ recipe.cuisine or '' }}" placeholder="e.g., Italian, Asian, Mexican" />
+
+    <label>Difficulty</label>
+    <select name="difficulty">
+      <option value="">Select difficulty...</option>
+      <option value="Easy" {% if recipe.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+      <option value="Medium" {% if recipe.difficulty == 'Medium' %}selected{% endif %}>Medium</option>
+      <option value="Hard" {% if recipe.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+    </select>
 
     <label>Instructions</label>
     <textarea name="instructions">{{ recipe.instructions }}</textarea>

@@ -1435,6 +1435,9 @@ def edit_recipe(recipe_id):
         name = request.form.get('name','').strip()
         instructions = request.form.get('instructions','').strip()
         serving_raw = request.form.get('serving_size','').strip()
+        dietary_tags = request.form.get('dietary_tags','').strip()
+        cuisine = request.form.get('cuisine','').strip()
+        difficulty = request.form.get('difficulty','').strip()
         try:
             serving = int(serving_raw) if serving_raw != '' else None
         except ValueError:
@@ -1485,15 +1488,15 @@ def edit_recipe(recipe_id):
         # Update DB
         with sqlite3.connect(DATABASE) as conn:
             c = conn.cursor()
-            c.execute('UPDATE recipes SET name = ?, ingredients = ?, instructions = ?, serving_size = ?, equipment = ? WHERE id = ?',
-                      (name, json.dumps(ingredients), instructions, serving, json.dumps(equipment), recipe_id))
+            c.execute('UPDATE recipes SET name = ?, ingredients = ?, instructions = ?, serving_size = ?, equipment = ?, dietary_tags = ?, cuisine = ?, difficulty = ? WHERE id = ?',
+                      (name, json.dumps(ingredients), instructions, serving, json.dumps(equipment), dietary_tags, cuisine, difficulty, recipe_id))
         return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
     # GET - load recipe
     with sqlite3.connect(DATABASE) as conn:
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment FROM recipes WHERE id = ?', (recipe_id,))
+        c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes WHERE id = ?', (recipe_id,))
         row = c.fetchone()
         if not row:
             return ('Not found', 404)
