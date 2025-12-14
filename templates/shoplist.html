@@ -352,6 +352,12 @@
       }
       
       // Default: return as-is
+      // But if there's no unit and it's a dry good with a quantity, infer grams
+      if (!u && qty && isDryGood && qty >= 10) {
+        console.log(`  No unit for ${qty} ${ingredientName}, inferring grams (dry good)`);
+        return { qty, unit: 'g' };
+      }
+      
       return { qty, unit: u };
     }
 
