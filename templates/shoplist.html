@@ -305,7 +305,16 @@
     }
 
     function parseIngredient(raw) {
+      // Debug logging
+      console.log('=== PARSING INGREDIENT ===');
+      console.log('RAW:', JSON.stringify(raw));
+      console.log('raw.quantity:', raw.quantity, 'type:', typeof raw.quantity);
+      console.log('raw.unit:', raw.unit);
+      console.log('raw.ingredient:', raw.ingredient);
+      
       let result = { qty: parseNumber(raw.quantity), unit: normalizeUnit(raw.unit), name: raw.ingredient || '' };
+      
+      console.log('After initial parse - qty:', result.qty, 'unit:', result.unit, 'name:', result.name);
       
       // Clean up the name first
       let cleanName = result.name.trim();
@@ -416,6 +425,9 @@
       
       result.unit = applyUnitlessHeuristic(result.name, result.unit);
       result.name = collapseDuplicateWords(result.name.trim());
+      
+      console.log('FINAL RESULT:', JSON.stringify(result));
+      console.log('=========================\n');
       
       return result;
     }
