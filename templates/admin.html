@@ -213,6 +213,40 @@
                 </tbody>
             </table>
             {% endif %}
+            
+            <h1>Suggestions List</h1>
+            {% if suggestions %}
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #f4f4f4;">
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Date</th>
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Recipe Name</th>
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Suggested By</th>
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">URL</th>
+                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in suggestions %}
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ s.created_at[:10] }}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">{{ s.recipe_name }}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ s.suggested_by_name }}<br><small style="color: #666;">{{ s.suggested_by_email }}</small></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            {% if s.recipe_url %}
+                                <a href="{{ s.recipe_url }}" target="_blank" style="color: #007bff;">🔗 View</a>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ s.reason or '—' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666; font-style: italic;">No recipe suggestions yet.</p>
+            {% endif %}
         </div>
 
         <!-- RIGHT COLUMN: Recipe Book Setup -->

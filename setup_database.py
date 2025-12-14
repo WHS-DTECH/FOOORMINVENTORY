@@ -142,6 +142,20 @@ def setup_database():
             )
         ''')
 
+        # Create recipe_suggestions table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS recipe_suggestions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipe_name TEXT NOT NULL,
+                recipe_url TEXT,
+                reason TEXT,
+                suggested_by_name TEXT NOT NULL,
+                suggested_by_email TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                status TEXT DEFAULT 'pending'
+            )
+        ''')
+
     print("Database setup complete.")
 
 if __name__ == '__main__':

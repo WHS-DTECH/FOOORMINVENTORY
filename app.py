@@ -275,6 +275,21 @@ def logout():
 @app.route('/admin', methods=['GET', 'POST'])
 @require_role('VP')
 def admin():
+    # Get recipe suggestions for display
+    suggestions = []
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            conn.row_factory = sqlite3.Row
+            c = conn.cursor()
+            c.execute('''SELECT id, recipe_name, recipe_url, reason, suggested_by_name, 
+                        suggested_by_email, created_at, status 
+                        FROM recipe_suggestions 
+                        ORDER BY created_at DESC''')
+            suggestions = [dict(row) for row in c.fetchall()]
+    except sqlite3.OperationalError:
+        # Table doesn't exist yet
+        suggestions = []
+    
     preview_data = None
     if request.method == 'POST':
         # staff CSV upload
@@ -356,7 +371,8 @@ def uploadclass():
             rows.append(row)
 
     flash('Classes CSV processed')
-    return render_template('admin.html', preview_data=rows)
+    
+    return render_template('admin.html', preview_data=rows, suggestions=suggestions)
 
 
 @app.route('/admin/permissions', methods=['GET', 'POST'])
@@ -1057,6 +1073,14 @@ def suggest_recipe():
         # Get current user info safely
         user_name = current_user.name if hasattr(current_user, 'name') else 'Unknown User'
         user_email = current_user.email if hasattr(current_user, 'email') else 'No email'
+        
+        # Save suggestion to database
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute('''INSERT INTO recipe_suggestions 
+                        (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email) 
+                        VALUES (?, ?, ?, ?, ?)''',
+                     (recipe_name, recipe_url, reason, user_name, user_email))
         
         # Compose email
         subject = f"Recipe Suggestion: {recipe_name}"
