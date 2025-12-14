@@ -57,6 +57,7 @@ class User(UserMixin):
         self.name = name
         self.staff_code = staff_code
         self.role = self._get_role()
+        self.additional_roles = self._get_additional_roles()
     
     def _get_role(self):
         """Determine user role based on staff code."""
@@ -65,24 +66,46 @@ class User(UserMixin):
         # Default to public if staff code not recognized
         return 'public'
     
+    def _get_additional_roles(self):
+        """Get additional roles assigned to this user from the database."""
+        try:
+            db_path = os.path.join(os.path.dirname(__file__), 'recipes.db')
+            with sqlite3.connect(db_path) as conn:
+                c = conn.cursor()
+                c.execute('SELECT role FROM user_roles WHERE email = ?', (self.email,))
+                return [row[0] for row in c.fetchall()]
+        except Exception:
+            return []
+    
+    def get_all_roles(self):
+        """Get all roles for this user (primary + additional)."""
+        roles = [self.role]
+        roles.extend(self.additional_roles)
+        return list(set(roles))  # Remove duplicates
+    
     def has_access(self, endpoint):
         """Check if user has access to the given endpoint."""
-        role = self.role
-        # Get permissions from database
-        allowed_routes = get_role_permissions_from_db(role)
-        return endpoint in allowed_routes
+        # Check all roles (primary + additional)
+        all_roles = self.get_all_roles()
+        for role in all_roles:
+            allowed_routes = get_role_permissions_from_db(role)
+            if endpoint in allowed_routes:
+                return True
+        return False
     
     def is_admin(self):
         """Check if user is an admin (VP)."""
-        return self.role == 'VP'
+        return 'VP' in self.get_all_roles()
     
     def is_teacher(self):
         """Check if user is a teacher."""
-        return self.role in ['VP', 'DK']
+        all_roles = self.get_all_roles()
+        return any(role in ['VP', 'DK'] for role in all_roles)
     
     def is_staff(self):
         """Check if user is staff."""
-        return self.role in ['VP', 'DK', 'MU']
+        all_roles = self.get_all_roles()
+        return any(role in ['VP', 'DK', 'MU'] for role in all_roles)
 
 
 def get_user_by_google_id(google_id):
@@ -142,7 +165,9 @@ def require_role(*allowed_roles):
                 user_data.get('staff_code')
             )
             
-            if user.role not in allowed_roles:
+            # Check if user has any of the allowed roles (including additional roles)
+            user_roles = user.get_all_roles()
+            if not any(role in allowed_roles for role in user_roles):
                 flash(f'You do not have permission to access this page. Required role: {", ".join(allowed_roles)}')
                 return redirect(url_for('recbk'))
             

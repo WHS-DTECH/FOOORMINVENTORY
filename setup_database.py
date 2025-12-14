@@ -72,6 +72,19 @@ def setup_database():
     '''
         )
 
+        # Create user_roles table for assigning additional roles to users
+        c.execute(
+            '''
+        CREATE TABLE IF NOT EXISTS user_roles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(email, role)
+        )
+    '''
+        )
+
         # Create role_permissions table for dynamic access control
         c.execute(
             '''

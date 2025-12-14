@@ -143,6 +143,15 @@ def init_db():
             desired_servings INTEGER,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )''')
+        
+        # User roles table for assigning additional roles to users
+        c.execute('''CREATE TABLE IF NOT EXISTS user_roles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(email, role)
+        )''')
 
 @app.route('/')
 def index():
@@ -416,7 +425,53 @@ def admin_permissions():
     return render_template('admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
 
 
+@app.route('/admin/user_roles', methods=['GET', 'POST'])
+@require_role('VP')
+def admin_user_roles():
+    """Manage additional user roles."""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        role = request.form.get('role')
+        action = request.form.get('action')  # 'add' or 'remove'
+        
+        if email and role and action:
+            with sqlite3.connect(DATABASE) as conn:
+                c = conn.cursor()
+                if action == 'add':
+                    try:
+                        c.execute('INSERT INTO user_roles (email, role) VALUES (?, ?)', (email, role))
+                        flash(f'Added role {role} to {email}', 'success')
+                    except sqlite3.IntegrityError:
+                        flash(f'{email} already has role {role}', 'warning')
+                elif action == 'remove':
+                    c.execute('DELETE FROM user_roles WHERE email = ? AND role = ?', (email, role))
+                    flash(f'Removed role {role} from {email}', 'success')
+        
+        return redirect(url_for('admin_user_roles'))
+    
+    # Get all users with additional roles
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('''
+            SELECT email, GROUP_CONCAT(role, ', ') as roles
+            FROM user_roles
+            GROUP BY email
+            ORDER BY email
+        ''')
+        users_with_roles = [dict(row) for row in c.fetchall()]
+        
+        # Get all teachers for the dropdown
+        c.execute('SELECT email, code, first_name, last_name FROM teachers WHERE email IS NOT NULL ORDER BY last_name, first_name')
+        teachers = [dict(row) for row in c.fetchall()]
+    
+    roles = ['VP', 'DK', 'MU', 'public']
+    
+    return render_template('admin_user_roles.html', users_with_roles=users_with_roles, teachers=teachers, roles=roles)
+
+
 @app.route('/admin/clean_recipes', methods=['POST'])
+
 @require_role('VP')
 def clean_recipes_route():
     """Clean recipe database - remove junk and duplicates."""
