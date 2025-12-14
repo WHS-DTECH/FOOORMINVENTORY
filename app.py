@@ -1075,12 +1075,16 @@ def suggest_recipe():
         user_email = current_user.email if hasattr(current_user, 'email') else 'No email'
         
         # Save suggestion to database
-        with sqlite3.connect(DATABASE) as conn:
-            c = conn.cursor()
-            c.execute('''INSERT INTO recipe_suggestions 
-                        (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email) 
-                        VALUES (?, ?, ?, ?, ?)''',
-                     (recipe_name, recipe_url, reason, user_name, user_email))
+        try:
+            with sqlite3.connect(DATABASE) as conn:
+                c = conn.cursor()
+                c.execute('''INSERT INTO recipe_suggestions 
+                            (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email) 
+                            VALUES (?, ?, ?, ?, ?)''',
+                         (recipe_name, recipe_url, reason, user_name, user_email))
+        except sqlite3.OperationalError as e:
+            print(f"Error saving suggestion to database (table may not exist): {e}")
+            flash('Note: Your suggestion was logged but not saved to the database. Please contact VP to run setup_database.py', 'warning')
         
         # Compose email
         subject = f"Recipe Suggestion: {recipe_name}"
