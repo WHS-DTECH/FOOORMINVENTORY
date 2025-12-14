@@ -324,7 +324,7 @@ def admin():
         preview_data = rows
         flash(f'Staff CSV processed: {len(rows)} rows')
 
-    return render_template('admin.html', preview_data=preview_data)
+    return render_template('admin.html', preview_data=preview_data, suggestions=suggestions)
 
 
 @app.route('/uploadclass', methods=['POST'])
