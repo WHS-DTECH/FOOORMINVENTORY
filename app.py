@@ -1032,67 +1032,58 @@ def update_recipe_tags(recipe_id):
 @require_login
 def suggest_recipe():
     """Handle recipe suggestion submissions and email to VP"""
-    recipe_name = request.form.get('recipe_name', '').strip()
-    recipe_url = request.form.get('recipe_url', '').strip()
-    reason = request.form.get('reason', '').strip()
-    
-    if not recipe_name:
-        flash('Recipe name is required.', 'error')
-        return redirect(url_for('recipes'))
-    
-    # Get VP email from database
-    vp_email = None
-    with sqlite3.connect(DATABASE) as conn:
-        c = conn.cursor()
-        c.execute("SELECT email FROM teachers WHERE code = 'VP' LIMIT 1")
-        result = c.fetchone()
-        if result:
-            vp_email = result[0]
-    
-    if not vp_email:
-        flash('Could not find VP email address.', 'error')
-        return redirect(url_for('recipes'))
-    
-    # Compose email
-    subject = f"Recipe Suggestion: {recipe_name}"
-    body = f"""A new recipe has been suggested for the Food Room Recipe Book.
+    try:
+        recipe_name = request.form.get('recipe_name', '').strip()
+        recipe_url = request.form.get('recipe_url', '').strip()
+        reason = request.form.get('reason', '').strip()
+        
+        if not recipe_name:
+            flash('Recipe name is required.', 'error')
+            return redirect(url_for('recipes'))
+        
+        # Get VP email from database
+        vp_email = None
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute("SELECT email FROM teachers WHERE code = 'VP' LIMIT 1")
+            result = c.fetchone()
+            if result:
+                vp_email = result[0]
+        
+        if not vp_email:
+            flash('Could not find VP email address.', 'error')
+            return redirect(url_for('recipes'))
+        
+        # Get current user info safely
+        user_name = current_user.name if hasattr(current_user, 'name') else 'Unknown User'
+        user_email = current_user.email if hasattr(current_user, 'email') else 'No email'
+        
+        # Compose email
+        subject = f"Recipe Suggestion: {recipe_name}"
+        body = f"""A new recipe has been suggested for the Food Room Recipe Book.
 
-Suggested by: {current_user.name} ({current_user.email})
+Suggested by: {user_name} ({user_email})
 Recipe Name: {recipe_name}
 """
-    
-    if recipe_url:
-        body += f"Recipe URL: {recipe_url}\n"
-    
-    if reason:
-        body += f"\nReason:\n{reason}\n"
-    
-    body += f"\n---\nSubmitted on {datetime.datetime.now().strftime('%Y-%m-%d at %H:%M')}"
-    
-    # Send email using smtplib
-    try:
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
         
-        # For PythonAnywhere, we can use their SMTP or a service like SendGrid
-        # For now, we'll just log it and flash a message
-        # In production, you'd configure SMTP settings
+        if recipe_url:
+            body += f"Recipe URL: {recipe_url}\n"
         
-        msg = MIMEMultipart()
-        msg['From'] = 'noreply@whsdtech.com'
-        msg['To'] = vp_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
+        if reason:
+            body += f"\nReason:\n{reason}\n"
         
-        # Log the suggestion instead of sending email (for now)
+        body += f"\n---\nSubmitted on {datetime.datetime.now().strftime('%Y-%m-%d at %H:%M')}"
+        
+        # Log the suggestion (email functionality can be added later with SMTP config)
         print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
         
         flash(f'Thank you! Your suggestion for "{recipe_name}" has been sent to the VP.', 'success')
         
     except Exception as e:
-        print(f"Error sending suggestion email: {e}")
-        flash('Your suggestion was recorded but there was an error sending the email. Please contact the VP directly.', 'warning')
+        print(f"Error in suggest_recipe: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('There was an error submitting your suggestion. Please try again or contact the VP directly.', 'error')
     
     return redirect(url_for('recipes'))
 
