@@ -44,15 +44,16 @@
                 {% for role in roles %}
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 12px; font-weight: bold; background-color: #f8f9fa; border: 1px solid #ddd;">
-                        {{ role }}
                         {% if role == 'VP' %}
-                        <span style="font-size: 0.8em; color: #666;">(Admin)</span>
+                        Admin
                         {% elif role == 'DK' %}
-                        <span style="font-size: 0.8em; color: #666;">(Staff)</span>
+                        Teacher
                         {% elif role == 'MU' %}
-                        <span style="font-size: 0.8em; color: #666;">(Limited)</span>
+                        Technician
                         {% elif role == 'public' %}
-                        <span style="font-size: 0.8em; color: #666;">(Public)</span>
+                        Public Access
+                        {% else %}
+                        {{ role }}
                         {% endif %}
                     </td>
                     {% for route in routes %}
