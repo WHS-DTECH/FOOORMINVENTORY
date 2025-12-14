@@ -401,46 +401,6 @@
       
       return result;
     }
-      if (m) {
-        const potentialQty = parseNumber(m[1]);
-        const potentialUnit = normalizeUnit(m[2]);
-        const restOfName = m[3];
-        
-        // Only use extracted values if qty wasn't already set
-        if (!result.qty && potentialQty) {
-          result.qty = potentialQty;
-        }
-        
-        // Only set unit if it wasn't already set AND the extracted unit looks valid
-        if (!result.unit && potentialUnit) {
-          result.unit = potentialUnit;
-        }
-        
-        // Always use the rest of the name (without the prefix)
-        result.name = restOfName;
-      }
-      
-      // If we have a quantity but no unit, try to infer it
-      if (result.qty && !result.unit) {
-        // Check if the quantity suggests grams (typically 50+)
-        if (result.qty >= 50 && result.qty <= 10000) {
-          const weightItems = ['butter', 'margarine', 'flour', 'sugar', 'cheese', 'chocolate', 'nuts', 'rice', 'pasta'];
-          if (weightItems.some(item => result.name.toLowerCase().includes(item))) {
-            result.unit = 'g';
-          }
-        }
-        // Check for liquids
-        const liquidItems = ['milk', 'water', 'oil', 'cream', 'juice', 'stock', 'broth', 'vinegar'];
-        if (liquidItems.some(item => result.name.toLowerCase().includes(item))) {
-          result.unit = result.qty >= 50 ? 'ml' : 'tbsp';
-        }
-      }
-      
-      result.unit = applyUnitlessHeuristic(result.name, result.unit);
-      result.name = collapseDuplicateWords(result.name.trim());
-      
-      return result;
-    }
 
     function getTeacherLabel(b) {
       if (b.last_name) {
