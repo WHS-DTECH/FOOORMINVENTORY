@@ -631,10 +631,291 @@ optgroup {
   color: #333;
 }
 
-/* Responsive Design */
+/* ===================================
+   MOBILE & TABLET RESPONSIVE DESIGN
+   =================================== */
+
+/* Tablet & Small Desktop (768px - 960px) */
 @media (max-width: 960px) {
   .bottom-layout {
     grid-template-columns: 1fr;
+  }
+  
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Two-column layouts become single column */
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Mobile Devices (max-width: 768px) */
+@media (max-width: 768px) {
+  /* Body & Typography */
+  body {
+    font-size: 16px; /* Minimum 16px prevents zoom on iOS */
+  }
+  
+  h1 {
+    font-size: 20px;
+    padding: 0 12px;
+  }
+  
+  h2 {
+    font-size: 16px;
+    padding: 0 12px;
+  }
+  
+  /* Navigation - Mobile Friendly */
+  nav, .navbar {
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .nav-left, .nav-right {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  nav a, .navbar a {
+    margin: 0 6px;
+    padding: 8px 12px;
+    display: inline-block;
+  }
+  
+  /* Hide pipe separators on mobile */
+  .nav-left a::after {
+    content: none;
+  }
+  
+  /* Touch-friendly buttons */
+  button, input[type="submit"], .btn {
+    min-height: 44px; /* iOS touch target recommendation */
+    font-size: 16px;
+    padding: 12px 16px;
+    margin: 4px 0;
+  }
+  
+  /* Form inputs - prevent zoom on focus */
+  input, select, textarea {
+    font-size: 16px !important;
+    padding: 12px;
+    min-height: 44px;
+  }
+  
+  /* Tables - Scrollable on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 14px;
+  }
+  
+  table th, table td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+  
+  /* Recipe Grid - Single column on small screens */
+  .recipe-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+    padding: 0 8px;
+  }
+  
+  .recipe-card {
+    padding: 12px;
+  }
+  
+  /* Admin panels */
+  .admin-container {
+    padding: 0 8px;
+  }
+  
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+  
+  .panel {
+    padding: 12px;
+  }
+  
+  /* Two-column layouts stack vertically */
+  .row, .two-cols {
+    flex-direction: column;
+  }
+  
+  .col, .left, .right {
+    width: 100%;
+  }
+  
+  /* View toggle buttons */
+  .view-toggle {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  /* Shopping list */
+  .shopping-list {
+    padding: 12px;
+    margin: 8px;
+  }
+  
+  .week-nav {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .week-nav a {
+    padding: 10px 16px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Booking calendar */
+  .grid {
+    font-size: 12px;
+  }
+  
+  .grid th, .grid td {
+    padding: 4px 2px;
+  }
+  
+  /* Class ingredients form */
+  .class-form {
+    padding: 12px;
+  }
+  
+  /* Recipe details */
+  .recipe-detail {
+    padding: 12px;
+  }
+  
+  .ingredient-list li {
+    font-size: 15px;
+    padding: 6px 0;
+  }
+  
+  /* Modal dialogs */
+  .modal-content {
+    width: 95% !important;
+    margin: 10% auto;
+  }
+  
+  /* Hide less critical info on mobile */
+  .mobile-hide {
+    display: none;
+  }
+  
+  /* Favorite buttons - larger touch targets */
+  .favorite-btn {
+    font-size: 24px !important;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  
+  /* Container padding */
+  .container {
+    padding: 8px;
+  }
+  
+  /* Forms - full width on mobile */
+  form {
+    width: 100%;
+  }
+  
+  form input[type="text"],
+  form input[type="number"],
+  form input[type="url"],
+  form input[type="email"],
+  form textarea,
+  form select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Permissions table */
+  #permissions-table {
+    font-size: 12px;
+  }
+  
+  #permissions-table th,
+  #permissions-table td {
+    padding: 6px 4px;
+  }
+  
+  /* Badge sizing */
+  .badge {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+}
+
+/* Small phones (max-width: 480px) */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 18px;
+  }
+  
+  h2 {
+    font-size: 15px;
+  }
+  
+  nav a, .navbar a {
+    font-size: 13px;
+    margin: 0 4px;
+    padding: 6px 8px;
+  }
+  
+  .recipe-card h3 {
+    font-size: 16px;
+  }
+  
+  table {
+    font-size: 12px;
+  }
+  
+  table th, table td {
+    padding: 6px 4px;
+  }
+  
+  button {
+    width: 100%;
+  }
+  
+  /* Stack week navigation vertically */
+  .week-nav {
+    align-items: stretch;
+  }
+  
+  /* Smaller grid cells */
+  .grid {
+    font-size: 10px;
+  }
+  
+  .grid th, .grid td {
+    padding: 3px 1px;
+  }
+}
+
+/* Landscape mode optimizations */
+@media (max-width: 960px) and (orientation: landscape) {
+  nav, .navbar {
+    flex-direction: row;
+    padding: 6px 12px;
+  }
+  
+  h1 {
+    margin: 12px 0 6px;
   }
 }
 
