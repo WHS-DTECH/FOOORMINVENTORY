@@ -812,7 +812,16 @@ def shoplist():
     from datetime import datetime, timedelta
     
     # Get week offset from query parameter (0 = current week, -1 = last week, 1 = next week, etc.)
-    week_offset = request.args.get('week', 0, type=int)
+    week_offset = request.args.get('week', type=int)
+    
+    # If no week specified, default intelligently based on day of week
+    if week_offset is None:
+        today = datetime.now()
+        # If it's Saturday (5) or Sunday (6), default to next week instead of current
+        if today.weekday() >= 5:
+            week_offset = 1
+        else:
+            week_offset = 0
     
     # Calculate the target week (Monday to Friday)
     today = datetime.now()
