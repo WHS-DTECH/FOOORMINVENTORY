@@ -232,13 +232,38 @@
     }
 
     function parseIngredient(raw) {
-      const result = { qty: parseNumber(raw.quantity), unit: normalizeUnit(raw.unit), name: raw.ingredient || '' };
+      let result = { qty: parseNumber(raw.quantity), unit: normalizeUnit(raw.unit), name: raw.ingredient || '' };
       
-      // Skip instruction-like text
-      const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i];
-      if (skipPatterns.some(p => p.test(result.name))) {
+      // Clean up the name first
+      let cleanName = result.name.trim();
+      
+      // Strip instruction phrases from the name (e.g., "beaten in a cup", "chopped", etc.)
+      const instructionPatterns = [
+        /[,–—-]\s*(beaten|mixed|chopped|diced|sliced|minced|crushed|grated|melted|softened|room temperature|cut into|finely|roughly|coarsely).*/gi,
+        /\s+to taste$/i,
+        /\s+optional$/i,
+        /\s+if needed$/i,
+        /\s+for serving$/i,
+        /\s+for garnish$/i
+      ];
+      
+      instructionPatterns.forEach(pattern => {
+        cleanName = cleanName.replace(pattern, '');
+      });
+      
+      // Handle "or" alternatives - take the first option
+      if (cleanName.includes(' or ')) {
+        const parts = cleanName.split(' or ');
+        cleanName = parts[0].trim();
+      }
+      
+      // Skip if it's purely instructional text
+      const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i, /^beaten/i, /^mixed/i, /^chopped/i];
+      if (skipPatterns.some(p => p.test(cleanName))) {
         return { qty: 0, unit: '', name: '' };
       }
+      
+      result.name = cleanName;
       
       // Always try to strip quantity/unit prefix from name, even if qty/unit are provided
       const m = result.name.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)\s+(.+)/);
@@ -261,8 +286,25 @@
         result.name = restOfName;
       }
       
+      // If we have a quantity but no unit, try to infer it
+      if (result.qty && !result.unit) {
+        // Check if the quantity suggests grams (typically 50+)
+        if (result.qty >= 50 && result.qty <= 10000) {
+          const weightItems = ['butter', 'margarine', 'flour', 'sugar', 'cheese', 'chocolate', 'nuts', 'rice', 'pasta'];
+          if (weightItems.some(item => result.name.toLowerCase().includes(item))) {
+            result.unit = 'g';
+          }
+        }
+        // Check for liquids
+        const liquidItems = ['milk', 'water', 'oil', 'cream', 'juice', 'stock', 'broth', 'vinegar'];
+        if (liquidItems.some(item => result.name.toLowerCase().includes(item))) {
+          result.unit = result.qty >= 50 ? 'ml' : 'tbsp';
+        }
+      }
+      
       result.unit = applyUnitlessHeuristic(result.name, result.unit);
       result.name = collapseDuplicateWords(result.name.trim());
+      
       return result;
     }
 
