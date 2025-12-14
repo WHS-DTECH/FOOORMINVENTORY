@@ -242,6 +242,78 @@ button.primary:hover {
   border-color: #047857;
 }
 
+.btn-update {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.btn-update:hover {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.btn-delete-booking {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+  font-weight: 600;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-delete-booking:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+/* Bookings Table */
+.bookings-table-wrapper {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.bookings-table thead {
+  background: #f3f4f6;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.bookings-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+}
+
+.bookings-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.booking-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.booking-row:hover {
+  background-color: #f9fafb;
+}
+
+.booking-row.selected {
+  background-color: #dbeafe;
+}
+
+.booking-row.selected:hover {
+  background-color: #bfdbfe;
+}
+
 /* Utility Classes */
 .small {
   font-size: 0.9em;

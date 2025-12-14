@@ -547,7 +547,23 @@ def class_ingredients():
             ings = []
         recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
 
+    # Get existing bookings for display (ordered by date descending, most recent first)
+    with sqlite3.connect(DATABASE) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('''
+            SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, 
+                   cb.recipe_id, cb.desired_servings, r.name as recipe_name,
+                   t.first_name, t.last_name
+            FROM class_bookings cb
+            LEFT JOIN recipes r ON cb.recipe_id = r.id
+            LEFT JOIN teachers t ON cb.staff_code = t.code
+            ORDER BY cb.date_required DESC, cb.period ASC
+        ''')
+        bookings = [dict(row) for row in c.fetchall()]
+
     return render_template('class_ingred.html', staff=staff, classes=classes, recipes=recipes,
+                          bookings=bookings,
                           most_used_staff_count=len(most_used_staff), most_used_classes_count=len(most_used_classes),
                           pre_staff_code=staff_code, pre_class_code=class_code, 
                           pre_date_required=date_required, pre_period=period,
@@ -612,21 +628,42 @@ def class_ingredients_download():
 @app.route('/class_ingredients/save', methods=['POST'])
 @require_role('VP', 'DK')
 def class_ingredients_save():
-    # Save a booking to `class_bookings`
+    # Save a booking to `class_bookings` (INSERT or UPDATE)
     data = request.get_json() or {}
+    booking_id = data.get('booking_id')  # If provided, update existing booking
     staff_code = data.get('staff')
     class_code = data.get('classcode')
     date_required = data.get('date')
     period = data.get('period')
     recipe_id = data.get('recipe_id')
     desired = int(data.get('desired_servings') or 24)
+    
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
-        c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (?, ?, ?, ?, ?, ?)',
-                  (staff_code, class_code, date_required, period, recipe_id, desired))
-        conn.commit()
-        booking_id = c.lastrowid
+        if booking_id:
+            # Update existing booking
+            c.execute('''UPDATE class_bookings 
+                        SET staff_code=?, class_code=?, date_required=?, period=?, recipe_id=?, desired_servings=?
+                        WHERE id=?''',
+                     (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
+            conn.commit()
+        else:
+            # Insert new booking
+            c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (?, ?, ?, ?, ?, ?)',
+                      (staff_code, class_code, date_required, period, recipe_id, desired))
+            conn.commit()
+            booking_id = c.lastrowid
     return jsonify({'success': True, 'booking_id': booking_id})
+
+@app.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
+@require_role('VP', 'DK')
+def class_ingredients_delete(booking_id):
+    # Delete a booking
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM class_bookings WHERE id = ?', (booking_id,))
+        conn.commit()
+    return jsonify({'success': True})
 
 @app.route('/upload', methods=['GET', 'POST'])
 @require_role('VP')
