@@ -350,6 +350,10 @@
         }
         return { qty, unit: 'ml' }; // Keep ml for liquids
       }
+      
+      // Default: return as-is
+      return { qty, unit: u };
+    }
 
     function parseIngredient(raw) {
       let result = { qty: null, unit: '', name: '' };
