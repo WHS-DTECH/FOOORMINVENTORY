@@ -179,5 +179,29 @@
     <p>No recipes found.</p>
   {% endif %}
 
+  <!-- Recipe Suggestion Box -->
+  <div style="margin:30px 0; padding:20px; border:2px solid #007bff; background:#f0f8ff; max-width:700px; border-radius:8px;">
+    <h3 style="margin-top:0; color:#007bff;">💡 Suggest a Recipe</h3>
+    <p style="color:#666; margin-bottom:15px;">Have a recipe you'd like added to our collection? Share your suggestion with the VP!</p>
+    <form id="suggestionForm" method="post" action="/recipes/suggest">
+      <div style="margin-bottom:12px;">
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Recipe Name:</label>
+        <input type="text" name="recipe_name" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="e.g., Chocolate Chip Cookies">
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Recipe URL (optional):</label>
+        <input type="url" name="recipe_url" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="https://...">
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Why should we add this recipe?</label>
+        <textarea name="reason" rows="3" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;" placeholder="Tell us why this recipe would be great for our students..."></textarea>
+      </div>
+      
+      <button type="submit" style="padding:10px 24px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px; font-weight:bold;">📧 Send Suggestion</button>
+    </form>
+  </div>
+
 </body>
 </html>

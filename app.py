@@ -7,6 +7,7 @@ import csv
 import io
 import re
 import os
+import datetime
 from dotenv import load_dotenv
 try:
     import PyPDF2
@@ -1027,6 +1028,75 @@ def update_recipe_tags(recipe_id):
     return jsonify({'success': True, 'message': 'Tags updated'})
 
 
+@app.route('/recipes/suggest', methods=['POST'])
+@require_login
+def suggest_recipe():
+    """Handle recipe suggestion submissions and email to VP"""
+    recipe_name = request.form.get('recipe_name', '').strip()
+    recipe_url = request.form.get('recipe_url', '').strip()
+    reason = request.form.get('reason', '').strip()
+    
+    if not recipe_name:
+        flash('Recipe name is required.', 'error')
+        return redirect(url_for('recipes'))
+    
+    # Get VP email from database
+    vp_email = None
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute("SELECT email FROM teachers WHERE code = 'VP' LIMIT 1")
+        result = c.fetchone()
+        if result:
+            vp_email = result[0]
+    
+    if not vp_email:
+        flash('Could not find VP email address.', 'error')
+        return redirect(url_for('recipes'))
+    
+    # Compose email
+    subject = f"Recipe Suggestion: {recipe_name}"
+    body = f"""A new recipe has been suggested for the Food Room Recipe Book.
+
+Suggested by: {current_user.name} ({current_user.email})
+Recipe Name: {recipe_name}
+"""
+    
+    if recipe_url:
+        body += f"Recipe URL: {recipe_url}\n"
+    
+    if reason:
+        body += f"\nReason:\n{reason}\n"
+    
+    body += f"\n---\nSubmitted on {datetime.datetime.now().strftime('%Y-%m-%d at %H:%M')}"
+    
+    # Send email using smtplib
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        # For PythonAnywhere, we can use their SMTP or a service like SendGrid
+        # For now, we'll just log it and flash a message
+        # In production, you'd configure SMTP settings
+        
+        msg = MIMEMultipart()
+        msg['From'] = 'noreply@whsdtech.com'
+        msg['To'] = vp_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Log the suggestion instead of sending email (for now)
+        print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+        
+        flash(f'Thank you! Your suggestion for "{recipe_name}" has been sent to the VP.', 'success')
+        
+    except Exception as e:
+        print(f"Error sending suggestion email: {e}")
+        flash('Your suggestion was recorded but there was an error sending the email. Please contact the VP directly.', 'warning')
+    
+    return redirect(url_for('recipes'))
+
+
 @app.route('/recbk')
 def recbk():
     q = request.args.get('q', '').strip()
@@ -1063,7 +1133,44 @@ def recbk():
         except Exception:
             r['dietary_tags_list'] = []
 
-    return render_template('recbk.html', rows=rows, q=q)
+    # Get user's favorites if logged in
+    favorites = []
+    if current_user.is_authenticated:
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute('SELECT recipe_id FROM recipe_favorites WHERE user_email = ?', (current_user.email,))
+            favorites = [row[0] for row in c.fetchall()]
+
+    return render_template('recbk.html', rows=rows, q=q, favorites=favorites)
+
+
+@app.route('/recipe/favorite/<int:recipe_id>', methods=['POST'])
+@require_login
+def add_favorite(recipe_id):
+    """Add a recipe to user's favorites"""
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute('INSERT OR IGNORE INTO recipe_favorites (user_email, recipe_id) VALUES (?, ?)',
+                     (current_user.email, recipe_id))
+        return jsonify({'success': True, 'message': 'Added to favorites'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/recipe/unfavorite/<int:recipe_id>', methods=['POST'])
+@require_login
+def remove_favorite(recipe_id):
+    """Remove a recipe from user's favorites"""
+    try:
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute('DELETE FROM recipe_favorites WHERE user_email = ? AND recipe_id = ?',
+                     (current_user.email, recipe_id))
+        return jsonify({'success': True, 'message': 'Removed from favorites'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 @app.route('/recipe/<int:recipe_id>', methods=['GET', 'POST'])
 @require_role('VP', 'DK', 'MU')

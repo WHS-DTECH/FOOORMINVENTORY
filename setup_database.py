@@ -130,6 +130,18 @@ def setup_database():
             ('Lamb Salad', json.dumps(example_ingredients), 'Mix ingredients and serve.', 1),
         )
 
+        # Create recipe_favorites table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS recipe_favorites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_email TEXT NOT NULL,
+                recipe_id INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_email, recipe_id),
+                FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+            )
+        ''')
+
     print("Database setup complete.")
 
 if __name__ == '__main__':
