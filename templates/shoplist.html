@@ -203,6 +203,22 @@
       const fracResult = parseFraction(str);
       if (fracResult > 0) return fracResult;
       
+      // Handle numbers with Unicode fractions attached (no space): "24½" 
+      const unicodeFracMatch = str.match(/^(\d+(?:\.\d+)?)([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])$/);
+      if (unicodeFracMatch) {
+        const whole = parseFloat(unicodeFracMatch[1]);
+        const frac = parseFraction(unicodeFracMatch[2]);
+        return whole + frac;
+      }
+      
+      // Handle "24 ½" or "24 2/3" with space
+      const spacedFracMatch = str.match(/^(\d+(?:\.\d+)?)\s+([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)$/);
+      if (spacedFracMatch) {
+        const whole = parseFloat(spacedFracMatch[1]);
+        const frac = parseFraction(spacedFracMatch[2]);
+        return whole + frac;
+      }
+      
       const num = parseFloat(str.replace(',', '.'));
       return Number.isFinite(num) ? num : null;
     }
@@ -312,8 +328,9 @@
         }
       }
       
-      // Remove "or ..." alternatives BEFORE other cleaning
-      cleanName = cleanName.replace(/\s+or\s+.*/i, '').trim();
+      // Remove "or ..." alternatives - handle both "butter or margarine" and "or margarine"
+      cleanName = cleanName.replace(/^or\s+/i, '').trim(); // Remove "or" at start
+      cleanName = cleanName.replace(/\s+or\s+.*/i, '').trim(); // Remove " or ..." in middle
       
       // Strip instruction phrases from the name
       const instructionPatterns = [
@@ -331,7 +348,7 @@
       });
       
       // Skip if it's purely instructional text or empty
-      const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i, /^beaten/i, /^mixed/i, /^chopped/i];
+      const skipPatterns = [/don't/i, /forget/i, /container/i, /take/i, /head of/i, /mix of/i, /^beaten/i, /^mixed/i, /^chopped/i, /^or$/i];
       if (skipPatterns.some(p => p.test(cleanName)) || !cleanName) {
         return { qty: 0, unit: '', name: '' };
       }
@@ -340,9 +357,10 @@
       
       // Strip quantity/unit prefix from name if qty/unit already provided
       // e.g., "360 ml cup Milk" with qty=360, unit=ml should become just "Milk"
+      // Also handle single-letter units like "t" for teaspoon
       if (result.qty && result.unit) {
-        // Remove leading number + unit pattern from name
-        result.name = result.name.replace(/^\d+(?:\.\d+)?\s*(?:g|kg|ml|l|tsp|t|tbsp|cup|c)\s+/i, '').trim();
+        // Remove leading number + unit pattern from name (including single-letter units)
+        result.name = result.name.replace(/^\d+(?:\.\d+)?\s*(?:g|kg|ml|l|tsp|t|tbsp|tbs|cup|c)\s+/i, '').trim();
       }
       
       // Always try to strip quantity/unit prefix from name for unparsed cases
