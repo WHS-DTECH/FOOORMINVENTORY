@@ -1102,10 +1102,49 @@ Recipe Name: {recipe_name}
         
         body += f"\n---\nSubmitted on {datetime.datetime.now().strftime('%Y-%m-%d at %H:%M')}"
         
-        # Log the suggestion (email functionality can be added later with SMTP config)
-        print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+        # Send actual email
+        email_sent = False
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            
+            # Get SMTP configuration from environment variables
+            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+            smtp_port = int(os.getenv('SMTP_PORT', '587'))
+            smtp_username = os.getenv('SMTP_USERNAME')
+            smtp_password = os.getenv('SMTP_PASSWORD')
+            smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
+            
+            if smtp_username and smtp_password:
+                # Create message
+                msg = MIMEMultipart()
+                msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
+                msg['To'] = vp_email
+                msg['Subject'] = subject
+                msg.attach(MIMEText(body, 'plain'))
+                
+                # Send email
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                server.starttls()
+                server.login(smtp_username, smtp_password)
+                server.send_message(msg)
+                server.quit()
+                
+                email_sent = True
+                print(f"Email sent successfully to {vp_email}")
+            else:
+                print("SMTP credentials not configured - email not sent")
+                print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+                
+        except Exception as email_error:
+            print(f"Failed to send email: {email_error}")
+            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
         
-        flash(f'Thank you! Your suggestion for "{recipe_name}" has been sent to the VP.', 'success')
+        if email_sent:
+            flash(f'Thank you! Your suggestion for "{recipe_name}" has been emailed to the VP and saved to the database.', 'success')
+        else:
+            flash(f'Thank you! Your suggestion for "{recipe_name}" has been saved. The VP will review it in the Admin panel.', 'success')
         
     except Exception as e:
         print(f"Error in suggest_recipe: {e}")
