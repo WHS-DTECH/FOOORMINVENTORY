@@ -307,6 +307,34 @@
       if (u === 'kg') return { qty: qty * 1000, unit: 'g' };
       if (u === 'g') return { qty, unit: 'g' };
       
+      // For cups/teaspoons/tablespoons, convert dry goods to grams, liquids to ml
+      if (u === 'cup') {
+        if (isDryGood) {
+          // 1 cup flour ≈ 125g, 1 cup sugar ≈ 200g, average ~150g for dry goods
+          console.log(`  Converting ${qty} cup ${ingredientName} to ${qty * 150}g (dry good)`);
+          return { qty: qty * 150, unit: 'g' };
+        }
+        return { qty: qty * 250, unit: 'ml' }; // Liquids: 1 cup = 250ml
+      }
+      
+      if (u === 'tsp') {
+        if (isDryGood) {
+          // 1 tsp dry goods ≈ 5g
+          console.log(`  Converting ${qty} tsp ${ingredientName} to ${qty * 5}g (dry good)`);
+          return { qty: qty * 5, unit: 'g' };
+        }
+        return { qty: qty * 5, unit: 'ml' }; // Liquids: 1 tsp = 5ml
+      }
+      
+      if (u === 'tbsp') {
+        if (isDryGood) {
+          // 1 tbsp dry goods ≈ 15g
+          console.log(`  Converting ${qty} tbsp ${ingredientName} to ${qty * 15}g (dry good)`);
+          return { qty: qty * 15, unit: 'g' };
+        }
+        return { qty: qty * 15, unit: 'ml' }; // Liquids: 1 tbsp = 15ml
+      }
+      
       // For liters/ml, check if it's a dry good first
       if (u === 'l') {
         if (isDryGood) {
@@ -322,12 +350,6 @@
         }
         return { qty, unit: 'ml' }; // Keep ml for liquids
       }
-      
-      if (u === 'tsp') return { qty: qty * 5, unit: 'ml' };
-      if (u === 'tbsp') return { qty: qty * 15, unit: 'ml' };
-      if (u === 'cup') return { qty: qty * 250, unit: 'ml' };
-      return { qty, unit: u };
-    }
 
     function parseIngredient(raw) {
       let result = { qty: null, unit: '', name: '' };
