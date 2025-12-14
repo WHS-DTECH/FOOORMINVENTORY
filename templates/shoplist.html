@@ -301,6 +301,8 @@
                         'chocolate chips', 'chocolate', 'chips', 'wholemeal', 'white sugar', 'brown sugar'];
       const isDryGood = dryGoods.some(item => nameLower.includes(item));
       
+      console.log(`convertToBase: qty=${qty}, unit=${unit}, name="${ingredientName}", isDryGood=${isDryGood}, normalized unit=${u}`);
+      
       // Convert units to base units
       if (u === 'kg') return { qty: qty * 1000, unit: 'g' };
       if (u === 'g') return { qty, unit: 'g' };
@@ -308,12 +310,14 @@
       // For liters/ml, check if it's a dry good first
       if (u === 'l') {
         if (isDryGood) {
+          console.log(`  Converting ${qty}L ${ingredientName} to ${qty * 1000}g (dry good)`);
           return { qty: qty * 1000, unit: 'g' }; // Convert L to g for dry goods (1L ≈ 1kg)
         }
         return { qty: qty * 1000, unit: 'ml' }; // Convert L to ml for liquids
       }
       if (u === 'ml') {
         if (isDryGood) {
+          console.log(`  Converting ${qty}ml ${ingredientName} to ${qty}g (dry good)`);
           return { qty, unit: 'g' }; // Convert ml to g for dry goods (1ml ≈ 1g)
         }
         return { qty, unit: 'ml' }; // Keep ml for liquids
