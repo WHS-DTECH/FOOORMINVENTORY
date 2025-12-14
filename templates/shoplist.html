@@ -292,12 +292,33 @@
       return '';
     }
 
-    function convertToBase(qty, unit) {
+    function convertToBase(qty, unit, ingredientName = '') {
       const u = normalizeUnit(unit);
+      const nameLower = ingredientName.toLowerCase();
+      
+      // Check if this is a dry good that was incorrectly measured in volume
+      const dryGoods = ['flour', 'sugar', 'oats', 'rice', 'salt', 'baking powder', 'baking soda',
+                        'chocolate chips', 'chocolate', 'chips', 'wholemeal', 'white sugar', 'brown sugar'];
+      const isDryGood = dryGoods.some(item => nameLower.includes(item));
+      
+      // Convert units to base units
       if (u === 'kg') return { qty: qty * 1000, unit: 'g' };
       if (u === 'g') return { qty, unit: 'g' };
-      if (u === 'l') return { qty: qty * 1000, unit: 'ml' };
-      if (u === 'ml') return { qty, unit: 'ml' };
+      
+      // For liters/ml, check if it's a dry good first
+      if (u === 'l') {
+        if (isDryGood) {
+          return { qty: qty * 1000, unit: 'g' }; // Convert L to g for dry goods (1L ≈ 1kg)
+        }
+        return { qty: qty * 1000, unit: 'ml' }; // Convert L to ml for liquids
+      }
+      if (u === 'ml') {
+        if (isDryGood) {
+          return { qty, unit: 'g' }; // Convert ml to g for dry goods (1ml ≈ 1g)
+        }
+        return { qty, unit: 'ml' }; // Keep ml for liquids
+      }
+      
       if (u === 'tsp') return { qty: qty * 5, unit: 'ml' };
       if (u === 'tbsp') return { qty: qty * 15, unit: 'ml' };
       if (u === 'cup') return { qty: qty * 250, unit: 'ml' };
@@ -545,7 +566,7 @@
           if (!parsed.name || parsed.qty === 0) return;
           const qty = parsed.qty || 1;
           const scaledQty = qty * scale;
-          const base = convertToBase(scaledQty, parsed.unit);
+          const base = convertToBase(scaledQty, parsed.unit, parsed.name);
           const nameKey = normalizeName(parsed.name);
           const displayName = collapseDuplicateWords(parsed.name.trim()) || 'Item';
           const overallEntry = ingredientMap.get(nameKey) || { name: displayName, qty: 0, unit: base.unit };
