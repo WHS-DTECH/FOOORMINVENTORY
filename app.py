@@ -1136,10 +1136,14 @@ def recbk():
     # Get user's favorites if logged in
     favorites = []
     if current_user.is_authenticated:
-        with sqlite3.connect(DATABASE) as conn:
-            c = conn.cursor()
-            c.execute('SELECT recipe_id FROM recipe_favorites WHERE user_email = ?', (current_user.email,))
-            favorites = [row[0] for row in c.fetchall()]
+        try:
+            with sqlite3.connect(DATABASE) as conn:
+                c = conn.cursor()
+                c.execute('SELECT recipe_id FROM recipe_favorites WHERE user_email = ?', (current_user.email,))
+                favorites = [row[0] for row in c.fetchall()]
+        except sqlite3.OperationalError:
+            # Table doesn't exist yet - run setup_database.py to create it
+            favorites = []
 
     return render_template('recbk.html', rows=rows, q=q, favorites=favorites)
 
