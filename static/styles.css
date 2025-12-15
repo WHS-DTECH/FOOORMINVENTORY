@@ -4,6 +4,8 @@ body {
   margin: 0;
   padding: 0;
   background: #f5f6f8;
+  /* --- Sidebar & Topbar Layout --- */
+  .topbar {
   color: #222;
 }
 
@@ -18,17 +20,21 @@ h2 {
   padding: 0 16px;
   font-size: 18px;
 }
+  .topbar-left {
 
 /* Navigation Bar */
 nav, .navbar {
   background: #fff;
+  .topbar-right {
   border-bottom: 1px solid #ddd;
   padding: 12px 16px;
   margin: 0 0 16px 0;
   display: flex;
+  .project-switcher {
   justify-content: space-between;
   align-items: center;
 }
+  .project-link {
 
 nav a, .navbar a {
   text-decoration: none;
@@ -36,9 +42,12 @@ nav a, .navbar a {
   margin-right: 12px;
 }
 
+  .project-link.active, .project-link:hover {
 nav a:hover, .navbar a:hover {
   text-decoration: underline;
 }
+
+  .sidebar {
 
 .nav-brand {
   font-weight: bold;
@@ -52,26 +61,31 @@ nav a:hover, .navbar a:hover {
   gap: 8px;
 }
 
+  .sidebar-header {
 .user-info {
   color: #555;
   font-size: 14px;
   display: flex;
   align-items: center;
+  .sidebar-title {
   gap: 8px;
 }
 
 .badge {
+  .sidebar-toggle {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: bold;
   color: #fff;
+  .sidebar-nav {
 }
 
 .badge-VP {
   background: #d32f2f;
 }
+  .sidebar-nav a {
 
 .badge-DK {
   background: #388e3c;
@@ -79,17 +93,54 @@ nav a:hover, .navbar a:hover {
 
 .badge-MU {
   background: #1976d2;
+  .sidebar-nav a:hover, .sidebar-nav a.active {
 }
 
 .badge-public {
+
+  .main-content {
   background: #757575;
 }
 
 .login-link, .logout-link {
   padding: 6px 12px;
   border-radius: 4px;
+
+  /* Collapsed sidebar for mobile */
+  @media (max-width: 900px) {
+    .sidebar {
+      transform: translateX(-100%);
+      width: 220px;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+    }
+    .sidebar.collapsed {
+      transform: translateX(0);
+    }
+    .sidebar-toggle {
+      display: inline-block;
+    }
+    .main-content {
+      margin-left: 0;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+  }
+
+  @media (min-width: 901px) {
+    .sidebar {
+      transform: translateX(0);
+    }
+    .sidebar-toggle {
+      display: none;
+    }
+  }
+
+  /* When sidebar is collapsed, main content is full width */
+  .main-content.sidebar-collapsed {
   background: #0066cc;
   color: #fff !important;
+
+  body {
 }
 
 .login-link:hover, .logout-link:hover {
