@@ -127,6 +127,14 @@
       /* Hide print-only header on screen */
       .print-header, .print-date { display: none; }
     </style>
+  <script>
+    // Injected from backend context for JS interactivity
+    const bookings = {{ bookings|tojson|safe }};
+    const recipes = {{ recipes|tojson|safe }};
+    const dates = {{ dates|tojson|safe }};
+    // Use a Set for selection
+    let selection = new Set();
+  </script>
   <h1 class="no-print">Weekly Booking Grid</h1>
   <table class="grid no-print">
     <thead>
