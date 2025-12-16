@@ -142,22 +142,6 @@
     // --- END ALL JS FUNCTIONS ---
   </script>
   <h1 class="no-print">Weekly Booking Grid</h1>
-  <!-- JS block is now at the top of the file after data variables -->
-          wrapper.appendChild(title);
-          
-          if (data.week_label) {
-            const weekInfo = document.createElement('p');
-            weekInfo.textContent = data.week_label;
-            weekInfo.style.cssText = 'color: #666; font-style: italic;';
-            wrapper.appendChild(weekInfo);
-          }
-          
-          // Group by category
-          const categorized = {};
-          data.items.forEach(item => {
-            const category = item.category || categorizeIngredient(item.name);
-            if (!categorized[category]) categorized[category] = [];
-            categorized[category].push(item);
           });
           
           const categoryOrder = ['Produce', 'Meat & Seafood', 'Dairy', 'Frozen', 'Pantry', 'Beverages', 'Other'];
