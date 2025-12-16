@@ -1,3 +1,66 @@
+/* --- Shopping List/Weekly Booking Grid Table Enhancements --- */
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+}
+.grid th, .grid td {
+  border: 2px solid #b0b8c9;
+  padding: 14px 10px;
+  vertical-align: top;
+  min-width: 120px;
+  font-size: 1em;
+}
+.grid th {
+  background: #eaf0fa;
+  font-size: 1.08em;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 3px solid #4285f4;
+}
+.grid td {
+  background: #f9fbfd;
+  text-align: left;
+}
+.period {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #4285f4;
+  font-size: 1.1em;
+}
+.booking {
+  background: #eef4ff;
+  border: 2px solid #4285f4;
+  border-radius: 8px;
+  padding: 10px 8px 8px 12px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  box-shadow: 0 1px 4px rgba(66,133,244,0.07);
+}
+.booking:hover {
+  background: #dce9ff;
+  border-color: #3367d6;
+}
+.booking-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #222;
+  font-size: 1.05em;
+}
+.booking-meta {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.35;
+}
+.empty {
+  color: #bbb;
+  font-size: 1.1em;
+  text-align: center;
+}
 .booking-details-panel {
   display: none;
   position: fixed;
