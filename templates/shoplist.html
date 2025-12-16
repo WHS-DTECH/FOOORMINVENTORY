@@ -133,7 +133,16 @@
     const recipes = {{ recipes|tojson|safe }};
     const dates = {{ dates|tojson|safe }};
     // Use a Set for selection, and ensure it is always a Set (not overwritten by JSON)
-    let selection = window.selection instanceof Set ? window.selection : new Set();
+    // Always use a Set of numbers for selection
+    let selection = new Set();
+    // Ensure all booking IDs are numbers
+    if (Array.isArray(bookings)) {
+      bookings.forEach(b => { b.id = Number(b.id); });
+    }
+    console.log('Bookings loaded:', bookings);
+    console.log('Recipes loaded:', recipes);
+    console.log('Dates loaded:', dates);
+    console.log('Selection initialized:', selection);
   </script>
   <h1 class="no-print">Weekly Booking Grid</h1>
   <table class="grid no-print">
