@@ -47,16 +47,22 @@
   </div>
     <style>
       @media print {
-        body.print-list-only *:not(.print-list-section):not(.print-list-section *) {
+        body.print-list-only > *:not(.print-list-section) {
           display: none !important;
         }
         body.print-list-only .print-list-section {
           display: block !important;
           position: static !important;
-          width: 100% !important;
+          width: 100vw !important;
+          min-width: 0 !important;
           margin: 0 !important;
           padding: 0 !important;
           background: white !important;
+          color: black !important;
+        }
+        body.print-list-only .print-list-section * {
+          display: revert !important;
+          background: none !important;
           color: black !important;
         }
       }
