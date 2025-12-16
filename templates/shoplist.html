@@ -1057,16 +1057,32 @@
       }
     }
 
-    // Expose selection functions globally for inline onclick handlers
-    window.toggleBooking = toggleBooking;
-    window.selectAllWeek = selectAllWeek;
-    window.clearAllSelections = clearAllSelections;
-    window.generateShoppingList = generateShoppingList;
-    window.autoGenerateWeek = autoGenerateWeek;
-    window.exportShoppingListCsv = exportShoppingListCsv;
-    window.saveShoppingList = saveShoppingList;
-    window.loadShoppingList = loadShoppingList;
-    window.loadListById = loadListById;
+
+    // Expose selection functions globally for inline onclick handlers (do this at the top of the script)
+    window.toggleBooking = function(){};
+    window.selectAllWeek = function(){};
+    window.clearAllSelections = function(){};
+    window.generateShoppingList = function(){};
+    window.autoGenerateWeek = function(){};
+    window.exportShoppingListCsv = function(){};
+    window.saveShoppingList = function(){};
+    window.loadShoppingList = function(){};
+    window.loadListById = function(){};
+
+    // After all functions are defined, re-assign the real ones
+    document.addEventListener('DOMContentLoaded', () => {
+      window.toggleBooking = toggleBooking;
+      window.selectAllWeek = selectAllWeek;
+      window.clearAllSelections = clearAllSelections;
+      window.generateShoppingList = generateShoppingList;
+      window.autoGenerateWeek = autoGenerateWeek;
+      window.exportShoppingListCsv = exportShoppingListCsv;
+      window.saveShoppingList = saveShoppingList;
+      window.loadShoppingList = loadShoppingList;
+      window.loadListById = loadListById;
+      updateSelectionDisplay();
+      loadAlreadyHaveStatus();
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       updateSelectionDisplay();
