@@ -292,4 +292,22 @@
       {% endfor %}
     </tbody>
   </table>
-            
+
+  <div class="selection-panel no-print" style="margin-top: 24px; display: flex; gap: 32px; align-items: flex-start;">
+    <div style="flex: 1 1 320px; min-width: 280px; max-width: 420px;">
+      <h2 style="margin-bottom: 8px;">Selected Bookings</h2>
+      <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
+      <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="selectAllWeek()">Select All</button>
+        <button onclick="clearAllSelections()">Clear</button>
+        <button class="primary" onclick="generateShoppingList()">Generate Shopping List</button>
+        <button onclick="autoGenerateWeek()">Auto Generate</button>
+      </div>
+    </div>
+    <div id="shoppingList" class="print-list-section" style="flex: 2 1 480px; min-width: 320px; background: #f9f9f9; border-radius: 8px; padding: 18px 18px 18px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <h2 style="margin-top: 0;">Shopping List</h2>
+      <div id="listContent">Generate the shopping list to see items here.</div>
+    </div>
+  </div>
+
