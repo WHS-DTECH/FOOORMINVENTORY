@@ -519,6 +519,7 @@
       listEl.innerHTML = '';
       if (selection.size === 0) {
         notice.style.display = 'block';
+        console.log('No bookings selected.');
         return;
       }
       notice.style.display = 'none';
@@ -526,6 +527,7 @@
         if (a.date_required === b.date_required) return a.period - b.period;
         return a.date_required.localeCompare(b.date_required);
       });
+      console.log('Selected bookings:', selectedBookings);
       selectedBookings.forEach(b => {
         const li = document.createElement('li');
         const teacher = getTeacherLabel(b);
@@ -537,11 +539,23 @@
     }
 
     function toggleBooking(id) {
-      if (selection.has(id)) selection.delete(id); else selection.add(id);
+      console.log('toggleBooking called with id:', id);
+      if (selection.has(id)) {
+        selection.delete(id);
+        console.log('Removed from selection:', id);
+      } else {
+        selection.add(id);
+        console.log('Added to selection:', id);
+      }
       document.querySelectorAll(`[data-booking-id]`).forEach(el => {
         const bid = parseInt(el.dataset.bookingId, 10);
-        if (selection.has(bid)) el.classList.add('selected'); else el.classList.remove('selected');
+        if (selection.has(bid)) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
       });
+      console.log('Current selection:', Array.from(selection));
       updateSelectionDisplay();
     }
 
