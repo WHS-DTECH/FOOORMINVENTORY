@@ -167,6 +167,13 @@
       return validUnits.includes(normalized) ? normalized : '';
     }
 
+    function parseNumber(val) {
+      if (val === null || val === undefined) return 0;
+      if (typeof val === 'number') return val;
+      const n = parseFloat(String(val).replace(/[^\d.\/-]/g, '').replace(',', '.'));
+      return isNaN(n) ? 0 : n;
+    }
+
     function parseFraction(str) {
       if (!str) return 0;
       str = String(str).trim();
