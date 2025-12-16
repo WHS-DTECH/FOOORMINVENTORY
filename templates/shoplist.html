@@ -1075,20 +1075,7 @@
     }
 
 
-    // Expose selection functions globally for inline onclick handlers, after DOM and data are loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      window.toggleBooking = toggleBooking;
-      window.selectAllWeek = selectAllWeek;
-      window.clearAllSelections = clearAllSelections;
-      window.generateShoppingList = generateShoppingList;
-      window.autoGenerateWeek = autoGenerateWeek;
-      window.exportShoppingListCsv = exportShoppingListCsv;
-      window.saveShoppingList = saveShoppingList;
-      window.loadShoppingList = loadShoppingList;
-      window.loadListById = loadListById;
-      updateSelectionDisplay();
-      loadAlreadyHaveStatus();
-    });
+    // (window assignments now done immediately after each function definition at the top)
   </script>
 </body>
 </html>
