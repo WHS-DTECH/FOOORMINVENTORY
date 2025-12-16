@@ -62,7 +62,7 @@
             {% set booking = grid.get(key) %}
             <td>
               {% if booking %}
-                <div class="booking" data-booking-id="{{ booking.id }}">
+                <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBookingSelected(this)">
                   <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                   <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
                   <div class="booking-meta">Teacher: {{ booking.last_name or booking.staff_code or '—' }}{% if booking.first_name %}, {{ booking.first_name }}{% endif %}</div>
@@ -103,6 +103,13 @@
   <div class="preview-banner no-print" style="margin-top: 12px;">Buttons and grid will not appear when printing; only the shopping list is printed.</div>
 
   <script>
+    function toggleBookingSelected(el) {
+      // Remove .selected from all bookings in this cell
+      const parent = el.parentElement;
+      Array.from(parent.querySelectorAll('.booking')).forEach(b => b.classList.remove('selected'));
+      // Toggle selected on this one
+      el.classList.toggle('selected');
+    }
     const bookings = {{ bookings|tojson }};
     const recipes = {{ recipes|tojson }};
     const dates = {{ dates|tojson }};

@@ -1,3 +1,8 @@
+.booking.selected {
+  background: #d1f2d6 !important;
+  border-color: #34a853 !important;
+  box-shadow: 0 2px 8px rgba(52,168,83,0.13);
+}
 .btn-generate-list {
   background: #34a853 !important;
   border-color: #34a853 !important;
