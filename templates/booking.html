@@ -44,6 +44,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         let currentDate = new Date();
         const bookings = {{ bookings_json|tojson|safe }};
+        console.log('DEBUG bookings:', bookings);
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
