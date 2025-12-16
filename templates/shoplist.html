@@ -42,7 +42,25 @@
     <button onclick="loadShoppingList()">📂 Load Saved</button>
     <button onclick="exportShoppingListCsv()">📄 Export CSV</button>
     <button class="primary" onclick="window.print()">🖨️ Print</button>
+    <span style="flex: 1 1 auto;"></span>
+    <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745; margin-left: auto;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
   </div>
+    <style>
+      @media print {
+        body.print-list-only *:not(.print-list-section):not(.print-list-section *) {
+          display: none !important;
+        }
+        body.print-list-only .print-list-section {
+          display: block !important;
+          position: static !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
+          color: black !important;
+        }
+      }
+    </style>
   <h1 class="no-print">Weekly Booking Grid</h1>
   <table class="grid no-print">
     <thead>
@@ -93,7 +111,13 @@
       <div class="notice" id="selectionNotice">No bookings selected. Tap cells above or use "Auto-Generate Week".</div>
     </div>
 
-    <div class="shopping-list" id="shoppingList">
+    <div class="shopping-list print-list-section" id="shoppingList">
+        <script>
+          function printShoppingListOnly() {
+            document.body.classList.add('print-list-only');
+            window.print();
+            setTimeout(() => document.body.classList.remove('print-list-only'), 1000);
+          }
       <h2>Shopping List</h2>
       <div class="week-label">{{ week_label }}</div>
       <div id="listContent" class="small-muted">Click "Auto-Generate Week" to instantly create a shopping list for all bookings this week.</div>
