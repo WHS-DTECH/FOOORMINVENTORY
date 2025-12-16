@@ -46,6 +46,9 @@
     <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745; margin-left: auto;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
   </div>
     <style>
+      body, html {
+        font-family: Arial, Helvetica, sans-serif;
+      }
       @media print {
         @page {
           size: A4 portrait;
@@ -54,6 +57,7 @@
         html, body {
           margin: 0 !important;
           padding: 0 !important;
+          font-family: Arial, Helvetica, sans-serif !important;
         }
         body.print-list-only * {
           visibility: hidden !important;
@@ -74,7 +78,54 @@
         body.print-list-only .print-list-section > div {
           display: block !important;
         }
+        /* Hide checkboxes for print */
+        body.print-list-only input[type="checkbox"] {
+          display: none !important;
+        }
+        /* Print-only header */
+        .print-header {
+          display: block !important;
+          text-align: center;
+          margin-bottom: 18px;
+        }
+        /* Print date */
+        .print-date {
+          display: block !important;
+          text-align: right;
+          font-size: 12px;
+          color: #444;
+          margin-bottom: 8px;
+        }
+        /* Page numbers */
+        body.print-list-only::after {
+          content: "Page " counter(page);
+          position: fixed;
+          bottom: 8mm;
+          right: 12mm;
+          font-size: 12px;
+          color: #444;
+        }
+        /* Table styling for print */
+        .print-category-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 18px;
+        }
+        .print-category-table th, .print-category-table td {
+          border: 1px solid #bbb;
+          padding: 4px 8px;
+          font-size: 15px;
+        }
+        .print-category-table th {
+          background: #f0f0f0;
+        }
+        .print-section-sep {
+          border-top: 2px solid #333;
+          margin: 18px 0 12px 0;
+        }
       }
+      /* Hide print-only header on screen */
+      .print-header, .print-date { display: none; }
     </style>
   <h1 class="no-print">Weekly Booking Grid</h1>
   <table class="grid no-print">
@@ -127,6 +178,12 @@
     </div>
 
     <div class="shopping-list print-list-section" id="shoppingList">
+      <div class="print-header">
+        <!-- Optional: Add your school logo here -->
+        <div style="font-size: 2em; font-weight: bold; margin-bottom: 4px;">School Food Room Shopping List</div>
+        <div style="font-size: 1.1em;">{{ week_label }}</div>
+      </div>
+      <div class="print-date" id="printDate"></div>
       <h2>Shopping List</h2>
       <div class="week-label">{{ week_label }}</div>
       <div id="listContent" class="small-muted">Click "Auto-Generate Week" to instantly create a shopping list for all bookings this week.</div>
@@ -724,7 +781,7 @@
       }
       const { ingredientMap, teacherMap } = aggregateItems();
       const overall = Array.from(ingredientMap.values());
-      
+
       // Group by category
       const categorized = {};
       overall.forEach(item => {
@@ -732,11 +789,11 @@
         if (!categorized[category]) categorized[category] = [];
         categorized[category].push(item);
       });
-      
+
       // Sort categories and items within each category
       const categoryOrder = ['Produce', 'Meat & Seafood', 'Dairy', 'Frozen', 'Pantry', 'Beverages', 'Other'];
       const sortedCategories = categoryOrder.filter(cat => categorized[cat]);
-      
+
       // Add summary stats
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'shopping-summary';
@@ -746,54 +803,47 @@
           <strong>📊 Summary:</strong> ${overall.length} unique ingredients | ${notHaveCount} needed | ${alreadyHaveItems.size} already have
         </div>
       `;
-      
-      // Create a flex container for side-by-side layout
-      const flexContainer = document.createElement('div');
-      flexContainer.style.cssText = 'display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;';
 
-      // Category (left)
-      const categoryWrapper = document.createElement('div');
-      categoryWrapper.style.cssText = 'min-width: 340px; max-width: 480px; flex: 1 1 340px;';
-      categoryWrapper.appendChild(summaryDiv);
-      const overallTitle = document.createElement('h3');
-      overallTitle.textContent = 'Shopping List by Category';
-      overallTitle.style.cssText = 'margin-top: 16px; margin-bottom: 12px;';
-      categoryWrapper.appendChild(overallTitle);
+      // Print date (for print only)
+      const printDate = document.getElementById('printDate');
+      if (printDate) {
+        const now = new Date();
+        printDate.textContent = `Printed on: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+      }
+
+      // Category Table
+      const categoryTable = document.createElement('table');
+      categoryTable.className = 'print-category-table';
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      headRow.innerHTML = '<th>Category</th><th>Item</th><th>Qty/Unit</th><th class="no-print">Have?</th>';
+      thead.appendChild(headRow);
+      categoryTable.appendChild(thead);
+      const tbody = document.createElement('tbody');
       sortedCategories.forEach(category => {
-        const categoryDiv = document.createElement('div');
-        categoryDiv.style.cssText = 'margin-bottom: 20px; border-left: 4px solid #0066cc; padding-left: 12px;';
-        const categoryTitle = document.createElement('h4');
-        categoryTitle.textContent = category;
-        categoryTitle.style.cssText = 'margin: 8px 0; color: #0066cc;';
-        categoryDiv.appendChild(categoryTitle);
-        const list = document.createElement('ul');
-        list.className = 'shopping-items';
-        list.style.cssText = 'list-style: none; padding-left: 0;';
         categorized[category].sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
-          const li = document.createElement('li');
-          li.style.cssText = 'padding: 6px 0; display: flex; align-items: center; gap: 10px;';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${category}</td><td>${item.name}</td><td>${formatQtyUnit(item.qty, item.unit)}</td>`;
+          // Checkbox (screen only)
+          const tdCheck = document.createElement('td');
+          tdCheck.className = 'no-print';
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
           checkbox.checked = alreadyHaveItems.has(item.name);
-          checkbox.style.cssText = 'width: 20px; height: 20px; cursor: pointer;';
-          checkbox.className = 'no-print';
           checkbox.onclick = () => toggleAlreadyHave(item.name, item.qty, item.unit);
-          const label = document.createElement('span');
-          label.textContent = `${formatQtyUnit(item.qty, item.unit)} ${item.name}`.trim();
-          if (alreadyHaveItems.has(item.name)) {
-            label.style.cssText = 'text-decoration: line-through; color: #999;';
-          }
-          li.appendChild(checkbox);
-          li.appendChild(label);
-          list.appendChild(li);
+          tdCheck.appendChild(checkbox);
+          tr.appendChild(tdCheck);
+          tbody.appendChild(tr);
         });
-        categoryDiv.appendChild(list);
-        categoryWrapper.appendChild(categoryDiv);
       });
+      categoryTable.appendChild(tbody);
 
-      // Teacher (right)
+      // Section: By Teacher
+      const sectionSep = document.createElement('div');
+      sectionSep.className = 'print-section-sep';
+
       const teacherContainer = document.createElement('div');
-      teacherContainer.style.cssText = 'min-width: 260px; max-width: 340px; flex: 1 1 260px; margin-top: 0; padding-top: 0; border-top: none; border-left: 2px solid #ddd; padding-left: 24px;';
+      teacherContainer.style.marginTop = '12px';
       const teacherHeading = document.createElement('h3');
       teacherHeading.textContent = 'By Teacher';
       teacherContainer.appendChild(teacherHeading);
@@ -816,9 +866,11 @@
         teacherContainer.appendChild(block);
       });
 
-      flexContainer.appendChild(categoryWrapper);
-      flexContainer.appendChild(teacherContainer);
-      target.appendChild(flexContainer);
+      // Compose final layout
+      target.appendChild(summaryDiv);
+      target.appendChild(categoryTable);
+      target.appendChild(sectionSep);
+      target.appendChild(teacherContainer);
     }
 
     function generateShoppingList() {
