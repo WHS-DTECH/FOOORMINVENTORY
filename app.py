@@ -2147,7 +2147,7 @@ def booking_calendar():
         ''')
         bookings = [dict(row) for row in c.fetchall()]
     
-    return render_template('booking.html', bookings_json=json.dumps(bookings))
+    return render_template('booking.html', bookings=bookings)
 
 
 @app.route('/booking/export/ical')
