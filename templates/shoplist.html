@@ -181,31 +181,6 @@
       // Unicode fractions
       const fractionMap = {
         '½': 0.5, '⅓': 0.333, '⅔': 0.667, '¼': 0.25, '¾': 0.75,
-        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8, '⅙': 0.167,
-        '⅚': 0.833, '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875
-      };
-      
-      if (fractionMap[str]) return fractionMap[str];
-      
-      // Handle "1/2" style fractions
-      const fracMatch = str.match(/^(\d+)\/(\d+)$/);
-      if (fracMatch) {
-        return parseFloat(fracMatch[1]) / parseFloat(fracMatch[2]);
-      }
-      
-      // Handle mixed numbers like "2 1/2", "24 2/3" or "2½"
-      const mixedMatch = str.match(/^(\d+)\s+([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)$/);
-      if (mixedMatch) {
-        const whole = parseFloat(mixedMatch[1]);
-        const frac = parseFraction(mixedMatch[2]);
-        return whole + frac;
-      }
-      
-      return 0;
-    }
-
-    function parseNumber(val) {
-      if (val === null || val === undefined || val === '') return null;
       
       const str = String(val).trim();
       
