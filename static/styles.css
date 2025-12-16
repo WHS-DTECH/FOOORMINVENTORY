@@ -1,3 +1,15 @@
+.btn-generate-list {
+  background: #34a853 !important;
+  border-color: #34a853 !important;
+  color: #fff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(52,168,83,0.13);
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-generate-list:hover {
+  background: #219a43 !important;
+  border-color: #219a43 !important;
+}
 .panel.selected-bookings-popout {
   background: #fff;
   border: 4px solid #34a853;
