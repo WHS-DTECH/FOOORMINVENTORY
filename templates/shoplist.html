@@ -130,8 +130,12 @@
   <script>
     // Injected from backend context for JS interactivity
     const bookings = {{ bookings|tojson|safe }};
-    const recipes = {{ recipes|tojson|safe }};
+    let recipes = {{ recipes|tojson|safe }};
     const dates = {{ dates|tojson|safe }};
+    // Ensure recipes is an array for .find to work
+    if (recipes && !Array.isArray(recipes)) {
+      recipes = Object.values(recipes);
+    }
     let selection = new Set();
     if (Array.isArray(bookings)) {
       bookings.forEach(b => { b.id = Number(b.id); });
