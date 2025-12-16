@@ -656,19 +656,50 @@ hr {
   margin-bottom: 5px;
 }
 
+
 .booking-item {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 3px;
-  padding: 4px 6px;
-  margin: 2px 0;
-  font-size: 0.85em;
+  background: #4285f4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin: 4px 0;
+  font-size: 0.95em;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 1px 3px rgba(66,133,244,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
 }
 
 .booking-item:hover {
-  background: #c3e6cb;
+  background: #3367d6;
+  box-shadow: 0 2px 8px rgba(66,133,244,0.18);
+}
+
+.calendar-day {
+  background: white;
+  min-height: 100px;
+  padding: 8px 4px 4px 4px;
+  position: relative;
+  border: 1px solid #ddd;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+
+.calendar-day .day-number {
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #222;
+  font-size: 1.1em;
+}
+
+.calendar-day.today {
+  background: #fffbe6;
+  border: 2px solid #fbbc04;
 }
 
 .booking-details {

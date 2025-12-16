@@ -73,7 +73,7 @@
                 const dayBookings = bookings.filter(b => b.date === dateStr);
                 html += `<div class="calendar-day ${isToday ? 'today' : ''}">\n                <div class="day-number">${day}</div>`;
                 dayBookings.forEach(booking => {
-                    html += `<div class="booking-item" onclick="showDetails(${booking.id})">\n                    ${booking.period}: ${booking.recipe_name}\n                </div>`;
+                    html += `<div class="booking-item" title="${booking.recipe_name} (${booking.period})" onclick="showDetails(${booking.id})">${booking.period}: ${booking.recipe_name}</div>`;
                 });
                 html += '</div>';
             }
