@@ -220,22 +220,5 @@
         window.syncGoogleCalendar = syncGoogleCalendar;
     });
 </script>
-                }
-                function today() {
-                    currentDate = new Date();
-                    renderCalendar();
-                }
-                function syncGoogleCalendar() {
-                    window.open('/booking/export/ical', '_blank');
-                    setTimeout(() => {
-                        alert('Download the .ics file and:\n\n1. Go to Google Calendar (calendar.google.com)\n2. Click the + next to "Other calendars"\n3. Select "Import"\n4. Choose the downloaded .ics file\n5. Select which calendar to add events to\n6. Click "Import"');
-                    }, 500);
-                }
-                // Initialize calendar
-                renderCalendar();
-            </script>
-            {% endblock %}
-        renderCalendar();
-    </script>
-</body>
-</html>
+
+{% endblock %}

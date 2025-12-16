@@ -4,6 +4,7 @@ body {
   margin: 0;
   padding: 0;
   background: #f5f6f8;
+  
   /* --- Sidebar & Topbar Layout --- */
   .topbar {
   color: #222;
@@ -20,7 +21,7 @@ h2 {
   padding: 0 16px;
   font-size: 18px;
 }
-  .topbar-left {
+ /* .topbar-left {*/
 
 /* Navigation Bar */
 nav, .navbar {
@@ -79,13 +80,15 @@ nav a:hover, .navbar a:hover {
   font-size: 12px;
   font-weight: bold;
   color: #fff;
-  .sidebar-nav {
-}
+  }
+
+/*.sidebar-nav {
+}*/
 
 .badge-VP {
   background: #d32f2f;
 }
-  .sidebar-nav a {
+ /* .sidebar-nav a { */
 
 .badge-DK {
   background: #388e3c;
@@ -93,8 +96,10 @@ nav a:hover, .navbar a:hover {
 
 .badge-MU {
   background: #1976d2;
-  .sidebar-nav a:hover, .sidebar-nav a.active {
 }
+
+/*.sidebar-nav a:hover, .sidebar-nav a.active {
+}*/
 
 .badge-public {
 
@@ -139,8 +144,6 @@ nav a:hover, .navbar a:hover {
   .main-content.sidebar-collapsed {
   background: #0066cc;
   color: #fff !important;
-
-  body {
 }
 
 .login-link:hover, .logout-link:hover {
