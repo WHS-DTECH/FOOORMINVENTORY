@@ -70,6 +70,10 @@
           background: white !important;
           color: black !important;
         }
+        /* Stack columns vertically for print to avoid page breaks in the middle of a flex row */
+        body.print-list-only .print-list-section > div {
+          display: block !important;
+        }
       }
     </style>
   <h1 class="no-print">Weekly Booking Grid</h1>
