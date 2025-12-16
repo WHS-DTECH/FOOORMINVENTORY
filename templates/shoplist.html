@@ -179,7 +179,7 @@
 
     <div class="shopping-list print-list-section" id="shoppingList">
       <div class="print-header">
-        <!-- Optional: Add your school logo here -->
+        <img src="{{ url_for('static', filename='images/whs logo circular reo .png') }}" alt="School Logo" class="print-logo">
         <div style="font-size: 2em; font-weight: bold; margin-bottom: 4px;">School Food Room Shopping List</div>
         <div style="font-size: 1.1em;">{{ week_label }}</div>
       </div>
@@ -196,94 +196,101 @@
     function printShoppingListOnly() {
       document.body.classList.add('print-list-only');
       // Wait for DOM to update and reflow before printing
-      setTimeout(() => {
-        window.print();
-        setTimeout(() => document.body.classList.remove('print-list-only'), 1000);
-      }, 200);
-    }
-    const bookings = {{ bookings|tojson }};
-    const recipes = {{ recipes|tojson }};
-    const dates = {{ dates|tojson }};
-    const weekLabel = {{ week_label|tojson }};
-
-    const selection = new Set();
-    const alreadyHaveItems = new Set();
-    const weekStart = '{{ dates[0].date }}';
-    
-    const unitAliases = {
-      g: 'g', gram: 'g', grams: 'g', kg: 'kg', kilogram: 'kg', kilograms: 'kg',
-      ml: 'ml', millilitre: 'ml', milliliter: 'ml', milliliters: 'ml', millilitres: 'ml',
-      l: 'l', litre: 'l', liters: 'l', litres: 'l',
-      t: 'tsp', tsp: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp',
-      tbsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp', tbs: 'tbsp',
-      cup: 'cup', cups: 'cup', c: 'cup'
-    };
-
-    const produceUnitless = ['apple','banana','orange','onion','carrot','potato','pepper','capsicum','egg'];
-    
-    // Helper to categorize ingredients by store section
-    function categorizeIngredient(name) {
-      const nameLower = name.toLowerCase();
-      
-      const produce = ['apple', 'banana', 'orange', 'lemon', 'lime', 'tomato', 'potato', 'onion', 'garlic', 
-                       'carrot', 'lettuce', 'spinach', 'cabbage', 'broccoli', 'cauliflower', 'pepper', 'capsicum',
-                       'cucumber', 'zucchini', 'mushroom', 'avocado', 'celery', 'ginger', 'herb', 'parsley',
-                       'cilantro', 'basil', 'mint', 'thyme', 'rosemary', 'kale', 'chard', 'beetroot', 'pumpkin'];
-      
-      const dairy = ['milk', 'cream', 'butter', 'cheese', 'yogurt', 'yoghurt', 'sour cream', 'feta', 'mozzarella',
-                     'parmesan', 'cheddar', 'brie', 'cottage cheese', 'ricotta', 'halloumi'];
-      
-      const meat = ['chicken', 'beef', 'pork', 'lamb', 'turkey', 'bacon', 'sausage', 'mince', 'steak',
-                    'fish', 'salmon', 'tuna', 'prawn', 'shrimp', 'mussel', 'seafood'];
-      
-      const pantry = ['flour', 'sugar', 'rice', 'pasta', 'bread', 'cereal', 'oats', 'quinoa', 'couscous',
-                      'lentil', 'bean', 'chickpea', 'oil', 'vinegar', 'sauce', 'stock', 'broth',
-                      'honey', 'jam', 'peanut butter', 'nuts', 'almond', 'cashew', 'seed', 'spice',
-                      'salt', 'pepper', 'cumin', 'paprika', 'cinnamon', 'vanilla', 'cocoa', 'chocolate',
-                      'baking powder', 'baking soda', 'yeast', 'cornstarch', 'cornflour'];
-      
-      const frozen = ['frozen', 'ice cream', 'peas', 'corn', 'berries'];
-      const beverages = ['juice', 'soda', 'water', 'tea', 'coffee', 'wine', 'beer'];
-      
-      if (produce.some(item => nameLower.includes(item))) return 'Produce';
-      if (dairy.some(item => nameLower.includes(item))) return 'Dairy';
-      if (meat.some(item => nameLower.includes(item))) return 'Meat & Seafood';
-      if (pantry.some(item => nameLower.includes(item))) return 'Pantry';
-      if (frozen.some(item => nameLower.includes(item))) return 'Frozen';
-      if (beverages.some(item => nameLower.includes(item))) return 'Beverages';
-      
-      return 'Other';
-    }
-
-    const validUnits = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'pcs', 'oz', 'lb', 'pt', 'qt', 'gal'];
-
-    function normalizeUnit(unit) {
-      if (!unit) return '';
-      const key = unit.toString().trim().toLowerCase();
-      const normalized = unitAliases[key] || key;
-      // Only return the unit if it's in our valid units list
-      return validUnits.includes(normalized) ? normalized : '';
-    }
-
-    function parseNumber(val) {
-      if (val === null || val === undefined) return 0;
-      if (typeof val === 'number') return val;
-      const n = parseFloat(String(val).replace(/[^\d.\/-]/g, '').replace(',', '.'));
-      return isNaN(n) ? 0 : n;
-    }
-
-    function parseFraction(str) {
-      if (!str) return 0;
-      str = String(str).trim();
-      // Unicode fractions
-      const fractionMap = {
-        '½': 0.5, '⅓': 0.333, '⅔': 0.667, '¼': 0.25, '¾': 0.75,
-        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8, '⅙': 0.166, '⅚': 0.833,
-        '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875
-      };
-      if (fractionMap[str]) return fractionMap[str];
-      // Try fraction parsing first
-      if (/^\d+\/\d+$/.test(str)) {
+      <style>
+        body, html {
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 16mm 10mm 16mm 10mm;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 16px !important;
+          }
+          body.print-list-only * {
+            visibility: hidden !important;
+          }
+          body.print-list-only .print-list-section, 
+          body.print-list-only .print-list-section * {
+            visibility: visible !important;
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            color: black !important;
+          }
+          /* Stack columns vertically for print to avoid page breaks in the middle of a flex row */
+          body.print-list-only .print-list-section > div {
+            display: block !important;
+          }
+          /* Hide checkboxes and Have? column for print */
+          body.print-list-only input[type="checkbox"],
+          body.print-list-only .print-category-table th.no-print,
+          body.print-list-only .print-category-table td.no-print {
+            display: none !important;
+          }
+          /* Print-only header */
+          .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 18px;
+          }
+          /* Print logo always visible */
+          .print-logo {
+            display: block !important;
+            margin: 0 auto 6px auto !important;
+            height: 60px !important;
+          }
+          /* Print date */
+          .print-date {
+            display: block !important;
+            text-align: right;
+            font-size: 13px;
+            color: #444;
+            margin-bottom: 8px;
+          }
+          /* Page numbers */
+          body.print-list-only::after {
+            content: "Page " counter(page);
+            position: fixed;
+            bottom: 8mm;
+            right: 12mm;
+            font-size: 13px;
+            color: #444;
+          }
+          /* Table styling for print */
+          .print-category-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+          }
+          .print-category-table th, .print-category-table td {
+            border: 1px solid #bbb;
+            padding: 2px 6px;
+            font-size: 15px;
+            line-height: 1.2;
+          }
+          .print-category-table th {
+            background: #f0f0f0;
+          }
+          .print-section-sep {
+            border-top: 2px solid #333;
+            margin: 22px 0 16px 0;
+          }
+          .teacher-block {
+            margin-bottom: 10px;
+          }
+        }
+        /* Hide print-only header on screen */
+        .print-header, .print-date { display: none; }
+      </style>
         const parts = str.split('/');
         return parseInt(parts[0], 10) / parseInt(parts[1], 10);
       }
@@ -811,7 +818,7 @@
         printDate.textContent = `Printed on: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
       }
 
-      // Category Table
+      // Category Table with grouped categories
       const categoryTable = document.createElement('table');
       categoryTable.className = 'print-category-table';
       const thead = document.createElement('thead');
@@ -821,9 +828,14 @@
       categoryTable.appendChild(thead);
       const tbody = document.createElement('tbody');
       sortedCategories.forEach(category => {
-        categorized[category].sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+        const items = categorized[category].sort((a, b) => a.name.localeCompare(b.name));
+        items.forEach((item, idx) => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${category}</td><td>${item.name}</td><td>${formatQtyUnit(item.qty, item.unit)}</td>`;
+          if (idx === 0) {
+            tr.innerHTML = `<td rowspan="${items.length}" style="vertical-align: top; font-weight: bold;">${category}</td><td>${item.name}</td><td>${formatQtyUnit(item.qty, item.unit)}</td>`;
+          } else {
+            tr.innerHTML = `<td style="display:none"></td><td>${item.name}</td><td>${formatQtyUnit(item.qty, item.unit)}</td>`;
+          }
           // Checkbox (screen only)
           const tdCheck = document.createElement('td');
           tdCheck.className = 'no-print';
@@ -843,7 +855,7 @@
       sectionSep.className = 'print-section-sep';
 
       const teacherContainer = document.createElement('div');
-      teacherContainer.style.marginTop = '12px';
+      teacherContainer.style.marginTop = '18px';
       const teacherHeading = document.createElement('h3');
       teacherHeading.textContent = 'By Teacher';
       teacherContainer.appendChild(teacherHeading);
