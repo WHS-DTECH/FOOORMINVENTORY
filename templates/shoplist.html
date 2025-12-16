@@ -212,14 +212,46 @@
         target.textContent = 'Select bookings then generate the shopping list.';
         return;
       }
-      // Example: just list selected booking names
-      const ul = document.createElement('ul');
+      // Aggregate all ingredients from selected bookings
+      let ingredientMap = {};
       bookings.filter(b => selection.has(b.id)).forEach(b => {
-        const li = document.createElement('li');
-        li.textContent = b.recipe_name || 'Booking';
-        ul.appendChild(li);
+        const recipe = recipes.find(r => r.id == b.recipe_id);
+        if (recipe && recipe.ingredients) {
+          recipe.ingredients.forEach(ing => {
+            const key = ing.name + '|' + (ing.unit || '');
+            if (!ingredientMap[key]) {
+              ingredientMap[key] = { ...ing };
+            } else {
+              ingredientMap[key].qty += ing.qty;
+            }
+          });
+        }
       });
-      target.appendChild(ul);
+      // Group by category
+      let categories = {};
+      Object.values(ingredientMap).forEach(ing => {
+        const cat = ing.category || 'Other';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(ing);
+      });
+      // Render grouped shopping list
+      Object.keys(categories).sort().forEach(cat => {
+        const catDiv = document.createElement('div');
+        catDiv.style.marginBottom = '12px';
+        const catTitle = document.createElement('h3');
+        catTitle.textContent = cat;
+        catTitle.style.fontSize = '17px';
+        catTitle.style.margin = '8px 0 4px 0';
+        catDiv.appendChild(catTitle);
+        const ul = document.createElement('ul');
+        categories[cat].forEach(ing => {
+          const li = document.createElement('li');
+          li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
+          ul.appendChild(li);
+        });
+        catDiv.appendChild(ul);
+        target.appendChild(catDiv);
+      });
     }
     window.generateShoppingList = generateShoppingList;
 
