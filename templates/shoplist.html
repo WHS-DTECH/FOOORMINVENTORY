@@ -146,38 +146,6 @@
           
           const categoryOrder = ['Produce', 'Meat & Seafood', 'Dairy', 'Frozen', 'Pantry', 'Beverages', 'Other'];
           categoryOrder.filter(cat => categorized[cat]).forEach(category => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.style.cssText = 'margin-bottom: 20px; border-left: 4px solid #0066cc; padding-left: 12px;';
+      <h1 class="no-print">Weekly Booking Grid</h1>
+      <!-- All code after this line has been removed to ensure only valid HTML follows. -->
             
-            const categoryTitle = document.createElement('h4');
-            categoryTitle.textContent = category;
-            categoryTitle.style.cssText = 'margin: 8px 0; color: #0066cc;';
-            categoryDiv.appendChild(categoryTitle);
-            
-            const list = document.createElement('ul');
-            list.className = 'shopping-items';
-            
-            categorized[category].forEach(item => {
-              const li = document.createElement('li');
-              li.textContent = `${formatQtyUnit(item.quantity, item.unit)} ${item.name}`.trim();
-              list.appendChild(li);
-            });
-            
-            categoryDiv.appendChild(list);
-            wrapper.appendChild(categoryDiv);
-          });
-          
-          target.appendChild(wrapper);
-          document.querySelector('[style*="rgba(0,0,0,0.5)"]')?.remove();
-        }
-      } catch (error) {
-        console.error('Error loading list:', error);
-        alert('Failed to load shopping list');
-      }
-    }
-
-
-    // (window assignments now done immediately after each function definition at the top)
-  </script>
-</body>
-</html>
