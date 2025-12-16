@@ -214,19 +214,32 @@
       }
       // Aggregate all ingredients from selected bookings
       let ingredientMap = {};
+      let foundAny = false;
       bookings.filter(b => selection.has(b.id)).forEach(b => {
         const recipe = recipes.find(r => r.id == b.recipe_id);
         if (recipe && recipe.ingredients) {
           recipe.ingredients.forEach(ing => {
-            const key = ing.name + '|' + (ing.unit || '');
+            foundAny = true;
+            // Use correct property names from JSON: ingredient, quantity, unit, category
+            const name = ing.ingredient || ing.name || '';
+            const unit = ing.unit || '';
+            let qty = parseFloat(ing.quantity || ing.qty || 0);
+            if (isNaN(qty)) qty = ing.quantity || ing.qty || '';
+            const key = name + '|' + unit;
             if (!ingredientMap[key]) {
-              ingredientMap[key] = { ...ing };
+              ingredientMap[key] = { name, unit, qty, category: ing.category || 'Other' };
             } else {
-              ingredientMap[key].qty += ing.qty;
+              if (typeof ingredientMap[key].qty === 'number' && typeof qty === 'number') {
+                ingredientMap[key].qty += qty;
+              }
             }
           });
         }
       });
+      if (!foundAny) {
+        target.textContent = 'No ingredients found for selected bookings.';
+        return;
+      }
       // Group by category
       let categories = {};
       Object.values(ingredientMap).forEach(ing => {
