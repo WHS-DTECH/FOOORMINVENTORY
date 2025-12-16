@@ -132,8 +132,8 @@
     const bookings = {{ bookings|tojson|safe }};
     const recipes = {{ recipes|tojson|safe }};
     const dates = {{ dates|tojson|safe }};
-    // Use a Set for selection
-    let selection = new Set();
+    // Use a Set for selection, and ensure it is always a Set (not overwritten by JSON)
+    let selection = window.selection instanceof Set ? window.selection : new Set();
   </script>
   <h1 class="no-print">Weekly Booking Grid</h1>
   <table class="grid no-print">
@@ -1066,18 +1066,7 @@
     }
 
 
-    // Expose selection functions globally for inline onclick handlers (do this at the top of the script)
-    window.toggleBooking = function(){};
-    window.selectAllWeek = function(){};
-    window.clearAllSelections = function(){};
-    window.generateShoppingList = function(){};
-    window.autoGenerateWeek = function(){};
-    window.exportShoppingListCsv = function(){};
-    window.saveShoppingList = function(){};
-    window.loadShoppingList = function(){};
-    window.loadListById = function(){};
-
-    // After all functions are defined, re-assign the real ones
+    // Expose selection functions globally for inline onclick handlers, after DOM and data are loaded
     document.addEventListener('DOMContentLoaded', () => {
       window.toggleBooking = toggleBooking;
       window.selectAllWeek = selectAllWeek;
@@ -1088,11 +1077,6 @@
       window.saveShoppingList = saveShoppingList;
       window.loadShoppingList = loadShoppingList;
       window.loadListById = loadListById;
-      updateSelectionDisplay();
-      loadAlreadyHaveStatus();
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
       updateSelectionDisplay();
       loadAlreadyHaveStatus();
     });
