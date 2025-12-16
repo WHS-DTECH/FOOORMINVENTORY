@@ -62,7 +62,7 @@
             {% set booking = grid.get(key) %}
             <td>
               {% if booking %}
-                <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})">
+                <div class="booking" data-booking-id="{{ booking.id }}">
                   <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                   <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
                   <div class="booking-meta">Teacher: {{ booking.last_name or booking.staff_code or '—' }}{% if booking.first_name %}, {{ booking.first_name }}{% endif %}</div>
