@@ -949,6 +949,17 @@
       }
     }
 
+    // Expose selection functions globally for inline onclick handlers
+    window.toggleBooking = toggleBooking;
+    window.selectAllWeek = selectAllWeek;
+    window.clearAllSelections = clearAllSelections;
+    window.generateShoppingList = generateShoppingList;
+    window.autoGenerateWeek = autoGenerateWeek;
+    window.exportShoppingListCsv = exportShoppingListCsv;
+    window.saveShoppingList = saveShoppingList;
+    window.loadShoppingList = loadShoppingList;
+    window.loadListById = loadListById;
+
     document.addEventListener('DOMContentLoaded', () => {
       updateSelectionDisplay();
       loadAlreadyHaveStatus();
