@@ -130,8 +130,11 @@
   <script>
     function printShoppingListOnly() {
       document.body.classList.add('print-list-only');
-      window.print();
-      setTimeout(() => document.body.classList.remove('print-list-only'), 1000);
+      // Wait for DOM to update and reflow before printing
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => document.body.classList.remove('print-list-only'), 1000);
+      }, 200);
     }
     const bookings = {{ bookings|tojson }};
     const recipes = {{ recipes|tojson }};
