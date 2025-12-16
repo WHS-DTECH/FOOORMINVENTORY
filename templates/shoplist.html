@@ -112,12 +112,6 @@
     </div>
 
     <div class="shopping-list print-list-section" id="shoppingList">
-        <script>
-          function printShoppingListOnly() {
-            document.body.classList.add('print-list-only');
-            window.print();
-            setTimeout(() => document.body.classList.remove('print-list-only'), 1000);
-          }
       <h2>Shopping List</h2>
       <div class="week-label">{{ week_label }}</div>
       <div id="listContent" class="small-muted">Click "Auto-Generate Week" to instantly create a shopping list for all bookings this week.</div>
@@ -127,6 +121,11 @@
   <div class="preview-banner no-print" style="margin-top: 12px;">Buttons and grid will not appear when printing; only the shopping list is printed.</div>
 
   <script>
+    function printShoppingListOnly() {
+      document.body.classList.add('print-list-only');
+      window.print();
+      setTimeout(() => document.body.classList.remove('print-list-only'), 1000);
+    }
     const bookings = {{ bookings|tojson }};
     const recipes = {{ recipes|tojson }};
     const dates = {{ dates|tojson }};
