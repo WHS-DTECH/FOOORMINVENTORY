@@ -48,10 +48,11 @@
     <style>
       @media print {
         body.print-list-only * {
-          display: none !important;
+          visibility: hidden !important;
         }
         body.print-list-only .print-list-section, 
         body.print-list-only .print-list-section * {
+          visibility: visible !important;
           display: block !important;
           position: static !important;
           width: 100% !important;
