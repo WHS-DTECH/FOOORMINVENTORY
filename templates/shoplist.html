@@ -170,25 +170,25 @@
     function parseFraction(str) {
       if (!str) return 0;
       str = String(str).trim();
-      
       // Unicode fractions
       const fractionMap = {
         '½': 0.5, '⅓': 0.333, '⅔': 0.667, '¼': 0.25, '¾': 0.75,
-      
-      const str = String(val).trim();
-      
+        '⅕': 0.2, '⅖': 0.4, '⅗': 0.6, '⅘': 0.8, '⅙': 0.166, '⅚': 0.833,
+        '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875
+      };
+      if (fractionMap[str]) return fractionMap[str];
       // Try fraction parsing first
-      const fracResult = parseFraction(str);
-      if (fracResult > 0) return fracResult;
-      
-      // Handle numbers with Unicode fractions attached (no space): "24½" 
+      if (/^\d+\/\d+$/.test(str)) {
+        const parts = str.split('/');
+        return parseInt(parts[0], 10) / parseInt(parts[1], 10);
+      }
+      // Handle numbers with Unicode fractions attached (no space): "24½"
       const unicodeFracMatch = str.match(/^(\d+(?:\.\d+)?)([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])$/);
       if (unicodeFracMatch) {
         const whole = parseFloat(unicodeFracMatch[1]);
         const frac = parseFraction(unicodeFracMatch[2]);
         return whole + frac;
       }
-      
       // Handle "24 ½" or "24 2/3" with space
       const spacedFracMatch = str.match(/^(\d+(?:\.\d+)?)\s+([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+\/\d+)$/);
       if (spacedFracMatch) {
@@ -196,7 +196,6 @@
         const frac = parseFraction(spacedFracMatch[2]);
         return whole + frac;
       }
-      
       const num = parseFloat(str.replace(',', '.'));
       return Number.isFinite(num) ? num : null;
     }
