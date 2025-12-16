@@ -706,60 +706,56 @@
         </div>
       `;
       
-      const wrapper = document.createElement('div');
-      wrapper.appendChild(summaryDiv);
-      
-      // Render categorized list
+      // Create a flex container for side-by-side layout
+      const flexContainer = document.createElement('div');
+      flexContainer.style.cssText = 'display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;';
+
+      // Category (left)
+      const categoryWrapper = document.createElement('div');
+      categoryWrapper.style.cssText = 'min-width: 340px; max-width: 480px; flex: 1 1 340px;';
+      categoryWrapper.appendChild(summaryDiv);
       const overallTitle = document.createElement('h3');
       overallTitle.textContent = 'Shopping List by Category';
       overallTitle.style.cssText = 'margin-top: 16px; margin-bottom: 12px;';
-      wrapper.appendChild(overallTitle);
-      
+      categoryWrapper.appendChild(overallTitle);
       sortedCategories.forEach(category => {
         const categoryDiv = document.createElement('div');
         categoryDiv.style.cssText = 'margin-bottom: 20px; border-left: 4px solid #0066cc; padding-left: 12px;';
-        
         const categoryTitle = document.createElement('h4');
         categoryTitle.textContent = category;
         categoryTitle.style.cssText = 'margin: 8px 0; color: #0066cc;';
         categoryDiv.appendChild(categoryTitle);
-        
         const list = document.createElement('ul');
         list.className = 'shopping-items';
         list.style.cssText = 'list-style: none; padding-left: 0;';
-        
         categorized[category].sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
           const li = document.createElement('li');
           li.style.cssText = 'padding: 6px 0; display: flex; align-items: center; gap: 10px;';
-          
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
           checkbox.checked = alreadyHaveItems.has(item.name);
           checkbox.style.cssText = 'width: 20px; height: 20px; cursor: pointer;';
           checkbox.className = 'no-print';
           checkbox.onclick = () => toggleAlreadyHave(item.name, item.qty, item.unit);
-          
           const label = document.createElement('span');
           label.textContent = `${formatQtyUnit(item.qty, item.unit)} ${item.name}`.trim();
           if (alreadyHaveItems.has(item.name)) {
             label.style.cssText = 'text-decoration: line-through; color: #999;';
           }
-          
           li.appendChild(checkbox);
           li.appendChild(label);
           list.appendChild(li);
         });
-        
         categoryDiv.appendChild(list);
-        wrapper.appendChild(categoryDiv);
+        categoryWrapper.appendChild(categoryDiv);
       });
 
+      // Teacher (right)
       const teacherContainer = document.createElement('div');
-      teacherContainer.style.cssText = 'margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd;';
+      teacherContainer.style.cssText = 'min-width: 260px; max-width: 340px; flex: 1 1 260px; margin-top: 0; padding-top: 0; border-top: none; border-left: 2px solid #ddd; padding-left: 24px;';
       const teacherHeading = document.createElement('h3');
       teacherHeading.textContent = 'By Teacher';
       teacherContainer.appendChild(teacherHeading);
-      
       const sortedTeachers = Array.from(teacherMap.keys()).sort((a, b) => a.localeCompare(b));
       sortedTeachers.forEach(t => {
         const block = document.createElement('div');
@@ -779,8 +775,9 @@
         teacherContainer.appendChild(block);
       });
 
-      wrapper.appendChild(teacherContainer);
-      target.appendChild(wrapper);
+      flexContainer.appendChild(categoryWrapper);
+      flexContainer.appendChild(teacherContainer);
+      target.appendChild(flexContainer);
     }
 
     function generateShoppingList() {
