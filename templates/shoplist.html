@@ -471,6 +471,11 @@
       <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
       <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
       <div style="display: flex; gap: 8px;">
+        <button onclick="saveShoppingList()">💾 Save List</button>
+        <button onclick="loadShoppingList()">📂 Load Saved</button>
+        <button onclick="exportShoppingListCsv()">📄 Export CSV</button>
+        <button class="primary" onclick="window.print()">🖨️ Print</button>
+        <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
         <button onclick="selectAllWeek()">Select All</button>
         <button onclick="clearAllSelections()">Clear</button>
         <button class="primary" onclick="generateShoppingList()">Generate Shopping List</button>
