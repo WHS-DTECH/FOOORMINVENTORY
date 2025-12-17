@@ -38,11 +38,13 @@
 
   <div class="week-nav no-print">
     <span class="label">{{ week_label }}</span>
-    <a href="/shoplist?week={{ prev_week }}">Previous Week</a>
-    {% if week_offset != 0 %}
-    <a href="/shoplist?week=0" style="font-weight: bold;">Current Week</a>
-    {% endif %}
-    <a href="/shoplist?week={{ next_week }}">Next Week</a>
+      <div style="display: none;">
+        <a href="/shoplist?week={{ prev_week }}">Previous Week</a>
+        {% if week_offset != 0 %}
+        <a href="/shoplist?week=0" style="font-weight: bold;">Current Week</a>
+        {% endif %}
+        <a href="/shoplist?week={{ next_week }}">Next Week</a>
+      </div>
   </div>
 
   <h1 class="no-print">Weekly Booking Grid</h1>
