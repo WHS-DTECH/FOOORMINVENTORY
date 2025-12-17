@@ -7,6 +7,14 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+  <div class="print-header" style="display:none;">
+    <img src="{{ url_for('static', filename='images/whs logo circular reo .png') }}" alt="School Logo" style="height: 60px; float: left; margin-right: 18px;">
+    <div style="font-size: 2em; font-weight: bold;">Weekly Shopping List</div>
+    <div class="print-date" style="font-size: 1em; color: #444; margin-top: 4px;">Printed: <span id="printDate"></span></div>
+    <div style="font-size: 1.1em; margin-top: 2px;">{{ week_label }}</div>
+    <div style="clear: both;"></div>
+    <hr style="margin: 12px 0;">
+  </div>
   <nav class="navbar no-print">
     <div class="nav-left">
       <a href="/" class="nav-brand">🍳 Food Room</a> |
@@ -434,7 +442,7 @@
   </table>
 
   <div class="selection-panel no-print" style="margin-top: 24px; display: flex; gap: 32px; align-items: flex-start;">
-    <div style="flex: 1 1 320px; min-width: 280px; max-width: 420px;">
+    <div id="printMasterList" style="flex: 1 1 320px; min-width: 280px; max-width: 420px;">
       <h2 style="margin-bottom: 8px;">Selected Bookings</h2>
       <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
       <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
@@ -451,6 +459,30 @@
     </div>
     <div id="shoppingList" class="print-list-section" style="flex: 2 1 480px; min-width: 320px; background: #f9f9f9; border-radius: 8px; padding: 18px 18px 18px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
       <h2 style="margin-top: 0;">Shopping List</h2>
+          @media print {
+            .no-print, .no-print * { display: none !important; }
+            .print-header { display: block !important; }
+            .selection-panel { display: flex !important; flex-direction: row !important; gap: 32px !important; }
+            #printMasterList, #shoppingList { background: white !important; box-shadow: none !important; color: black !important; }
+            #printMasterList, #shoppingList { border-radius: 0 !important; padding: 0 12px 0 0 !important; }
+            #printMasterList { min-width: 260px !important; max-width: 400px !important; }
+            #shoppingList { min-width: 320px !important; }
+            body, html { background: white !important; color: black !important; }
+            .print-date { display: block !important; }
+            .print-list-section { box-shadow: none !important; }
+            h1, h2, h3, h4 { color: black !important; }
+            ul, li { color: black !important; }
+          }
+          // Print date logic
+          function setPrintDate() {
+            var d = new Date();
+            var ds = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+            var el = document.getElementById('printDate');
+            if (el) el.textContent = ds;
+          }
+          window.onbeforeprint = setPrintDate;
+          // Also set on load in case of print preview
+          setPrintDate();
       <div id="listContent">Generate the shopping list to see items here.</div>
     </div>
   </div>
