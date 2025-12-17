@@ -216,70 +216,91 @@
         target.textContent = 'Select bookings then generate the shopping list.';
         return;
       }
-      // Aggregate all ingredients from selected bookings
-      let ingredientMap = {};
-      let foundAny = false;
-      let debug = [];
+      // Group bookings by teacher
+      let teacherMap = {};
       bookings.filter(b => selection.has(b.id)).forEach(b => {
-        let recipe = null;
-        if (Array.isArray(recipes)) {
-          // Try exact match (case-insensitive, trimmed)
-          recipe = recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase());
-          // Fallback: try partial match if exact fails
-          if (!recipe) {
-            recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
-          }
-        }
-        if (recipe && recipe.ingredients) {
-          recipe.ingredients.forEach(ing => {
-            foundAny = true;
-            const name = ing.ingredient || ing.name || '';
-            const unit = ing.unit || '';
-            let qty = parseFloat(ing.quantity || ing.qty || 0);
-            if (isNaN(qty)) qty = ing.quantity || ing.qty || '';
-            const key = name + '|' + unit;
-            if (!ingredientMap[key]) {
-              ingredientMap[key] = { name, unit, qty, category: ing.category || 'Other' };
-            } else {
-              if (typeof ingredientMap[key].qty === 'number' && typeof qty === 'number') {
-                ingredientMap[key].qty += qty;
-              }
+        const teacher = b.last_name || b.staff_code || 'Unknown';
+        if (!teacherMap[teacher]) teacherMap[teacher] = [];
+        teacherMap[teacher].push(b);
+      });
+      // For each teacher, show their bookings and a categorized ingredient list
+      Object.keys(teacherMap).forEach(teacher => {
+        const teacherDiv = document.createElement('div');
+        teacherDiv.style.marginBottom = '18px';
+        const teacherTitle = document.createElement('h2');
+        teacherTitle.textContent = 'Teacher: ' + teacher;
+        teacherTitle.style.fontSize = '18px';
+        teacherTitle.style.margin = '8px 0 4px 0';
+        teacherDiv.appendChild(teacherTitle);
+        // List bookings for this teacher
+        const bookingsList = document.createElement('ul');
+        teacherMap[teacher].forEach(b => {
+          const li = document.createElement('li');
+          li.textContent = `${b.class_code || ''} | ${b.recipe_name || ''} | P${b.period} | ${b.date_required}`;
+          bookingsList.appendChild(li);
+        });
+        teacherDiv.appendChild(bookingsList);
+        // Aggregate ingredients for this teacher's bookings
+        let ingredientMap = {};
+        let foundAny = false;
+        teacherMap[teacher].forEach(b => {
+          let recipe = null;
+          if (Array.isArray(recipes)) {
+            recipe = recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase());
+            if (!recipe) {
+              recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
             }
+          }
+          if (recipe && recipe.ingredients) {
+            recipe.ingredients.forEach(ing => {
+              foundAny = true;
+              const name = ing.ingredient || ing.name || '';
+              const unit = ing.unit || '';
+              let qty = parseFloat(ing.quantity || ing.qty || 0);
+              if (isNaN(qty)) qty = ing.quantity || ing.qty || '';
+              const key = name + '|' + unit;
+              if (!ingredientMap[key]) {
+                ingredientMap[key] = { name, unit, qty, category: ing.category || 'Other' };
+              } else {
+                if (typeof ingredientMap[key].qty === 'number' && typeof qty === 'number') {
+                  ingredientMap[key].qty += qty;
+                }
+              }
+            });
+          }
+        });
+        if (!foundAny) {
+          const none = document.createElement('div');
+          none.textContent = 'No ingredients found for this teacher.';
+          teacherDiv.appendChild(none);
+        } else {
+          // Group by category
+          let categories = {};
+          Object.values(ingredientMap).forEach(ing => {
+            const cat = ing.category || 'Other';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(ing);
+          });
+          // Render grouped shopping list
+          Object.keys(categories).sort().forEach(cat => {
+            const catDiv = document.createElement('div');
+            catDiv.style.marginBottom = '12px';
+            const catTitle = document.createElement('h3');
+            catTitle.textContent = cat;
+            catTitle.style.fontSize = '17px';
+            catTitle.style.margin = '8px 0 4px 0';
+            catDiv.appendChild(catTitle);
+            const ul = document.createElement('ul');
+            categories[cat].forEach(ing => {
+              const li = document.createElement('li');
+              li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
+              ul.appendChild(li);
+            });
+            catDiv.appendChild(ul);
+            teacherDiv.appendChild(catDiv);
           });
         }
-      });
-      if (!foundAny) {
-        target.textContent = 'No ingredients found for selected bookings.';
-        return;
-      }
-      if (!foundAny) {
-        target.textContent = 'No ingredients found for selected bookings.';
-        return;
-      }
-      // Group by category
-      let categories = {};
-      Object.values(ingredientMap).forEach(ing => {
-        const cat = ing.category || 'Other';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(ing);
-      });
-      // Render grouped shopping list
-      Object.keys(categories).sort().forEach(cat => {
-        const catDiv = document.createElement('div');
-        catDiv.style.marginBottom = '12px';
-        const catTitle = document.createElement('h3');
-        catTitle.textContent = cat;
-        catTitle.style.fontSize = '17px';
-        catTitle.style.margin = '8px 0 4px 0';
-        catDiv.appendChild(catTitle);
-        const ul = document.createElement('ul');
-        categories[cat].forEach(ing => {
-          const li = document.createElement('li');
-          li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
-          ul.appendChild(li);
-        });
-        catDiv.appendChild(ul);
-        target.appendChild(catDiv);
+        target.appendChild(teacherDiv);
       });
     }
     window.generateShoppingList = generateShoppingList;
