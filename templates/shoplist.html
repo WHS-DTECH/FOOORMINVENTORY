@@ -55,6 +55,9 @@
   </div>
     <style>
               @media print {
+                @page {
+                  counter-increment: page;
+                }
                 body::after {
                   content: "Page " counter(page);
                   position: fixed;
