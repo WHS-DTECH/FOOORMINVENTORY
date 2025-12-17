@@ -459,30 +459,6 @@
     </div>
     <div id="shoppingList" class="print-list-section" style="flex: 2 1 480px; min-width: 320px; background: #f9f9f9; border-radius: 8px; padding: 18px 18px 18px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
       <h2 style="margin-top: 0;">Shopping List</h2>
-          @media print {
-            .no-print, .no-print * { display: none !important; }
-            .print-header { display: block !important; }
-            .selection-panel { display: flex !important; flex-direction: row !important; gap: 32px !important; }
-            #printMasterList, #shoppingList { background: white !important; box-shadow: none !important; color: black !important; }
-            #printMasterList, #shoppingList { border-radius: 0 !important; padding: 0 12px 0 0 !important; }
-            #printMasterList { min-width: 260px !important; max-width: 400px !important; }
-            #shoppingList { min-width: 320px !important; }
-            body, html { background: white !important; color: black !important; }
-            .print-date { display: block !important; }
-            .print-list-section { box-shadow: none !important; }
-            h1, h2, h3, h4 { color: black !important; }
-            ul, li { color: black !important; }
-          }
-          // Print date logic
-          function setPrintDate() {
-            var d = new Date();
-            var ds = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-            var el = document.getElementById('printDate');
-            if (el) el.textContent = ds;
-          }
-          window.onbeforeprint = setPrintDate;
-          // Also set on load in case of print preview
-          setPrintDate();
       <div id="listContent">Generate the shopping list to see items here.</div>
     </div>
   </div>
