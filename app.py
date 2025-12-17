@@ -1323,6 +1323,21 @@ def update_recipe_tags(recipe_id):
 @app.route('/recipes/suggest', methods=['POST'])
 @require_login
 def suggest_recipe():
+            # Push suggestion to Google Sheet via Apps Script Webhook
+            try:
+                import requests
+                google_script_url = "https://script.google.com/a/macros/westlandhigh.school.nz/s/AKfycbzETLRmElchR4Txx9SYe3bGD0eaUFdEujT8HrnkD_IAD2OSk8-q6-pPzD2OEqnifQ/exec"
+                sheet_data = {
+                    "timestamp": str(datetime.datetime.now()),
+                    "user_name": user_name,
+                    "user_email": user_email,
+                    "recipe_name": recipe_name,
+                    "recipe_url": recipe_url,
+                    "reason": reason
+                }
+                requests.post(google_script_url, json=sheet_data, timeout=5)
+            except Exception as e:
+                print(f"Failed to push suggestion to Google Sheet: {e}")
     """Handle recipe suggestion submissions and email to VP"""
     try:
         recipe_name = request.form.get('recipe_name', '').strip()
