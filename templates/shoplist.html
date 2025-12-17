@@ -51,10 +51,10 @@
       <div style="font-weight: bold; margin-bottom: 4px;">Selected Bookings</div>
       <div style="font-size: 0.95em; color: #444; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-            <button onclick="saveShoppingList()">💾 Save List</button>
-            <button onclick="loadShoppingList()">📂 Load Saved</button>
-            <button onclick="exportShoppingListCsv()">📄 Export CSV</button>
-            <button class="primary" onclick="window.print()">🖨️ Print</button>
+            <button onclick="saveShoppingList()" style="display:none;">💾 Save List</button>
+            <button onclick="loadShoppingList()" style="display:none;">📂 Load Saved</button>
+            <button onclick="exportShoppingListCsv()" style="display:none;">📄 Export CSV</button>
+            <button class="primary" onclick="window.print()" style="display:none;">🖨️ Print</button>
             <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
             <button onclick="selectAllWeek()">Select All</button>
             <button onclick="clearAllSelections()">Clear</button>
