@@ -48,8 +48,8 @@
   </div>
 
   <h1 class="no-print">Weekly Booking Grid</h1>
-      <!-- Navigation buttons for shopping list grid -->
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; justify-content: flex-end;">
+      <!-- Navigation buttons for shopping list grid, centered at top -->
+      <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; margin-top: 8px;">
         <form method="get" style="margin: 0;">
           <button type="submit" name="nav" value="prev">&#8592; Previous</button>
         </form>
@@ -63,7 +63,7 @@
     <!-- Selected Bookings panel moved up under the title -->
     <div id="selected-bookings-panel" class="popout-panel" style="margin-top: 18px; margin-bottom: 16px;">
       <div style="font-weight: bold; margin-bottom: 4px;">Selected Bookings</div>
-      <div style="font-size: 0.95em; color: #444; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
+      <div style="font-size: 0.95em; color: #444; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list. Click Generate Shopping List.</div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
             <button onclick="saveShoppingList()" style="display:none;">💾 Save List</button>
             <button onclick="loadShoppingList()" style="display:none;">📂 Load Saved</button>
