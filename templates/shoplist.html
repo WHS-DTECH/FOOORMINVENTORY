@@ -219,8 +219,12 @@
       // Aggregate all ingredients from selected bookings
       let ingredientMap = {};
       let foundAny = false;
+      let debug = [];
       bookings.filter(b => selection.has(b.id)).forEach(b => {
+        debug.push('Looking for recipe_id: ' + b.recipe_id);
+        debug.push('Available recipe ids: ' + recipes.map(r => r.id).join(','));
         const recipe = recipes.find(r => r.id == b.recipe_id);
+        if (!recipe) debug.push('Recipe not found for id: ' + b.recipe_id);
         if (recipe && recipe.ingredients) {
           recipe.ingredients.forEach(ing => {
             foundAny = true;
@@ -240,6 +244,13 @@
           });
         }
       });
+      if (!foundAny) {
+        target.textContent = 'No ingredients found for selected bookings.';
+        const dbg = document.createElement('pre');
+        dbg.textContent = debug.join('\n');
+        target.appendChild(dbg);
+        return;
+      }
       if (!foundAny) {
         target.textContent = 'No ingredients found for selected bookings.';
         return;
