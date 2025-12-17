@@ -222,8 +222,12 @@
       let debug = [];
       bookings.filter(b => selection.has(b.id)).forEach(b => {
         debug.push('Looking for recipe_id: ' + b.recipe_id);
-        debug.push('Available recipe ids: ' + recipes.map(r => r.id).join(','));
-        const recipe = recipes.find(r => r.id == b.recipe_id);
+        if (Array.isArray(recipes)) {
+          debug.push('Available recipe ids: ' + recipes.map(r => r.id).join(','));
+        } else {
+          debug.push('recipes is not an array: ' + JSON.stringify(recipes));
+        }
+        const recipe = Array.isArray(recipes) ? recipes.find(r => r.id == b.recipe_id) : null;
         if (!recipe) debug.push('Recipe not found for id: ' + b.recipe_id);
         if (recipe && recipe.ingredients) {
           recipe.ingredients.forEach(ing => {
@@ -244,6 +248,7 @@
           });
         }
       });
+      debug.push('recipes dump: ' + JSON.stringify(recipes));
       if (!foundAny) {
         target.textContent = 'No ingredients found for selected bookings.';
         const dbg = document.createElement('pre');
