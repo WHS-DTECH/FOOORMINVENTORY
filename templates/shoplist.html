@@ -253,62 +253,67 @@
     window.clearAllSelections = clearAllSelections;
 
     function generateShoppingList() {
-            // --- Master Shopping List (all selected bookings, grouped by category, alphabetically) ---
-            const masterTarget = document.getElementById('masterListContent');
-            masterTarget.innerHTML = '';
-            let masterIngredientMap = {};
-            bookings.filter(b => selection.has(b.id)).forEach(b => {
-              let recipe = null;
-              if (Array.isArray(recipes)) {
-                recipe = recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase());
-                if (!recipe) {
-                  recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
+        // Always scroll to Selected Bookings panel, even if no selection
+        const selectedPanel = document.getElementById('selected-bookings-panel');
+        if (selectedPanel) {
+            selectedPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // --- Master Shopping List (all selected bookings, grouped by category, alphabetically) ---
+        const masterTarget = document.getElementById('masterListContent');
+        masterTarget.innerHTML = '';
+        let masterIngredientMap = {};
+        bookings.filter(b => selection.has(b.id)).forEach(b => {
+          let recipe = null;
+          if (Array.isArray(recipes)) {
+            recipe = recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase());
+            if (!recipe) {
+              recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
+            }
+          }
+          if (recipe && recipe.ingredients) {
+            recipe.ingredients.forEach(ing => {
+              const name = ing.ingredient || ing.name || '';
+              const unit = ing.unit || '';
+              let qty = parseFloat(ing.quantity || ing.qty || 0);
+              if (isNaN(qty)) qty = ing.quantity || ing.qty || '';
+              const key = name + '|' + unit;
+              if (!masterIngredientMap[key]) {
+                masterIngredientMap[key] = { name, unit, qty, category: ing.category || 'Other' };
+              } else {
+                if (typeof masterIngredientMap[key].qty === 'number' && typeof qty === 'number') {
+                  masterIngredientMap[key].qty += qty;
                 }
               }
-              if (recipe && recipe.ingredients) {
-                recipe.ingredients.forEach(ing => {
-                  const name = ing.ingredient || ing.name || '';
-                  const unit = ing.unit || '';
-                  let qty = parseFloat(ing.quantity || ing.qty || 0);
-                  if (isNaN(qty)) qty = ing.quantity || ing.qty || '';
-                  const key = name + '|' + unit;
-                  if (!masterIngredientMap[key]) {
-                    masterIngredientMap[key] = { name, unit, qty, category: ing.category || 'Other' };
-                  } else {
-                    if (typeof masterIngredientMap[key].qty === 'number' && typeof qty === 'number') {
-                      masterIngredientMap[key].qty += qty;
-                    }
-                  }
-                });
-              }
             });
-            let masterCategories = {};
-            Object.values(masterIngredientMap).forEach(ing => {
-              const cat = ing.category || 'Other';
-              if (!masterCategories[cat]) masterCategories[cat] = [];
-              masterCategories[cat].push(ing);
-            });
-            if (Object.keys(masterCategories).length === 0) {
-              masterTarget.textContent = 'Generate the shopping list to see items here.';
-            } else {
-              Object.keys(masterCategories).sort().forEach(cat => {
-                const catDiv = document.createElement('div');
-                catDiv.style.marginBottom = '10px';
-                const catTitle = document.createElement('strong');
-                catTitle.textContent = cat;
-                catDiv.appendChild(catTitle);
-                const ul = document.createElement('ul');
-                masterCategories[cat]
-                  .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-                  .forEach(ing => {
-                    const li = document.createElement('li');
-                    li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
-                    ul.appendChild(li);
-                  });
-                catDiv.appendChild(ul);
-                masterTarget.appendChild(catDiv);
+          }
+        });
+        let masterCategories = {};
+        Object.values(masterIngredientMap).forEach(ing => {
+          const cat = ing.category || 'Other';
+          if (!masterCategories[cat]) masterCategories[cat] = [];
+          masterCategories[cat].push(ing);
+        });
+        if (Object.keys(masterCategories).length === 0) {
+          masterTarget.textContent = 'Generate the shopping list to see items here.';
+        } else {
+          Object.keys(masterCategories).sort().forEach(cat => {
+            const catDiv = document.createElement('div');
+            catDiv.style.marginBottom = '10px';
+            const catTitle = document.createElement('strong');
+            catTitle.textContent = cat;
+            catDiv.appendChild(catTitle);
+            const ul = document.createElement('ul');
+            masterCategories[cat]
+              .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+              .forEach(ing => {
+                const li = document.createElement('li');
+                li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
+                ul.appendChild(li);
               });
-            }
+            catDiv.appendChild(ul);
+            masterTarget.appendChild(catDiv);
+          });
+        }
       const target = document.getElementById('listContent');
       target.innerHTML = '';
       if (selection.size === 0) {
