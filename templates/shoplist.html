@@ -55,7 +55,7 @@
             <button onclick="loadShoppingList()" style="display:none;">📂 Load Saved</button>
             <button onclick="exportShoppingListCsv()" style="display:none;">📄 Export CSV</button>
             <button class="primary" onclick="window.print()" style="display:none;">🖨️ Print</button>
-            <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
+            <!-- Print Shopping List Only button moved below the grid -->
             <button onclick="selectAllWeek()">Select All</button>
             <button onclick="clearAllSelections()">Clear</button>
             <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
@@ -486,6 +486,10 @@
       <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
       <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
       <!-- Selection grid follows below -->
+        <!-- Print Shopping List Only button below the grid, above Shopping List -->
+        <div style="margin: 18px 0 8px 0; display: flex; justify-content: flex-end;">
+          <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
+        </div>
       <div id="masterList" style="margin-top: 24px; background: #f7f7f7; border-radius: 8px; padding: 12px;">
         <h3 style="margin-top: 0;">Master Shopping List</h3>
         <div id="masterListContent">Generate the shopping list to see items here.</div>
