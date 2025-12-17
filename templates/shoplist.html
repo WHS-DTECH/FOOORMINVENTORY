@@ -10,7 +10,7 @@
   <div class="print-header" style="display:none;">
     <img src="{{ url_for('static', filename='images/whs logo circular reo .png') }}" alt="School Logo" style="height: 60px; float: left; margin-right: 18px;">
     <div style="font-size: 2em; font-weight: bold;">Weekly Shopping List</div>
-    <div class="print-date" style="font-size: 1em; color: #444; margin-top: 4px;">Printed: <span id="printDate"></span></div>
+    <div class="print-date" style="font-size: 1em; color: #444; margin-top: 4px;"><span id="printDate"></span></div>
     <div style="font-size: 1.1em; margin-top: 2px;">{{ week_label }}</div>
     <div style="clear: both;"></div>
     <hr style="margin: 12px 0;">
@@ -54,6 +54,16 @@
     <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745; margin-left: auto;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
   </div>
     <style>
+              @media print {
+                body::after {
+                  content: "Page " counter(page);
+                  position: fixed;
+                  bottom: 8mm;
+                  right: 12mm;
+                  font-size: 12px;
+                  color: #444;
+                }
+              }
           @media print {
             .grid, .week-nav, .navbar, #shoplist-actions-fixed, .no-print { display: none !important; }
             .selection-panel { display: flex !important; flex-direction: row !important; gap: 32px !important; }
