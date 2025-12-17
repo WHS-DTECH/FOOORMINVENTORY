@@ -221,19 +221,18 @@
       let foundAny = false;
       let debug = [];
       bookings.filter(b => selection.has(b.id)).forEach(b => {
-        debug.push('Looking for recipe_name: ' + b.recipe_name);
+        let recipe = null;
         if (Array.isArray(recipes)) {
-          debug.push('Available recipe names: ' + recipes.map(r => r.name).join(','));
-        } else {
-          debug.push('recipes is not an array: ' + JSON.stringify(recipes));
+          // Try exact match (case-insensitive, trimmed)
+          recipe = recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase());
+          // Fallback: try partial match if exact fails
+          if (!recipe) {
+            recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
+          }
         }
-        // Match by name, case-insensitive, trimmed
-        const recipe = Array.isArray(recipes) ? recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase()) : null;
-        if (!recipe) debug.push('Recipe not found for name: ' + b.recipe_name);
         if (recipe && recipe.ingredients) {
           recipe.ingredients.forEach(ing => {
             foundAny = true;
-            // Use correct property names from JSON: ingredient, quantity, unit, category
             const name = ing.ingredient || ing.name || '';
             const unit = ing.unit || '';
             let qty = parseFloat(ing.quantity || ing.qty || 0);
@@ -249,12 +248,8 @@
           });
         }
       });
-      debug.push('recipes dump: ' + JSON.stringify(recipes));
       if (!foundAny) {
         target.textContent = 'No ingredients found for selected bookings.';
-        const dbg = document.createElement('pre');
-        dbg.textContent = debug.join('\n');
-        target.appendChild(dbg);
         return;
       }
       if (!foundAny) {
