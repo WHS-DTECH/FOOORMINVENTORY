@@ -54,6 +54,19 @@
     <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745; margin-left: auto;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
   </div>
     <style>
+          @media print {
+            .grid, .week-nav, .navbar, #shoplist-actions-fixed, .no-print { display: none !important; }
+            .selection-panel { display: flex !important; flex-direction: row !important; gap: 32px !important; }
+            #printMasterList, #shoppingList { background: white !important; box-shadow: none !important; color: black !important; }
+            #printMasterList, #shoppingList { border-radius: 0 !important; padding: 0 12px 0 0 !important; }
+            #printMasterList { min-width: 260px !important; max-width: 400px !important; }
+            #shoppingList { min-width: 320px !important; }
+            body, html { background: white !important; color: black !important; }
+            .print-date { display: block !important; }
+            .print-list-section { box-shadow: none !important; }
+            h1, h2, h3, h4 { color: black !important; }
+            ul, li { color: black !important; }
+          }
       body, html {
         font-family: Arial, Helvetica, sans-serif;
       }
