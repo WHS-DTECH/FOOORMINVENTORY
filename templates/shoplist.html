@@ -393,58 +393,6 @@
         <div id="masterListContent">Generate the shopping list to see items here.</div>
       </div>
     </div>
-          // --- Master Shopping List (all selected bookings, grouped by category, alphabetically) ---
-          const masterTarget = document.getElementById('masterListContent');
-          masterTarget.innerHTML = '';
-          let masterIngredientMap = {};
-          bookings.filter(b => selection.has(b.id)).forEach(b => {
-            let recipe = null;
-            if (Array.isArray(recipes)) {
-              recipe = recipes.find(r => (r.name||'').trim().toLowerCase() === (b.recipe_name||'').trim().toLowerCase());
-              if (!recipe) {
-                recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
-              }
-            }
-            if (recipe && recipe.ingredients) {
-              recipe.ingredients.forEach(ing => {
-                const name = ing.ingredient || ing.name || '';
-                const unit = ing.unit || '';
-                let qty = parseFloat(ing.quantity || ing.qty || 0);
-                if (isNaN(qty)) qty = ing.quantity || ing.qty || '';
-                const key = name + '|' + unit;
-                if (!masterIngredientMap[key]) {
-                  masterIngredientMap[key] = { name, unit, qty, category: ing.category || 'Other' };
-                } else {
-                  if (typeof masterIngredientMap[key].qty === 'number' && typeof qty === 'number') {
-                    masterIngredientMap[key].qty += qty;
-                  }
-                }
-              });
-            }
-          });
-          let masterCategories = {};
-          Object.values(masterIngredientMap).forEach(ing => {
-            const cat = ing.category || 'Other';
-            if (!masterCategories[cat]) masterCategories[cat] = [];
-            masterCategories[cat].push(ing);
-          });
-          Object.keys(masterCategories).sort().forEach(cat => {
-            const catDiv = document.createElement('div');
-            catDiv.style.marginBottom = '10px';
-            const catTitle = document.createElement('strong');
-            catTitle.textContent = cat;
-            catDiv.appendChild(catTitle);
-            const ul = document.createElement('ul');
-            masterCategories[cat]
-              .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-              .forEach(ing => {
-                const li = document.createElement('li');
-                li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
-                ul.appendChild(li);
-              });
-            catDiv.appendChild(ul);
-            masterTarget.appendChild(catDiv);
-          });
     <div id="shoppingList" class="print-list-section" style="flex: 2 1 480px; min-width: 320px; background: #f9f9f9; border-radius: 8px; padding: 18px 18px 18px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
       <h2 style="margin-top: 0;">Shopping List</h2>
       <div id="listContent">Generate the shopping list to see items here.</div>
