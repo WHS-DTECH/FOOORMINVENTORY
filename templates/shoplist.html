@@ -291,11 +291,13 @@
             catTitle.style.margin = '8px 0 4px 0';
             catDiv.appendChild(catTitle);
             const ul = document.createElement('ul');
-            categories[cat].forEach(ing => {
-              const li = document.createElement('li');
-              li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
-              ul.appendChild(li);
-            });
+            categories[cat]
+              .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+              .forEach(ing => {
+                const li = document.createElement('li');
+                li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
+                ul.appendChild(li);
+              });
             catDiv.appendChild(ul);
             teacherDiv.appendChild(catDiv);
           });
