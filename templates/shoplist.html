@@ -56,15 +56,13 @@
     <style>
               @media print {
                 @page {
-                  counter-increment: page;
-                }
-                body::after {
-                  content: "Page " counter(page);
-                  position: fixed;
-                  bottom: 8mm;
-                  right: 12mm;
-                  font-size: 12px;
-                  color: #444;
+                  size: A4 portrait;
+                  margin: 18mm 12mm 18mm 12mm;
+                  @bottom-right {
+                    content: "Page " counter(page);
+                    font-size: 12px;
+                    color: #444;
+                  }
                 }
               }
           @media print {
