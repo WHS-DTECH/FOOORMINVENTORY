@@ -1326,7 +1326,7 @@ def suggest_recipe():
             # Push suggestion to Google Sheet via Apps Script Webhook
             try:
                 import requests
-                google_script_url = "https://script.google.com/a/macros/westlandhigh.school.nz/s/AKfycbzETLRmElchR4Txx9SYe3bGD0eaUFdEujT8HrnkD_IAD2OSk8-q6-pPzD2OEqnifQ/exec"
+                google_script_url = "https://script.google.com/macros/s/AKfycbzIbK9PBx4R7lXxVHXuuywV9TPVJAtrQlyKltpkSLN-d19A1jqwJ_Bh3It3KYwdgA/exec"
                 sheet_data = {
                     "timestamp": str(datetime.datetime.now()),
                     "user_name": user_name,
