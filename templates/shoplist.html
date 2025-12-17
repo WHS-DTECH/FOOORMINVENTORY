@@ -36,18 +36,13 @@
     </div>
   </nav>
 
-  <div class="week-nav no-print">
-    <span class="label">{{ week_label }}</span>
-      <div style="display: none;">
-        <a href="/shoplist?week={{ prev_week }}">Previous Week</a>
-        {% if week_offset != 0 %}
-        <a href="/shoplist?week=0" style="font-weight: bold;">Current Week</a>
-        {% endif %}
-        <a href="/shoplist?week={{ next_week }}">Next Week</a>
-      </div>
-  </div>
 
-  <h1 class="no-print">Weekly Booking Grid</h1>
+  <div style="display: flex; flex-direction: column; align-items: center; margin-top: 18px;">
+    <h1 class="no-print" style="font-size: 2.3em; margin-bottom: 0;">Weekly Booking Grid</h1>
+    <div class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold;">
+      {{ week_label }}
+    </div>
+  </div>
       <!-- Navigation buttons for shopping list grid, centered at top -->
       <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; margin-top: 8px;">
         <form method="get" style="margin: 0;">
