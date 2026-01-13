@@ -607,31 +607,34 @@ def class_ingredients_download():
 @require_role('VP', 'DK')
 def class_ingredients_save():
     # Save a booking to `class_bookings` (INSERT or UPDATE)
-    data = request.get_json() or {}
-    booking_id = data.get('booking_id')  # If provided, update existing booking
-    staff_code = data.get('staff')
-    class_code = data.get('classcode')
-    date_required = data.get('date')
-    period = data.get('period')
-    recipe_id = data.get('recipe_id')
-    desired = int(data.get('desired_servings') or 24)
-    
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        if booking_id:
-            # Update existing booking
-            c.execute('''UPDATE class_bookings 
-                        SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s
-                        WHERE id=%s''',
-                     (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
-            conn.commit()
-        else:
-            # Insert new booking
-            c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (%s, %s, %s, %s, %s, %s)',
-                      (staff_code, class_code, date_required, period, recipe_id, desired))
-            conn.commit()
-            booking_id = c.lastrowid
-    return jsonify({'success': True, 'booking_id': booking_id})
+    try:
+        data = request.get_json() or {}
+        booking_id = data.get('booking_id')  # If provided, update existing booking
+        staff_code = data.get('staff')
+        class_code = data.get('classcode')
+        date_required = data.get('date')
+        period = data.get('period')
+        recipe_id = data.get('recipe_id')
+        desired = int(data.get('desired_servings') or 24)
+
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            if booking_id:
+                # Update existing booking
+                c.execute('''UPDATE class_bookings 
+                            SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s
+                            WHERE id=%s''',
+                         (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
+                conn.commit()
+            else:
+                # Insert new booking
+                c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (%s, %s, %s, %s, %s, %s)',
+                          (staff_code, class_code, date_required, period, recipe_id, desired))
+                conn.commit()
+                booking_id = c.lastrowid
+        return jsonify({'success': True, 'booking_id': booking_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
 @require_role('VP', 'DK')
