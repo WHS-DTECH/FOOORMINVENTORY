@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
@@ -369,12 +368,12 @@ def admin_user_roles():
                 c = conn.cursor()
                 if action == 'add':
                     try:
-                        c.execute('INSERT INTO user_roles (email, role) VALUES (?, ?)', (email, role))
+                        c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, role))
                         flash(f'Added role {role} to {email}', 'success')
                     except psycopg2.IntegrityError:
                         flash(f'{email} already has role {role}', 'warning')
                 elif action == 'remove':
-                    c.execute('DELETE FROM user_roles WHERE email = ? AND role = ?', (email, role))
+                    c.execute('DELETE FROM user_roles WHERE email = %s AND role = %s', (email, role))
                     flash(f'Removed role {role} from {email}', 'success')
         
         return redirect(url_for('admin_user_roles'))
@@ -513,7 +512,7 @@ def class_ingredients():
         booking_servings = None
         if request.method == 'POST' and staff_code and class_code and date_required and period:
             c.execute('''SELECT recipe_id, desired_servings FROM class_bookings 
-                        WHERE staff_code = ? AND class_code = ? AND date_required = ? AND period = ?''',
+                        WHERE staff_code = %s AND class_code = %s AND date_required = %s AND period = %s''',
                      (staff_code, class_code, date_required, period))
             booking = c.fetchone()
             if booking:
@@ -1194,13 +1193,13 @@ def update_recipe_tags(recipe_id):
     cuisine = data.get('cuisine', '')
     difficulty = data.get('difficulty', '')
     
-    with sqlite3.connect(DATABASE) as conn:
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''UPDATE recipes 
-                    SET dietary_tags = ?, cuisine = ?, difficulty = ?
-                    WHERE id = ?''',
+                    SET dietary_tags = %s, cuisine = %s, difficulty = %s
+                    WHERE id = %s''',
                  (dietary_tags, cuisine, difficulty, recipe_id))
-    
+        conn.commit()
     return jsonify({'success': True, 'message': 'Tags updated'})
 
 
@@ -1323,14 +1322,13 @@ def suggest_recipe():
 @app.route('/recbk')
 def recbk():
     q = request.args.get('q', '').strip()
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         if q:
             term = f"%{q}%"
             c.execute(
                 "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
-                "WHERE name LIKE ? OR ingredients LIKE ? "
+                "WHERE name ILIKE %s OR ingredients ILIKE %s "
                 "ORDER BY name COLLATE NOCASE",
                 (term, term),
             )
@@ -1360,11 +1358,11 @@ def recbk():
     favorites = []
     if current_user.is_authenticated:
         try:
-            with sqlite3.connect(DATABASE) as conn:
+            with get_db_connection() as conn:
                 c = conn.cursor()
-                c.execute('SELECT recipe_id FROM recipe_favorites WHERE user_email = ?', (current_user.email,))
+                c.execute('SELECT recipe_id FROM recipe_favorites WHERE user_email = %s', (current_user.email,))
                 favorites = [row[0] for row in c.fetchall()]
-        except sqlite3.OperationalError:
+        except Exception:
             # Table doesn't exist yet - run setup_database.py to create it
             favorites = []
 
@@ -1376,646 +1374,42 @@ def recbk():
 def add_favorite(recipe_id):
     """Add a recipe to user's favorites"""
     try:
-        with sqlite3.connect(DATABASE) as conn:
+        with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('INSERT OR IGNORE INTO recipe_favorites (user_email, recipe_id) VALUES (?, ?)',
+            # Use ON CONFLICT DO NOTHING for PostgreSQL
+            c.execute('INSERT INTO recipe_favorites (user_email, recipe_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
                      (current_user.email, recipe_id))
+            conn.commit()
         return jsonify({'success': True, 'message': 'Added to favorites'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-@app.route('/recipe/unfavorite/<int:recipe_id>', methods=['POST'])
-@require_login
-def remove_favorite(recipe_id):
-    """Remove a recipe from user's favorites"""
-    try:
-        with sqlite3.connect(DATABASE) as conn:
-            c = conn.cursor()
-            c.execute('DELETE FROM recipe_favorites WHERE user_email = ? AND recipe_id = ?',
-                     (current_user.email, recipe_id))
-        return jsonify({'success': True, 'message': 'Removed from favorites'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-
-@app.route('/recipe/<int:recipe_id>', methods=['GET', 'POST'])
-@require_role('VP', 'DK', 'MU')
-def recipe_detail(recipe_id):
-    # Handle photo upload
-    if request.method == 'POST':
-        # Delete photo action
-        if request.form.get('delete_photo'):
-            import os
-            with sqlite3.connect(DATABASE) as conn:
-                c = conn.cursor()
-                c.execute('SELECT photo FROM recipes WHERE id = ?', (recipe_id,))
-                row = c.fetchone()
-                if row and row[0]:
-                    photo_name = row[0]
-                    photo_path = os.path.join('static', 'uploads', 'recipes', photo_name)
-                    try:
-                        if os.path.exists(photo_path):
-                            os.remove(photo_path)
-                    except Exception:
-                        pass
-                c.execute('UPDATE recipes SET photo = NULL WHERE id = ?', (recipe_id,))
-            return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-
-        # Upload/replace photo
-        photo = request.files.get('photo')
-        if photo and photo.filename:
-            import os
-            upload_dir = os.path.join('static', 'uploads', 'recipes')
-            os.makedirs(upload_dir, exist_ok=True)
-            _, ext = os.path.splitext(photo.filename)
-            filename = f"{recipe_id}{ext.lower()}"
-            path = os.path.join(upload_dir, filename)
-            # overwrite if exists
-            photo.save(path)
-            # store relative path in DB
-            with sqlite3.connect(DATABASE) as conn:
-                c = conn.cursor()
-                c.execute('UPDATE recipes SET photo = ? WHERE id = ?', (filename, recipe_id))
-            return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-
-    # GET: show recipe
+@app.route('/api/update-recipe-tags/<int:recipe_id>', methods=['POST'])
+@require_role('VP', 'DK')
+def update_recipe_tags(recipe_id):
+    """Quick API to update recipe dietary tags, cuisine, and difficulty."""
+    data = request.get_json()
+    
+    dietary_tags = data.get('dietary_tags', '')  # comma-separated
+    cuisine = data.get('cuisine', '')
+    difficulty = data.get('difficulty', '')
+    
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment, photo, dietary_tags, cuisine, difficulty FROM recipes WHERE id = %s', (recipe_id,))
-        row = c.fetchone()
-        if not row:
-            return ('Recipe not found', 404)
-        recipe = dict(row)
-        try:
-            ingredients = json.loads(recipe.get('ingredients') or '[]')
-        except Exception:
-            ingredients = []
-        try:
-            equipment = json.loads(recipe.get('equipment') or '[]')
-        except Exception:
-            equipment = []
-
-        # --- Nutrient estimation and dietary flags (lightweight heuristics) ---
-        # Simple per-100g nutrition lookup for common ingredients (kcal, protein, carbs, fat)
-        nutrition_db = {
-            'beef': (250, 26, 0, 15),
-            'chicken': (165, 31, 0, 3.6),
-            'pork': (242, 27, 0, 14),
-            'potato': (77, 2, 17, 0.1),
-            'carrot': (41, 0.9, 10, 0.2),
-            'onion': (40, 1.1, 9, 0.1),
-            'mushroom': (22, 3.1, 3.3, 0.3),
-            'tomato': (18, 0.9, 3.9, 0.2),
-            'cheese': (402, 25, 1.3, 33),
-            'milk': (42, 3.4, 5, 1),
-            'butter': (717, 0.9, 0.1, 81),
-            'flour': (364, 10, 76, 1),
-            'rice': (130, 2.7, 28, 0.3),
-            'pasta': (131, 5, 25, 1.1),
-            'beans': (347, 21, 63, 1.2),
-            'lentils': (116, 9, 20, 0.4),
-            'tofu': (76, 8, 1.9, 4.8),
-            'egg': (155, 13, 1.1, 11),
-            'olive oil': (884, 0, 0, 100),
-            'sugar': (387, 0, 100, 0),
-            'bread': (265, 9, 49, 3.2),
-            'salmon': (208, 20, 0, 13),
-        }
-
-        gluten_keywords = ['flour', 'bread', 'pasta', 'breadcrumbs', 'cereal', 'wheat', 'barley', 'rye', 'semolina']
-        dairy_keywords = ['milk', 'cheese', 'butter', 'cream', 'yogurt', 'yoghurt', 'custard']
-
-        total_kcal = 0.0
-        total_protein = 0.0
-        total_carbs = 0.0
-        total_fat = 0.0
-
-        found_gluten = False
-        found_dairy = False
-
-        # Inspect ingredient names for keywords and approximate nutrition by presence
-        for ing in ingredients:
-            name = ''
-            if isinstance(ing, dict):
-                name = (ing.get('ingredient') or '')
-            else:
-                name = str(ing)
-            lname = (name or '').lower()
-
-            # dietary flags
-            if any(k in lname for k in gluten_keywords):
-                found_gluten = True
-            if any(k in lname for k in dairy_keywords):
-                found_dairy = True
-
-            # pick a nutrition row by keyword match
-            matched = None
-            for key in nutrition_db:
-                if key in lname:
-                    matched = key
-                    break
-
-            if matched:
-                kcal, prot, carbs, fat = nutrition_db[matched]
-                # crude: assume 100g per listed ingredient item unless quantity in grams is provided
-                qty = 100.0
-                # try to extract numeric gram quantity from ingredient dict
-                try:
-                    if isinstance(ing, dict):
-                        q = str(ing.get('quantity') or '').strip()
-                        u = str(ing.get('unit') or '').lower()
-                        if q:
-                            # handle simple numeric values
-                            qn = None
-                            try:
-                                qn = float(q)
-                            except Exception:
-                                m = re.search(r"(\d+[\.,]?\d*)", q)
-                                if m:
-                                    qn = float(m.group(1).replace(',','.'))
-                            if qn is not None:
-                                if u in ('g','gram','grams'):
-                                    qty = qn
-                                elif u in ('kg','kilogram','kilograms'):
-                                    qty = qn * 1000.0
-                                elif u in ('mg',):
-                                    qty = qn / 1000.0
-                                elif u in ('tbsp', 'tablespoon', 'tablespoons'):
-                                    qty = qn * 15.0
-                                elif u in ('tsp', 'teaspoon', 'teaspoons'):
-                                    qty = qn * 5.0
-                                elif u in ('cup','cups'):
-                                    qty = qn * 240.0
-                                else:
-                                    # unknown unit: keep default 100g
-                                    pass
-                except Exception:
-                    qty = 100.0
-
-                factor = qty / 100.0
-                total_kcal += kcal * factor
-                total_protein += prot * factor
-                total_carbs += carbs * factor
-                total_fat += fat * factor
-
-        # Dietary decisions: if no gluten/dairy keywords found -> likely free
-        looks_gluten_free = not found_gluten
-        looks_dairy_free = not found_dairy
-
-        # Per-serving if serving_size available
-        per_serving = None
-        if recipe.get('serving_size'):
-            try:
-                s = int(recipe.get('serving_size'))
-                per_serving = {
-                    'kcal': round(total_kcal / s, 1),
-                    'protein': round(total_protein / s, 1),
-                    'carbs': round(total_carbs / s, 1),
-                    'fat': round(total_fat / s, 1)
-                }
-            except Exception:
-                per_serving = None
-
-        nutrition = {
-            'total': {'kcal': round(total_kcal,1), 'protein': round(total_protein,1), 'carbs': round(total_carbs,1), 'fat': round(total_fat,1)},
-            'per_serving': per_serving,
-            'gluten_free': looks_gluten_free,
-            'dairy_free': looks_dairy_free
-        }
-
-        return render_template('recipe_details.html', recipe=recipe, ingredients=ingredients, equipment=equipment, nutrition=nutrition)
-
-
-@app.route('/admin/recipe/<int:recipe_id>/edit', methods=['GET', 'POST'])
-@require_role('VP')
-def edit_recipe(recipe_id):
-    if request.method == 'POST':
-        name = request.form.get('name','').strip()
-        instructions = request.form.get('instructions','').strip()
-        serving_raw = request.form.get('serving_size','').strip()
-        dietary_tags = request.form.get('dietary_tags','').strip()
-        cuisine = request.form.get('cuisine','').strip()
-        difficulty = request.form.get('difficulty','').strip()
-        try:
-            serving = int(serving_raw) if serving_raw != '' else None
-        except ValueError:
-            serving = None
-
-            # Ingredients: support array inputs from dynamic form
-            ingredients = []
-            ing_lines = request.form.getlist('ingredient_line[]') or request.form.getlist('ingredient_line')
-            if ing_lines:
-                for line in ing_lines:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    parsed = parse_ingredient_line(line)
-                    ingredients.append(parsed)
-            else:
-                # fallback to textarea
-                ingredients_text = request.form.get('ingredients_text','').strip()
-                for line in ingredients_text.splitlines():
-                    line = line.strip()
-                    if not line:
-                        continue
-                    parsed = parse_ingredient_line(line)
-                    ingredients.append(parsed)
-
-        # Equipment: textarea, one item per line or comma separated
-        # Equipment: support array inputs
-        equipment = []
-        eq_items = request.form.getlist('equipment_item[]') or request.form.getlist('equipment_item')
-        if eq_items:
-            for it in eq_items:
-                it = it.strip()
-                if it:
-                    # split comma-separated pieces in each field too
-                    for part in it.split(','):
-                        p = part.strip()
-                        if p:
-                            equipment.append(p)
-        else:
-            equipment_text = request.form.get('equipment_text','').strip()
-            if equipment_text:
-                for line in equipment_text.splitlines():
-                    for part in line.split(','):
-                        p = part.strip()
-                        if p:
-                            equipment.append(p)
-
-        # Update DB
-        with sqlite3.connect(DATABASE) as conn:
-            c = conn.cursor()
-            c.execute('UPDATE recipes SET name = ?, ingredients = ?, instructions = ?, serving_size = ?, equipment = ?, dietary_tags = ?, cuisine = ?, difficulty = ? WHERE id = ?',
-                      (name, json.dumps(ingredients), instructions, serving, json.dumps(equipment), dietary_tags, cuisine, difficulty, recipe_id))
-        return redirect(url_for('recipe_detail', recipe_id=recipe_id))
-
-    # GET - load recipe
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes WHERE id = ?', (recipe_id,))
-        row = c.fetchone()
-        if not row:
-            return ('Not found', 404)
-        recipe = dict(row)
-        try:
-            ingredients = json.loads(recipe.get('ingredients') or '[]')
-        except Exception:
-            ingredients = []
-        try:
-            equipment = json.loads(recipe.get('equipment') or '[]')
-        except Exception:
-            equipment = []
-
-    # Prepare textareas content
-    ingredients_text = '\n'.join([f"{it.get('quantity','')} {it.get('unit','')} {it.get('ingredient','')}'.strip()" for it in ingredients])
-    equipment_text = '\n'.join(equipment)
-
-    return render_template('edit_recipe.html', recipe=recipe, ingredients_text=ingredients_text, equipment_text=equipment_text)
-
-
-# parse_recipes_from_text and format_recipe are imported from recipe_parser.py
-
-
-def remove_duplicate_recipes(conn=None):
-    """Remove duplicate recipes based on normalized name+instructions, keep earliest id."""
-    close_conn = False
-    if conn is None:
-        conn = sqlite3.connect(DATABASE)
-        close_conn = True
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute('SELECT id, name, instructions FROM recipes')
-    rows = c.fetchall()
-
-    def _norm(s):
-        if not s:
-            return ''
-        s = s.lower()
-        s = s.replace('•', ' ').replace('●', ' ')
-        s = re.sub(r"[^a-z0-9]+", ' ', s)
-        s = ' '.join(s.split()).strip()
-        return s
-
-    groups = {}
-    for r in rows:
-        key = (_norm(r['name']), _norm(r['instructions']))
-        groups.setdefault(key, []).append((r['id'], r['name']))
-
-    deleted = []
-    for key, items in groups.items():
-        if len(items) > 1:
-            items_sorted = sorted(items, key=lambda x: x[0])
-            keep_id = items_sorted[0][0]
-            for dup_id, dup_name in items_sorted[1:]:
-                c.execute('DELETE FROM recipes WHERE id = ?', (dup_id,))
-                deleted.append({'id': dup_id, 'name': dup_name, 'kept_id': keep_id})
-
-    conn.commit()
-    if close_conn:
-        conn.close()
-    return deleted
-
-
-def remove_nonfood_recipes(conn=None):
-    """Delete recipes that don't contain any common food keywords in name/ingredients/instructions."""
-    keywords = [
-        'beef','chicken','pork','lamb','turkey','tuna','salmon','tofu','prawn','prawns','shrimp',
-        'mince','sausage','bacon','ham','beans','bean','lentil','lentils','rice','pasta','noodle','noodles',
-        'potato','potatoes','carrot','carrots','onion','onions','garlic','tomato','tomatoes','mushroom','mushrooms',
-        'pepper','peppers','cheese','milk','egg','eggs','butter','flour','sugar','salt','oil','olive oil','bread',
-        'cucumber','lettuce','spinach','pea','peas','sweetcorn','corn','broccoli','cauliflower','cabbage',
-        'courgette','zucchini','yogurt','yoghurt','chickpea','chickpeas','kidney','quinoa','oats','porridge','apple',
-        'banana','orange','tomato','beansprout','spring onion','spring onions','pulses','lentil'
-    ]
-    kw_re = re.compile(r"\b(" + "|".join(re.escape(k) for k in keywords) + r")\b", re.I)
-
-    close_conn = False
-    if conn is None:
-        conn = sqlite3.connect(DATABASE)
-        close_conn = True
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-
-    c.execute('SELECT id, name, instructions, ingredients FROM recipes')
-    rows = c.fetchall()
-    to_delete = []
-    for r in rows:
-        texts = []
-        if r['name']:
-            texts.append(r['name'])
-        if r['instructions']:
-            texts.append(r['instructions'])
-        if r['ingredients']:
-            try:
-                data = json.loads(r['ingredients'])
-                if isinstance(data, list):
-                    for item in data:
-                        if isinstance(item, dict):
-                            for k in ('ingredient','name','text'):
-                                if k in item and item[k]:
-                                    texts.append(str(item[k]))
-                        else:
-                            texts.append(str(item))
-                else:
-                    texts.append(str(data))
-            except Exception:
-                texts.append(str(r['ingredients']))
-        combined = ' '.join(t for t in texts if t).lower()
-        if not combined.strip():
-            to_delete.append((r['id'], r['name']))
-            continue
-        if not kw_re.search(combined):
-            to_delete.append((r['id'], r['name']))
-
-    deleted = []
-    for tid, name in to_delete:
-        c.execute('DELETE FROM recipes WHERE id = ?', (tid,))
-        deleted.append({'id': tid, 'name': name})
-
-    conn.commit()
-    if close_conn:
-        conn.close()
-    return deleted
-
-
-def extract_recipe_from_url(url):
-    """Extract recipe data from a URL (JSON-LD, microdata, or fallback HTML parsing)."""
-    if not requests or not BeautifulSoup:
-        return {'error': 'requests or BeautifulSoup not installed'}
-    
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-    except Exception as e:
-        return {'error': f'Failed to fetch URL: {str(e)}'}
-    
-    # Try to extract JSON-LD structured data
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    recipe_data = None
-    # Look for JSON-LD Recipe schema
-    for script in soup.find_all('script', type='application/ld+json'):
-        try:
-            data = json.loads(script.string)
-            if isinstance(data, dict) and data.get('@type') == 'Recipe':
-                recipe_data = data
-                break
-            elif isinstance(data, list):
-                for item in data:
-                    if isinstance(item, dict) and item.get('@type') == 'Recipe':
-                        recipe_data = item
-                        break
-        except Exception:
-            pass
-    
-    if recipe_data:
-        # Extract fields from JSON-LD
-        return {
-            'success': True,
-            'source': 'json-ld',
-            'name': recipe_data.get('name', ''),
-            'ingredients': recipe_data.get('recipeIngredient', []),
-            'instructions': recipe_data.get('recipeInstructions', []),
-            'serving_size': recipe_data.get('recipeYield', ''),
-            'prep_time': recipe_data.get('prepTime', ''),
-            'cook_time': recipe_data.get('cookTime', ''),
-            'url': url
-        }
-    
-    # Fallback: basic HTML parsing with improved extraction
-    title_tag = soup.find('h1') or soup.find('title')
-    name = title_tag.get_text(strip=True) if title_tag else 'Recipe from URL'
-    
-    # Remove title from name if it's in the page title
-    if name and '|' in name:
-        name = name.split('|')[0].strip()
-    
-    ingredients = []
-    instructions_text = ''
-    
-    # First try: look for structured data with itemProp="recipeIngredient"
-    ing_items = soup.find_all(itemprop='recipeIngredient')
-    if ing_items:
-        for item in ing_items:
-            # Extract text, handling bold spans for quantity
-            bold_span = item.find('span', style=lambda x: x and 'bold' in x.lower())
-            
-            # Look for description in parent <li> or sibling elements
-            parent_li = item.find_parent('li')
-            desc_span = parent_li.find('span', class_='desc') if parent_li else None
-            
-            if bold_span:
-                quantity_text = bold_span.get_text(strip=True)
-                # Get ingredient name (everything else in the tag)
-                ingredient_parts = []
-                for elem in item.children:
-                    if elem.name is None:  # Text node
-                        text = str(elem).strip()
-                        if text and text != '<!-- -->':
-                            ingredient_parts.append(text)
-                    elif elem.name != 'span' or 'bold' not in elem.get('style', ''):
-                        # Not the bold quantity span
-                        ingredient_parts.append(elem.get_text(strip=True))
-                
-                ingredient_text = ' '.join(p for p in ingredient_parts if p).strip()
-                
-                # Add description if it contains measurement info
-                desc_text = desc_span.get_text(strip=True) if desc_span else ''
-                if desc_text:
-                    # Check if description has measurement info (numbers or weight/volume units)
-                    if any(char.isdigit() for char in desc_text) or any(unit in desc_text.lower() for unit in ['g', 'kg', 'ml', 'l', 'oz', 'lb']):
-                        ingredient_text += f' ({desc_text})'
-                    else:
-                        # Just append without parens for things like "crushed", "sliced", etc.
-                        ingredient_text += f', {desc_text}'
-                
-                # For countable items without a standard unit, add "no." after quantity
-                # Check if ingredient_text contains words that are typically countable items
-                countable_keywords = ['fillet', 'steak', 'chop', 'clove', 'onion', 
-                                     'egg', 'tomato', 'potato', 'apple', 'pepper', 'carrot',
-                                     'breast', 'thigh', 'drumstick', 'cutlet']
-                
-                # Check if this looks like a countable item (no weight/volume unit in quantity)
-                has_standard_unit = any(unit in quantity_text.lower() for unit in 
-                                       ['cup', 'cups', 'tbsp', 'tsp', 'g', 'kg', 'ml', 'l', 'oz', 'lb'])
-                
-                contains_countable = any(keyword in ingredient_text.lower() for keyword in countable_keywords)
-                
-                if not has_standard_unit and contains_countable:
-                    # Insert "no." after the quantity
-                    full_text = f"{quantity_text} no. {ingredient_text}".strip()
-                else:
-                    full_text = f"{quantity_text} {ingredient_text}".strip()
-            else:
-                full_text = item.get_text(separator=' ', strip=True)
-            
-            if full_text and len(full_text) > 2:
-                ingredients.append(full_text)
-    
-    # Fallback: Look for ingredient list - try multiple common selectors
-    if not ingredients:
-        ing_selectors = [
-            ('ul', 'ingredient'),
-            ('ol', 'ingredient'),
-            ('ul', 'ingred'),
-            ('div', 'ingredient'),
-            ('section', 'ingredient'),
-        ]
-        
-        for tag_name, class_pattern in ing_selectors:
-            ing_sections = soup.find_all(tag_name, class_=re.compile(class_pattern, re.I))
-            for section in ing_sections:
-                # Only process direct list items, not nested ones
-                list_items = section.find_all('li', recursive=False) if tag_name in ['ul', 'ol'] else section.find_all(['div', 'p'], recursive=False)
-                
-                for li in list_items:
-                    ing_text = li.get_text(separator=' ', strip=True)
-                    if ing_text and len(ing_text) > 3:  # Filter out very short text
-                        ingredients.append(ing_text)
-            if ingredients:
-                break
-    
-    # If no ingredients found, try extracting from any list-like structure
-    if not ingredients:
-        for ul in soup.find_all(['ul', 'ol']):
-            for li in ul.find_all('li', recursive=False):
-                # Get text with better spacing
-                ing_text = li.get_text(separator=' ', strip=True)
-                if ing_text and len(ing_text) > 3 and not any(skip in ing_text.lower() for skip in ['menu', 'navigation', 'sidebar', 'advertisement']):
-                    ingredients.append(ing_text)
-    
-    # Look for instructions - try multiple patterns
-    inst_selectors = [
-        ('div', 'instruction'),
-        ('div', 'method'),
-        ('div', 'direction'),
-        ('section', 'instruction'),
-        ('ol', 'instruction'),
-    ]
-    
-    for tag_name, class_pattern in inst_selectors:
-        inst_sections = soup.find_all(tag_name, class_=re.compile(class_pattern, re.I))
-        for section in inst_sections:
-            instructions_text += section.get_text(strip=True) + '\n'
-        if instructions_text:
-            break
-    
-    # Clean up instructions
-    instructions_text = instructions_text.strip() or 'Instructions not found - please add manually'
-    
-    # Remove duplicates from ingredients
-    ingredients = list(dict.fromkeys(ingredients))  # Preserve order, remove dupes
-    
-    return {
-        'success': True,
-        'source': 'html-fallback',
-        'name': name,
-        'ingredients': ingredients,  # Return as simple strings, form will parse them
-        'instructions': instructions_text,
-        'url': url,
-        'warning': 'No structured recipe data found - extracted from HTML. Please review and edit carefully.'
-    }
-
-
-@app.route('/upload_url', methods=['POST'])
-@require_role('VP')
-def upload_url():
-    """Handle recipe upload from URL."""
-    url = request.form.get('url', '').strip()
-    
-    if not url:
-        return jsonify({'error': 'No URL provided'}), 400
-    
-    # Ensure URL is valid
-    if not url.startswith(('http://', 'https://')):
-        url = 'https://' + url
-    
-    recipe_data = extract_recipe_from_url(url)
-    
-    if 'error' in recipe_data:
-        return jsonify(recipe_data), 400
-    
-    return jsonify(recipe_data)
-
-
-@app.route('/load_recipe_from_url', methods=['POST'])
-@require_role('VP')
-def load_recipe_from_url():
-    """Load extracted recipe data into the upload form."""
-    try:
-        recipe_json = request.form.get('recipe_data', '{}')
-        recipe_data = json.loads(recipe_json)
-        
-        # Convert ingredients to text format for the form
-        ing_list = recipe_data.get('ingredients', [])
-        ing_text = '\n'.join(ing_list) if isinstance(ing_list, list) else str(ing_list)
-        
-        # Convert instructions to text
-        inst = recipe_data.get('instructions', '')
-        if isinstance(inst, list):
-            inst = '\n'.join([str(s.get('text', s)) if isinstance(s, dict) else str(s) for s in inst])
-        
-        # Render the upload form with pre-filled data
-        return render_template('upload_recipe.html', 
-                             prefilled_name=recipe_data.get('name', ''),
-                             prefilled_ingredients=ing_text,
-                             prefilled_instructions=inst,
-                             prefilled_serving=recipe_data.get('serving_size', 4),
-                             from_url=True)
-    except Exception as e:
-        flash(f'Error loading recipe: {str(e)}')
-        return redirect(url_for('recipes_page'))
+        c.execute('''UPDATE recipes 
+                    SET dietary_tags = %s, cuisine = %s, difficulty = %s
+                    WHERE id = %s''',
+                 (dietary_tags, cuisine, difficulty, recipe_id))
+        conn.commit()
+    return jsonify({'success': True, 'message': 'Tags updated'})
 
 
 @app.route('/booking')
 @require_role('VP', 'DK', 'MU')
 def booking_calendar():
     """Show booking calendar with all class bookings."""
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
             SELECT 
@@ -2044,8 +1438,7 @@ def export_ical():
     """Export bookings as iCal format for Google Calendar import."""
     from datetime import datetime
     
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
             SELECT 
@@ -2062,65 +1455,4 @@ def export_ical():
             ORDER BY cb.date_required, cb.period
         ''')
         bookings = c.fetchall()
-    
-    # Build iCal format
-    ical = ['BEGIN:VCALENDAR']
-    ical.append('VERSION:2.0')
-    ical.append('PRODID:-//Food Room Inventory//Class Bookings//EN')
-    ical.append('CALSCALE:GREGORIAN')
-    ical.append('METHOD:PUBLISH')
-    ical.append('X-WR-CALNAME:Food Room Class Bookings')
-    ical.append('X-WR-TIMEZONE:Pacific/Auckland')
-    
-    for booking in bookings:
-        date_str = booking['date']
-        period = booking['period']
-        
-        # Parse date and create event times based on period
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-        
-        # Map periods to times (adjust these to match your school schedule)
-        period_times = {
-            1: ('08:45', '09:45'),
-            2: ('09:45', '10:45'),
-            3: ('11:05', '12:05'),
-            4: ('12:05', '13:05'),
-            5: ('13:45', '14:45'),
-        }
-        
-        start_time, end_time = period_times.get(period, ('09:00', '10:00'))
-        
-        # Format datetime for iCal (YYYYMMDDTHHMMSS)
-        start_dt = f"{date_str.replace('-', '')}T{start_time.replace(':', '')}00"
-        end_dt = f"{date_str.replace('-', '')}T{end_time.replace(':', '')}00"
-        
-        # Create unique ID
-        uid = f"{date_str}-{period}-{booking['class_code']}@foodroom.local"
-        
-        # Build event
-        ical.append('BEGIN:VEVENT')
-        ical.append(f'UID:{uid}')
-        ical.append(f'DTSTART:{start_dt}')
-        ical.append(f'DTEND:{end_dt}')
-        ical.append(f'SUMMARY:{booking["recipe_name"]} - {booking["class_code"]}')
-        ical.append(f'DESCRIPTION:Recipe: {booking["recipe_name"]}\\nClass: {booking["class_code"]}\\nStaff: {booking["staff_name"]}\\nServings: {booking["servings"]}\\nPeriod: {period}')
-        ical.append(f'LOCATION:Food Room')
-        ical.append('STATUS:CONFIRMED')
-        ical.append('END:VEVENT')
-    
-    ical.append('END:VCALENDAR')
-    
-    # Return as downloadable file
-    from flask import Response
-    return Response(
-        '\r\n'.join(ical),
-        mimetype='text/calendar',
-        headers={
-            'Content-Disposition': 'attachment; filename=food_room_bookings.ics'
-        }
-    )
-
-
-if __name__ == '__main__':
-    init_db()
-    app.run(debug=True)
+    # ...existing code...
