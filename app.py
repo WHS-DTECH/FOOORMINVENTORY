@@ -1086,15 +1086,13 @@ def save_shopping_list():
         return jsonify({'error': 'Missing list name or items'}), 400
     
     user_email = current_user.email if current_user.is_authenticated else 'unknown'
-    
-        with get_db_connection() as conn:
-                c = conn.cursor()
-                c.execute('''INSERT INTO saved_shopping_lists (list_name, week_label, items, created_by)
-                                        VALUES (%s, %s, %s, %s) RETURNING id''',
-                                    (list_name, week_label, json.dumps(items), user_email))
-                list_id = c.fetchone()['id']
-                conn.commit()
-    
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''INSERT INTO saved_shopping_lists (list_name, week_label, items, created_by)
+                        VALUES (%s, %s, %s, %s) RETURNING id''',
+                    (list_name, week_label, json.dumps(items), user_email))
+        list_id = c.fetchone()['id']
+        conn.commit()
     return jsonify({'success': True, 'list_id': list_id})
 
 
