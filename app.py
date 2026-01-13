@@ -245,7 +245,7 @@ def admin():
         stream = io.StringIO(file_content)
         reader = csv.DictReader(stream)
         rows = []
-        with sqlite3.connect(DATABASE) as conn:
+        with get_db_connection() as conn:
             c = conn.cursor()
             try:
                 for row in reader:
@@ -281,7 +281,7 @@ def uploadclass():
     stream = io.StringIO(file_content)
     reader = csv.DictReader(stream)
     rows = []
-    with sqlite3.connect(DATABASE) as conn:
+    with get_db_connection() as conn:
         c = conn.cursor()
         for row in reader:
             # Map expected fields, allow flexible header names
@@ -325,7 +325,7 @@ def admin_permissions():
         action = request.form.get('action')  # 'add' or 'remove'
         
         if role and route and action:
-            with sqlite3.connect(DATABASE) as conn:
+            with get_db_connection() as conn:
                 c = conn.cursor()
                 if action == 'add':
                     c.execute('INSERT OR IGNORE INTO role_permissions (role, route) VALUES (?, ?)', (role, route))
@@ -338,7 +338,7 @@ def admin_permissions():
     
     # Get current permissions
     with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+        # conn.row_factory = sqlite3.Row  # Not needed for psycopg2
         c = conn.cursor()
         c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
         permissions = {}
@@ -372,7 +372,7 @@ def admin_user_roles():
                     try:
                         c.execute('INSERT INTO user_roles (email, role) VALUES (?, ?)', (email, role))
                         flash(f'Added role {role} to {email}', 'success')
-                    except sqlite3.IntegrityError:
+                    except psycopg2.IntegrityError:
                         flash(f'{email} already has role {role}', 'warning')
                 elif action == 'remove':
                     c.execute('DELETE FROM user_roles WHERE email = ? AND role = ?', (email, role))
@@ -783,7 +783,7 @@ def upload():
         nonfood_deleted = remove_nonfood_recipes()
 
         flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
-    except sqlite3.IntegrityError as e:
+    except psycopg2.IntegrityError as e:
         flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
         return redirect(url_for('admin'))
     except Exception as e:
