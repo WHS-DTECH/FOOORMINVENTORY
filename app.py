@@ -850,6 +850,11 @@ def shoplist():
         if key in grid:
             grid[key] = booking
 
+    # Calculate previous and next week offsets and week label
+    prev_week = week_offset - 1 if week_offset is not None else -1
+    next_week = week_offset + 1 if week_offset is not None else 1
+    week_label = f"{dates[0]['date']} to {dates[-1]['date']}"
+
     return render_template('shoplist.html', dates=dates, grid=grid, bookings=bookings_list, recipes=all_recipes, 
                           week_offset=week_offset, prev_week=prev_week, next_week=next_week, week_label=week_label)
 
