@@ -6,8 +6,9 @@ Handles Google OAuth 2.0 login and role-based access control.
 from flask_login import UserMixin
 from functools import wraps
 from flask import session, redirect, url_for, flash
-import sqlite3
 import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Role definitions based on staff codes
 # Legacy fallback - now permissions are stored in database
@@ -31,14 +32,21 @@ ROLE_PERMISSIONS = {
 }
 
 
+def get_db_connection():
+    """Get a PostgreSQL database connection using psycopg2."""
+    db_url = os.getenv('DATABASE_URL')
+    if not db_url:
+        raise RuntimeError('DATABASE_URL environment variable not set')
+    return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+
+
 def get_role_permissions_from_db(role):
     """Get list of routes a role has access to from database."""
     try:
-        db_path = os.path.join(os.path.dirname(__file__), 'recipes.db')
-        with sqlite3.connect(db_path) as conn:
+        with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('SELECT route FROM role_permissions WHERE role = ?', (role,))
-            routes = [row[0] for row in c.fetchall()]
+            c.execute('SELECT route FROM role_permissions WHERE role = %s', (role,))
+            routes = [row['route'] for row in c.fetchall()]
             return routes
     except Exception as e:
         # Fallback to hardcoded permissions if database read fails
@@ -69,11 +77,10 @@ class User(UserMixin):
     def _get_additional_roles(self):
         """Get additional roles assigned to this user from the database."""
         try:
-            db_path = os.path.join(os.path.dirname(__file__), 'recipes.db')
-            with sqlite3.connect(db_path) as conn:
+            with get_db_connection() as conn:
                 c = conn.cursor()
-                c.execute('SELECT role FROM user_roles WHERE email = ?', (self.email,))
-                return [row[0] for row in c.fetchall()]
+                c.execute('SELECT role FROM user_roles WHERE email = %s', (self.email,))
+                return [row['role'] for row in c.fetchall()]
         except Exception:
             return []
     
@@ -126,13 +133,11 @@ def get_user_by_google_id(google_id):
 def get_staff_code_from_email(email):
     """Look up staff code from teacher email in database."""
     try:
-        # Use absolute path to database
-        db_path = os.path.join(os.path.dirname(__file__), 'recipes.db')
-        with sqlite3.connect(db_path) as conn:
+        with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('SELECT code FROM teachers WHERE email = ?', (email,))
+            c.execute('SELECT code FROM teachers WHERE email = %s', (email,))
             result = c.fetchone()
-            return result[0] if result else None
+            return result['code'] if result else None
     except Exception:
         return None
 
