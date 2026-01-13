@@ -609,6 +609,7 @@ def class_ingredients_save():
     # Save a booking to `class_bookings` (INSERT or UPDATE)
     try:
         data = request.get_json() or {}
+        print("[DEBUG] /class_ingredients/save data:", data)
         booking_id = data.get('booking_id')  # If provided, update existing booking
         staff_code = data.get('staff')
         class_code = data.get('classcode')
@@ -616,6 +617,15 @@ def class_ingredients_save():
         period = data.get('period')
         recipe_id = data.get('recipe_id')
         desired = int(data.get('desired_servings') or 24)
+
+        # Validation
+        missing = []
+        for field, value in [('staff', staff_code), ('classcode', class_code), ('date', date_required), ('period', period), ('recipe_id', recipe_id)]:
+            if value in [None, '']:
+                missing.append(field)
+        if missing:
+            print(f"[ERROR] Missing required fields: {missing}")
+            return jsonify({'error': f'Missing required fields: {missing}'}), 400
 
         with get_db_connection() as conn:
             c = conn.cursor()
@@ -634,6 +644,8 @@ def class_ingredients_save():
                 booking_id = c.lastrowid
         return jsonify({'success': True, 'booking_id': booking_id})
     except Exception as e:
+        print(f"[ERROR] Exception in /class_ingredients/save: {e}")
+        import traceback; traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
 @app.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
