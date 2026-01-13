@@ -1226,7 +1226,20 @@ def suggest_recipe():
         subject = f"Recipe Suggestion: {recipe_name}"
         body = f"Recipe Name: {recipe_name}\nURL: {recipe_url}\nReason: {reason}\nSuggested by: {user_name} ({user_email})"
 
-        # Push suggestion to Google Sheet via Apps Script Webhook
+        # Save suggestion to the database
+        try:
+            with get_db_connection() as conn:
+                c = conn.cursor()
+                c.execute(
+                    '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
+                       VALUES (%s, %s, %s, %s, %s, NOW(), %s)''',
+                    (recipe_name, recipe_url, reason, user_name, user_email, 'pending')
+                )
+                conn.commit()
+        except Exception as db_error:
+            print(f"Failed to save suggestion to DB: {db_error}")
+
+        # Push suggestion to Google Sheet via Apps Script Webhook and send email (existing code)
         try:
             import requests
             google_script_url = "https://script.google.com/macros/s/AKfycbzIbK9PBx4R7lXxVHXuuywV9TPVJAtrQlyKltpkSLN-d19A1jqwJ_Bh3It3KYwdgA/exec"
