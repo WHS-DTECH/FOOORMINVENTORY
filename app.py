@@ -24,8 +24,9 @@ except ImportError:
 from recipe_parser import parse_recipes_from_text, format_recipe, parse_ingredient_line
 from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
 
-# PostgreSQL connection string
-POSTGRES_URL = psql 'postgresql://neondb_owner:npg_7EDJk4mGarQC@ep-holy-tooth-aff8oa6n-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+
+# PostgreSQL connection string from environment variable
+POSTGRES_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
