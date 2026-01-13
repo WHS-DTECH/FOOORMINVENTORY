@@ -6,3 +6,4 @@ requests
 flask-login
 beautifulsoup4
 PyPDF2
+google-auth-oauthlib
