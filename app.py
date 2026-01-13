@@ -495,7 +495,7 @@ def class_ingredients():
         
         # Get all classes
         c.execute('SELECT DISTINCT ClassCode FROM classes ORDER BY ClassCode')
-        all_classes = [r['ClassCode'] for r in c.fetchall() if r['ClassCode']]
+        all_classes = [r['classcode'] for r in c.fetchall() if r['classcode']]
         
         # Sort classes: most used first, then rest alphabetically
         most_used_classes = [c for c in all_classes if c in most_used_class_codes]
