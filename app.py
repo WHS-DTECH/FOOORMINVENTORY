@@ -1134,39 +1134,30 @@ def recipes_page():
     cuisine = request.args.get('cuisine', '').strip()
     difficulty = request.args.get('difficulty', '').strip()
     
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
-        
         # Build dynamic query
         query = "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes WHERE 1=1"
         params = []
-        
         if q:
-            query += " AND (name LIKE ? OR ingredients LIKE ? OR instructions LIKE ?)"
+            query += " AND (name ILIKE %s OR ingredients ILIKE %s OR instructions ILIKE %s)"
             term = f"%{q}%"
             params.extend([term, term, term])
-        
         if dietary:
-            query += " AND dietary_tags LIKE ?"
+            query += " AND dietary_tags ILIKE %s"
             params.append(f"%{dietary}%")
-        
         if cuisine:
-            query += " AND cuisine LIKE ?"
+            query += " AND cuisine ILIKE %s"
             params.append(f"%{cuisine}%")
-        
         if difficulty:
-            query += " AND difficulty = ?"
+            query += " AND difficulty = %s"
             params.append(difficulty)
-        
         query += " ORDER BY name COLLATE NOCASE"
-        
         c.execute(query, params)
         rows = [dict(r) for r in c.fetchall()]
-        
         # Get all unique values for filters
         c.execute("SELECT DISTINCT cuisine FROM recipes WHERE cuisine IS NOT NULL AND cuisine != '' ORDER BY cuisine")
-        all_cuisines = [r[0] for r in c.fetchall()]
+        all_cuisines = [r['cuisine'] for r in c.fetchall()]
         
         c.execute("SELECT DISTINCT dietary_tags FROM recipes WHERE dietary_tags IS NOT NULL AND dietary_tags != ''")
         all_tags_raw = [r[0] for r in c.fetchall()]
@@ -1449,10 +1440,9 @@ def recipe_detail(recipe_id):
             return redirect(url_for('recipe_detail', recipe_id=recipe_id))
 
     # GET: show recipe
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment, photo, dietary_tags, cuisine, difficulty FROM recipes WHERE id = ?', (recipe_id,))
+        c.execute('SELECT id, name, ingredients, instructions, serving_size, equipment, photo, dietary_tags, cuisine, difficulty FROM recipes WHERE id = %s', (recipe_id,))
         row = c.fetchone()
         if not row:
             return ('Recipe not found', 404)
