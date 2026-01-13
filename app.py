@@ -365,7 +365,7 @@ def admin_user_roles():
         action = request.form.get('action')  # 'add' or 'remove'
         
         if email and role and action:
-            with sqlite3.connect(DATABASE) as conn:
+            with get_db_connection() as conn:
                 c = conn.cursor()
                 if action == 'add':
                     try:
@@ -755,7 +755,7 @@ def upload():
     equipment_list = [item.strip() for item in equipment_text.split('\n') if item.strip()]
 
     try:
-        with sqlite3.connect(DATABASE) as conn:
+        with get_db_connection() as conn:
             c = conn.cursor()
             
             # Check if recipe name already exists
@@ -1069,7 +1069,7 @@ def get_shopping_status():
         return jsonify({'error': 'Missing week_start'}), 400
     
     with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+        # conn.row_factory = sqlite3.Row  # Not needed for psycopg2
         c = conn.cursor()
         c.execute('SELECT ingredient_name, already_have FROM shopping_list_items WHERE week_start = ? AND already_have = 1',
                   (week_start,))
