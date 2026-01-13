@@ -229,7 +229,7 @@
                 <tbody>
                 {% for s in suggestions %}
                     <tr>
-                        <td style="padding: 8px; border: 1px solid #ddd;">{{ s.created_at[:10] }}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '—' }}</td>
                         <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">{{ s.recipe_name }}</td>
                         <td style="padding: 8px; border: 1px solid #ddd;">{{ s.suggested_by_name }}<br><small style="color: #666;">{{ s.suggested_by_email }}</small></td>
                         <td style="padding: 8px; border: 1px solid #ddd;">
