@@ -337,8 +337,7 @@ def admin_permissions():
         return redirect(url_for('admin_permissions'))
     
     # Get current permissions
-    with sqlite3.connect(DATABASE) as conn:
-        # conn.row_factory = sqlite3.Row  # Not needed for psycopg2
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
         permissions = {}
@@ -381,8 +380,7 @@ def admin_user_roles():
         return redirect(url_for('admin_user_roles'))
     
     # Get all users with additional roles
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
             SELECT email, GROUP_CONCAT(role, ', ') as roles
@@ -409,7 +407,7 @@ def clean_recipes_route():
     try:
         from clean_recipes import remove_junk_recipes, remove_duplicate_recipes, fix_recipe_names
         
-        with sqlite3.connect(DATABASE) as conn:
+        with get_db_connection() as conn:
             # Run all cleaning operations
             junk_deleted = remove_junk_recipes(conn)
             dupes_deleted = remove_duplicate_recipes(conn)
@@ -431,8 +429,7 @@ def clean_recipes_route():
 @app.route('/staff')
 @require_role('VP')
 def staff():
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT code, last_name, first_name, title, email FROM teachers ORDER BY last_name, first_name')
         rows = [dict(r) for r in c.fetchall()]
@@ -442,8 +439,7 @@ def staff():
 @app.route('/classes')
 @require_role('VP')
 def classes_page():
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT * FROM classes ORDER BY ClassCode, LineNo')
         rows = [dict(r) for r in c.fetchall()]
@@ -462,8 +458,7 @@ def class_ingredients():
     date_required = request.form.get('date_required') if request.method == 'POST' else None
     period = request.form.get('period') if request.method == 'POST' else None
     
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         
         # Get most used staff (top 5 by booking count)
@@ -534,8 +529,7 @@ def class_ingredients():
         recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
 
     # Get existing bookings for display (ordered by date descending, most recent first)
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
             SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, 
@@ -566,10 +560,9 @@ def class_ingredients_download():
     if not recipe_id:
         return jsonify({'error':'recipe_id required'}), 400
 
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, serving_size FROM recipes WHERE id = ?', (recipe_id,))
+        c.execute('SELECT id, name, ingredients, serving_size FROM recipes WHERE id = %s', (recipe_id,))
         row = c.fetchone()
         if not row:
             return jsonify({'error':'recipe not found'}), 404
@@ -624,18 +617,18 @@ def class_ingredients_save():
     recipe_id = data.get('recipe_id')
     desired = int(data.get('desired_servings') or 24)
     
-    with sqlite3.connect(DATABASE) as conn:
+    with get_db_connection() as conn:
         c = conn.cursor()
         if booking_id:
             # Update existing booking
             c.execute('''UPDATE class_bookings 
-                        SET staff_code=?, class_code=?, date_required=?, period=?, recipe_id=?, desired_servings=?
-                        WHERE id=?''',
+                        SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s
+                        WHERE id=%s''',
                      (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
             conn.commit()
         else:
             # Insert new booking
-            c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (?, ?, ?, ?, ?, ?)',
+            c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (%s, %s, %s, %s, %s, %s)',
                       (staff_code, class_code, date_required, period, recipe_id, desired))
             conn.commit()
             booking_id = c.lastrowid
@@ -645,9 +638,9 @@ def class_ingredients_save():
 @require_role('VP', 'DK')
 def class_ingredients_delete(booking_id):
     # Delete a booking
-    with sqlite3.connect(DATABASE) as conn:
+    with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('DELETE FROM class_bookings WHERE id = ?', (booking_id,))
+        c.execute('DELETE FROM class_bookings WHERE id = %s', (booking_id,))
         conn.commit()
     return jsonify({'success': True})
 
@@ -689,12 +682,12 @@ def upload():
             # Save recipes to database (skip duplicates)
             saved_count = 0
             skipped_count = 0
-            with sqlite3.connect(DATABASE) as conn:
+            with get_db_connection() as conn:
                 c = conn.cursor()
                 for recipe in recipes_found:
                     try:
                         c.execute(
-                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
+                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s)",
                             (
                                 recipe['name'],
                                 json.dumps(recipe.get('ingredients', [])),
@@ -704,7 +697,7 @@ def upload():
                             ),
                         )
                         saved_count += 1
-                    except sqlite3.IntegrityError:
+                    except psycopg2.IntegrityError:
                         # Recipe name already exists, skip it
                         skipped_count += 1
 
@@ -814,39 +807,20 @@ def shoplist():
     monday = today - timedelta(days=today.weekday())  # Get Monday of current week
     monday = monday + timedelta(weeks=week_offset)  # Adjust by week offset
     
-    dates = []
-    day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    
-    for i in range(5):
-        date_obj = monday + timedelta(days=i)
-        date_str = date_obj.strftime('%Y-%m-%d')
-        # Format for NZ date display: ddmmyy
-        nz_format = date_obj.strftime('%d/%m/%y')
-        dates.append({'date': date_str, 'day_name': day_names[i], 'nz_date': nz_format})
-    
-    # Calculate previous and next week offsets for navigation
-    prev_week = week_offset - 1
-    next_week = week_offset + 1
-    week_label = f"Week of {dates[0]['nz_date']} to {dates[4]['nz_date']}"
-    
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
-        
         # Get all bookings for this week
         week_start = dates[0]['date']
         week_end = dates[4]['date']
-        
         c.execute('''SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, 
                            cb.recipe_id, cb.desired_servings, r.name as recipe_name, t.last_name, t.first_name
                     FROM class_bookings cb
                     LEFT JOIN recipes r ON cb.recipe_id = r.id
                     LEFT JOIN teachers t ON cb.staff_code = t.code
-                    WHERE cb.date_required BETWEEN ? AND ?
+                    WHERE cb.date_required BETWEEN %s AND %s
                     ORDER BY cb.date_required, cb.period''',
                    (week_start, week_end))
         bookings_list = [dict(r) for r in c.fetchall()]
-        
         # Get all recipes for ingredient lookup
         c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY name')
         all_recipes = {}
@@ -882,12 +856,10 @@ def generate_shopping_list():
     if not booking_ids:
         return jsonify({'error': 'No bookings selected'}), 400
     
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
-        
         # Get all bookings with their recipes
-        placeholders = ','.join('?' * len(booking_ids))
+        placeholders = ','.join(['%s'] * len(booking_ids))
         c.execute(f'''
             SELECT 
                 cb.id,
@@ -905,7 +877,6 @@ def generate_shopping_list():
             LEFT JOIN teachers t ON cb.staff_code = t.code
             WHERE cb.id IN ({placeholders})
         ''', booking_ids)
-        
         bookings = [dict(row) for row in c.fetchall()]
     
     # Aggregate ingredients
