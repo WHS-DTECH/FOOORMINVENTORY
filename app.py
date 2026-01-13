@@ -1256,28 +1256,36 @@ def suggest_recipe():
             import requests
             google_script_url = "https://script.google.com/macros/s/AKfycbzIbK9PBx4R7lXxVHXuuywV9TPVJAtrQlyKltpkSLN-d19A1jqwJ_Bh3It3KYwdgA/exec"
             # Send actual email to Vanessa Pringle
+            # Save suggestion to the database
+            try:
+                with get_db_connection() as conn:
+                    c = conn.cursor()
+                    c.execute(
+                        '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
+                           VALUES (%s, %s, %s, %s, %s, NOW(), %s)''',
+                        (recipe_name, recipe_url, reason, user_name, user_email, 'pending')
+                    )
+                    conn.commit()
+            except Exception as db_error:
+                print(f"Failed to save suggestion to DB: {db_error}")
+
+            # Send a single email notification
             email_sent = False
             try:
                 import smtplib
                 from email.mime.text import MIMEText
                 from email.mime.multipart import MIMEMultipart
-
-                # --- Gmail SMTP setup ---
-                # You must set SMTP_USERNAME and SMTP_PASSWORD in your .env file.
-                # For Gmail, use an App Password (not your main password) if 2FA is enabled.
                 smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
                 smtp_port = int(os.getenv('SMTP_PORT', '587'))
                 smtp_username = os.getenv('SMTP_USERNAME')
                 smtp_password = os.getenv('SMTP_PASSWORD')
                 smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
-
                 if smtp_username and smtp_password:
                     msg = MIMEMultipart()
                     msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
                     msg['To'] = vp_email
                     msg['Subject'] = subject
                     msg.attach(MIMEText(body, 'plain'))
-
                     server = smtplib.SMTP(smtp_server, smtp_port)
                     server.starttls()
                     server.login(smtp_username, smtp_password)
@@ -1288,7 +1296,6 @@ def suggest_recipe():
                 else:
                     print("SMTP credentials not configured - email not sent")
                     print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-
             except Exception as email_error:
                 print(f"Failed to send email: {email_error}")
                 print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
@@ -1297,33 +1304,6 @@ def suggest_recipe():
                 flash(f'Thank you! Your suggestion for "{recipe_name}" has been emailed to the VP and saved to the database.', 'success')
             else:
                 flash(f'Thank you! Your suggestion for "{recipe_name}" has been saved. The VP will review it in the Admin panel.', 'success')
-
-            # Get SMTP configuration from environment variables
-            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
-            smtp_port = int(os.getenv('SMTP_PORT', '587'))
-            smtp_username = os.getenv('SMTP_USERNAME')
-            smtp_password = os.getenv('SMTP_PASSWORD')
-            smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
-
-            if smtp_username and smtp_password:
-                # Create message
-                msg = MIMEMultipart()
-                msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
-                msg['To'] = vp_email
-                msg['Subject'] = subject
-                msg.attach(MIMEText(body, 'plain'))
-
-                # Send email
-                server = smtplib.SMTP(smtp_server, smtp_port)
-                server.starttls()
-                server.login(smtp_username, smtp_password)
-                server.send_message(msg)
-                server.quit()
-
-                email_sent = True
-                print(f"Email sent successfully to {vp_email}")
-            else:
-                print("SMTP credentials not configured - email not sent")
                 print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
 
         except Exception as email_error:
