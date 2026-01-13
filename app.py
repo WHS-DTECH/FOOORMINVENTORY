@@ -1209,10 +1209,14 @@ def suggest_recipe():
         vp_email = 'vanessapringle@westlandhigh.school.nz'
 
         # Optionally: Remove the above and use DB lookup if you want dynamic admin email
-        
+
         # Get current user info safely
         user_name = current_user.name if hasattr(current_user, 'name') else 'Unknown User'
         user_email = current_user.email if hasattr(current_user, 'email') else 'No email'
+
+        # Define subject and body for the email
+        subject = f"Recipe Suggestion: {recipe_name}"
+        body = f"Recipe Name: {recipe_name}\nURL: {recipe_url}\nReason: {reason}\nSuggested by: {user_name} ({user_email})"
 
         # Push suggestion to Google Sheet via Apps Script Webhook
         try:
@@ -1261,14 +1265,13 @@ def suggest_recipe():
             else:
                 flash(f'Thank you! Your suggestion for "{recipe_name}" has been saved. The VP will review it in the Admin panel.', 'success')
 
-            
             # Get SMTP configuration from environment variables
             smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
             smtp_port = int(os.getenv('SMTP_PORT', '587'))
             smtp_username = os.getenv('SMTP_USERNAME')
             smtp_password = os.getenv('SMTP_PASSWORD')
             smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
-            
+
             if smtp_username and smtp_password:
                 # Create message
                 msg = MIMEMultipart()
@@ -1276,24 +1279,24 @@ def suggest_recipe():
                 msg['To'] = vp_email
                 msg['Subject'] = subject
                 msg.attach(MIMEText(body, 'plain'))
-                
+
                 # Send email
                 server = smtplib.SMTP(smtp_server, smtp_port)
                 server.starttls()
                 server.login(smtp_username, smtp_password)
                 server.send_message(msg)
                 server.quit()
-                
+
                 email_sent = True
                 print(f"Email sent successfully to {vp_email}")
             else:
                 print("SMTP credentials not configured - email not sent")
                 print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-                
+
         except Exception as email_error:
             print(f"Failed to send email: {email_error}")
             print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-        
+
         if email_sent:
             flash(f'Thank you! Your suggestion for "{recipe_name}" has been emailed to the VP and saved to the database.', 'success')
         else:
