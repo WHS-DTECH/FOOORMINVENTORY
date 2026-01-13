@@ -1240,15 +1240,25 @@ def suggest_recipe():
         try:
             with get_db_connection() as conn:
                 c = conn.cursor()
-                c.execute(
-                    '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
-                       VALUES (%s, %s, %s, %s, %s, NOW(), %s)''',
-                    (recipe_name, recipe_url, reason, user_name, user_email, 'pending')
-                )
-                conn.commit()
+                sql = '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
+                       VALUES (%s, %s, %s, %s, %s, NOW(), %s)'''
+                params = (recipe_name, recipe_url, reason, user_name, user_email, 'pending')
+                print("[DEBUG] About to execute SQL for recipe suggestion:")
+                print("[DEBUG] SQL:", sql)
+                print("[DEBUG] Params:", params)
+                try:
+                    c.execute(sql, params)
+                    conn.commit()
+                    print("[DEBUG] Insert committed successfully.")
+                except Exception as exec_error:
+                    print(f"[ERROR] Exception during SQL execute: {exec_error}")
+                    import traceback; traceback.print_exc()
+                    flash('There was an error saving your suggestion (SQL error). Please try again or contact the VP directly.', 'error')
+                    return redirect(url_for('recipes_page'))
         except Exception as db_error:
-            print(f"Failed to save suggestion to DB: {db_error}")
-            flash('There was an error saving your suggestion. Please try again or contact the VP directly.', 'error')
+            print(f"[ERROR] Failed to save suggestion to DB (outer): {db_error}")
+            import traceback; traceback.print_exc()
+            flash('There was an error saving your suggestion (DB error). Please try again or contact the VP directly.', 'error')
             return redirect(url_for('recipes_page'))
 
         # Only send email after successful DB insert
