@@ -504,7 +504,7 @@ def class_ingredients():
         classes = most_used_classes + other_classes
         
         # Get recipes
-        c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY name COLLATE NOCASE')
+        c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY LOWER(name)')
         rows = c.fetchall()
         
         # If called from booking, get the booking's recipe and servings
@@ -1149,7 +1149,7 @@ def recipes_page():
         if difficulty:
             query += " AND difficulty = %s"
             params.append(difficulty)
-        query += " ORDER BY name COLLATE NOCASE"
+        query += " ORDER BY LOWER(name)"
         c.execute(query, params)
         rows = [dict(r) for r in c.fetchall()]
         # Get all unique values for filters
@@ -1309,13 +1309,13 @@ def recbk():
             c.execute(
                 "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
                 "WHERE name ILIKE %s OR ingredients ILIKE %s "
-                "ORDER BY name COLLATE NOCASE",
+                "ORDER BY LOWER(name)",
                 (term, term),
             )
         else:
             c.execute(
                 "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
-                "ORDER BY name COLLATE NOCASE"
+                "ORDER BY LOWER(name)"
             )
         rows = [dict(r) for r in c.fetchall()]
 
