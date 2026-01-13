@@ -805,7 +805,16 @@ def shoplist():
     today = datetime.now()
     monday = today - timedelta(days=today.weekday())  # Get Monday of current week
     monday = monday + timedelta(weeks=week_offset)  # Adjust by week offset
-    
+
+    # Build dates list for the week (Monday to Friday)
+    dates = []
+    for i in range(5):
+        day = monday + timedelta(days=i)
+        dates.append({
+            'date': day.strftime('%Y-%m-%d'),
+            'label': day.strftime('%A %d %b')
+        })
+
     with get_db_connection() as conn:
         c = conn.cursor()
         # Get all bookings for this week
@@ -829,18 +838,18 @@ def shoplist():
             except Exception:
                 ings = []
             all_recipes[r['id']] = {'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']}
-    
+
     # Organize bookings into a grid structure
     grid = {}
     for date_obj in dates:
         for period in range(1, 6):
             grid[f"{date_obj['date']}_P{period}"] = None
-    
+
     for booking in bookings_list:
         key = f"{booking['date_required']}_P{booking['period']}"
         if key in grid:
             grid[key] = booking
-    
+
     return render_template('shoplist.html', dates=dates, grid=grid, bookings=bookings_list, recipes=all_recipes, 
                           week_offset=week_offset, prev_week=prev_week, next_week=next_week, week_label=week_label)
 
