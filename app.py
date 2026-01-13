@@ -1032,27 +1032,24 @@ def toggle_shopping_item():
     if not week_start or not ingredient_name:
         return jsonify({'error': 'Missing required fields'}), 400
     
-    with sqlite3.connect(DATABASE) as conn:
+    with get_db_connection() as conn:
         c = conn.cursor()
-        
         # Check if item exists
-        c.execute('SELECT id, already_have FROM shopping_list_items WHERE week_start = ? AND ingredient_name = ?',
+        c.execute('SELECT id, already_have FROM shopping_list_items WHERE week_start = %s AND ingredient_name = %s',
                   (week_start, ingredient_name))
         row = c.fetchone()
-        
         if row:
             # Toggle status
-            new_status = 0 if row[1] else 1
-            c.execute('UPDATE shopping_list_items SET already_have = ? WHERE id = ?', (new_status, row[0]))
+            new_status = 0 if row['already_have'] else 1
+            c.execute('UPDATE shopping_list_items SET already_have = %s WHERE id = %s', (new_status, row['id']))
         else:
             # Create new item with already_have = 1
             category = categorize_ingredient(ingredient_name)
             c.execute('''INSERT INTO shopping_list_items 
                         (week_start, ingredient_name, quantity, unit, category, already_have)
-                        VALUES (?, ?, ?, ?, ?, 1)''',
+                        VALUES (%s, %s, %s, %s, %s, 1)''',
                       (week_start, ingredient_name, quantity, unit, category))
             new_status = 1
-        
         conn.commit()
     
     return jsonify({'success': True, 'already_have': new_status})
@@ -1068,10 +1065,9 @@ def get_shopping_status():
     if not week_start:
         return jsonify({'error': 'Missing week_start'}), 400
     
-    with sqlite3.connect(DATABASE) as conn:
-        # conn.row_factory = sqlite3.Row  # Not needed for psycopg2
+    with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT ingredient_name, already_have FROM shopping_list_items WHERE week_start = ? AND already_have = 1',
+        c.execute('SELECT ingredient_name, already_have FROM shopping_list_items WHERE week_start = %s AND already_have = 1',
                   (week_start,))
         items = {row['ingredient_name']: row['already_have'] for row in c.fetchall()}
     
@@ -1092,13 +1088,13 @@ def save_shopping_list():
     
     user_email = current_user.email if current_user.is_authenticated else 'unknown'
     
-    with sqlite3.connect(DATABASE) as conn:
-        c = conn.cursor()
-        c.execute('''INSERT INTO saved_shopping_lists (list_name, week_label, items, created_by)
-                    VALUES (?, ?, ?, ?)''',
-                  (list_name, week_label, json.dumps(items), user_email))
-        conn.commit()
-        list_id = c.lastrowid
+        with get_db_connection() as conn:
+                c = conn.cursor()
+                c.execute('''INSERT INTO saved_shopping_lists (list_name, week_label, items, created_by)
+                                        VALUES (%s, %s, %s, %s) RETURNING id''',
+                                    (list_name, week_label, json.dumps(items), user_email))
+                list_id = c.fetchone()['id']
+                conn.commit()
     
     return jsonify({'success': True, 'list_id': list_id})
 
@@ -1107,8 +1103,7 @@ def save_shopping_list():
 @require_role('VP', 'DK', 'MU')
 def get_saved_lists():
     """Get all saved shopping lists."""
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT id, list_name, week_label, created_at FROM saved_shopping_lists ORDER BY created_at DESC')
         lists = [dict(row) for row in c.fetchall()]
@@ -1120,18 +1115,14 @@ def get_saved_lists():
 @require_role('VP', 'DK', 'MU')
 def load_saved_list(list_id):
     """Load a saved shopping list."""
-    with sqlite3.connect(DATABASE) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM saved_shopping_lists WHERE id = ?', (list_id,))
+        c.execute('SELECT * FROM saved_shopping_lists WHERE id = %s', (list_id,))
         row = c.fetchone()
-        
         if not row:
             return jsonify({'error': 'List not found'}), 404
-        
         list_data = dict(row)
         list_data['items'] = json.loads(list_data['items'])
-    
     return jsonify(list_data)
 
 
