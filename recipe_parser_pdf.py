@@ -218,15 +218,33 @@ def format_recipe(recipe_data):
         if ing_line:
             ingredients.append(parse_ingredient_line(ing_line))
 
-    # Parse equipment into list (split by comma or individual entries)
-    equipment_text = ' '.join(recipe_data.get('equipment', []))
-    equipment = [e.strip() for e in equipment_text.split(',') if e.strip()]
+    # Parse equipment into list (split by comma, semicolon, or newline)
+    equipment_text = '\n'.join(recipe_data.get('equipment', []))
+    equipment = []
+    for line in equipment_text.split('\n'):
+        # Split on commas and semicolons
+        for item in re.split(r'[;,]', line):
+            item = item.strip()
+            if item:
+                equipment.append(item)
     if not equipment:
-        # Try splitting by space if no commas
+        # Try splitting by space if no commas/semicolons
         equipment = [e.strip() for e in equipment_text.split() if e.strip()]
 
-    # Parse method - keep as multi-line text
-    method_text = '\n'.join(recipe_data.get('method', []))
+    # Parse method - split steps by numbers or bullet points
+    method_lines = recipe_data.get('method', [])
+    method_text = '\n'.join(method_lines)
+    # Split by lines that start with a number, bullet, or dash
+    method_steps = []
+    for line in method_lines:
+        # Match lines like '1. Do this', '- Do that', '• Do something'
+        steps = re.split(r'(?<=\n|^)(?:\d+\.|\-|•)\s+', line)
+        for step in steps:
+            step = step.strip()
+            if step:
+                method_steps.append(step)
+    if method_steps:
+        method_text = '\n'.join(method_steps)
 
     return {
         'name': recipe_data.get('name', 'Unknown Recipe').strip(),
