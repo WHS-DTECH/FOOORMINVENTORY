@@ -15,54 +15,37 @@
       <a href="/admin">Admin</a>
     </nav>
 
-<h2>{{ recipe.recipe_name or recipe.name }}</h2>
+    <div class="recipe-details-container">
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% elif recipe %}
+        <h1>{{ recipe.name }}</h1>
+        {% if recipe.image_url %}
+          <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}" class="recipe-image" style="max-width:300px; margin-bottom:20px;"/>
+        {% endif %}
+        <h3>Ingredients</h3>
+        <ul>
+          {% for ing in recipe.ingredients %}
+            <li>{{ ing.quantity or '' }} {{ ing.unit or '' }} {{ ing.name or ing.ingredient or ing }}</li>
+          {% endfor %}
+        </ul>
+        <h3>Instructions</h3>
+        <div class="recipe-instructions">
+          {% if recipe.instructions %}
+            <pre style="white-space: pre-wrap;">{{ recipe.instructions }}</pre>
+          {% else %}
+            <em>No instructions provided.</em>
+          {% endif %}
+        </div>
+        {% if recipe.serving_size %}
+          <div><strong>Servings:</strong> {{ recipe.serving_size }}</div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-warning">Recipe not found.</div>
+      {% endif %}
+    </div>
 
-<!-- Recipe Info -->
-<div style="background:#f9f9f9; border:1px solid #ddd; padding:12px; margin:12px 0; border-radius:6px; max-width:600px;">
-  <div style="margin-bottom:8px;">
-    <strong>Tags:</strong>
-    {% if recipe.dietary_tags %}
-      {% for tag in recipe.dietary_tags.split(',') %}
-        <span class="diet-tag">{{ tag.strip() }}</span>
-      {% endfor %}
-    {% else %}
-      <span style="color:#999;">No tags</span>
-    {% endif %}
-  </div>
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-    <div><strong>Cuisine:</strong> {{ recipe.cuisine or '—' }}</div>
-    <div><strong>Difficulty:</strong> {{ recipe.difficulty or '—' }}</div>
-    <div><strong>Servings:</strong> {{ recipe.serving_size or '—' }}</div>
-  </div>
-</div>
+    <a href="/recbk" class="btn btn-secondary" style="margin-top: 24px;">&larr; Back to Recipe Book</a>
 
-{% if recipe.photo %}
-  <div>
-    <img src="{{ url_for('static', filename='uploads/recipes/' ~ recipe.photo) }}" alt="{{ recipe.recipe_name or recipe.name }}" style="max-width:400px; height:auto;" />
-  </div>
-{% endif %}
-
-<h3>Ingredients</h3>
-<ul>
-  {% if ingredients and ingredients|length > 0 %}
-    {% for ing in ingredients %}
-      <li>{{ ing.quantity or '' }} {{ ing.unit or '' }} {{ ing.ingredient or ing.name }}</li>
-    {% endfor %}
-  {% elif recipe.ingredients %}
-    {% for ing in recipe.ingredients %}
-      <li>{{ ing }}</li>
-    {% endfor %}
-  {% else %}
-    <li>No ingredients listed.</li>
-  {% endif %}
-</ul>
-
-{% if recipe.instructions %}
-  <h3>Instructions</h3>
-  <div style="white-space: pre-line;">{{ recipe.instructions }}</div>
-{% endif %}
-
-<a href="/recbk" class="btn btn-secondary" style="margin-top: 24px;">&larr; Back to Recipe Book</a>
-
-</body>
+  </body>
 </html>

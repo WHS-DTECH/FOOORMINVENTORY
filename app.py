@@ -1654,3 +1654,19 @@ def api_scheduled_bookings():
         print('[ERROR] Failed to fetch scheduled bookings:', e)
         import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
+
+# --- Recipe detail page for /recipe/<id> ---
+@app.route('/recipe/<int:recipe_id>')
+def recipe_details(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, name, ingredients, instructions, serving_size, image_url FROM recipes WHERE id = %s', (recipe_id,))
+        row = c.fetchone()
+        if not row:
+            return render_template('recipe_details.html', recipe=None, error='Recipe not found'), 404
+        recipe = dict(row)
+        try:
+            recipe['ingredients'] = json.loads(recipe.get('ingredients') or '[]')
+        except Exception:
+            recipe['ingredients'] = []
+    return render_template('recipe_details.html', recipe=recipe, error=None)
