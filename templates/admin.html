@@ -175,10 +175,10 @@
                 <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with staff details to add or update staff records.">
                     <i class="bi bi-info-circle text-info"></i>
                 </span>
-                <form method="POST" enctype="multipart/form-data" class="mb-3">
+                <form method="POST" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload Staff CSV')">
                     <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
                     <input type="file" id="staff_csv" name="staff_csv" accept=".csv" class="form-control mb-2" required>
-                    <button type="submit" class="btn btn-primary w-100">Upload Staff CSV</button>
+                    <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Staff CSV</button>
                 </form>
                 {% if preview_data %}
                 <h3>Preview of Uploaded Staff Data</h3>
@@ -207,10 +207,10 @@
                 <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with class details to add or update classes.">
                     <i class="bi bi-info-circle text-info"></i>
                 </span>
-                <form action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3">
+                <form action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload Class CSV')">
                     <label for="csvfile" class="form-label">Select Class CSV file:</label>
                     <input type="file" id="csvfile" name="csvfile" accept=".csv" class="form-control mb-2" required>
-                    <button type="submit" class="btn btn-primary w-100">Upload Class CSV</button>
+                    <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Class CSV</button>
                 </form>
                 {% if class_preview_data %}
                 <h3>Preview of Uploaded Class Data</h3>
@@ -293,10 +293,10 @@
                                         <i class="bi bi-info-circle text-info"></i>
                                     </span>
             <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
-            <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
+            <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload PDF')">
                 <label for="pdfFile" class="form-label">Select PDF file:</label>
                 <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control mb-2" required>
-                <button type="submit" class="btn btn-primary w-100">Upload PDF</button>
+                <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload PDF</button>
             </form>
 
             <hr class="my-4">
@@ -318,9 +318,23 @@
                                         <i class="bi bi-info-circle text-info"></i>
                                     </span>
             <p class="recipe-method-desc">Remove duplicate recipes, junk entries, and fix recipe names.</p>
-            <form action="/admin/clean_recipes" method="post" class="mb-3" onsubmit="return confirm('This will clean the recipe database. Continue?');">
-                <button type="submit" class="btn btn-warning w-100">🧹 Clean Recipe Database</button>
+            <form action="/admin/clean_recipes" method="post" class="mb-3" onsubmit="return confirm('This will clean the recipe database. Continue?') && showLoadingSpinner(this, '🧹 Clean Recipe Database')">
+                <button type="submit" class="btn btn-warning w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> 🧹 Clean Recipe Database</button>
             </form>
+</body>
+<script>
+// Show loading spinner and disable button on form submit
+function showLoadingSpinner(form, label) {
+    var btn = form.querySelector('button[type="submit"]');
+    var spinner = btn.querySelector('.spinner-border');
+    if (btn && spinner) {
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        btn.childNodes[btn.childNodes.length-1].textContent = ' ' + label + '...';
+    }
+    return true;
+}
+</script>
 
             <!-- Removed duplicate Manage Permissions section from right column -->
         </div>
