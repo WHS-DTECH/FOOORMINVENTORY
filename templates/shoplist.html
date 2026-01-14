@@ -27,7 +27,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
   <div id="weekNav" class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold; display: flex; flex-direction: column; align-items: center;">
-    <div id="weekRangeLabel">{{ week_label }}</div>
+    <div id="weekRangeLabel">{{ week_label | format_nz_week }}</div>
     <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
       <form method="get" style="margin: 0;">
         <button type="submit" name="nav" value="prev">&#8592; Previous</button>
@@ -79,6 +79,7 @@ window.addEventListener('DOMContentLoaded', function() {
   </nav>
 
 
+  <!-- Removed duplicate weekly dates above navigation -->
   <div style="display: flex; flex-direction: column; align-items: center; margin-top: 18px;">
     <h1 class="no-print" style="font-size: 2.3em; margin-bottom: 0;">Weekly Booking Grid</h1>
   </div>
@@ -728,24 +729,7 @@ document.addEventListener('click', function() {
 });
 </script>
 <script>
-// Format week label as dd-mm-yyyy to dd-mm-yyyy
-function formatWeekLabel(label) {
-  // Expecting label in format yyyy-mm-dd to yyyy-mm-dd
-  const match = label.match(/(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    const start = `${match[3]}-${match[2]}-${match[1]}`;
-    const end = `${match[6]}-${match[5]}-${match[4]}`;
-    return `${start} to ${end}`;
-  }
-  return label;
-}
-document.addEventListener('DOMContentLoaded', function() {
-  // Update week label format
-  const weekLabelEl = document.getElementById('weekRangeLabel');
-  if (weekLabelEl) {
-    weekLabelEl.textContent = formatWeekLabel(weekLabelEl.textContent);
-  }
-});
+// Jinja filter will handle NZ week label formatting
 </script>
 </body>
 </html>

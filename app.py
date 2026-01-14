@@ -1,3 +1,13 @@
+@app.template_filter('format_nz_week')
+def format_nz_week(label):
+    # Expects label in format yyyy-mm-dd to yyyy-mm-dd
+    import re
+    match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
+    if match:
+        start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+        end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
+        return f"{start} to {end}"
+    return label
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
