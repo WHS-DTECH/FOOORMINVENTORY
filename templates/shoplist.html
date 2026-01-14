@@ -588,6 +588,33 @@ function switchShoplistView(view) {
     renderShoplistMonthCalendar();
   }
 }
+function getUserTimezone() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (e) {
+    return 'Pacific/Auckland'; // fallback
+  }
+}
+function formatDateToUserTZ(dateStr) {
+  // dateStr in yyyy-mm-dd
+  const [y, m, d] = dateStr.split('-');
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: getUserTimezone() });
+}
+// Update week grid to show day names in the top row
+function renderWeekGridHeadings() {
+  const thead = document.querySelector('#weekPeriodView table thead');
+  if (!thead) return;
+  const dates = Array.from(thead.querySelectorAll('tr:nth-child(1) th')).slice(1);
+  dates.forEach((th, idx) => {
+    const date = th.textContent.match(/\d{4}-\d{2}-\d{2}/);
+    if (date) {
+      const formatted = formatDateToUserTZ(date[0]);
+      th.innerHTML = formatted;
+    }
+  });
+}
+// Update month calendar to show day names and class code
 function renderShoplistMonthCalendar() {
   let currentDate = new Date();
   const bookings = window.bookings || [];
@@ -612,7 +639,7 @@ function renderShoplistMonthCalendar() {
     const dayBookings = bookings.filter(b => b.date_required === dateStr);
     html += `<div class='calendar-day ${isToday ? 'today' : ''}'><div class='day-number'>${day}</div>`;
     dayBookings.forEach(booking => {
-      html += `<div class='booking-item' title='${booking.recipe_name} (P${booking.period})'>P${booking.period}: ${booking.recipe_name}</div>`;
+      html += `<div class='booking-item' title='${booking.recipe_name} (P${booking.period})'><strong>${booking.class_code}</strong><br>P${booking.period}: ${booking.recipe_name}</div>`;
     });
     html += '</div>';
   }
@@ -623,75 +650,10 @@ function renderShoplistMonthCalendar() {
   }
   document.getElementById('shoplist-calendar').innerHTML = html;
 }
-function shoplistPreviousMonth() {
-  // Implement month navigation if needed
-}
-function shoplistNextMonth() {
-  // Implement month navigation if needed
-}
-function shoplistToday() {
-  renderShoplistMonthCalendar();
-}
-</script>
-<script>
-function getTeacherColorMap(bookings) {
-  // Get unique teachers
-  const teacherSet = new Set();
-  bookings.forEach(b => {
-    const teacher = b.last_name || b.staff_code || 'Unknown';
-    teacherSet.add(teacher);
-  });
-  const teachers = Array.from(teacherSet);
-  // Color palette
-  const palette = [
-    '#4285f4', '#ea4335', '#fbbc04', '#34a853', '#a142f4', '#ff6d01', '#46bdc6', '#e8710a', '#b31412', '#188038'
-  ];
-  const colorMap = {};
-  teachers.forEach((t, idx) => {
-    colorMap[t] = palette[idx % palette.length];
-  });
-  return colorMap;
-}
-function renderShoplistLegend() {
-  const colorMap = getTeacherColorMap(bookings);
-  let legendHtml = '<strong>Legend:</strong> ';
-  Object.entries(colorMap).forEach(([teacher, color]) => {
-    legendHtml += `<span class="legend-item"><span class="legend-color" style="background:${color};border:1px solid #ccc;display:inline-block;width:16px;height:16px;margin-right:4px;"></span> ${teacher}</span> `;
-  });
-  legendHtml += '<span class="legend-item"><span class="legend-color" style="background:#fffbe6;border:2px solid #fbbc04;display:inline-block;width:16px;height:16px;margin-right:4px;"></span> Today</span>';
-  document.getElementById('shoplist-legend').innerHTML = legendHtml;
-}
-function applyTeacherColors() {
-  const colorMap = getTeacherColorMap(bookings);
-  // Week view
-  document.querySelectorAll('.booking').forEach(el => {
-    const teacher = el.querySelector('.booking-meta')?.textContent?.match(/Teacher: ([^,]+)/);
-    if (teacher && colorMap[teacher[1]]) {
-      el.style.background = colorMap[teacher[1]];
-      el.style.color = '#fff';
-    }
-  });
-  // Month view
-  document.querySelectorAll('.booking-item').forEach(el => {
-    const text = el.textContent;
-    const match = text.match(/P\d+: (.+)/);
-    if (match) {
-      // Try to find teacher by matching booking
-      const recipeName = match[1];
-      const booking = bookings.find(b => b.recipe_name === recipeName);
-      if (booking) {
-        const teacher = booking.last_name || booking.staff_code || 'Unknown';
-        if (colorMap[teacher]) {
-          el.style.background = colorMap[teacher];
-          el.style.color = '#fff';
-        }
-      }
-    }
-  });
-}
 document.addEventListener('DOMContentLoaded', function() {
   renderShoplistLegend();
   applyTeacherColors();
+  renderWeekGridHeadings();
 });
 document.addEventListener('click', function() {
   // Re-apply colors after DOM updates
