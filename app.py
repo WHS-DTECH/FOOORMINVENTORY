@@ -903,7 +903,6 @@ def shoplist():
     
     # Get week offset from query parameter (0 = current week, -1 = last week, 1 = next week, etc.)
     week_offset = request.args.get('week', type=int)
-    
     # If no week specified, default intelligently based on day of week
     if week_offset is None:
         today = datetime.now()
@@ -912,6 +911,12 @@ def shoplist():
             week_offset = 1
         else:
             week_offset = 0
+
+    # Defensive: force week_offset to int (sometimes string from query)
+    try:
+        week_offset = int(week_offset)
+    except Exception:
+        week_offset = 0
     
     # Calculate the target week (Monday to Friday)
     today = datetime.now()
