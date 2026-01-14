@@ -160,7 +160,7 @@
         
         <!-- LEFT COLUMN: Class Setup -->
         <div class="admin-column">
-            <h1>Class Setup</h1>
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-primary">Class Setup</h1>
             <h2>Staff</h2>
             <form method="POST" enctype="multipart/form-data" class="mb-3">
                 <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
@@ -219,7 +219,8 @@
             </table>
             {% endif %}
             
-            <h1>Suggestions List</h1>
+            <hr class="my-4">
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-success">Suggestions List</h1>
             {% if suggestions %}
             <table class="table table-striped table-bordered table-hover align-middle" style="margin: 20px 0;">
                 <thead class="table-primary">
@@ -256,14 +257,16 @@
 
         <!-- RIGHT COLUMN: Recipe Book Setup -->
         <div class="admin-column">
-            <h1>Recipe Book Setup</h1>
-            <h2>Upload Recipe (Form)</h2>
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-warning">Recipe Book Setup</h1>
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Upload Recipe (Form)</h2>
             <p class="recipe-method-desc">Manually enter recipe details using a form.</p>
             <form action="/upload" method="get" class="mb-3">
                 <button type="submit" class="btn btn-primary w-100">Open Recipe Upload Form</button>
             </form>
 
-            <h2>Upload Recipe (PDF)</h2>
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Upload Recipe (PDF)</h2>
             <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
             <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
                 <label for="pdfFile" class="form-label">Select PDF file:</label>
@@ -271,7 +274,8 @@
                 <button type="submit" class="btn btn-primary w-100">Upload PDF</button>
             </form>
 
-            <h2>Load Recipe (URL)</h2>
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Load Recipe (URL)</h2>
             <p class="recipe-method-desc">Import recipe from a website URL.</p>
             <div id="urlStatus" style="margin: 10px 0; padding: 10px; display: none; border-radius: 4px;"></div>
             <form id="urlForm" class="mb-3">
@@ -280,13 +284,15 @@
                 <button type="submit" id="urlSubmitBtn" class="btn btn-primary w-100">Load from URL</button>
             </form>
 
-            <h2>Clean Database</h2>
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Clean Database</h2>
             <p class="recipe-method-desc">Remove duplicate recipes, junk entries, and fix recipe names.</p>
             <form action="/admin/clean_recipes" method="post" class="mb-3" onsubmit="return confirm('This will clean the recipe database. Continue?');">
                 <button type="submit" class="btn btn-warning w-100">🧹 Clean Recipe Database</button>
             </form>
 
-            <h2>Manage Permissions</h2>
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Manage Permissions</h2>
             <p class="recipe-method-desc">Control which pages each role can access.</p>
             <a href="/admin/permissions" class="btn btn-info mb-2 w-100">🔐 Manage Role Permissions</a>
             <a href="/admin/user_roles" class="btn btn-success w-100">👥 Manage User Roles</a>

@@ -296,10 +296,17 @@ def auth_callback():
             'staff_code': staff_code,
             'role': user.role
         }
-        
+        # Store Google OAuth credentials for calendar integration
+        session['google_creds'] = {
+            'token': credentials.token,
+            'refresh_token': getattr(credentials, 'refresh_token', None),
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes
+        }
         login_user(user, remember=True)
         flash(f'Welcome, {name}!', 'success')
-        
         return redirect(url_for('recbk'))
     
     except Exception as e:
