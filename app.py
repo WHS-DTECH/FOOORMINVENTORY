@@ -86,7 +86,12 @@ if os.getenv('FLASK_ENV') == 'development':
 @app.route('/admin/recipe_book_setup')
 @require_role('VP')
 def admin_recipe_book_setup():
-    return render_template('recipe_book_setup.html')
+    # Query recipes from the database
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, name FROM recipes ORDER BY name')
+        recipe_list = [{'id': row['id'], 'name': row['name']} for row in c.fetchall()]
+    return render_template('recipe_book_setup.html', recipe_list=recipe_list)
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
 
@@ -512,8 +517,8 @@ def admin_permissions():
                     c.execute('INSERT INTO role_permissions (role, route, last_modified) VALUES (%s, %s, %s) ON CONFLICT (role, route) DO UPDATE SET last_modified = %s', (role, route, now, now))
                     flash(f'Added {route} access for {role}', 'success')
                 elif action == 'remove':
-                    # Instead of deleting, set last_modified to now (or optionally keep a log table)
-                    c.execute('UPDATE role_permissions SET last_modified = %s WHERE role = %s AND route = %s', (now, role, route))
+                    # Log the removal before deleting
+                    c.execute('INSERT INTO role_permissions_log (role, route, action, timestamp) VALUES (%s, %s, %s, %s)', (role, route, 'remove', now))
                     c.execute('DELETE FROM role_permissions WHERE role = %s AND route = %s', (role, route))
                     flash(f'Removed {route} access for {role}', 'success')
         
