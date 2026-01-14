@@ -1,3 +1,5 @@
+# ...existing code...
+
 # --- Recipe detail page for /recipe/<id> ---
 @app.route('/recipe/<int:recipe_id>')
 def recipe_details(recipe_id):
