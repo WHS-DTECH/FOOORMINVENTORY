@@ -1,3 +1,45 @@
+<script>
+function switchShoplistView(view) {
+  const weekNav = document.getElementById('weekNav');
+  const weekBtn = document.getElementById('weekViewBtn');
+  const monthBtn = document.getElementById('monthViewBtn');
+  if (view === 'week') {
+    weekNav.style.display = '';
+    weekBtn.classList.add('active');
+    monthBtn.classList.remove('active');
+    document.getElementById('weekPeriodView').style.display = '';
+    document.getElementById('monthCalendarView').style.display = 'none';
+  } else {
+    weekNav.style.display = 'none';
+    weekBtn.classList.remove('active');
+    monthBtn.classList.add('active');
+    document.getElementById('weekPeriodView').style.display = 'none';
+    document.getElementById('monthCalendarView').style.display = '';
+  }
+}
+// Ensure correct initial state on page load
+window.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('monthViewBtn').classList.contains('active')) {
+    switchShoplistView('month');
+  } else {
+    switchShoplistView('week');
+  }
+});
+</script>
+  <div id="weekNav" class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold; display: flex; flex-direction: column; align-items: center;">
+    <div id="weekRangeLabel">{{ week_label }}</div>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="prev">&#8592; Previous</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="today">Today</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="next">Next &#8594;</button>
+      </form>
+    </div>
+  </div>
 <!DOCTYPE html>
 <html lang="en">
 <head>
