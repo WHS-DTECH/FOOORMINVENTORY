@@ -613,15 +613,24 @@ window.addEventListener('DOMContentLoaded', function() {
       return colors[Math.abs(hash) % colors.length];
     }
     function renderTeacherLegend() {
-      // Collect unique teacher names from bookings (including all selected teachers)
+      // Collect unique teacher names from bookings (always combine last_name and first_name if present)
       const teacherSet = new Set();
       (window.bookings || []).forEach(b => {
-        if (b.last_name && b.first_name) teacherSet.add(b.last_name + ', ' + b.first_name);
-        else if (b.teacher) teacherSet.add(b.teacher);
-        else if (b.teacher_display) teacherSet.add(b.teacher_display);
-        else if (b.teacher_name) teacherSet.add(b.teacher_name);
-        else if (b.last_name) teacherSet.add(b.last_name);
-        else if (b.staff_code) teacherSet.add(b.staff_code);
+        let name = '';
+        if (b.last_name && b.first_name) {
+          name = b.last_name + ', ' + b.first_name;
+        } else if (b.teacher) {
+          name = b.teacher;
+        } else if (b.teacher_display) {
+          name = b.teacher_display;
+        } else if (b.teacher_name) {
+          name = b.teacher_name;
+        } else if (b.last_name) {
+          name = b.last_name;
+        } else if (b.staff_code) {
+          name = b.staff_code;
+        }
+        if (name && name !== ', ') teacherSet.add(name);
       });
       const legendDiv = document.getElementById('teacher-legend');
       legendDiv.innerHTML = '';
