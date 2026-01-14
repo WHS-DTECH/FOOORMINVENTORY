@@ -438,8 +438,7 @@ def uploadclass():
             c.execute('''
                 INSERT INTO classes (ClassCode, LineNo, Misc1, RoomNo, CourseName, Misc2, Year, Dept, StaffCode, ClassSize, TotalSize, TimetableYear, Misc3)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (ClassCode) DO UPDATE SET
-                  LineNo=EXCLUDED.LineNo,
+                ON CONFLICT (ClassCode, LineNo) DO UPDATE SET
                   Misc1=EXCLUDED.Misc1,
                   RoomNo=EXCLUDED.RoomNo,
                   CourseName=EXCLUDED.CourseName,
