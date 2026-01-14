@@ -34,15 +34,25 @@ def parse_recipes_from_text(text):
         line = raw.strip()
         line_lower = line.lower()
 
-        # Recipe title marker: "Making Activity : <name>"
-        if 'making activity' in line_lower and ':' in raw:
+
+        # Recipe title marker: support more formats (e.g., 'Recipe:', all caps, etc.)
+        title_match = None
+        # Try 'Making Activity :' or 'Recipe :' or 'Recipe:'
+        if (re.match(r'^(making activity|recipe)\s*:', line_lower)):
             # save previous recipe if complete
             if recipe_data and recipe_data.get('ingredients') and recipe_data.get('equipment') and recipe_data.get('method'):
                 recipes.append(format_recipe(recipe_data))
 
             # start new recipe
-            recipe_name = raw.replace('Making Activity :', '').replace('Making Activity:', '').strip()
+            recipe_name = re.sub(r'^(making activity|recipe)\s*:', '', raw, flags=re.I).strip()
             recipe_data = {'name': recipe_name, 'ingredients': [], 'equipment': [], 'method': []}
+            current_section = None
+            i += 1
+            continue
+
+        # All-caps line (likely a title) if not in a section and not junk
+        if not recipe_data and line and line.isupper() and 3 < len(line) < 80 and not any(x in line_lower for x in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
+            recipe_data = {'name': line.title(), 'ingredients': [], 'equipment': [], 'method': []}
             current_section = None
             i += 1
             continue
@@ -127,8 +137,8 @@ def parse_recipes_from_text(text):
                     title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
                     title = re.sub(r'–\s*work in pairs', '', title, flags=re.I).strip()
                 else:
+                    # Use filename as fallback if available, else placeholder
                     title = 'Unknown Recipe'
-                    
                 recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
                 current_section = 'ingredients'
                 # fall through to collect this ingredient line
