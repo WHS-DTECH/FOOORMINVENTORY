@@ -16,6 +16,19 @@ def parse_recipes_from_text(text):
     current_section = None
 
     i = 0
+    # Section header regex patterns (flexible, supports typos and alternatives)
+    section_patterns = {
+        'ingredients': re.compile(r'\b(ingredien[ct]s?|ingredi[ae]nts?)\b', re.I),
+        'equipment': re.compile(r'\b(equipm[ea]nt|tools?)\b', re.I),
+        'method': re.compile(r'\b(meth[oa]d|steps?|instructions?)\b', re.I),
+    }
+    # Acceptable section header alternatives/typos
+    def detect_section(line):
+        for section, pattern in section_patterns.items():
+            if pattern.search(line):
+                return section
+        return None
+
     while i < len(lines):
         raw = lines[i]
         line = raw.strip()
@@ -123,10 +136,11 @@ def parse_recipes_from_text(text):
                 i += 1
                 continue
 
-        # Section headers may have trailing spaces or internal splits (e.g. "Ingredi ents")
-        alpha = ''.join(ch for ch in line_lower if ch.isalpha())
-        if alpha.startswith('ingredients') or line_lower.startswith('ingredients'):
-            # If we have no recipe started yet but hit ingredients, look back for a title
+
+        # Section header detection using regex (flexible, supports typos/alternatives)
+        section = detect_section(line_lower)
+        if section:
+            # If we have no recipe started yet but hit a section, look back for a title
             if not recipe_data or not recipe_data.get('name'):
                 title = None
                 for j in range(1, 10):
@@ -137,36 +151,12 @@ def parse_recipes_from_text(text):
                     if cand and len(cand) > 3 and len(cand) < 100:
                         low = cand.lower()
                         # Skip headers and junk
-                        if not any(skip in low for skip in ['learning objective', 'keywords', 'equipment', 'method', 'week ', 'page ', 'food technology', 'by the end']):
+                        if not any(skip in low for skip in ['learning objective', 'keywords', 'ingredients', 'equipment', 'method', 'week ', 'page ', 'food technology', 'by the end']):
                             title = cand
                             break
                 if title and not recipe_data:
                     recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
-            current_section = 'ingredients'
-            i += 1
-            continue
-        if alpha.startswith('equipment') or line_lower.startswith('equipment'):
-            # If we have no recipe started yet but hit equipment, look back for a title
-            if not recipe_data or not recipe_data.get('name'):
-                title = None
-                for j in range(1, 10):
-                    idx = i - j
-                    if idx < 0:
-                        break
-                    cand = lines[idx].strip()
-                    if cand and len(cand) > 3 and len(cand) < 100:
-                        low = cand.lower()
-                        # Skip headers and junk
-                        if not any(skip in low for skip in ['learning objective', 'keywords', 'ingredients', 'method', 'week ', 'page ', 'food technology', 'by the end']):
-                            title = cand
-                            break
-                if title and not recipe_data:
-                    recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
-            current_section = 'equipment'
-            i += 1
-            continue
-        if alpha.startswith('method') or line_lower.startswith('method'):
-            current_section = 'method'
+            current_section = section
             i += 1
             continue
 
