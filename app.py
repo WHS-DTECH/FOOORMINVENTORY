@@ -79,7 +79,7 @@ def add_shoplist_to_gcal():
         friday = monday + timedelta(days=4)
         with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('''SELECT date_required, period, class_code, recipe_name, servings FROM class_bookings cb
+            c.execute('''SELECT date_required, period, class_code, r.name AS recipe_name, servings FROM class_bookings cb
                          LEFT JOIN recipes r ON cb.recipe_id = r.id
                          WHERE date_required >= %s AND date_required <= %s
                          ORDER BY date_required, period''', (monday.date(), friday.date()))
