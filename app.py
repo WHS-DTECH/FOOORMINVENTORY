@@ -1,3 +1,26 @@
+# --- Recipe Import from URL Endpoint ---
+@app.route('/upload_url', methods=['POST'])
+@require_role('VP')
+def upload_url():
+    url = request.form.get('url')
+    if not url:
+        return jsonify({'error': 'No URL provided'}), 400
+
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+        resp = requests.get(url)
+        if resp.status_code != 200:
+            return jsonify({'error': f'Failed to fetch URL (status {resp.status_code})'}), 400
+
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        title = soup.title.string if soup.title else 'No title found'
+
+        # TODO: Add real recipe parsing logic here
+        # For now, just return the title and a success flag
+        return jsonify({'success': True, 'title': title, 'url': url})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
