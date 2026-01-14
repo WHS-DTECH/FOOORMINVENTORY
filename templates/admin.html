@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- admin.html-->
 
@@ -160,10 +161,19 @@
         
         <!-- LEFT COLUMN: Class Setup -->
         <div class="admin-column">
-            <h1 class="mb-4 pb-2 border-bottom border-3 border-primary">Class Setup</h1>
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-primary">Role Setup</h1>
+            <div class="mb-4">
+                <h2 class="mb-3 mt-2">Manage Permissions</h2>
+                <p class="recipe-method-desc">Control which pages each role can access.</p>
+                <a href="/admin/permissions" class="btn btn-info mb-2 w-100">🔐 Manage Role Permissions</a>
+                <a href="/admin/user_roles" class="btn btn-success w-100">👥 Manage User Roles</a>
+            </div>
             <h2>Staff</h2>
-            <form method="POST" enctype="multipart/form-data" class="mb-3">
-                <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
+                        <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with staff details to add or update staff records.">
+                            <i class="bi bi-info-circle text-info"></i>
+                        </span>
+                        <form method="POST" enctype="multipart/form-data" class="mb-3">
+                                <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
                 <input type="file" id="staff_csv" name="staff_csv" accept=".csv" class="form-control mb-2" required>
                 <button type="submit" class="btn btn-primary w-100">Upload Staff CSV</button>
             </form>
@@ -191,8 +201,11 @@
             {% endif %}
 
             <h2>Class</h2>
-            <form action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3">
-                <label for="csvfile" class="form-label">Select Class CSV file:</label>
+                        <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with class details to add or update classes.">
+                            <i class="bi bi-info-circle text-info"></i>
+                        </span>
+                        <form action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3">
+                                <label for="csvfile" class="form-label">Select Class CSV file:</label>
                 <input type="file" id="csvfile" name="csvfile" accept=".csv" class="form-control mb-2" required>
                 <button type="submit" class="btn btn-primary w-100">Upload Class CSV</button>
             </form>
@@ -221,6 +234,9 @@
             
             <hr class="my-4">
             <h1 class="mb-4 pb-2 border-bottom border-3 border-success">Suggestions List</h1>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="View and review recipe suggestions submitted by users.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
             {% if suggestions %}
             <table class="table table-striped table-bordered table-hover align-middle" style="margin: 20px 0;">
                 <thead class="table-primary">
@@ -260,6 +276,9 @@
             <h1 class="mb-4 pb-2 border-bottom border-3 border-warning">Recipe Book Setup</h1>
             <hr class="my-4">
             <h2 class="mb-3 mt-4">Upload Recipe (Form)</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Manually enter a new recipe using a form.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
             <p class="recipe-method-desc">Manually enter recipe details using a form.</p>
             <form action="/upload" method="get" class="mb-3">
                 <button type="submit" class="btn btn-primary w-100">Open Recipe Upload Form</button>
@@ -267,6 +286,9 @@
 
             <hr class="my-4">
             <h2 class="mb-3 mt-4">Upload Recipe (PDF)</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a PDF file to extract and add recipes automatically.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
             <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
             <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
                 <label for="pdfFile" class="form-label">Select PDF file:</label>
@@ -276,6 +298,9 @@
 
             <hr class="my-4">
             <h2 class="mb-3 mt-4">Load Recipe (URL)</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Import a recipe directly from a website URL.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
             <p class="recipe-method-desc">Import recipe from a website URL.</p>
             <div id="urlStatus" style="margin: 10px 0; padding: 10px; display: none; border-radius: 4px;"></div>
             <form id="urlForm" class="mb-3">
@@ -286,6 +311,9 @@
 
             <hr class="my-4">
             <h2 class="mb-3 mt-4">Clean Database</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Remove duplicate or junk recipes and fix recipe names.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
             <p class="recipe-method-desc">Remove duplicate recipes, junk entries, and fix recipe names.</p>
             <form action="/admin/clean_recipes" method="post" class="mb-3" onsubmit="return confirm('This will clean the recipe database. Continue?');">
                 <button type="submit" class="btn btn-warning w-100">🧹 Clean Recipe Database</button>
@@ -293,6 +321,19 @@
 
             <hr class="my-4">
             <h2 class="mb-3 mt-4">Manage Permissions</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Control which pages each user role can access.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+            <script>
+                // Enable Bootstrap tooltips
+                document.addEventListener('DOMContentLoaded', function () {
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                        new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                });
+            </script>
             <p class="recipe-method-desc">Control which pages each role can access.</p>
             <a href="/admin/permissions" class="btn btn-info mb-2 w-100">🔐 Manage Role Permissions</a>
             <a href="/admin/user_roles" class="btn btn-success w-100">👥 Manage User Roles</a>
