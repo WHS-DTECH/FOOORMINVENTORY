@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 """Clean up recipe database - remove duplicates and non-recipes."""
 
+basedir = os.path.abspath(os.path.dirname(__file__))
 import sqlite3
 import os
 import json
 import re
+import argparse
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-DATABASE = os.path.join(basedir, 'recipes.db')
+def get_database_path():
+    parser = argparse.ArgumentParser(description='Clean up recipe database - remove duplicates and non-recipes.')
+    parser.add_argument('--db', type=str, default=None, help='Path to the recipes database file')
+    args, _ = parser.parse_known_args()
+    if args.db:
+        return args.db
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(basedir, 'recipes.db')
 
 def remove_junk_recipes(conn):
     """Remove recipes that are clearly not recipes (worksheet questions, etc.)."""
@@ -164,9 +172,10 @@ def fix_recipe_names(conn):
 
 
 def main():
-    print(f"Cleaning database: {DATABASE}")
-    
-    with sqlite3.connect(DATABASE) as conn:
+    db_path = get_database_path()
+    print(f"Cleaning database: {db_path}")
+
+    with sqlite3.connect(db_path) as conn:
         print("\n1. Removing junk recipes...")
         junk = remove_junk_recipes(conn)
         print(f"   Deleted {len(junk)} junk entries")
