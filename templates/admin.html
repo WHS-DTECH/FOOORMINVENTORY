@@ -30,7 +30,15 @@
                     <li class="nav-item"><a class="nav-link" href="/recbk">Recipe Book</a></li>
                     <li class="nav-item"><a class="nav-link" href="/class_ingredients">Class Ingredients</a></li>
                     <li class="nav-item"><a class="nav-link" href="/shoplist">Shopping List</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/admin">Admin</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item" href="/admin">Admin Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/admin/recipe_book_setup">Recipe Book Setup</a></li>
+                            <li><a class="dropdown-item" href="/admin/permissions">Manage Role Permissions</a></li>
+                            <li><a class="dropdown-item" href="/admin/user_roles">Manage User Roles</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <div class="d-flex">
                     {% if current_user.is_authenticated %}
@@ -324,35 +332,7 @@
         </div>
 
         <!-- RIGHT COLUMN: Recipe Book Setup -->
-        <div class="admin-column">
-            <h1 class="mb-4 pb-2 border-bottom border-3 border-warning">Recipe Book Setup</h1>
-            <hr class="my-4">
-            <h2 class="mb-3 mt-4">Upload Recipe (Form)</h2>
-                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Manually enter a new recipe using a form.">
-                                        <i class="bi bi-info-circle text-info"></i>
-                                    </span>
-            <p class="recipe-method-desc">Manually enter recipe details using a form.</p>
-            <form action="/upload" method="get" class="mb-3">
-                <button type="submit" class="btn btn-primary w-100">Open Recipe Upload Form</button>
-            </form>
-
-            <hr class="my-4">
-            <h2 class="mb-3 mt-4">Upload Recipe (PDF)</h2>
-                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a PDF file to extract and add recipes automatically.">
-                                        <i class="bi bi-info-circle text-info"></i>
-                                    </span>
-            <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
-            <form id="pdfForm" action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
-                <label for="pdfFile" class="form-label">Select PDF file:</label>
-                <div class="dropzone mb-2" id="pdfDropzone" onclick="document.getElementById('pdfFile').click();">
-                    <span>Drag & drop or click to select file</span>
-                    <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'pdfDropzone')">
-                </div>
-                <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload PDF</button>
-                <div class="progress mt-2" id="pdfProgress" style="height: 8px; display: none;">
-                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                </div>
-            </form>
+        <!-- Recipe Book Setup moved to its own page: recipe_book_setup.html -->
 </body>
 <style>
 .dropzone {

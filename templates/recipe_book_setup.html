@@ -1,0 +1,99 @@
+<!-- Recipe Book Setup Admin Page -->
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h2 class="mb-0">Recipe Book Setup</h2>
+                </div>
+                <div class="card-body">
+                    <hr>
+                    <h4>Upload Recipe (Form)</h4>
+                    <p>Manually enter recipe details using a form.</p>
+                    <form action="/upload" method="get" class="mb-3">
+                        <button type="submit" class="btn btn-primary w-100">Open Recipe Upload Form</button>
+                    </form>
+                    <hr>
+                    <h4>Upload Recipe (PDF)</h4>
+                    <p>Extract recipes from a PDF file.</p>
+                    <form id="pdfForm" action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
+                        <label for="pdfFile" class="form-label">Select PDF file:</label>
+                        <div class="dropzone mb-2" id="pdfDropzone" onclick="document.getElementById('pdfFile').click();">
+                            <span>Drag & drop or click to select file</span>
+                            <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'pdfDropzone')">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Upload PDF</button>
+                        <div class="progress mt-2" id="pdfProgress" style="height: 8px; display: none;">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </form>
+                    <hr>
+                    <h4>Load Recipe (URL)</h4>
+                    <p>Import recipe from a website URL.</p>
+                    <form action="/load_recipe_url" method="post" class="mb-3">
+                        <label for="recipeUrl" class="form-label">Recipe URL:</label>
+                        <input type="url" id="recipeUrl" name="recipeUrl" class="form-control" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/..." required>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">Load from URL</button>
+                    </form>
+                    <hr>
+                    <h4>Clean Database</h4>
+                    <p>Remove duplicate recipes, junk entries, and fix recipe names.</p>
+                    <form action="/clean_recipe_db" method="post">
+                        <button type="submit" class="btn btn-warning w-100">🧹 Clean Recipe Database</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.dropzone {
+    border: 2px dashed #337ab7;
+    border-radius: 8px;
+    background: #f4f8fc;
+    padding: 18px 12px;
+    text-align: center;
+    color: #337ab7;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.dropzone.dragover {
+    background: #eaf4ff;
+    border-color: #286090;
+}
+</style>
+<script>
+// Drag-and-drop support for file uploads
+['pdfDropzone'].forEach(function(id) {
+    var dz = document.getElementById(id);
+    if (!dz) return;
+    dz.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dz.classList.add('dragover');
+    });
+    dz.addEventListener('dragleave', function(e) {
+        dz.classList.remove('dragover');
+    });
+    dz.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dz.classList.remove('dragover');
+        var input = dz.querySelector('input[type="file"]');
+        if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            updateDropzoneLabel(input, id);
+        }
+    });
+});
+function updateDropzoneLabel(input, id) {
+    var dz = document.getElementById(id);
+    if (input.files.length) {
+        dz.querySelector('span').textContent = input.files[0].name;
+    } else {
+        dz.querySelector('span').textContent = 'Drag & drop or click to select file';
+    }
+}
+</script>
+{% endblock %}
