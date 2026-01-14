@@ -246,7 +246,11 @@
                         <th>Recipe Name</th>
                         <th>Suggested By</th>
                         <th>URL</th>
-                <!-- Removed duplicate Manage Permissions section at bottom -->
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in suggestions %}
                     <tr>
                         <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '—' }}</td>
                         <td class="fw-bold">{{ s.recipe_name }}</td>
