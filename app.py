@@ -440,10 +440,10 @@ def admin_permissions():
             with get_db_connection() as conn:
                 c = conn.cursor()
                 if action == 'add':
-                    c.execute('INSERT OR IGNORE INTO role_permissions (role, route) VALUES (?, ?)', (role, route))
+                    c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s) ON CONFLICT DO NOTHING', (role, route))
                     flash(f'Added {route} access for {role}', 'success')
                 elif action == 'remove':
-                    c.execute('DELETE FROM role_permissions WHERE role = ? AND route = ?', (role, route))
+                    c.execute('DELETE FROM role_permissions WHERE role = %s AND route = %s', (role, route))
                     flash(f'Removed {route} access for {role}', 'success')
         
         return redirect(url_for('admin_permissions'))
