@@ -213,17 +213,26 @@
     </div>
   </div>
 
-  <div class="view-toggle">
-    <span style="font-weight: 600; color: #666;">View:</span>
-    <button id="gridViewBtn" class="active" onclick="switchView('grid')">📱 Grid</button>
-    <button id="tableViewBtn" onclick="switchView('table')">📋 Table</button>
-  </div>
+  <!-- View toggle removed: only grid view is shown -->
+
 
   <form class="search-bar" method="get" action="/recbk">
     <input type="search" name="q" placeholder="Search recipes by name or ingredient..." value="{{ q }}" />
     <button type="submit">Search</button>
     {% if q %}<a href="/recbk" style="margin-left:8px;">Clear</a>{% endif %}
   </form>
+
+  <!-- Quick Filter Chips for Dietary Tags -->
+  <div class="d-flex flex-wrap gap-2 justify-content-center mb-2" style="max-width:700px;margin:auto;">
+    {% set quick_tags = ['Vegetarian', 'Vegan', 'Gluten Free', 'Dairy Free', 'Nut Free'] %}
+    {% for tag in quick_tags %}
+      <form method="get" action="/recbk" style="display:inline;">
+        <input type="hidden" name="dietary" value="{{ tag }}">
+        <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 quick-chip {% if dietary == tag %}btn-success text-white{% else %}btn-outline-success{% endif %}"
+          style="margin-bottom:2px;min-width:90px;" aria-pressed="{{ 'true' if dietary == tag else 'false' }}">{{ tag }}</button>
+      </form>
+    {% endfor %}
+  </div>
 
   {% if q %}
     <p style="color:#666;font-size:14px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
@@ -232,35 +241,7 @@
   {% endif %}
 
   {% if rows %}
-  <!-- GRID VIEW (DEFAULT) -->
-  <div id="gridView" class="recipe-grid">
-    {% for r in rows %}
-      <div class="recipe-card" style="position: relative;">
-        {% if current_user.is_authenticated %}
-        <button class="favorite-btn {% if r.id in favorites %}favorited{% endif %}" 
-                data-recipe-id="{{ r.id }}" 
-                onclick="event.stopPropagation(); toggleFavorite({{ r.id }}, this);"
-                title="{% if r.id in favorites %}Remove from favorites{% else %}Add to favorites{% endif %}">
-          {% if r.id in favorites %}★{% else %}☆{% endif %}
-        </button>
-        {% endif %}
-        <div onclick="window.location.href='/recipe/{{ r.id }}'">
-          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
-          
-          <div class="recipe-meta">
-            {% if r.serving_size %}
-              <strong>Serves:</strong> {{ r.serving_size }}
-            {% endif %}
-            {% if r.ingredients %}
-              | <strong>{{ r.ingredients|length }}</strong> ingredients
-            {% endif %}
-          </div>
-          
-          {% if r.ingredients %}
-          <div class="recipe-ingredients">
-            <strong>Ingredients:</strong>
-            <ul style="margin:4px 0;padding-left:20px;">
-              {% for ing in r.ingredients[:5] %}
+        <!-- Table view removed: only grid view is available -->
                 <li>
                   {% if ing.quantity or ing.unit %}
                     {{ ing.quantity }} {{ ing.unit }}
@@ -273,7 +254,10 @@
               {% endif %}
             </ul>
           </div>
-        {% endif %}
+          {% endif %}
+          <div class="mt-2 d-flex justify-content-end">
+            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
         </div>
       </div>
     {% endfor %}

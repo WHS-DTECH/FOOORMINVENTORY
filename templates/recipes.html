@@ -174,12 +174,12 @@
 
   {% else %}
     <div class="d-flex flex-column align-items-center justify-content-center" style="min-height:280px;">
-      <div class="card p-4 text-center" style="max-width:400px; border-radius:18px; background:#f8fafc; border:1px solid #e0e4ea;">
-        <div style="font-size:3em; color:#b0b8c9;">
-          <i class="bi bi-emoji-frown"></i>
+      <div class="card p-4 text-center empty-state-card" style="max-width:420px; border-radius:20px; background:#f8fafc; border:1.5px solid #e0e4ea; box-shadow:0 2px 12px #b0b8c91a;">
+        <div style="font-size:3.2em; color:#b0b8c9; margin-bottom:8px;">
+          <svg width="64" height="64" fill="none" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="32" rx="30" ry="18" fill="#e3eaf6"/><ellipse cx="32" cy="38" rx="18" ry="8" fill="#f8fafc"/><ellipse cx="32" cy="32" rx="20" ry="10" fill="#f8fafc"/><ellipse cx="32" cy="32" rx="16" ry="8" fill="#e3eaf6"/><ellipse cx="32" cy="32" rx="12" ry="6" fill="#f8fafc"/><ellipse cx="32" cy="32" rx="8" ry="4" fill="#e3eaf6"/></svg>
         </div>
         <h4 class="mt-2 mb-1 text-secondary">No recipes found</h4>
-        <div class="mb-2 text-muted">Try adjusting your search or filter criteria.<br>Or suggest a new recipe below!</div>
+        <div class="mb-2 text-muted">No recipes match your search or filter criteria.<br>Try different keywords or filters.<br><span style="color:#388e3c;">Or suggest a new recipe below!</span></div>
       </div>
     </div>
   {% endif %}

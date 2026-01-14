@@ -1,3 +1,38 @@
+# ---
+# Additional Suggestions (2026-01-15)
+
+## Further Improvements for Recipe Book Page
+
+1. **Card Visual Polish**
+   - Add a subtle hover effect (e.g., slight shadow or scale) to recipe cards for better interactivity.
+   - Consider a small image or icon for each recipe (if available) to add visual interest.
+
+2. **Ingredient List Preview**
+   - Limit the ingredient preview to 3–4 lines with a “Show more”/“Expand” link to avoid long cards for recipes with many ingredients.
+
+3. **Favorite/Bookmark Feature**
+   - Enable the star icon on each card so users can quickly save favorite recipes.
+
+4. **Recipe Tags/Badges**
+   - Add small badges for dietary tags (e.g., Vegetarian, Gluten Free) or difficulty level on each card for quick scanning.
+
+5. **Accessibility**
+   - Ensure all interactive elements (toggle, search, suggest button, card links) are keyboard accessible and have proper ARIA labels.
+
+6. **Mobile Enhancements**
+   - On mobile, ensure cards stack with enough spacing and that touch targets (e.g., star, view button) are at least 44x44px.
+
+7. **Empty/Search State**
+   - Show a friendly illustration/message when no recipes match the search/filter.
+
+8. **Performance**
+   - If the recipe list grows, consider lazy loading or pagination for faster page loads.
+
+9. **Recipe Sorting**
+   - Allow users to sort recipes (e.g., by name, most popular, recently added).
+
+10. **Quick Actions**
+    - Add a “View” or “Quick View” button on each card for direct access to recipe details.
 # Recipe Book Page Redesign TODO
 
 ## Goals
