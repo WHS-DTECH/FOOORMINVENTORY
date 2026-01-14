@@ -74,8 +74,15 @@
           <script>
           function addToGoogleCalendar() {
             fetch('/shoplist/add_to_gcal', { method: 'POST' })
-              .then(response => response.json())
-              .then(data => {
+              .then(async response => {
+                let data;
+                try {
+                  data = await response.json();
+                } catch (err) {
+                  // If response is not JSON, show a generic error
+                  alert('Error: Unexpected response from server. Please ensure you are logged in with Google.');
+                  return;
+                }
                 if (data.success) {
                   alert('Bookings added to your Google Calendar!');
                 } else {

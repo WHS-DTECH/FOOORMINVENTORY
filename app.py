@@ -1542,4 +1542,4 @@ def export_ical():
             ORDER BY cb.date_required, cb.period
         ''')
         bookings = c.fetchall()
-    # ...existing code...
+    
