@@ -71,7 +71,7 @@ def remove_junk_recipes(conn, junk_patterns=None):
             to_delete.append((recipe_id,))
             deleted.append(name)
     if to_delete:
-        c.executemany('DELETE FROM recipes WHERE id = ?', to_delete)
+        c.executemany('DELETE FROM recipes WHERE id = %s', to_delete)
     conn.commit()
     return deleted
 #!/usr/bin/env python3
