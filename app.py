@@ -526,7 +526,7 @@ def admin_user_roles():
         c.execute("SELECT email, STRING_AGG(role, ', ') as extra_roles FROM user_roles GROUP BY email")
         extra_roles_map = {row['email']: row['extra_roles'] for row in c.fetchall()}
 
-        # Build all_users: anyone with a teacher record or an extra role (case-insensitive, trimmed)
+        # Always show all teachers, even if they only have 'public' as their role
         def norm_email(e):
             return e.strip().lower() if e else ''
         teacher_map = {norm_email(t['email']): t for t in teachers}
@@ -553,9 +553,8 @@ def admin_user_roles():
                 for r in extra_roles.split(', '):
                     if r and r not in all_roles:
                         all_roles.append(r)
-            # Only show users who have any role other than public, or any extra role
-            if any(r in ['VP', 'DK', 'MU'] for r in all_roles) or extra_roles:
-                # Use original email casing from teachers or user_roles
+            # Always show all teachers, and any user with extra roles
+            if teacher or extra_roles:
                 orig_email = teacher['email'] if teacher else next((e for e in extra_roles_map.keys() if norm_email(e) == email), email)
                 all_users.append({'email': orig_email, 'all_roles': ', '.join(all_roles)})
 
