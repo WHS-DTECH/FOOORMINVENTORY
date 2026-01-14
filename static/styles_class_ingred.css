@@ -9,11 +9,18 @@ body {
 }
 
 .card {
-    background: #fff;
+    background: #f8fafc; /* subtle blue-gray shade */
     border-radius: 10px;
     box-shadow: 0 2px 8px #0001;
+    border: 1.5px solid #e0e6ed;
     padding: 2rem 2rem 1.5rem 2rem;
     margin-bottom: 2rem;
+}
+
+/* Optionally, target only the first card for extra emphasis */
+.card:first-of-type {
+    background: #eaf3fb;
+    border: 2px solid #b6d4fa;
 }
 
 .section-title {
