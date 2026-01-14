@@ -81,11 +81,11 @@ window.addEventListener('DOMContentLoaded', function() {
       <div style="font-weight: bold; margin-bottom: 4px;">Selected Bookings</div>
       <div style="font-size: 0.95em; color: #444; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list. Click Generate Shopping List.</div>
       <div id="selected-bookings-buttons" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-        <button onclick="selectAllWeek()">Select All</button>
-        <button onclick="clearAllSelections()">Clear</button>
-        <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
+        <button onclick="selectAllWeek()" aria-label="Select all bookings" tabindex="0">Select All</button>
+        <button onclick="clearAllSelections()" aria-label="Clear all selections" tabindex="0">Clear</button>
+        <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()" aria-label="Auto generate shopping list" tabindex="0">Auto Generate</button>
         <span style="flex: 1 1 auto;"></span>
-        <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
+        <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()" aria-label="Show scheduled bookings" tabindex="0">Scheduled Bookings</button>
           </div>
 
           <!-- Scheduled Bookings Modal -->
@@ -734,8 +734,8 @@ window.addEventListener('DOMContentLoaded', function() {
         <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
         <!-- Selection grid follows below -->
         <div class="card shadow-sm shoplist-responsive-actions" style="margin: 24px 0 8px 0; padding: 18px 16px; background: #f5faff; border-radius: 12px; display: flex; gap: 16px; justify-content: flex-start; align-items: center;">
-          <button class="primary no-print" id="generateShoppingListBtn" style="background: linear-gradient(90deg, #0074d9 60%, #00c6ff 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="generateShoppingList()">Generate Shopping List</button>
-          <button class="primary no-print" id="printListOnlyBtn" style="background: linear-gradient(90deg, #28a745 60%, #a8e063 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
+          <button class="primary no-print" id="generateShoppingListBtn" style="background: linear-gradient(90deg, #0074d9 60%, #00c6ff 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="generateShoppingList()" aria-label="Generate shopping list" tabindex="0">Generate Shopping List</button>
+          <button class="primary no-print" id="printListOnlyBtn" style="background: linear-gradient(90deg, #28a745 60%, #a8e063 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="printShoppingListOnly()" aria-label="Print shopping list only" tabindex="0">🖨️ Print Shopping List Only</button>
         </div>
         <div id="masterList" style="margin-top: 24px; background: #f7f7f7; border-radius: 8px; padding: 12px;">
           <h3 style="margin-top: 0;">Master Shopping List</h3>
