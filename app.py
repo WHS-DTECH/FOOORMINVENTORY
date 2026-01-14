@@ -520,9 +520,7 @@ def admin_permissions():
         c = conn.cursor()
         roles = ['VP', 'DK', 'MU', 'public']
         for role in roles:
-            c.execute('SELECT 1 FROM role_permissions WHERE role = %s AND route = %s', (role, 'recipe_book_setup'))
-            if not c.fetchone():
-                c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s)', (role, 'recipe_book_setup'))
+            c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s) ON CONFLICT (role, route) DO NOTHING', (role, 'recipe_book_setup'))
         conn.commit()
         # Get current permissions
         c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
