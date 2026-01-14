@@ -491,24 +491,51 @@ def admin_user_roles():
         
         return redirect(url_for('admin_user_roles'))
     
-    # Get all users with additional roles
+    # Get all users with any assigned role (from teachers or user_roles)
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('''
-            SELECT email, STRING_AGG(role, ', ') as roles
-            FROM user_roles
-            GROUP BY email
-            ORDER BY email
-        ''')
-        users_with_roles = [dict(row) for row in c.fetchall()]
-        
-        # Get all teachers for the dropdown
+        # Get all teachers and their base role
         c.execute('SELECT email, code, first_name, last_name FROM teachers WHERE email IS NOT NULL ORDER BY last_name, first_name')
         teachers = [dict(row) for row in c.fetchall()]
-    
+
+        # Get all users with additional roles
+        c.execute('SELECT email, STRING_AGG(role, ", ") as extra_roles FROM user_roles GROUP BY email')
+        extra_roles_map = {row['email']: row['extra_roles'] for row in c.fetchall()}
+
+        # Build all_users: anyone with a teacher record or an extra role
+        all_emails = set([t['email'] for t in teachers]) | set(extra_roles_map.keys())
+        all_users = []
+        for email in sorted(all_emails):
+            # Get base role from teacher code
+            base_role = None
+            teacher = next((t for t in teachers if t['email'] == email), None)
+            if teacher:
+                # Map code to role
+                code = teacher['code']
+                if code == 'VP':
+                    base_role = 'VP'
+                elif code == 'DK':
+                    base_role = 'DK'
+                elif code == 'MU':
+                    base_role = 'MU'
+                else:
+                    base_role = 'public'
+            else:
+                base_role = 'public'
+            # Get extra roles
+            extra_roles = extra_roles_map.get(email, '')
+            # Combine base and extra roles, remove duplicates
+            all_roles = [base_role] if base_role else []
+            if extra_roles:
+                for r in extra_roles.split(', '):
+                    if r and r not in all_roles:
+                        all_roles.append(r)
+            # Only show users who have any role other than public
+            if any(r in ['VP', 'DK', 'MU'] for r in all_roles):
+                all_users.append({'email': email, 'all_roles': ', '.join(all_roles)})
+
     roles = ['VP', 'DK', 'MU', 'public']
-    
-    return render_template('admin_user_roles.html', users_with_roles=users_with_roles, teachers=teachers, roles=roles)
+    return render_template('admin_user_roles.html', all_users=all_users, teachers=teachers, roles=roles)
 
 
 @app.route('/admin/clean_recipes', methods=['POST'])
