@@ -641,12 +641,12 @@ window.addEventListener('DOMContentLoaded', function() {
 
   <div id="weekPeriodView">
     <div style="overflow-x:auto; width:100%;">
-    <table class="grid no-print">
+    <table class="grid no-print" role="table" aria-label="Booking week grid">
       <thead>
         <tr>
-          <th></th>
+          <th scope="col"></th>
           {% for d in dates %}
-            <th style="text-align:center;">
+            <th style="text-align:center;" scope="col"> 
               {{ d.day_name[:3] if d.day_name else '' }}<br>
               <span class="small-muted">{{ d.nz_date }}</span>
             </th>
@@ -655,14 +655,14 @@ window.addEventListener('DOMContentLoaded', function() {
       </thead>
       <tbody>
         {% for period in range(1,6) %}
-          <tr>
-            <td><span class="period">P{{ period }}</span></td>
+          <tr role="row">
+            <td><span class="period" aria-label="Period {{ period }}">P{{ period }}</span></td>
             {% for d in dates %}
               {% set key = d.date + '_P' + period|string %}
               {% set booking = grid.get(key) %}
-              <td>
+              <td role="cell">
                 {% if booking %}
-                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})">
+                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ booking.last_name or booking.staff_code or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}">
                     <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                     <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
                     <div class="booking-meta">Teacher: {{ booking.last_name or booking.staff_code or '—' }}{% if booking.first_name %}, {{ booking.first_name }}{% endif %}</div>
@@ -671,7 +671,7 @@ window.addEventListener('DOMContentLoaded', function() {
                     <div class="booking-meta">Tap to select</div>
                   </div>
                 {% else %}
-                  <div class="empty">—</div>
+                  <div class="empty" aria-label="No booking">—</div>
                 {% endif %}
               </td>
             {% endfor %}
