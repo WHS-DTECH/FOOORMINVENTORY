@@ -177,7 +177,10 @@
                 </span>
                 <form method="POST" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload Staff CSV')">
                     <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
-                    <input type="file" id="staff_csv" name="staff_csv" accept=".csv" class="form-control mb-2" required>
+                    <div class="dropzone mb-2" id="staffDropzone" onclick="document.getElementById('staff_csv').click();">
+                        <span>Drag & drop or click to select file</span>
+                        <input type="file" id="staff_csv" name="staff_csv" accept=".csv" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'staffDropzone')">
+                    </div>
                     <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Staff CSV</button>
                 </form>
                 {% if preview_data %}
@@ -209,7 +212,10 @@
                 </span>
                 <form action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload Class CSV')">
                     <label for="csvfile" class="form-label">Select Class CSV file:</label>
-                    <input type="file" id="csvfile" name="csvfile" accept=".csv" class="form-control mb-2" required>
+                    <div class="dropzone mb-2" id="classDropzone" onclick="document.getElementById('csvfile').click();">
+                        <span>Drag & drop or click to select file</span>
+                        <input type="file" id="csvfile" name="csvfile" accept=".csv" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'classDropzone')">
+                    </div>
                     <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Class CSV</button>
                 </form>
                 {% if class_preview_data %}
@@ -295,9 +301,63 @@
             <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
             <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload PDF')">
                 <label for="pdfFile" class="form-label">Select PDF file:</label>
-                <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control mb-2" required>
+                <div class="dropzone mb-2" id="pdfDropzone" onclick="document.getElementById('pdfFile').click();">
+                    <span>Drag & drop or click to select file</span>
+                    <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'pdfDropzone')">
+                </div>
                 <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload PDF</button>
             </form>
+</body>
+<style>
+.dropzone {
+    border: 2px dashed #337ab7;
+    border-radius: 8px;
+    background: #f4f8fc;
+    padding: 18px 12px;
+    text-align: center;
+    color: #337ab7;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.dropzone.dragover {
+    background: #eaf4ff;
+    border-color: #286090;
+}
+</style>
+<script>
+// Drag-and-drop support for file uploads
+['staffDropzone','classDropzone','pdfDropzone'].forEach(function(id) {
+    var dz = document.getElementById(id);
+    if (!dz) return;
+    dz.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dz.classList.add('dragover');
+    });
+    dz.addEventListener('dragleave', function(e) {
+        dz.classList.remove('dragover');
+    });
+    dz.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dz.classList.remove('dragover');
+        var input = dz.querySelector('input[type="file"]');
+        if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            updateDropzoneLabel(input, id);
+        }
+    });
+});
+function updateDropzoneLabel(input, dzId) {
+    var dz = document.getElementById(dzId);
+    if (input.files && input.files.length > 0) {
+        dz.querySelector('span').textContent = input.files[0].name;
+        dz.style.color = '#286090';
+    } else {
+        dz.querySelector('span').textContent = 'Drag & drop or click to select file';
+        dz.style.color = '#337ab7';
+    }
+}
+</script>
 
             <hr class="my-4">
             <h2 class="mb-3 mt-4">Load Recipe (URL)</h2>
