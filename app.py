@@ -1,27 +1,3 @@
-# --- Utility: Ensure all users have 'public' base role in user_roles ---
-@app.route('/admin/fix_public_roles')
-@require_role('VP')
-def fix_public_roles():
-    """Ensure every user in teachers and user_roles has a 'public' role in user_roles if not already present."""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        # Get all unique emails from teachers and user_roles
-        c.execute('SELECT DISTINCT email FROM teachers WHERE email IS NOT NULL')
-        teacher_emails = {row['email'].strip().lower() for row in c.fetchall()}
-        c.execute('SELECT DISTINCT email FROM user_roles')
-        user_roles_emails = {row['email'].strip().lower() for row in c.fetchall()}
-        all_emails = teacher_emails | user_roles_emails
-        # Find emails missing a public role
-        missing_public = []
-        for email in all_emails:
-            c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'public'))
-            if not c.fetchone():
-                missing_public.append(email)
-        # Insert missing public roles
-        for email in missing_public:
-            c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'public'))
-        conn.commit()
-    return f"Added 'public' role for {len(missing_public)} users: {', '.join(missing_public)}"
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
 
@@ -78,6 +54,30 @@ from auth import User, get_staff_code_from_email, require_login, require_role, p
 POSTGRES_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
+    # --- Utility: Ensure all users have 'public' base role in user_roles ---
+    @app.route('/admin/fix_public_roles')
+    @require_role('VP')
+    def fix_public_roles():
+        """Ensure every user in teachers and user_roles has a 'public' role in user_roles if not already present."""
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            # Get all unique emails from teachers and user_roles
+            c.execute('SELECT DISTINCT email FROM teachers WHERE email IS NOT NULL')
+            teacher_emails = {row['email'].strip().lower() for row in c.fetchall()}
+            c.execute('SELECT DISTINCT email FROM user_roles')
+            user_roles_emails = {row['email'].strip().lower() for row in c.fetchall()}
+            all_emails = teacher_emails | user_roles_emails
+            # Find emails missing a public role
+            missing_public = []
+            for email in all_emails:
+                c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'public'))
+                if not c.fetchone():
+                    missing_public.append(email)
+            # Insert missing public roles
+            for email in missing_public:
+                c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'public'))
+            conn.commit()
+        return f"Added 'public' role for {len(missing_public)} users: {', '.join(missing_public)}"
     return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
 
 
