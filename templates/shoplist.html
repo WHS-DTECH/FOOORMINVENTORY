@@ -623,10 +623,12 @@ function switchShoplistView(view) {
     document.getElementById('weekPeriodView').style.display = '';
     document.getElementById('monthCalendarView').style.display = 'none';
     document.getElementById('weekViewBtn').classList.add('active');
+    document.getElementById('weekNav').style.display = '';
   } else {
     document.getElementById('weekPeriodView').style.display = 'none';
     document.getElementById('monthCalendarView').style.display = '';
     document.getElementById('monthViewBtn').classList.add('active');
+    document.getElementById('weekNav').style.display = 'none';
     renderShoplistMonthCalendar();
   }
 }
@@ -681,8 +683,18 @@ function renderShoplistMonthCalendar() {
   const today = new Date();
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayBookings = bookings.filter(b => {
+      let bDate = b.date_required;
+      if (bDate && typeof bDate !== 'string') {
+        if (bDate.year && bDate.month && bDate.day) {
+          bDate = `${bDate.year}-${String(bDate.month).padStart(2, '0')}-${String(bDate.day).padStart(2, '0')}`;
+        } else {
+          bDate = String(bDate);
+        }
+      }
+      return bDate === dateStr;
+    });
     const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
-    const dayBookings = bookings.filter(b => b.date_required === dateStr);
     html += `<div class='calendar-day ${isToday ? 'today' : ''}'><div class='day-number'>${day}</div>`;
     dayBookings.forEach(booking => {
       html += `<div class='booking-item' title='${booking.recipe_name} (P${booking.period})'><strong>${booking.class_code}</strong><br>P${booking.period}: ${booking.recipe_name}</div>`;
