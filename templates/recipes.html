@@ -109,11 +109,11 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" style="margin-top: 18px;">
       {% for r in rows %}
       <div class="col">
-        <div class="card h-100 shadow-sm border-0" style="border-radius: 16px; background: #fffefb;">
+        <div class="card h-100 recipe-card border-0" tabindex="0">
           {% if r.image_url %}
-            <img src="{{ r.image_url }}" class="card-img-top" alt="{{ r.name }}" style="object-fit:cover; height:180px; border-radius: 16px 16px 0 0;">
+            <img src="{{ r.image_url }}" class="card-img-top recipe-img" alt="{{ r.name }}">
           {% else %}
-            <div class="d-flex align-items-center justify-content-center bg-light" style="height:180px; border-radius: 16px 16px 0 0; font-size:3em; color:#bbb;">
+            <div class="d-flex align-items-center justify-content-center bg-light recipe-img" style="font-size:3em; color:#bbb;">
               <i class="bi bi-egg-fried"></i>
             </div>
           {% endif %}
@@ -149,6 +149,28 @@
   {% else %}
     <p>No recipes found.</p>
   {% endif %}
+
+  <style>
+    .recipe-card {
+      border-radius: 16px;
+      background: #fffefb;
+      transition: box-shadow 0.18s, transform 0.18s;
+      box-shadow: 0 2px 8px rgba(66,133,244,0.07);
+      outline: none;
+    }
+    .recipe-card:hover, .recipe-card:focus {
+      box-shadow: 0 6px 24px rgba(66,133,244,0.18);
+      transform: translateY(-2px) scale(1.025);
+      z-index: 2;
+    }
+    .recipe-img {
+      object-fit: cover;
+      height: 180px;
+      width: 100%;
+      border-radius: 16px 16px 0 0;
+      background: #f8f9fa;
+    }
+  </style>
 
 </body>
 </html>
