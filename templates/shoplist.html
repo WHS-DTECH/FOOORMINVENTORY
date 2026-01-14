@@ -105,7 +105,7 @@ window.addEventListener('DOMContentLoaded', function() {
             <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
             <span style="flex: 1 1 auto;"></span>
             <button class="primary" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
-            <button class="primary" id="addToGoogleCalendarBtn" style="background: #34a853; color: #fff; border: 1px solid #34a853;" onclick="addToGoogleCalendar()">Add to Google Calendar</button>
+            <!-- Removed duplicate Add to Google Calendar button; only one will be in Export Options below -->
             <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
           </div>
 
@@ -560,7 +560,7 @@ window.addEventListener('DOMContentLoaded', function() {
   <div class="export-options" style="margin-top: 18px; margin-bottom: 8px;">
     <strong>Export Options:</strong>
     <a href="/shoplist/export/ical" class="google-cal-btn" download>📅 Download iCal (.ics)</a>
-    <button onclick="syncGoogleCalendar()" class="google-cal-btn">🔄 Add to Google Calendar</button>
+    <button onclick="addToGoogleCalendar()" class="google-cal-btn" style="background: #34a853; color: #fff; border: 1px solid #34a853;">Add to Google Calendar</button>
     <p style="margin-top:10px;font-size:0.9em;color:#666;">
       Download the iCal file to import into Google Calendar, Outlook, or Apple Calendar
     </p>
