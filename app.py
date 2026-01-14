@@ -1625,9 +1625,19 @@ def api_scheduled_bookings():
             ''')
             bookings = []
             for row in c.fetchall():
+                # Robust date handling
+                date_val = row['date_required']
+                if hasattr(date_val, 'strftime'):
+                    date_str = date_val.strftime('%Y-%m-%d')
+                elif isinstance(date_val, str):
+                    date_str = date_val
+                elif date_val is not None:
+                    date_str = str(date_val)
+                else:
+                    date_str = ''
                 staff_display = f"{row['staff_code']} - {row['last_name']}, {row['first_name']}"
                 bookings.append({
-                    'date_required': row['date_required'].strftime('%Y-%m-%d'),
+                    'date_required': date_str,
                     'period': row['period'],
                     'class_code': row['class_code'],
                     'recipe_name': row['recipe_name'],
