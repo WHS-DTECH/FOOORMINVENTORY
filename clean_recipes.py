@@ -24,30 +24,30 @@ def remove_junk_recipes(conn):
     rows = c.fetchall()
     
     junk_patterns = [
-        r'name \d+ different',
-        r'working towards',
-        r'tick the appropriate',
-        r'correct all spellings',
-        r'week \d+.*knowledge check',
-        r'give \d+ example',
-        r'what could happen',
-        r'what does.*mean',
-        r'how many',
-        r'spellings',
+        r'\bname \d+ different\b',
+        r'\bworking towards\b',
+        r'\btick the appropriate\b',
+        r'\bcorrect all spellings\b',
+        r'\bweek \d+.*knowledge check\b',
+        r'\bgive \d+ example\b',
+        r'\bwhat could happen\b',
+        r'\bwhat does.*mean\b',
+        r'\bhow many\b',
+        r'\bspellings\b',
         r'^skills$',
         r'^review$',
-        r'unknown recipe',
+        r'\bunknown recipe\b',
         r'^\d+\.\d+\s+\d+$',  # Just numbers
-        r'eatwell',
-        r'hedonic scale',
-        r'design your own',
-        r'recipe writing sheet',
+        r'\beatwell\b',
+        r'\bhedonic scale\b',
+        r'\bdesign your own\b',
+        r'\brecipe writing sheet\b',
         r'●.*●.*●',  # Multiple bullet points (likely page headers)
         r'^year \d+.*food technology\s*$',  # Just year/food tech header
         r'^making activity\s*:?\s*$',  # Blank "Making Activity" with no name
         r'forfar bridies.*makes 2 bridies',  # Incomplete Forfar Bridies parse
-        r'food preparation',  # "Food preparation skills"
-        r'used in the',  # Partial sentences
+        r'\bfood preparation\b',  # "Food preparation skills"
+        r'\bused in the\b',  # Partial sentences
         r'^you\.$',  # Just "you."
         r'salad:$',  # Ends with "salad:"
         r'cous\.$',  # Just "Cous."
