@@ -382,7 +382,7 @@ def admin_user_roles():
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
-            SELECT email, GROUP_CONCAT(role, ', ') as roles
+            SELECT email, STRING_AGG(role, ', ') as roles
             FROM user_roles
             GROUP BY email
             ORDER BY email
