@@ -391,8 +391,15 @@ def admin():
                     title = row.get('Title') or row.get('title')
                     email = row.get('Email (School)') or row.get('email') or row.get('Email')
                     if code and last and first:
-                        c.execute('INSERT OR IGNORE INTO teachers (code, last_name, first_name, title, email) VALUES (?, ?, ?, ?, ?)',
-                                  (code, last, first, title, email))
+                        c.execute('''
+                            INSERT INTO teachers (code, last_name, first_name, title, email)
+                            VALUES (%s, %s, %s, %s, %s)
+                            ON CONFLICT (code) DO UPDATE SET
+                                last_name=EXCLUDED.last_name,
+                                first_name=EXCLUDED.first_name,
+                                title=EXCLUDED.title,
+                                email=EXCLUDED.email
+                        ''', (code, last, first, title, email))
                     rows.append(row)
             except Exception as e:
                 flash(f'Error processing CSV: {str(e)}')
