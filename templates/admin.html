@@ -175,13 +175,16 @@
                 <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with staff details to add or update staff records.">
                     <i class="bi bi-info-circle text-info"></i>
                 </span>
-                <form method="POST" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload Staff CSV')">
+                <form id="staffCsvForm" method="POST" enctype="multipart/form-data" class="mb-3">
                     <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
                     <div class="dropzone mb-2" id="staffDropzone" onclick="document.getElementById('staff_csv').click();">
                         <span>Drag & drop or click to select file</span>
                         <input type="file" id="staff_csv" name="staff_csv" accept=".csv" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'staffDropzone')">
                     </div>
                     <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Staff CSV</button>
+                    <div class="progress mt-2" id="staffCsvProgress" style="height: 8px; display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
                 </form>
                 {% if preview_data %}
                 <h3>Preview of Uploaded Staff Data</h3>
@@ -210,13 +213,16 @@
                 <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with class details to add or update classes.">
                     <i class="bi bi-info-circle text-info"></i>
                 </span>
-                <form action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload Class CSV')">
+                <form id="classCsvForm" action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3">
                     <label for="csvfile" class="form-label">Select Class CSV file:</label>
                     <div class="dropzone mb-2" id="classDropzone" onclick="document.getElementById('csvfile').click();">
                         <span>Drag & drop or click to select file</span>
                         <input type="file" id="csvfile" name="csvfile" accept=".csv" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'classDropzone')">
                     </div>
                     <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Class CSV</button>
+                    <div class="progress mt-2" id="classCsvProgress" style="height: 8px; display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
                 </form>
                 {% if class_preview_data %}
                 <h3>Preview of Uploaded Class Data</h3>
@@ -336,13 +342,16 @@
                                         <i class="bi bi-info-circle text-info"></i>
                                     </span>
             <p class="recipe-method-desc">Extract recipes from a PDF file.</p>
-            <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3" onsubmit="return showLoadingSpinner(this, 'Upload PDF')">
+            <form id="pdfForm" action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
                 <label for="pdfFile" class="form-label">Select PDF file:</label>
                 <div class="dropzone mb-2" id="pdfDropzone" onclick="document.getElementById('pdfFile').click();">
                     <span>Drag & drop or click to select file</span>
                     <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'pdfDropzone')">
                 </div>
                 <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload PDF</button>
+                <div class="progress mt-2" id="pdfProgress" style="height: 8px; display: none;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
             </form>
 </body>
 <style>
@@ -495,13 +504,147 @@ document.getElementById('urlForm')?.addEventListener('submit', async function(e)
         statusDiv.style.backgroundColor = '#f2dede';
         statusDiv.style.color = '#a94442';
         statusDiv.innerHTML = '❌ Error: ' + error.message;
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Load from URL';
+    <script>
+    // Drag-and-drop support for file uploads
+    ['staffDropzone','classDropzone','pdfDropzone'].forEach(function(id) {
+        var dz = document.getElementById(id);
+        if (!dz) return;
+        dz.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dz.classList.add('dragover');
+        });
+        dz.addEventListener('dragleave', function(e) {
+            dz.classList.remove('dragover');
+        });
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            var input = dz.querySelector('input[type="file"]');
+            if (e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                updateDropzoneLabel(input, id);
+            }
+        });
+    });
+    function updateDropzoneLabel(input, dzId) {
+        var dz = document.getElementById(dzId);
+        if (input.files && input.files.length > 0) {
+            dz.querySelector('span').textContent = input.files[0].name;
+            dz.style.color = '#286090';
+        } else {
+            dz.querySelector('span').textContent = 'Drag & drop or click to select file';
+            dz.style.color = '#337ab7';
+        }
     }
-});
-</script>
 
-</body>
-
-</html>
+    // AJAX file upload with progress bar for Staff CSV
+    document.getElementById('staffCsvForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var fileInput = form.querySelector('input[type="file"]');
+        var progress = document.getElementById('staffCsvProgress');
+        var bar = progress.querySelector('.progress-bar');
+        var btn = form.querySelector('button[type="submit"]');
+        var spinner = btn.querySelector('.spinner-border');
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        var data = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action || window.location.pathname, true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = (e.loaded / e.total) * 100;
+                bar.style.width = percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            bar.style.width = '100%';
+            setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            form.submit(); // fallback: submit to reload/preview
+        };
+        xhr.onerror = function() {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            alert('Upload failed. Please try again.');
+        };
+        xhr.send(data);
+    });
+    // AJAX file upload with progress bar for Class CSV
+    document.getElementById('classCsvForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var fileInput = form.querySelector('input[type="file"]');
+        var progress = document.getElementById('classCsvProgress');
+        var bar = progress.querySelector('.progress-bar');
+        var btn = form.querySelector('button[type="submit"]');
+        var spinner = btn.querySelector('.spinner-border');
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        var data = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = (e.loaded / e.total) * 100;
+                bar.style.width = percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            bar.style.width = '100%';
+            setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            form.submit();
+        };
+        xhr.onerror = function() {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            alert('Upload failed. Please try again.');
+        };
+        xhr.send(data);
+    });
+    // AJAX file upload with progress bar for PDF
+    document.getElementById('pdfForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var fileInput = form.querySelector('input[type="file"]');
+        var progress = document.getElementById('pdfProgress');
+        var bar = progress.querySelector('.progress-bar');
+        var btn = form.querySelector('button[type="submit"]');
+        var spinner = btn.querySelector('.spinner-border');
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        var data = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = (e.loaded / e.total) * 100;
+                bar.style.width = percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            bar.style.width = '100%';
+            setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            form.submit();
+        };
+        xhr.onerror = function() {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            alert('Upload failed. Please try again.');
+        };
+        xhr.send(data);
+    });

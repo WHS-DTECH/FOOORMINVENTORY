@@ -46,17 +46,17 @@
 
 # MASTER TODO: Redesign & Bugfix Checklist
 
-- [ ] 1. Run /admin/fix_public_roles route as VP
-  - Visit /admin/fix_public_roles while logged in as VP to ensure all users have 'public' in user_roles table.
-- [ ] 2. Review Admin user roles UI
-  - Ensure admin user roles page displays all users, including those with only 'public' role.
-- [ ] 3. Complete Shopping List redesign tasks
-  - Work through all items in this file and confirm each is done.
-- [ ] 4. Polish Recipe Book, Class Ingredients, Admin, and mobile/accessibility improvements
-  - Review and finalize all redesigns for these pages, including mobile and accessibility features.
-- [ ] 5. Confirm backend/template errors are resolved in production
-  - Test all major pages (including landing page) to ensure no errors remain.
-- [ ] 6. Ensure database state matches UI logic for roles/permissions
-  - Verify that user_roles and permissions in the database match what is shown in the UI.
+- [x] 1. Run /admin/fix_public_roles route as VP
+   - Visit /admin/fix_public_roles while logged in as VP to ensure all users have 'public' in user_roles table.
+- [x] 2. Review Admin user roles UI
+   - Ensure admin user roles page displays all users, including those with only 'public' role.
+- [x] 3. Complete Shopping List redesign tasks
+   - Work through all items in this file and confirm each is done.
+- [x] 4. Polish Recipe Book, Class Ingredients, Admin, and mobile/accessibility improvements
+   - Review and finalize all redesigns for these pages, including mobile and accessibility features.
+- [x] 5. Confirm backend/template errors are resolved in production
+   - Test all major pages (including landing page) to ensure no errors remain.
+- [x] 6. Ensure database state matches UI logic for roles/permissions
+   - Verify that user_roles and permissions in the database match what is shown in the UI.
 - [ ] 7. Address new issues from user testing
   - Triage and fix any new bugs or feedback from ongoing user testing.
