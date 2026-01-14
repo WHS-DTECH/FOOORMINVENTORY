@@ -718,7 +718,7 @@ window.addEventListener('DOMContentLoaded', function() {
                   // Apply teacher color tint to this booking cell
                   (function() {
                     var cells = document.querySelectorAll('.booking[data-booking-id="{{ booking.id }}"]');
-                    var color = getTeacherColor("{{ teacher_name|escapejs }}");
+                    var color = getTeacherColor({{ teacher_name|tojson|safe }});
                     var bg = color.replace(')', ', 0.13)').replace('rgb', 'rgba');
                     cells.forEach(function(cell) {
                       cell.style.background = bg;
