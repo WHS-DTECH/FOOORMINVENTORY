@@ -1,3 +1,79 @@
+# Export cleaning functions for import in app.py
+__all__ = [
+    'remove_junk_recipes',
+    'remove_duplicate_recipes',
+    'fix_recipe_names'
+]
+def remove_junk_recipes(conn, junk_patterns=None):
+    """
+    Remove recipes that are clearly not recipes (worksheet questions, etc.).
+    Args:
+        conn (sqlite3.Connection): Database connection.
+        junk_patterns (list, optional): List of regex patterns to match junk recipes. If None, use defaults.
+    Returns:
+        list: Names of deleted recipes.
+    """
+    try:
+        c = conn.cursor()
+        c.execute('SELECT id, name, instructions FROM recipes')
+        rows = c.fetchall()
+    except Exception as e:
+        logging.error(f"Error fetching recipes for junk removal: {e}")
+        return []
+    if junk_patterns is None:
+        junk_patterns = [
+            r'\\bname \\d+ different\\b',
+            r'\\bworking towards\\b',
+            r'\\btick the appropriate\\b',
+            r'\\bcorrect all spellings\\b',
+            r'\\bweek \\d+.*knowledge check\\b',
+            r'\\bgive \\d+ example\\b',
+            r'\\bwhat could happen\\b',
+            r'\\bwhat does.*mean\\b',
+            r'\\bhow many\\b',
+            r'\\bspellings\\b',
+            r'^skills$',
+            r'^review$',
+            r'\\bunknown recipe\\b',
+            r'^\\d+\\.\\d+\\s+\\d+$',
+            r'\\beatwell\\b',
+            r'\\bhedonic scale\\b',
+            r'\\bdesign your own\\b',
+            r'\\brecipe writing sheet\\b',
+            r'●.*●.*●',
+            r'^year \\d+.*food technology\\s*$',
+            r'^making activity\\s*:?\\s*$',
+            r'forfar bridies.*makes 2 bridies',
+            r'\\bfood preparation\\b',
+            r'\\bused in the\\b',
+            r'^you\\.$',
+            r'salad:$',
+            r'cous\\.$',
+        ]
+    to_delete = []
+    deleted = []
+    for row in rows:
+        recipe_id, name, instructions = row
+        name_lower = name.lower() if name else ''
+        inst_lower = instructions.lower() if instructions else ''
+        if name and len(name.strip()) < 3:
+            logging.info(f"Deleting recipe with too-short name: '{name}'")
+            to_delete.append((recipe_id,))
+            deleted.append(name)
+            continue
+        is_junk = False
+        for pattern in junk_patterns:
+            if re.search(pattern, name_lower) or re.search(pattern, inst_lower):
+                is_junk = True
+                break
+        if is_junk:
+            logging.info(f"Deleting junk recipe: {name}")
+            to_delete.append((recipe_id,))
+            deleted.append(name)
+    if to_delete:
+        c.executemany('DELETE FROM recipes WHERE id = ?', to_delete)
+    conn.commit()
+    return deleted
 #!/usr/bin/env python3
 """Clean up recipe database - remove duplicates and non-recipes."""
 
