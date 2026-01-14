@@ -60,11 +60,19 @@
         </form>
     </div>
 
+    <!-- Filter: Show only users with additional roles -->
+    <div style="margin-bottom: 12px;">
+        <label style="font-weight: bold;">
+            <input type="checkbox" id="filterAdditionalRoles" style="margin-right: 6px;">
+            Show only users with additional roles
+        </label>
+    </div>
+
     <!-- Current User Roles -->
     <div class="panel" style="margin: 20px 0; padding: 20px; background: white; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <h3>Users with Additional Roles</h3>
         
-        <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+        <table id="userRolesTable" style="width: 100%; border-collapse: collapse; margin-top: 12px;">
             <thead>
                 <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
                     <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Email</th>
@@ -75,7 +83,7 @@
             <tbody>
                 {% set role_map = {'VP': 'Admin', 'DK': 'Teacher', 'MU': 'Technician', 'public': 'Public Access'} %}
                 {% for user in all_users %}
-                <tr style="border-bottom: 1px solid #dee2e6;">
+                <tr style="border-bottom: 1px solid #dee2e6;" data-roles="{{ user.all_roles }}">
                     <td style="padding: 12px; border: 1px solid #dee2e6;">{{ user.email }}</td>
                     <td style="padding: 12px; border: 1px solid #dee2e6;">
                         {% set display_roles = user.all_roles.split(', ') %}
@@ -167,6 +175,29 @@ function closeRemoveModal() {
 document.getElementById('removeModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeRemoveModal();
+    }
+});
+
+// Filter table rows to show only users with additional roles
+document.addEventListener('DOMContentLoaded', function() {
+    var filterBox = document.getElementById('filterAdditionalRoles');
+    var table = document.getElementById('userRolesTable');
+    if (filterBox && table) {
+        filterBox.addEventListener('change', function() {
+            var showOnlyAdditional = filterBox.checked;
+            var rows = table.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+                var roles = row.getAttribute('data-roles') || '';
+                // Show if has more than just 'public' (Public Access)
+                var roleList = roles.split(',').map(function(r) { return r.trim(); });
+                var hasAdditional = roleList.length > 1 || (roleList.length === 1 && roleList[0] !== 'public');
+                if (showOnlyAdditional) {
+                    row.style.display = hasAdditional ? '' : 'none';
+                } else {
+                    row.style.display = '';
+                }
+            });
+        });
     }
 });
 </script>
