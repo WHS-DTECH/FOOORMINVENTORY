@@ -1,50 +1,3 @@
-# Google Calendar integration for Shopping List
-@app.route('/shoplist/add_to_gcal', methods=['POST'])
-@require_login
-def add_shoplist_to_gcal():
-    try:
-        # Get current week's bookings (reuse logic from shoplist route)
-        from datetime import datetime, timedelta
-        today = datetime.now()
-        monday = today - timedelta(days=today.weekday())
-        friday = monday + timedelta(days=4)
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            c.execute('''SELECT date_required, period, class_code, recipe_name, servings FROM class_bookings cb
-                         LEFT JOIN recipes r ON cb.recipe_id = r.id
-                         WHERE date_required >= %s AND date_required <= %s
-                         ORDER BY date_required, period''', (monday.date(), friday.date()))
-            bookings = c.fetchall()
-
-        # Google Calendar API setup
-        from google.oauth2.credentials import Credentials
-        from googleapiclient.discovery import build
-        # You must have user's credentials in session or DB
-        creds_data = session.get('google_creds')
-        if not creds_data:
-            return jsonify({'error': 'Google authentication required. Please log in with Google.'}), 401
-        creds = Credentials.from_authorized_user_info(creds_data)
-        service = build('calendar', 'v3', credentials=creds)
-
-        calendar_id = 'primary'
-        created = 0
-        for b in bookings:
-            event = {
-                'summary': f"{b['class_code']} - {b['recipe_name']}",
-                'description': f"Servings: {b['servings']}",
-                'start': {
-                    'date': str(b['date_required'])
-                },
-                'end': {
-                    'date': str(b['date_required'])
-                },
-            }
-            service.events().insert(calendarId=calendar_id, body=event).execute()
-            created += 1
-        return jsonify({'success': True, 'created': created})
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
@@ -91,28 +44,52 @@ app = Flask(__name__)
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 
-# --- Recipe Import from URL Endpoint ---
-@app.route('/upload_url', methods=['POST'])
-@require_role('VP')
-def upload_url():
-    url = request.form.get('url')
-    if not url:
-        return jsonify({'error': 'No URL provided'}), 400
-
+# Google Calendar integration for Shopping List
+@app.route('/shoplist/add_to_gcal', methods=['POST'])
+@require_login
+def add_shoplist_to_gcal():
     try:
-        import requests
-        from bs4 import BeautifulSoup
-        resp = requests.get(url)
-        if resp.status_code != 200:
-            return jsonify({'error': f'Failed to fetch URL (status {resp.status_code})'}), 400
+        # Get current week's bookings (reuse logic from shoplist route)
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        monday = today - timedelta(days=today.weekday())
+        friday = monday + timedelta(days=4)
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT date_required, period, class_code, recipe_name, servings FROM class_bookings cb
+                         LEFT JOIN recipes r ON cb.recipe_id = r.id
+                         WHERE date_required >= %s AND date_required <= %s
+                         ORDER BY date_required, period''', (monday.date(), friday.date()))
+            bookings = c.fetchall()
 
-        soup = BeautifulSoup(resp.text, 'html.parser')
-        title = soup.title.string if soup.title else 'No title found'
+        # Google Calendar API setup
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        # You must have user's credentials in session or DB
+        creds_data = session.get('google_creds')
+        if not creds_data:
+            return jsonify({'error': 'Google authentication required. Please log in with Google.'}), 401
+        creds = Credentials.from_authorized_user_info(creds_data)
+        service = build('calendar', 'v3', credentials=creds)
 
-        # TODO: Add real recipe parsing logic here
-        # For now, just return the title and a success flag
-        return jsonify({'success': True, 'title': title, 'url': url})
+        calendar_id = 'primary'
+        created = 0
+        for b in bookings:
+            event = {
+                'summary': f"{b['class_code']} - {b['recipe_name']}",
+                'description': f"Servings: {b['servings']}",
+                'start': {
+                    'date': str(b['date_required'])
+                },
+                'end': {
+                    'date': str(b['date_required'])
+                },
+            }
+            service.events().insert(calendarId=calendar_id, body=event).execute()
+            created += 1
+        return jsonify({'success': True, 'created': created})
     except Exception as e:
+        import traceback; traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
