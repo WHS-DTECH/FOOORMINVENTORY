@@ -238,51 +238,48 @@ def format_recipe(recipe_data):
 
 
 def parse_ingredient_line(line):
-    """Parse a single ingredient line into quantity, unit, and ingredient name."""
+    """Parse a single ingredient line into quantity, unit, and ingredient name.
+    Handles fractions, ranges, multi-word units, and uses regex for extraction."""
+    import fractions
     line = line.strip()
-
     if not line:
         return {"quantity": "", "unit": "", "ingredient": ""}
 
-    parts = line.split(maxsplit=3)
+    # Regex for quantity (supports fractions, ranges, decimals)
+    quantity_pattern = r'^(\d+[\d\s\/\.-]*|[¼½¾⅓⅔⅛⅜⅝⅞])'
+    unit_pattern = r'(g|gram|grams|kg|ml|l|litre|litres|cup|cups|tsp|tbsp|tablespoon|teaspoon|slice|slices|pinch|packet|can|large|small|clove|cloves|piece|pieces|stick|sticks|oz|pound|lb|dash|drop|drops|bunch|bunches|handful|handfuls|cm|mm|inch|inches|sheet|sheets|fillet|fillets|filet|filets|strip|strips|cube|cubes|sprig|sprigs|leaf|leaves|head|heads|jar|jars|bottle|bottles|container|containers|pack|packs|bag|bags|dozen|quart|pint|gal|gallon|liters|milliliter|millilitre|milliliters|millilitres|tablespoons|teaspoons|tablespoonful|teaspoonful|tablespoonfuls|teaspoonfuls|dash|dashes|drop|drops|bunch|bunches|handful|handfuls|pinch|pinches|slice|slices|piece|pieces|clove|cloves|can|cans|packet|packets|stick|sticks|sheet|sheets|fillet|fillets|filet|filets|strip|strips|cube|cubes|sprig|sprigs|leaf|leaves|head|heads|jar|jars|bottle|bottles|container|containers|pack|packs|bag|bags|dozen|quart|pint|gal|gallon|liters|milliliter|millilitre|milliliters|millilitres|tablespoons|teaspoons|tablespoonful|teaspoonful|tablespoonfuls|teaspoonfuls)?'
+    # Full pattern: quantity [unit] ingredient
+    pattern = re.compile(rf'\s*({quantity_pattern})\s*({unit_pattern})?\s*(.*)', re.I)
 
-    # Try to extract numeric quantity from first part
-    quantity = ""
-    unit = ""
-    ingredient = ""
-
-    if not parts:
-        return {"quantity": "", "unit": "", "ingredient": line}
-
-    # Check if first part looks like a number
-    first_part = parts[0]
-    quantity_val = None
-
-    try:
-        # Try simple float
-        quantity_val = float(first_part.replace('g', '').replace('ml', ''))
-        quantity = str(quantity_val)
-    except ValueError:
-        # Check for fraction or "x" patterns like "2 x 5ml"
-        if 'x' in first_part.lower():
-            # Might be something like "2x5ml" - keep as is
-            ingredient = line
-            return {"quantity": "", "unit": "", "ingredient": ingredient}
-        else:
-            # Couldn't parse as number, treat whole line as ingredient
-            return {"quantity": "", "unit": "", "ingredient": line}
-
-    # We have a quantity, now extract unit and ingredient
-    if len(parts) >= 2:
-        unit = parts[1]
-        ingredient = ' '.join(parts[2:]) if len(parts) > 2 else ''
-
-    # Clean up unit (remove 'x' if present)
-    if unit:
-        unit = unit.replace('x', '').strip()
-
-    return {
-        "quantity": quantity,
-        "unit": unit,
-        "ingredient": ingredient if ingredient else line
-    }
+    match = pattern.match(line)
+    if match:
+        quantity_raw = match.group(1) or ""
+        unit = (match.group(2) or "").strip()
+        ingredient = (match.group(3) or "").strip()
+        # Normalize quantity (handle fractions and ranges)
+        quantity = quantity_raw.strip()
+        # Convert unicode fractions to float
+        unicode_fractions = {
+            '¼': 0.25, '½': 0.5, '¾': 0.75, '⅓': 1/3, '⅔': 2/3, '⅛': 1/8, '⅜': 3/8, '⅝': 5/8, '⅞': 7/8
+        }
+        for uf, val in unicode_fractions.items():
+            if uf in quantity:
+                quantity = str(val)
+        # Handle ranges (e.g., 2-3)
+        if '-' in quantity:
+            quantity = quantity.split('-')[0].strip()
+        # Handle fractions (e.g., 1 1/2)
+        try:
+            if '/' in quantity:
+                parts = quantity.split()
+                if len(parts) == 2:
+                    whole = int(parts[0])
+                    frac = float(fractions.Fraction(parts[1]))
+                    quantity = str(whole + frac)
+                else:
+                    quantity = str(float(fractions.Fraction(quantity)))
+        except Exception:
+            pass
+        return {"quantity": quantity, "unit": unit, "ingredient": ingredient}
+    # If no match, treat whole line as ingredient
+    return {"quantity": "", "unit": "", "ingredient": line}
