@@ -99,6 +99,53 @@ window.addEventListener('DOMContentLoaded', function() {
             <span style="flex: 1 1 auto;"></span>
             <button class="primary" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
             <button class="primary" id="addToGoogleCalendarBtn" style="background: #34a853; color: #fff; border: 1px solid #34a853;" onclick="addToGoogleCalendar()">Add to Google Calendar</button>
+            <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
+          </div>
+
+          <!-- Scheduled Bookings Modal -->
+          <div id="scheduledBookingsModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
+            <div class="modal-content" style="background:#f9f9f9; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:900px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
+              <span id="closeScheduledBookingsModal" style="position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
+              <h2 style="margin-top:0; color:#1976d2;">Scheduled Bookings</h2>
+              <div id="scheduledBookingsTableContainer">
+                <div style="text-align:center; color:#888;">Loading...</div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+          function showScheduledBookingsModal() {
+            document.getElementById('scheduledBookingsModal').style.display = 'block';
+            loadScheduledBookings();
+          }
+          document.getElementById('closeScheduledBookingsModal').onclick = function() {
+            document.getElementById('scheduledBookingsModal').style.display = 'none';
+          }
+          window.onclick = function(event) {
+            if (event.target === document.getElementById('scheduledBookingsModal')) {
+              document.getElementById('scheduledBookingsModal').style.display = 'none';
+            }
+          }
+          function loadScheduledBookings() {
+            fetch('/api/scheduled_bookings').then(r => r.json()).then(data => {
+              if (!data.success) {
+                document.getElementById('scheduledBookingsTableContainer').innerHTML = '<div style="color:#a94442;">Failed to load bookings.</div>';
+                return;
+              }
+              const bookings = data.bookings;
+              if (!bookings.length) {
+                document.getElementById('scheduledBookingsTableContainer').innerHTML = '<div style="color:#888;">No bookings found.</div>';
+                return;
+              }
+              let html = '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; background:#fff;"><thead><tr style="background:#1976d2; color:#fff;"><th>Date</th><th>Period</th><th>Staff</th><th>Class</th><th>Recipe</th><th>Servings</th></tr></thead><tbody>';
+              for (const b of bookings) {
+                html += `<tr><td>${b.date_required}</td><td>${b.period}</td><td>${b.staff_display}</td><td>${b.class_code}</td><td>${b.recipe_name}</td><td>${b.servings}</td></tr>`;
+              }
+              html += '</tbody></table></div>';
+              document.getElementById('scheduledBookingsTableContainer').innerHTML = html;
+            });
+          }
+          </script>
           <script>
           function addToGoogleCalendar() {
             fetch('/shoplist/add_to_gcal', { method: 'POST' })
