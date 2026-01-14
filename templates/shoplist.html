@@ -908,8 +908,36 @@ function renderShoplistMonthCalendar() {
     const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
     html += `<div class='calendar-day ${isToday ? 'today' : ''}'><div class='day-number'>${day}</div>`;
     dayBookings.forEach(booking => {
-      html += `<div class='booking-item' title='${booking.recipe_name} (P${booking.period})'><strong>${booking.class_code}</strong><br>P${booking.period}: ${booking.recipe_name}</div>`;
+      html += `<div class='booking-item' tabindex='0' aria-label='Booking: ${booking.recipe_name} for ${booking.class_code} period ${booking.period}' onclick='showBookingDetailsModal(${JSON.stringify(booking)})' onkeypress='if(event.key=="Enter")showBookingDetailsModal(${JSON.stringify(booking)})'><strong>${booking.class_code}</strong><br>P${booking.period}: ${booking.recipe_name}</div>`;
     });
+    // Modal for booking details
+    function showBookingDetailsModal(booking) {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style = 'display:block; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);';
+      modal.innerHTML = `<div class='modal-content' style='background:#fff; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:500px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;'>
+        <span style='position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;' onclick='this.parentElement.parentElement.remove()'>&times;</span>
+        <h2 style='margin-top:0; color:#1976d2;'>Booking Details</h2>
+        <div><strong>Date:</strong> ${booking.date_required}</div>
+        <div><strong>Period:</strong> ${booking.period}</div>
+        <div><strong>Staff:</strong> ${booking.staff_display}</div>
+        <div><strong>Class:</strong> ${booking.class_code}</div>
+        <div><strong>Recipe:</strong> ${booking.recipe_name}</div>
+        <div><strong>Servings:</strong> ${booking.servings}</div>
+      </div>`;
+      document.body.appendChild(modal);
+    }
+    // Legend for teacher colors
+    function renderShoplistLegend() {
+      const legend = document.getElementById('shoplist-legend');
+      if (!legend) return;
+      legend.innerHTML = `<div style='display:flex; gap:12px; flex-wrap:wrap; align-items:center;'><span style='font-weight:bold;'>Teacher Colors:</span>
+        <span style='background:#e3f2fd; border:1px solid #1976d2; padding:4px 10px; border-radius:6px;'>Admin</span>
+        <span style='background:#fce4ec; border:1px solid #d81b60; padding:4px 10px; border-radius:6px;'>Teacher</span>
+        <span style='background:#e8f5e9; border:1px solid #388e3c; padding:4px 10px; border-radius:6px;'>Technician</span>
+      </div>`;
+    }
+    <div id="shoplist-legend" style="margin: 18px 0 8px 0;"></div>
     html += '</div>';
   }
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
