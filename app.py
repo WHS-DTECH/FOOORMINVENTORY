@@ -435,6 +435,9 @@ def uploadclass():
             except ValueError:
                 ln = None
             # Upsert for PostgreSQL: ON CONFLICT (ClassCode) DO UPDATE
+            if not classcode or ln is None:
+                skipped_rows = skipped_rows + 1 if 'skipped_rows' in locals() else 1
+                continue
             c.execute('''
                 INSERT INTO classes (ClassCode, LineNo, Misc1, RoomNo, CourseName, Misc2, Year, Dept, StaffCode, ClassSize, TotalSize, TimetableYear, Misc3)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -469,6 +472,8 @@ def uploadclass():
             rows.append(row)
 
     flash('Classes CSV processed')
+    if 'skipped_rows' in locals():
+        flash(f'Skipped {skipped_rows} row(s) with missing ClassCode or LineNo.')
     
     return render_template('admin.html', preview_data=rows, suggestions=suggestions)
 
