@@ -39,22 +39,21 @@
 
   <div style="display: flex; flex-direction: column; align-items: center; margin-top: 18px;">
     <h1 class="no-print" style="font-size: 2.3em; margin-bottom: 0;">Weekly Booking Grid</h1>
-    <div class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold;">
-      {{ week_label }}
+  </div>
+  <div class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold; display: flex; flex-direction: column; align-items: center;">
+    <div id="weekRangeLabel">{{ week_label }}</div>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="prev">&#8592; Previous</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="today">Today</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="next">Next &#8594;</button>
+      </form>
     </div>
   </div>
-      <!-- Navigation buttons for shopping list grid, centered at top -->
-      <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; margin-top: 8px;">
-        <form method="get" style="margin: 0;">
-          <button type="submit" name="nav" value="prev">&#8592; Previous</button>
-        </form>
-        <form method="get" style="margin: 0;">
-          <button type="submit" name="nav" value="today">Today</button>
-        </form>
-        <form method="get" style="margin: 0;">
-          <button type="submit" name="nav" value="next">Next &#8594;</button>
-        </form>
-      </div>
     <!-- Selected Bookings panel moved up under the title -->
     <div id="selected-bookings-panel" class="popout-panel" style="margin-top: 18px; margin-bottom: 16px;">
       <div style="font-weight: bold; margin-bottom: 4px;">Selected Bookings</div>
@@ -697,6 +696,26 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('click', function() {
   // Re-apply colors after DOM updates
   setTimeout(applyTeacherColors, 100);
+});
+</script>
+<script>
+// Format week label as dd-mm-yyyy to dd-mm-yyyy
+function formatWeekLabel(label) {
+  // Expecting label in format yyyy-mm-dd to yyyy-mm-dd
+  const match = label.match(/(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const start = `${match[3]}-${match[2]}-${match[1]}`;
+    const end = `${match[6]}-${match[5]}-${match[4]}`;
+    return `${start} to ${end}`;
+  }
+  return label;
+}
+document.addEventListener('DOMContentLoaded', function() {
+  // Update week label format
+  const weekLabelEl = document.getElementById('weekRangeLabel');
+  if (weekLabelEl) {
+    weekLabelEl.textContent = formatWeekLabel(weekLabelEl.textContent);
+  }
 });
 </script>
 </body>
