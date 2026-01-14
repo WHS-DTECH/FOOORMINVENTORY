@@ -145,7 +145,16 @@ if os.getenv('FLASK_ENV') == 'development':
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-login_manager.anonymous_user = lambda: type('AnonymousUser', (), {'is_authenticated': False})()
+class AnonymousUser:
+    is_authenticated = False
+    def is_admin(self):
+        return False
+    def is_teacher(self):
+        return False
+    def is_staff(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser
 
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
