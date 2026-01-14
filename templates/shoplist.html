@@ -542,13 +542,10 @@ window.addEventListener('DOMContentLoaded', function() {
         <tr>
           <th></th>
           {% for d in dates %}
-            <th>{{ d.day_name }}<br><span class="small-muted">{{ d.nz_date }}</span></th>
-          {% endfor %}
-        </tr>
-        <tr>
-          <th>Period</th>
-          {% for d in dates %}
-            <th></th>
+            <th style="text-align:center;">
+              {{ d.day_name|default('')[:3] }}<br>
+              <span class="small-muted">{{ d.nz_date }}</span>
+            </th>
           {% endfor %}
         </tr>
       </thead>
