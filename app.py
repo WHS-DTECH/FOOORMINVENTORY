@@ -1,3 +1,7 @@
+@app.route('/admin/recipe_book_setup')
+@require_role('VP')
+def admin_recipe_book_setup():
+    return render_template('recipe_book_setup.html')
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
 
