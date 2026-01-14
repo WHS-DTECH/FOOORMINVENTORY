@@ -427,23 +427,39 @@ def uploadclass():
                 ln = int(lineno) if lineno not in (None, '') else None
             except ValueError:
                 ln = None
-            # Insert or replace to update existing
-            c.execute('INSERT OR REPLACE INTO classes (ClassCode, LineNo, Misc1, RoomNo, CourseName, Misc2, Year, Dept, StaffCode, ClassSize, TotalSize, TimetableYear, Misc3) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                      (
-                          classcode,
-                          ln,
-                          row.get('Misc1'),
-                          row.get('RoomNo'),
-                          row.get('CourseName'),
-                          row.get('Misc2'),
-                          row.get('Year'),
-                          row.get('Dept'),
-                          row.get('StaffCode'),
-                          row.get('ClassSize'),
-                          row.get('TotalSize'),
-                          row.get('TimetableYear'),
-                          row.get('Misc3'),
-                      ))
+            # Upsert for PostgreSQL: ON CONFLICT (ClassCode) DO UPDATE
+            c.execute('''
+                INSERT INTO classes (ClassCode, LineNo, Misc1, RoomNo, CourseName, Misc2, Year, Dept, StaffCode, ClassSize, TotalSize, TimetableYear, Misc3)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (ClassCode) DO UPDATE SET
+                  LineNo=EXCLUDED.LineNo,
+                  Misc1=EXCLUDED.Misc1,
+                  RoomNo=EXCLUDED.RoomNo,
+                  CourseName=EXCLUDED.CourseName,
+                  Misc2=EXCLUDED.Misc2,
+                  Year=EXCLUDED.Year,
+                  Dept=EXCLUDED.Dept,
+                  StaffCode=EXCLUDED.StaffCode,
+                  ClassSize=EXCLUDED.ClassSize,
+                  TotalSize=EXCLUDED.TotalSize,
+                  TimetableYear=EXCLUDED.TimetableYear,
+                  Misc3=EXCLUDED.Misc3
+            ''',
+                (
+                    classcode,
+                    ln,
+                    row.get('Misc1'),
+                    row.get('RoomNo'),
+                    row.get('CourseName'),
+                    row.get('Misc2'),
+                    row.get('Year'),
+                    row.get('Dept'),
+                    row.get('StaffCode'),
+                    row.get('ClassSize'),
+                    row.get('TotalSize'),
+                    row.get('TimetableYear'),
+                    row.get('Misc3'),
+                ))
             rows.append(row)
 
     flash('Classes CSV processed')
