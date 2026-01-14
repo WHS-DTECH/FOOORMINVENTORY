@@ -90,7 +90,7 @@ window.addEventListener('DOMContentLoaded', function() {
             <button onclick="clearAllSelections()">Clear</button>
             <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
             <span style="flex: 1 1 auto;"></span>
-            <button class="primary" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
+            <!-- Removed duplicate Generate Shopping List button from top panel -->
             <!-- Removed duplicate Add to Google Calendar button; only one will be in Export Options below -->
             <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
           </div>
@@ -588,15 +588,17 @@ window.addEventListener('DOMContentLoaded', function() {
       return colors[Math.abs(hash) % colors.length];
     }
     function renderTeacherLegend() {
-      // Collect unique teacher names from bookings
+      // Collect unique teacher names from bookings (including all selected teachers)
       const teacherSet = new Set();
       (window.bookings || []).forEach(b => {
-        if (b.last_name) teacherSet.add(b.last_name);
+        if (b.teacher_name) teacherSet.add(b.teacher_name);
+        else if (b.last_name) teacherSet.add(b.last_name);
         else if (b.staff_code) teacherSet.add(b.staff_code);
       });
       const legendDiv = document.getElementById('teacher-legend');
       legendDiv.innerHTML = '';
       teacherSet.forEach(name => {
+        if (!name) return;
         const swatch = document.createElement('span');
         swatch.className = 'legend-color';
         swatch.style.background = getTeacherColor(name);
