@@ -44,7 +44,7 @@
   
   <!-- Modern Search Bar and Filters -->
   <div class="container-fluid mb-4">
-    <form method="get" action="/recipes" class="row g-3 align-items-center justify-content-center" style="max-width:900px; margin:auto;">
+    <form id="searchForm" method="get" action="/recipes" class="row g-3 align-items-center justify-content-center" style="max-width:900px; margin:auto;">
       <div class="col-12 col-md-6">
         <input type="search" name="q" class="form-control form-control-lg" placeholder="Search recipes by name, ingredient, or instructions..." value="{{ q }}" aria-label="Search recipes">
       </div>
@@ -76,6 +76,22 @@
         <span class="text-muted ms-2" style="font-size:1.1em;">{{ rows|length }} recipe(s) found</span>
       </div>
     </form>
+
+    <!-- Quick Filter Chips -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mt-2 mb-1">
+      {% set quick_tags = ['Vegetarian', 'Vegan', 'Gluten Free', 'Dairy Free', 'Nut Free'] %}
+      {% for tag in quick_tags %}
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 quick-chip {% if dietary == tag %}btn-success text-white{% else %}btn-outline-success{% endif %}"
+          onclick="applyQuickFilter('{{ tag }}')">{{ tag }}</button>
+      {% endfor %}
+    </div>
+    <script>
+      function applyQuickFilter(tag) {
+        const form = document.getElementById('searchForm');
+        form.dietary.value = tag;
+        form.submit();
+      }
+    </script>
   </div>
   <!-- Suggestion box remains below or to the side as needed -->
   <div class="container-fluid mb-4">
