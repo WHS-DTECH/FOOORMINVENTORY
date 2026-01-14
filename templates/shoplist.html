@@ -517,10 +517,10 @@
       <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
       <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
       <!-- Selection grid follows below -->
-        <!-- Print Shopping List Only button below the grid, above Shopping List -->
-        <div style="margin: 18px 0 8px 0; display: flex; justify-content: flex-end;">
-          <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
-        </div>
+      <div style="margin: 18px 0 8px 0; display: flex; gap: 8px; justify-content: flex-start;">
+        <button class="primary no-print" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
+        <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
+      </div>
       <div id="masterList" style="margin-top: 24px; background: #f7f7f7; border-radius: 8px; padding: 12px;">
         <h3 style="margin-top: 0;">Master Shopping List</h3>
         <div id="masterListContent">Generate the shopping list to see items here.</div>
