@@ -491,6 +491,20 @@
     <button id="weekViewBtn" class="active" onclick="switchShoplistView('week')">Week/Period View</button>
     <button id="monthViewBtn" onclick="switchShoplistView('month')">Month View</button>
   </div>
+  <div class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold; display: flex; flex-direction: column; align-items: center;">
+    <div id="weekRangeLabel">{{ week_label }}</div>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="prev">&#8592; Previous</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="today">Today</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="nav" value="next">Next &#8594;</button>
+      </form>
+    </div>
+  </div>
 
   <div id="weekPeriodView">
     <table class="grid no-print">
