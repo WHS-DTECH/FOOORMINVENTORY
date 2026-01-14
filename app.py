@@ -15,6 +15,9 @@ def recipe_details(recipe_id):
             ingredients = []
         return render_template('recipe_details.html', recipe=recipe, ingredients=ingredients)
 
+# --- Recipe detail page for /recipe/<id> ---
+# (Moved below app creation to avoid NameError)
+
 # ...existing code...
 
 # --- Recipe detail page for /recipe/<id> ---
