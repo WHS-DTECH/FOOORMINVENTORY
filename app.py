@@ -2,11 +2,13 @@
 # ...existing code...
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
-
 # Place this after app = Flask(__name__)
 
 app = Flask(__name__)
 
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
+# Register Jinja2 filter after app creation and all imports
 @app.template_filter('format_nz_week')
 def format_nz_week(label):
     # Expects label in format yyyy-mm-dd to yyyy-mm-dd
