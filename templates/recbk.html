@@ -248,7 +248,7 @@
                   {% endif %}
                   {{ ing.ingredient }}
                 </li>
-              {% endfor %}
+              {% endif %}
               {% if r.ingredients|length > 5 %}
                 <li style="color:#999;">+ {{ r.ingredients|length - 5 }} more...</li>
               {% endif %}
