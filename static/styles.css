@@ -1,3 +1,52 @@
+/* --- SHOPLIST WEEK VIEW MOBILE ENHANCEMENTS --- */
+@media (max-width: 900px) {
+  .row.g-2.flex-wrap.align-items-stretch.mb-3 {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  #shoplist-legend {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-bottom: 8px !important;
+  }
+  .btn-group[role="group"] {
+    flex-wrap: wrap !important;
+    width: 100%;
+    gap: 6px;
+  }
+  .selection-panel.row.g-2.flex-wrap.align-items-stretch {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  #printMasterList, #shoppingList {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-bottom: 8px !important;
+    padding: 12px 6px !important;
+  }
+  .grid {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid th, .grid td {
+    padding: 6px 2px !important;
+    font-size: 12px !important;
+  }
+  .legend.card {
+    padding: 8px 4px !important;
+  }
+  .btn-group[role="group"] .btn {
+    font-size: 15px !important;
+    padding: 10px 8px !important;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .selection-panel {
+    padding: 0 2px !important;
+  }
+}
 /* --- Admin Page Responsive Enhancements --- */
 @media (max-width: 992px) {
   .admin-grid {
