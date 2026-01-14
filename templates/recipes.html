@@ -129,58 +129,47 @@
   </div>
 
   {% if rows %}
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Ingredients</th>
-        <th>Equipment</th>
-        <th>Serving Size</th>
-        <th>Method</th>
-      </tr>
-    </thead>
-    <tbody>
+  <div class="container-fluid">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" style="margin-top: 18px;">
       {% for r in rows %}
-      <tr>
-        <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
-        <td>
-          {% if r.ingredients %}
-            <ul>
-              {% for ing in r.ingredients %}
-                <li>
-                  {% if ing.quantity or ing.unit %}
-                    {{ ing.quantity }} {{ ing.unit }}
-                  {% endif %}
-                  {{ ing.ingredient }}
-                </li>
-              {% endfor %}
-            </ul>
+      <div class="col">
+        <div class="card h-100 shadow-sm border-0" style="border-radius: 16px; background: #fffefb;">
+          {% if r.image_url %}
+            <img src="{{ r.image_url }}" class="card-img-top" alt="{{ r.name }}" style="object-fit:cover; height:180px; border-radius: 16px 16px 0 0;">
           {% else %}
-            —
+            <div class="d-flex align-items-center justify-content-center bg-light" style="height:180px; border-radius: 16px 16px 0 0; font-size:3em; color:#bbb;">
+              <i class="bi bi-egg-fried"></i>
+            </div>
           {% endif %}
-        </td>
-        <td>
-          {% if r.equipment %}
-            {{ r.equipment | join(', ') }}
-          {% else %}
-            —
-          {% endif %}
-        </td>
-        <td>{{ r.serving_size or '—' }}</td>
-        <td>
-          {% if r.instructions %}
-            <details>
-              <summary>View method</summary>
-              <pre style="white-space: pre-wrap">{{ r.instructions }}</pre>
-            </details>
-          {% else %}
-            —
-          {% endif %}
-        </td>
-      </tr>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title fw-bold text-primary">{{ r.name }}</h5>
+            <div class="mb-2">
+              {% if r.serving_size %}
+                <span class="badge bg-secondary me-1">Serves {{ r.serving_size }}</span>
+              {% endif %}
+              {% if r.dietary %}
+                <span class="badge bg-success me-1">{{ r.dietary }}</span>
+              {% endif %}
+              {% if r.cuisine %}
+                <span class="badge bg-info text-dark me-1">{{ r.cuisine }}</span>
+              {% endif %}
+            </div>
+            <div class="mb-2 text-muted" style="font-size:0.98em; min-height: 2.5em;">
+              {% if r.instructions %}
+                {{ r.instructions.split('\n')[0][:120] }}{% if r.instructions|length > 120 %}...{% endif %}
+              {% else %}
+                <em>No description available.</em>
+              {% endif %}
+            </div>
+            <div class="mt-auto">
+              <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary w-100">View Recipe</a>
+            </div>
+          </div>
+        </div>
+      </div>
       {% endfor %}
-    </tbody>
-  </table>
+    </div>
+  </div>
   {% else %}
     <p>No recipes found.</p>
   {% endif %}

@@ -101,19 +101,24 @@ window.addEventListener('DOMContentLoaded', function() {
           function updateSelectedBookingsPanel() {
             var panel = document.getElementById('selected-bookings-panel');
             var weekViewBtn = document.getElementById('weekViewBtn');
+            var weekGrid = document.getElementById('weekPeriodView');
+            var monthGrid = document.getElementById('monthCalendarView');
             if (!panel) return;
-            if (weekViewBtn && weekViewBtn.classList.contains('active')) {
+            // Hide if Month View is active or week grid is hidden
+            if ((weekViewBtn && weekViewBtn.classList.contains('active')) && weekGrid && weekGrid.style.display !== 'none') {
               panel.style.display = '';
             } else {
               panel.style.display = 'none';
             }
           }
-          window.addEventListener('DOMContentLoaded', updateSelectedBookingsPanel);
+          window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(updateSelectedBookingsPanel, 0);
+          });
           // Patch switchShoplistView to also update panel
           const origSwitchShoplistView = window.switchShoplistView;
           window.switchShoplistView = function(view) {
             origSwitchShoplistView(view);
-            updateSelectedBookingsPanel();
+            setTimeout(updateSelectedBookingsPanel, 0);
           };
           </script>
           <div id="scheduledBookingsModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
