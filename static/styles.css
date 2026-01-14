@@ -1,3 +1,32 @@
+/* --- Enhanced Mobile Touch Targets & Scroll Hint --- */
+@media (max-width: 900px) {
+  .booking, .btn, button, .btn-group .btn {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    font-size: 1em !important;
+  }
+  .selection-panel.row.g-2.flex-wrap.align-items-stretch {
+    margin-bottom: 18px !important;
+  }
+  .grid-wrapper-mobile-hint {
+    position: relative;
+    overflow-x: auto;
+  }
+  .grid-wrapper-mobile-hint::after {
+    content: '← Scroll →';
+    position: absolute;
+    right: 12px;
+    top: 6px;
+    color: #bbb;
+    font-size: 0.95em;
+    pointer-events: none;
+    z-index: 10;
+    background: #f6f8fa;
+    padding: 2px 8px;
+    border-radius: 8px;
+    opacity: 0.85;
+  }
+}
 /* --- SHOPLIST WEEK VIEW MOBILE ENHANCEMENTS --- */
 @media (max-width: 900px) {
   .row.g-2.flex-wrap.align-items-stretch.mb-3 {
@@ -1206,9 +1235,47 @@ optgroup {
     gap: 12px;
     padding: 0 8px;
   }
-  
+
   .recipe-card {
-    padding: 12px;
+    padding: 12px 8px 2px 8px;
+    margin-bottom: 10px;
+    border-radius: 18px;
+    border: 1.5px solid #e0e4ea;
+    box-shadow: 0 2px 10px rgba(66,133,244,0.09);
+    background: #fffefb;
+    transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+  }
+  .recipe-card:hover, .recipe-card:focus {
+    box-shadow: 0 8px 28px rgba(66,133,244,0.22);
+    transform: translateY(-3px) scale(1.03);
+    z-index: 2;
+    border-color: #4285f4;
+  }
+  .recipe-img {
+    object-fit: cover;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    background: #f8f9fa;
+    box-shadow: 0 1px 6px rgba(66,133,244,0.07);
+    aspect-ratio: 4/3;
+    max-height: 210px;
+    min-height: 60px;
+    margin-bottom: 0;
+  }
+  @media (max-width: 900px) {
+    .recipe-card {
+      min-height: 160px;
+      padding-bottom: 0;
+    }
+    .recipe-img {
+      height: 90px;
+      min-height: 60px;
+      max-height: 120px;
+      aspect-ratio: 4/3;
+    }
   }
   
   /* Admin panels */
