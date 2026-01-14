@@ -927,7 +927,9 @@ def shoplist():
         day = monday + timedelta(days=i)
         dates.append({
             'date': day.strftime('%Y-%m-%d'),
-            'label': day.strftime('%A %d %b')
+            'label': day.strftime('%A %d %b'),
+            'day_name': day.strftime('%A'),
+            'nz_date': day.strftime('%d/%m/%Y')
         })
 
     with get_db_connection() as conn:

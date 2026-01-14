@@ -543,7 +543,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <th></th>
           {% for d in dates %}
             <th style="text-align:center;">
-              {{ d.day_name|default('')[:3] }}<br>
+              {{ d.day_name[:3] if d.day_name else '' }}<br>
               <span class="small-muted">{{ d.nz_date }}</span>
             </th>
           {% endfor %}
