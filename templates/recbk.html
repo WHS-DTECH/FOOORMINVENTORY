@@ -242,27 +242,27 @@
 
   {% if rows %}
         <!-- Table view removed: only grid view is available -->
-                {% for ing in r.ingredients[:5] %}
-                  <li>
-                    {% if ing.quantity or ing.unit %}
-                      {{ ing.quantity }} {{ ing.unit }}
-                    {% endif %}
-                    {{ ing.ingredient }}
-                  </li>
-                {% endfor %}
+        {% for r in rows %}
+          <div class="recipe-card">
+            <ul>
+              {% for ing in r.ingredients[:5] %}
+                <li>
+                  {% if ing.quantity or ing.unit %}
+                    {{ ing.quantity }} {{ ing.unit }}
+                  {% endif %}
+                  {{ ing.ingredient }}
+                </li>
+              {% endfor %}
               {% if r.ingredients|length > 5 %}
                 <li style="color:#999;">+ {{ r.ingredients|length - 5 }} more...</li>
               {% endif %}
             </ul>
+            <div class="mt-2 d-flex justify-content-end">
+              <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
+            </div>
           </div>
-        {% endif %}
-          <div class="mt-2 d-flex justify-content-end">
-            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
-          </div>
-        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
-  </div>
   
   <!-- TABLE VIEW -->
   <div id="tableView" class="recipe-table hidden">
