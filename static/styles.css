@@ -1,3 +1,35 @@
+/* --- Admin Page Responsive Enhancements --- */
+@media (max-width: 992px) {
+  .admin-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+  }
+  .admin-column, .card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-bottom: 18px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-container {
+    padding: 0 4px !important;
+  }
+  .admin-column, .card {
+    padding: 10px 4px !important;
+  }
+  .admin-grid {
+    gap: 8px !important;
+  }
+  .table {
+    font-size: 0.95em !important;
+    overflow-x: auto !important;
+    display: block !important;
+  }
+}
 .booking.selected {
   background: #d1f2d6 !important;
   border-color: #34a853 !important;
