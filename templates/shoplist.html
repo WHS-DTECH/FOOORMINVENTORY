@@ -704,14 +704,28 @@ window.addEventListener('DOMContentLoaded', function() {
               {% set booking = grid.get(key) %}
               <td role="cell">
                 {% if booking %}
-                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ booking.last_name or booking.staff_code or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}">
+                  {% set teacher_name = booking.last_name and booking.first_name and (booking.last_name + ', ' + booking.first_name) or booking.last_name or booking.staff_code or '' %}
+                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ teacher_name or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}"
+                    style="background: none;">
                     <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                     <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
-                    <div class="booking-meta">Teacher: {{ booking.last_name or booking.staff_code or '—' }}{% if booking.first_name %}, {{ booking.first_name }}{% endif %}</div>
+                    <div class="booking-meta">Teacher: {{ teacher_name or '—' }}</div>
                     <div class="booking-meta">Servings: {{ booking.desired_servings or '—' }}</div>
                     <div class="booking-meta">{{ d.nz_date }}</div>
                     <div class="booking-meta">Tap to select</div>
                   </div>
+                  <script>
+                  // Apply teacher color tint to this booking cell
+                  (function() {
+                    var cells = document.querySelectorAll('.booking[data-booking-id="{{ booking.id }}"]');
+                    var color = getTeacherColor("{{ teacher_name|escapejs }}");
+                    var bg = color.replace(')', ', 0.13)').replace('rgb', 'rgba');
+                    cells.forEach(function(cell) {
+                      cell.style.background = bg;
+                      cell.style.border = '1.5px solid ' + color;
+                    });
+                  })();
+                  </script>
                 {% else %}
                   <div class="empty" aria-label="No booking">—</div>
                 {% endif %}

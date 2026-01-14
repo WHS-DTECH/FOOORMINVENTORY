@@ -162,8 +162,17 @@
       {% endfor %}
     </div>
   </div>
+
   {% else %}
-    <p>No recipes found.</p>
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height:280px;">
+      <div class="card p-4 text-center" style="max-width:400px; border-radius:18px; background:#f8fafc; border:1px solid #e0e4ea;">
+        <div style="font-size:3em; color:#b0b8c9;">
+          <i class="bi bi-emoji-frown"></i>
+        </div>
+        <h4 class="mt-2 mb-1 text-secondary">No recipes found</h4>
+        <div class="mb-2 text-muted">Try adjusting your search or filter criteria.<br>Or suggest a new recipe below!</div>
+      </div>
+    </div>
   {% endif %}
 
   <style>
