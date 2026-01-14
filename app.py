@@ -1,3 +1,17 @@
+# --- Delete Recipe Route ---
+@app.route('/admin/delete_recipe', methods=['POST'])
+@require_role('VP')
+def delete_recipe():
+    recipe_id = request.form.get('recipe_id')
+    if recipe_id:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
+            conn.commit()
+        flash('Recipe deleted successfully.', 'success')
+    else:
+        flash('No recipe ID provided.', 'error')
+    return redirect(url_for('admin_recipe_book_setup'))
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import os
 import re
