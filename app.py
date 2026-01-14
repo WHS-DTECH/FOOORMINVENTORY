@@ -504,26 +504,25 @@ def admin_permissions():
         action = request.form.get('action')  # 'add' or 'remove'
         
         if role and route and action:
+            import datetime
+            now = datetime.datetime.utcnow()
             with get_db_connection() as conn:
                 c = conn.cursor()
                 if action == 'add':
-                    c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s) ON CONFLICT (role, route) DO NOTHING', (role, route))
+                    c.execute('INSERT INTO role_permissions (role, route, last_modified) VALUES (%s, %s, %s) ON CONFLICT (role, route) DO UPDATE SET last_modified = %s', (role, route, now, now))
                     flash(f'Added {route} access for {role}', 'success')
                 elif action == 'remove':
+                    # Instead of deleting, set last_modified to now (or optionally keep a log table)
+                    c.execute('UPDATE role_permissions SET last_modified = %s WHERE role = %s AND route = %s', (now, role, route))
                     c.execute('DELETE FROM role_permissions WHERE role = %s AND route = %s', (role, route))
                     flash(f'Removed {route} access for {role}', 'success')
         
         return redirect(url_for('admin_permissions'))
     
-    # Ensure 'recipe_book_setup' route is present for all roles
+    # Only fetch current permissions, do not auto-insert recipe_book_setup for all roles
     with get_db_connection() as conn:
         c = conn.cursor()
         roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
-        for role in roles:
-            # Fix: Use ON CONFLICT on (role, route) only, not id
-            c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s) ON CONFLICT (role, route) DO NOTHING', (role, 'recipe_book_setup'))
-        conn.commit()
-        # Get current permissions
         c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
         permissions = {}
         for row in c.fetchall():
@@ -532,7 +531,6 @@ def admin_permissions():
             if role not in permissions:
                 permissions[role] = []
             permissions[role].append(route)
-    # Available routes
     routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
     return render_template('admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
 
