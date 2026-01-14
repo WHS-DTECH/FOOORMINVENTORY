@@ -14,6 +14,8 @@ def parse_recipes_from_text(text):
 
     recipe_data = None
     current_section = None
+    # Collect warnings/errors for user review
+    parse_warnings = []
 
     i = 0
     # Section header regex patterns (flexible, supports typos and alternatives)
@@ -143,6 +145,8 @@ def parse_recipes_from_text(text):
                 current_section = 'ingredients'
                 # fall through to collect this ingredient line
             else:
+                # Log unassigned line as warning
+                parse_warnings.append(f"Unassigned line (no recipe started): '{line}' at line {i+1}")
                 i += 1
                 continue
 
@@ -199,6 +203,10 @@ def parse_recipes_from_text(text):
                     recipe_data['equipment'].append(line)
             else:
                 recipe_data[current_section].append(line)
+        else:
+            # Log unassigned line (not in any section)
+            if line:
+                parse_warnings.append(f"Unassigned line (not in any section): '{line}' at line {i+1}")
 
         i += 1
 
@@ -206,6 +214,9 @@ def parse_recipes_from_text(text):
     if recipe_data and recipe_data.get('ingredients') and recipe_data.get('method'):
         recipes.append(format_recipe(recipe_data))
 
+    # Optionally return warnings/errors for user review
+    if parse_warnings:
+        return {"recipes": recipes, "warnings": parse_warnings}
     return recipes
 
 
