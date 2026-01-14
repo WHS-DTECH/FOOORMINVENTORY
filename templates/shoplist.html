@@ -497,9 +497,15 @@
     <table class="grid no-print">
       <thead>
         <tr>
-          <th>Period</th>
+          <th></th>
           {% for d in dates %}
             <th>{{ d.day_name }}<br><span class="small-muted">{{ d.nz_date }}</span></th>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th>Period</th>
+          {% for d in dates %}
+            <th></th>
           {% endfor %}
         </tr>
       </thead>
