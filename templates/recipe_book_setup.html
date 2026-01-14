@@ -2,8 +2,9 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
+    <div class="row">
+        <!-- Left column: All setup actions -->
+        <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
                     <h2 class="mb-0">Recipe Book Setup</h2>
@@ -40,9 +41,31 @@
                     <hr>
                     <h4>Clean Database</h4>
                     <p>Remove duplicate recipes, junk entries, and fix recipe names.</p>
-                    <form action="/clean_recipe_db" method="post">
+                    <form action="/admin/clean_recipes" method="post">
                         <button type="submit" class="btn btn-warning w-100">🧹 Clean Recipe Database</button>
                     </form>
+                </div>
+            </div>
+        </div>
+        <!-- Right column: Recipe index list -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Recipe Index</h3>
+                </div>
+                <div class="card-body">
+                    {% if recipe_list %}
+                        <ul class="list-group">
+                            {% for recipe in recipe_list %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ recipe.name }}</span>
+                                    <a href="/recipe/{{ recipe.id }}" class="btn btn-outline-secondary btn-sm">View</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No recipes loaded yet.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
