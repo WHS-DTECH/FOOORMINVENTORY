@@ -963,7 +963,11 @@ def shoplist():
             grid[f"{date_obj['date']}_P{period}"] = None
 
     for booking in bookings_list:
-        key = f"{booking['date_required']}_P{booking['period']}"
+        # Ensure date_required is a string in YYYY-MM-DD format
+        date_str = str(booking['date_required'])
+        if hasattr(booking['date_required'], 'strftime'):
+            date_str = booking['date_required'].strftime('%Y-%m-%d')
+        key = f"{date_str}_P{booking['period']}"
         if key in grid:
             grid[key] = booking
 
