@@ -679,20 +679,19 @@ def upload():
         
         try:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
-            
             # Extract ALL text from entire PDF first (recipes span multiple pages)
             print(f"DEBUG: PDF has {len(pdf_reader.pages)} pages")  # Debug
             full_text = ""
             for page in pdf_reader.pages:
                 full_text += page.extract_text() + "\n"
-            
+
             # Parse the complete text for recipes
             recipes_found = parse_recipes_from_text(full_text)
             print(f"DEBUG: Total recipes found: {len(recipes_found)}")  # Debug
             if not recipes_found:
                 flash(f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.', 'warning')
                 return redirect(url_for('recipes_page'))
-            
+
             # Save recipes to database (skip duplicates)
             saved_count = 0
             skipped_count = 0
@@ -712,8 +711,10 @@ def upload():
                         )
                         saved_count += 1
                     except psycopg2.IntegrityError:
-                        # Recipe name already exists, skip it
+                        conn.rollback()  # Rollback the failed insert
                         skipped_count += 1
+                # Commit after all inserts
+                conn.commit()
 
             # Run cleaners after insert (temporarily disabled for debugging)
             # dup_deleted = remove_duplicate_recipes()
@@ -726,10 +727,16 @@ def upload():
                 message += f' Skipped {skipped_count} duplicate(s).'
             # if len(dup_deleted) > 0 or len(nonfood_deleted) > 0:
             #     message += f' Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.'
-            
+
             flash(message, 'success')
             return redirect(url_for('recipes_page'))
         except Exception as e:
+            # Rollback if a transaction is open
+            try:
+                if 'conn' in locals():
+                    conn.rollback()
+            except Exception:
+                pass
             flash(f'Error uploading PDF: {str(e)}', 'error')
             return redirect(url_for('recipes_page'))
     
