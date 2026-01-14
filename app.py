@@ -1,6 +1,8 @@
 
 # ...existing code...
 
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+
 # Place this after app = Flask(__name__)
 
 app = Flask(__name__)
@@ -15,7 +17,6 @@ def format_nz_week(label):
         end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
         return f"{start} to {end}"
     return label
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
 import psycopg2
