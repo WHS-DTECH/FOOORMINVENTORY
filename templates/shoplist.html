@@ -921,17 +921,7 @@ function renderShoplistMonthCalendar() {
       </div>`;
       document.body.appendChild(modal);
     }
-    // Legend for teacher colors
-    function renderShoplistLegend() {
-      const legend = document.getElementById('shoplist-legend');
-      if (!legend) return;
-      legend.innerHTML = `<div style='display:flex; gap:12px; flex-wrap:wrap; align-items:center;'><span style='font-weight:bold;'>Teacher Colors:</span>
-        <span style='background:#e3f2fd; border:1px solid #1976d2; padding:4px 10px; border-radius:6px;'>Admin</span>
-        <span style='background:#fce4ec; border:1px solid #d81b60; padding:4px 10px; border-radius:6px;'>Teacher</span>
-        <span style='background:#e8f5e9; border:1px solid #388e3c; padding:4px 10px; border-radius:6px;'>Technician</span>
-      </div>`;
-    }
-    <div id="shoplist-legend" style="margin: 18px 0 8px 0;"></div>
+    // ...existing code...
     html += '</div>';
   }
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
@@ -979,9 +969,8 @@ document.addEventListener('click', function() {
   setTimeout(applyTeacherColors, 100);
 });
 </script>
-<script>
-// Jinja filter will handle NZ week label formatting
-</script>
+<!-- Legend container for Month View (moved out of JS) -->
+<div id="shoplist-legend" style="margin: 18px 0 8px 0;"></div>
 </body>
 </html>
 
