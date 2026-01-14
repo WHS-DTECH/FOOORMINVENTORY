@@ -518,8 +518,9 @@ def admin_permissions():
     # Ensure 'recipe_book_setup' route is present for all roles
     with get_db_connection() as conn:
         c = conn.cursor()
-        roles = ['VP', 'DK', 'MU', 'public']
+        roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
         for role in roles:
+            # Fix: Use ON CONFLICT on (role, route) only, not id
             c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s) ON CONFLICT (role, route) DO NOTHING', (role, 'recipe_book_setup'))
         conn.commit()
         # Get current permissions
