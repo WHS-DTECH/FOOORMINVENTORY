@@ -37,6 +37,12 @@ window.addEventListener('DOMContentLoaded', function() {
   } else {
     switchShoplistView('week');
   }
+
+  // Always ensure month calendar is rendered if month view is visible
+  if (monthView && monthView.style.display !== 'none') {
+    loadMonthBookings();
+    monthView.style.display = '';
+  }
 });
 </script>
 <!DOCTYPE html>
