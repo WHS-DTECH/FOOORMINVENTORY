@@ -616,7 +616,6 @@ window.addEventListener('DOMContentLoaded', function() {
       // Collect unique teacher names from bookings (including all selected teachers)
       const teacherSet = new Set();
       (window.bookings || []).forEach(b => {
-        // Always prefer last_name + ', ' + first_name if present
         if (b.last_name && b.first_name) teacherSet.add(b.last_name + ', ' + b.first_name);
         else if (b.teacher) teacherSet.add(b.teacher);
         else if (b.teacher_display) teacherSet.add(b.teacher_display);
@@ -626,6 +625,10 @@ window.addEventListener('DOMContentLoaded', function() {
       });
       const legendDiv = document.getElementById('teacher-legend');
       legendDiv.innerHTML = '';
+      if (teacherSet.size === 0) {
+        legendDiv.innerHTML = '<span class="text-muted">No teachers with bookings this week.</span>';
+        return;
+      }
       teacherSet.forEach(name => {
         if (!name) return;
         const swatch = document.createElement('span');
@@ -646,8 +649,16 @@ window.addEventListener('DOMContentLoaded', function() {
         legendDiv.appendChild(label);
       });
     }
-    document.addEventListener('DOMContentLoaded', renderTeacherLegend);
-    // Also re-render legend after AJAX loads or view switches
+    function ensureLegendUpdates() {
+      renderTeacherLegend();
+      // Try to re-render after AJAX or view switches
+      if (window.MutationObserver) {
+        const legendDiv = document.getElementById('teacher-legend');
+        const observer = new MutationObserver(renderTeacherLegend);
+        observer.observe(legendDiv, { childList: true, subtree: true });
+      }
+    }
+    document.addEventListener('DOMContentLoaded', ensureLegendUpdates);
     window.renderTeacherLegend = renderTeacherLegend;
     </script>
     <!-- View Toggle -->
