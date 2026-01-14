@@ -1785,7 +1785,7 @@ def api_scheduled_bookings():
 def recipe_details(recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, instructions, serving_size FROM recipes WHERE id = %s', (recipe_id,))
+        c.execute('SELECT id, name, ingredients, instructions, serving_size, source FROM recipes WHERE id = %s', (recipe_id,))
         row = c.fetchone()
         if not row:
             return render_template('recipe_details.html', recipe=None, error='Recipe not found'), 404
