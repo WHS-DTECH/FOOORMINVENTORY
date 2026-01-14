@@ -1284,8 +1284,40 @@ def suggest_recipe_modal():
             import traceback; traceback.print_exc()
             return jsonify({'success': False, 'message': 'There was an error saving your suggestion. Please try again or contact the VP directly.'})
 
-        # Optionally send email (can be added here if needed)
-        return jsonify({'success': True})
+        # Send email to VP (Vanessa Pringle)
+        email_sent = False
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+            smtp_port = int(os.getenv('SMTP_PORT', '587'))
+            smtp_username = os.getenv('SMTP_USERNAME')
+            smtp_password = os.getenv('SMTP_PASSWORD')
+            smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
+            vp_email = 'vanessapringle@westlandhigh.school.nz'
+            subject = f"Recipe Suggestion: {recipe_name}"
+            body = f"Recipe Name: {recipe_name}\nURL: {recipe_url}\nReason: {reason}\nSuggested by: {suggested_by_name} ({suggested_by_email})"
+            if smtp_username and smtp_password:
+                msg = MIMEMultipart()
+                msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
+                msg['To'] = vp_email
+                msg['Subject'] = subject
+                msg.attach(MIMEText(body, 'plain'))
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                server.starttls()
+                server.login(smtp_username, smtp_password)
+                server.send_message(msg)
+                server.quit()
+                email_sent = True
+                print(f"Email sent successfully to {vp_email}")
+            else:
+                print("SMTP credentials not configured - email not sent")
+                print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+        except Exception as email_error:
+            print(f"Failed to send email: {email_error}")
+            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+        return jsonify({'success': True, 'email_sent': email_sent})
     except Exception as e:
         print(f"Error in suggest_recipe_modal: {e}")
         import traceback; traceback.print_exc()
