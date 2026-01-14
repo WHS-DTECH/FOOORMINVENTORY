@@ -3,17 +3,17 @@
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import os
-# Place this after app = Flask(__name__)
+import re
+# ...existing imports...
 
+# Create Flask app and set secret key
 app = Flask(__name__)
-
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 
 # Register Jinja2 filter after app creation and all imports
 @app.template_filter('format_nz_week')
 def format_nz_week(label):
     # Expects label in format yyyy-mm-dd to yyyy-mm-dd
-    import re
     match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
     if match:
         start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
@@ -112,30 +112,7 @@ def add_shoplist_to_gcal():
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'error': str(e)}), 500
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
-from flask_login import LoginManager, login_user, logout_user, current_user
-from google_auth_oauthlib.flow import Flow
-import psycopg2
-import psycopg2.extras
-import json
-import csv
-import io
-import re
-import os
-import datetime
-from dotenv import load_dotenv
-try:
-    import PyPDF2
-except ImportError:
-    PyPDF2 = None
-try:
-    import requests
-    from bs4 import BeautifulSoup
-except ImportError:
-    requests = None
-    BeautifulSoup = None
-from recipe_parser import parse_recipes_from_text, format_recipe, parse_ingredient_line
-from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
+## ...existing imports already above...
 
 
 # PostgreSQL connection string from environment variable
@@ -153,10 +130,7 @@ load_dotenv()
 if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-app = Flask(__name__)
-
-
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+## ...already created above...
 
 # Configure Flask-Login
 login_manager = LoginManager()
