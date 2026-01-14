@@ -48,7 +48,7 @@ window.addEventListener('DOMContentLoaded', function() {
   <title>Book the Shopping</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
+  <body style="background: #f6f8fa;">
   <div class="print-header" style="display:none;">
     <img src="{{ url_for('static', filename='images/whs logo circular reo .png') }}" alt="School Logo" style="height: 60px; float: left; margin-right: 18px;">
     <div style="font-size: 2em; font-weight: bold;">Book the Shopping</div>
@@ -558,10 +558,10 @@ window.addEventListener('DOMContentLoaded', function() {
     // --- END ALL JS FUNCTIONS ---
   </script>
 
-  <div class="row g-2 flex-wrap align-items-stretch mb-3" style="display: flex; flex-wrap: wrap; gap: 12px;">
+  <div class="row g-2 flex-wrap align-items-stretch mb-3" style="display: flex; flex-wrap: wrap; gap: 18px;">
     <!-- Sidebar Legend (desktop) or collapsible (mobile) -->
     <div class="col-12 col-md-4 mb-2" style="min-width:220px; max-width:320px; flex: 1 1 220px;">
-      <div class="legend card p-3 h-100" id="shoplist-legend" style="background:#f8fafc; border:1px solid #e0e4ea; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <div class="legend card p-3 h-100 shadow-sm" id="shoplist-legend" style="background:#f8fafc; border:1px solid #e0e4ea; border-radius:12px; box-shadow:0 4px 16px rgba(66,133,244,0.07);">
         <div class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-1" data-bs-toggle="tooltip" title="Each teacher is color-coded in the grid."></i>Legend</div>
         <div id="teacher-legend" class="d-flex flex-wrap align-items-center" style="gap: 10px 18px;"></div>
       </div>
@@ -681,8 +681,8 @@ window.addEventListener('DOMContentLoaded', function() {
     </table>
     </div>
 
-    <div class="selection-panel no-print row g-2 flex-wrap align-items-stretch" style="margin-top: 24px; display: flex; gap: 16px; align-items: flex-start;">
-      <div id="printMasterList" class="col-12 col-md-5 mb-2" style="flex: 1 1 320px; min-width: 260px; max-width: 420px;">
+    <div class="selection-panel no-print row g-2 flex-wrap align-items-stretch shadow-sm" style="margin-top: 24px; display: flex; gap: 18px; align-items: flex-start; border-radius: 12px; background: #f8fafc; box-shadow: 0 4px 16px rgba(66,133,244,0.07); padding: 12px 0;">
+      <div id="printMasterList" class="col-12 col-md-5 mb-2 shadow-sm" style="flex: 1 1 320px; min-width: 260px; max-width: 420px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); padding: 18px 16px;">
         <h2 style="margin-bottom: 8px;">Selected Bookings</h2>
         <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
         <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
@@ -696,7 +696,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <div id="masterListContent">Generate the shopping list to see items here.</div>
         </div>
       </div>
-      <div id="shoppingList" class="print-list-section col-12 col-md-7 mb-2" style="flex: 2 1 480px; min-width: 280px; background: #f9f9f9; border-radius: 8px; padding: 18px 12px 18px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div id="shoppingList" class="print-list-section col-12 col-md-7 mb-2 shadow-sm" style="flex: 2 1 480px; min-width: 280px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); padding: 18px 16px;">
         <h2 style="margin-top: 0;">Shopping List</h2>
         <div id="listContent">Generate the shopping list to see items here.</div>
       </div>
