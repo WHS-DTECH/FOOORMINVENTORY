@@ -1,3 +1,10 @@
+
+# ...existing code...
+
+# Place this after app = Flask(__name__)
+
+app = Flask(__name__)
+
 @app.template_filter('format_nz_week')
 def format_nz_week(label):
     # Expects label in format yyyy-mm-dd to yyyy-mm-dd
