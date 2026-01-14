@@ -1,44 +1,39 @@
 <script>
+// Unified and robust switchShoplistView
 function switchShoplistView(view) {
   const weekNav = document.getElementById('weekNav');
   const weekBtn = document.getElementById('weekViewBtn');
   const monthBtn = document.getElementById('monthViewBtn');
+  const weekPeriodView = document.getElementById('weekPeriodView');
+  const monthCalendarView = document.getElementById('monthCalendarView');
   if (view === 'week') {
-    weekNav.style.display = '';
-    weekBtn.classList.add('active');
-    monthBtn.classList.remove('active');
-    document.getElementById('weekPeriodView').style.display = '';
-    document.getElementById('monthCalendarView').style.display = 'none';
+    if (weekNav) weekNav.style.display = '';
+    if (weekBtn) weekBtn.classList.add('active');
+    if (monthBtn) monthBtn.classList.remove('active');
+    if (weekPeriodView) weekPeriodView.style.display = '';
+    if (monthCalendarView) monthCalendarView.style.display = 'none';
   } else {
-    weekNav.style.display = 'none';
-    weekBtn.classList.remove('active');
-    monthBtn.classList.add('active');
-    document.getElementById('weekPeriodView').style.display = 'none';
-    document.getElementById('monthCalendarView').style.display = '';
+    if (weekNav) weekNav.style.display = 'none';
+    if (weekBtn) weekBtn.classList.remove('active');
+    if (monthBtn) monthBtn.classList.add('active');
+    if (weekPeriodView) weekPeriodView.style.display = 'none';
+    if (monthCalendarView) monthCalendarView.style.display = '';
+    // Always load bookings and render calendar
+    loadMonthBookings();
   }
 }
+
 // Ensure correct initial state on page load
 window.addEventListener('DOMContentLoaded', function() {
   const monthBtn = document.getElementById('monthViewBtn');
   const monthView = document.getElementById('monthCalendarView');
-  // Always show month view if button is active or month view is visible
-  if (monthBtn && monthBtn.classList.contains('active')) {
+  // If Month View is active or visible, always show and render it
+  if ((monthBtn && monthBtn.classList.contains('active')) || (monthView && monthView.style.display !== 'none' && monthView.style.display !== '')) {
     switchShoplistView('month');
-    setTimeout(() => {
-      loadMonthBookings();
-      if (monthView) monthView.style.display = '';
-    }, 0);
-  } else if (monthView && monthView.style.display !== 'none' && monthView.style.display !== '') {
-    switchShoplistView('month');
-    setTimeout(() => {
-      loadMonthBookings();
-      if (monthView) monthView.style.display = '';
-    }, 0);
   } else {
     switchShoplistView('week');
   }
-
-  // Always ensure month calendar is rendered if month view is visible
+  // Defensive: if Month View is visible, always load bookings and render calendar
   if (monthView && monthView.style.display !== 'none') {
     loadMonthBookings();
     monthView.style.display = '';
@@ -831,33 +826,11 @@ async function loadMonthBookings() {
   try {
     const resp = await fetch('/api/scheduled_bookings');
     const data = await resp.json();
-    if (data.success) {
-      window.bookings = data.bookings;
-      renderShoplistMonthCalendar();
-    } else {
-      window.bookings = [];
-      renderShoplistMonthCalendar();
-    }
+    window.bookings = (data && data.success && data.bookings) ? data.bookings : [];
+    renderShoplistMonthCalendar();
   } catch (e) {
     window.bookings = [];
     renderShoplistMonthCalendar();
-  }
-}
-// On switching to month view, load bookings from API
-function switchShoplistView(view) {
-  document.getElementById('weekViewBtn').classList.remove('active');
-  document.getElementById('monthViewBtn').classList.remove('active');
-  if (view === 'week') {
-    document.getElementById('weekPeriodView').style.display = '';
-    document.getElementById('monthCalendarView').style.display = 'none';
-    document.getElementById('weekViewBtn').classList.add('active');
-    document.getElementById('weekNav').style.display = '';
-  } else {
-    document.getElementById('weekPeriodView').style.display = 'none';
-    document.getElementById('monthCalendarView').style.display = '';
-    document.getElementById('monthViewBtn').classList.add('active');
-    document.getElementById('weekNav').style.display = 'none';
-    loadMonthBookings();
   }
 }
 function getUserTimezone() {
@@ -992,6 +965,12 @@ document.addEventListener('DOMContentLoaded', function() {
   renderShoplistLegend();
   applyTeacherColors();
   renderWeekGridHeadings();
+  // Defensive: if Month View is visible, always load and render
+  const monthView = document.getElementById('monthCalendarView');
+  if (monthView && monthView.style.display !== 'none') {
+    loadMonthBookings();
+    monthView.style.display = '';
+  }
 });
 document.addEventListener('click', function() {
   // Re-apply colors after DOM updates
