@@ -47,6 +47,9 @@ def parse_recipes_from_text(text):
                 return section
         return None
 
+    # Track extra fields
+    extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
+
     while i < len(lines):
         raw = lines[i]
         line = raw.strip()
@@ -190,11 +193,34 @@ def parse_recipes_from_text(text):
             i += 1
             continue
 
+        # Detect and collect notes, tips, prep time, serving size
+        if 'note:' in line_lower or 'notes:' in line_lower:
+            extra_fields['notes'].append(line)
+            i += 1
+            continue
+        if 'tip:' in line_lower or 'tips:' in line_lower:
+            extra_fields['tips'].append(line)
+            i += 1
+            continue
+        if 'prep time' in line_lower:
+            # Extract time value
+            match = re.search(r'prep time\s*[:\-]?\s*(\d+\s*\w+)', line_lower)
+            if match:
+                extra_fields['prep_time'] = match.group(1)
+            i += 1
+            continue
+        if 'serves' in line_lower or 'serving size' in line_lower:
+            match = re.search(r'(serves|serving size)\s*[:\-]?\s*(\d+)', line_lower)
+            if match:
+                extra_fields['serving_size'] = match.group(2)
+            i += 1
+            continue
+
         # End markers
         if any(marker in line_lower for marker in ['top tips', 'skills', 'evaluation', 'assessment']):
             # accept recipes that have ingredients and method (equipment optional)
             if recipe_data.get('ingredients') and recipe_data.get('method'):
-                recipes.append(format_recipe(recipe_data))
+                recipes.append(format_recipe(recipe_data, extra_fields))
             recipe_data = None
             current_section = None
             i += 1
@@ -228,7 +254,7 @@ def parse_recipes_from_text(text):
 
     # final recipe
     if recipe_data and recipe_data.get('ingredients') and recipe_data.get('method'):
-        recipes.append(format_recipe(recipe_data))
+        recipes.append(format_recipe(recipe_data, extra_fields))
 
     # Optionally return warnings/errors for user review
     if parse_warnings:
@@ -236,8 +262,8 @@ def parse_recipes_from_text(text):
     return recipes
 
 
-def format_recipe(recipe_data):
-    """Format parsed recipe data into structured format for database."""
+def format_recipe(recipe_data, extra_fields=None):
+    """Format parsed recipe data into structured format for database, with optional extra fields."""
     # Parse ingredients into structured format
     ingredients = []
     for ing_line in recipe_data.get('ingredients', []):
@@ -273,13 +299,24 @@ def format_recipe(recipe_data):
     if method_steps:
         method_text = '\n'.join(method_steps)
 
-    return {
+    # Add extra fields if present
+    result = {
         'name': recipe_data.get('name', 'Unknown Recipe').strip(),
         'ingredients': ingredients,
         'equipment': equipment,
         'method': method_text,
         'serving_size': None
     }
+    if extra_fields:
+        if extra_fields.get('serving_size'):
+            result['serving_size'] = extra_fields['serving_size']
+        if extra_fields.get('prep_time'):
+            result['prep_time'] = extra_fields['prep_time']
+        if extra_fields.get('notes'):
+            result['notes'] = extra_fields['notes']
+        if extra_fields.get('tips'):
+            result['tips'] = extra_fields['tips']
+    return result
 
 
 def parse_ingredient_line(line):
