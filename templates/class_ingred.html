@@ -100,89 +100,94 @@
       </div>
     </div>
 
-    <hr />
 
-    <div class="two-cols">
-      <div class="left panel">
-        <label for="recipeSelect"><strong>Choose recipe</strong></label>
-        <select id="recipeSelect">
-          <option value="">-- choose recipe --</option>
-          {% for r in recipes %}
-            <option value="{{ r.id }}"{% if r.id == pre_recipe_id %} selected{% endif %}>{{ r.name }}</option>
-          {% endfor %}
-        </select>
-
-        <div id="recipeIngredients" style="margin-top:12px">
-          <h4>Original Ingredients</h4>
-          <div class="small">Select a recipe to show its ingredients here.</div>
-          <ul id="origList"></ul>
-        </div>
-      </div>
-
-      <div class="right panel">
-        <div style="margin-bottom:16px;">
-          <label for="desiredServings"><strong>Enter desired servings</strong></label>
-          <input type="number" id="desiredServings" value="{{ pre_servings or 24 }}" min="1" style="margin-bottom:8px;" />
-          <div class="button-group">
-            <button id="calcBtn" class="btn-calculate">Calculate for Desired Serving Size</button>
-            <button id="saveBtn" class="btn-save">Save booking</button>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <label for="recipeSelect" class="form-label"><strong>Choose recipe</strong></label>
+            <select id="recipeSelect" class="form-select mb-3">
+              <option value="">-- choose recipe --</option>
+              {% for r in recipes %}
+                <option value="{{ r.id }}"{% if r.id == pre_recipe_id %} selected{% endif %}>{{ r.name }}</option>
+              {% endfor %}
+            </select>
+            <div id="recipeIngredients" class="mt-3">
+              <h5>Original Ingredients</h5>
+              <div class="text-muted small">Select a recipe to show its ingredients here.</div>
+              <ul id="origList" class="mb-0"></ul>
+            </div>
           </div>
         </div>
-        
-        <h4>Calculated Ingredients</h4>
-        <div class="small">Single serving amounts multiplied by desired servings</div>
-        <ul id="calcList"></ul>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="desiredServings" class="form-label"><strong>Enter desired servings</strong></label>
+              <input type="number" id="desiredServings" class="form-control mb-2" value="{{ pre_servings or 24 }}" min="1" />
+              <div class="d-flex gap-2">
+                <button id="calcBtn" class="btn btn-primary">Calculate for Desired Serving Size</button>
+                <button id="saveBtn" class="btn btn-success">Save booking</button>
+              </div>
+            </div>
+            <h5>Calculated Ingredients</h5>
+            <div class="text-muted small">Single serving amounts multiplied by desired servings</div>
+            <ul id="calcList" class="mb-0"></ul>
+          </div>
+        </div>
       </div>
     </div>
-  </form>
+    </form>
 
-  <hr style="margin: 24px 0;" />
+    <hr style="margin: 32px 0;" />
 
-  <div class="panel" style="max-width:100%;">
-    <h3>Scheduled Bookings</h3>
-    <div class="small" style="margin-bottom:12px;">Click any booking to edit its details</div>
-    
-    {% if bookings and bookings|length > 0 %}
-      <div class="bookings-table-wrapper">
-        <table class="bookings-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Period</th>
-              <th>Staff</th>
-              <th>Class</th>
-              <th>Recipe</th>
-              <th>Servings</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for booking in bookings %}
-            <tr class="booking-row" data-booking-id="{{ booking.id }}" 
-                data-staff="{{ booking.staff_code }}" 
-                data-class="{{ booking.class_code }}" 
-                data-date="{{ booking.date_required }}" 
-                data-period="{{ booking.period }}" 
-                data-recipe="{{ booking.recipe_id }}" 
-                data-servings="{{ booking.desired_servings }}">
-              <td>{{ booking.date_required }}</td>
-              <td>{{ booking.period }}</td>
-              <td>{{ booking.staff_code }}{% if booking.first_name %} - {{ booking.last_name }}, {{ booking.first_name }}{% endif %}</td>
-              <td>{{ booking.class_code }}</td>
-              <td>{{ booking.recipe_name or 'N/A' }}</td>
-              <td>{{ booking.desired_servings }}</td>
-              <td>
-                <button class="btn-delete-booking" data-booking-id="{{ booking.id }}" onclick="deleteBooking({{ booking.id }}); event.stopPropagation();">Delete</button>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <div class="card">
+      <div class="card-body">
+        <h3 class="mb-3">Scheduled Bookings</h3>
+        <div class="text-muted small mb-3">Click any booking to edit its details</div>
+        {% if bookings and bookings|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Period</th>
+                  <th>Staff</th>
+                  <th>Class</th>
+                  <th>Recipe</th>
+                  <th>Servings</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for booking in bookings %}
+                <tr class="booking-row" data-booking-id="{{ booking.id }}" 
+                    data-staff="{{ booking.staff_code }}" 
+                    data-class="{{ booking.class_code }}" 
+                    data-date="{{ booking.date_required }}" 
+                    data-period="{{ booking.period }}" 
+                    data-recipe="{{ booking.recipe_id }}" 
+                    data-servings="{{ booking.desired_servings }}">
+                  <td>{{ booking.date_required }}</td>
+                  <td>{{ booking.period }}</td>
+                  <td>{{ booking.staff_code }}{% if booking.first_name %} - {{ booking.last_name }}, {{ booking.first_name }}{% endif %}</td>
+                  <td>{{ booking.class_code }}</td>
+                  <td>{{ booking.recipe_name or 'N/A' }}</td>
+                  <td>{{ booking.desired_servings }}</td>
+                  <td>
+                    <button class="btn btn-danger btn-sm btn-delete-booking" data-booking-id="{{ booking.id }}" onclick="deleteBooking({{ booking.id }}); event.stopPropagation();">Delete</button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted small">No bookings found. Create a booking using the form above.</p>
+        {% endif %}
       </div>
-    {% else %}
-      <p class="small">No bookings found. Create a booking using the form above.</p>
-    {% endif %}
-  </div>
+    </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
