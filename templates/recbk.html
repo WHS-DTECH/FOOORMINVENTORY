@@ -257,9 +257,6 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Tags</th>
-          <th>Cuisine</th>
-          <th>Difficulty</th>
           <th>Serves</th>
           <th>Ingredients</th>
         </tr>
@@ -268,27 +265,6 @@
         {% for r in rows %}
         <tr>
           <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
-          <td>
-            {% if r.dietary_tags_list %}
-              {% for tag in r.dietary_tags_list %}
-                <span class="diet-tag">{{ tag }}</span>
-              {% endfor %}
-            {% else %}
-              <span style="color:#999;">—</span>
-            {% endif %}
-          </td>
-          <td>{{ r.cuisine or '—' }}</td>
-          <td>
-            {% if r.difficulty == 'Easy' %}
-              <span style="color:#28a745;">● Easy</span>
-            {% elif r.difficulty == 'Medium' %}
-              <span style="color:#ffc107;">● Medium</span>
-            {% elif r.difficulty == 'Hard' %}
-              <span style="color:#dc3545;">● Hard</span>
-            {% else %}
-              —
-            {% endif %}
-          </td>
           <td>{{ r.serving_size or '—' }}</td>
           <td>
             {% if r.ingredients %}
