@@ -515,9 +515,16 @@ def admin_permissions():
         
         return redirect(url_for('admin_permissions'))
     
-    # Get current permissions
+    # Ensure 'recipe_book_setup' route is present for all roles
     with get_db_connection() as conn:
         c = conn.cursor()
+        roles = ['VP', 'DK', 'MU', 'public']
+        for role in roles:
+            c.execute('SELECT 1 FROM role_permissions WHERE role = %s AND route = %s', (role, 'recipe_book_setup'))
+            if not c.fetchone():
+                c.execute('INSERT INTO role_permissions (role, route) VALUES (%s, %s)', (role, 'recipe_book_setup'))
+        conn.commit()
+        # Get current permissions
         c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
         permissions = {}
         for row in c.fetchall():
@@ -526,11 +533,8 @@ def admin_permissions():
             if role not in permissions:
                 permissions[role] = []
             permissions[role].append(route)
-    
     # Available routes
-    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin']
-    roles = ['VP', 'DK', 'MU', 'public']
-    
+    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
     return render_template('admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
 
 
