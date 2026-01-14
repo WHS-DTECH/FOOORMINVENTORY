@@ -1,0 +1,56 @@
+/*
+ * Bootstrap 5.3.0 (CDN) integration for professional UI redesign
+ * Custom overrides for Class Ingredients page
+ */
+
+body {
+    background: #f5f6fa;
+    font-family: 'Roboto', 'Open Sans', Arial, sans-serif;
+}
+
+.card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #0001;
+    padding: 2rem 2rem 1.5rem 2rem;
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.btn-primary {
+    background: #007bff;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: #f2f2f2;
+}
+
+.table thead th {
+    background: #e9ecef;
+    font-weight: 600;
+}
+
+@media (max-width: 991px) {
+    .row {
+        flex-direction: column;
+    }
+    .card {
+        margin-bottom: 1.5rem;
+    }
+}
