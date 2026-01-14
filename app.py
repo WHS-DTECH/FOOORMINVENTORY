@@ -1,16 +1,3 @@
-# --- Admin Recipe Book Setup Page Route ---
-@app.route('/admin/recipe_book_setup')
-@require_role('VP')
-def admin_recipe_book_setup():
-    return render_template('recipe_book_setup.html')
-# --- Recipe detail page for /recipe/<id> ---
-# (Moved below app creation to avoid NameError)
-
-# ...existing code...
-
-# --- Recipe detail page for /recipe/<id> ---
-# (Moved below app creation to avoid NameError)
-
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import os
 import re
@@ -95,6 +82,18 @@ if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 ## ...already created above...
+# --- Admin Recipe Book Setup Page Route ---
+@app.route('/admin/recipe_book_setup')
+@require_role('VP')
+def admin_recipe_book_setup():
+    return render_template('recipe_book_setup.html')
+# --- Recipe detail page for /recipe/<id> ---
+# (Moved below app creation to avoid NameError)
+
+# ...existing code...
+
+# --- Recipe detail page for /recipe/<id> ---
+# (Moved below app creation to avoid NameError)
 
 # Google Calendar integration for Shopping List
 @app.route('/shoplist/add_to_gcal', methods=['POST'])
