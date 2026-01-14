@@ -21,16 +21,21 @@ function switchShoplistView(view) {
 window.addEventListener('DOMContentLoaded', function() {
   const monthBtn = document.getElementById('monthViewBtn');
   const monthView = document.getElementById('monthCalendarView');
+  // Always show month view if button is active or month view is visible
   if (monthBtn && monthBtn.classList.contains('active')) {
     switchShoplistView('month');
+    setTimeout(() => {
+      loadMonthBookings();
+      if (monthView) monthView.style.display = '';
+    }, 0);
   } else if (monthView && monthView.style.display !== 'none' && monthView.style.display !== '') {
     switchShoplistView('month');
+    setTimeout(() => {
+      loadMonthBookings();
+      if (monthView) monthView.style.display = '';
+    }, 0);
   } else {
     switchShoplistView('week');
-  }
-  // Always render calendar if month view is visible
-  if (monthView && (monthView.style.display !== 'none' || monthBtn.classList.contains('active'))) {
-    loadMonthBookings();
   }
 });
 </script>
