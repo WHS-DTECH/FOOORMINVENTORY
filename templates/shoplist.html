@@ -662,6 +662,24 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
 
 <script>
+// Fetch all scheduled bookings for month view
+async function loadMonthBookings() {
+  try {
+    const resp = await fetch('/api/scheduled_bookings');
+    const data = await resp.json();
+    if (data.success) {
+      window.bookings = data.bookings;
+      renderShoplistMonthCalendar();
+    } else {
+      window.bookings = [];
+      renderShoplistMonthCalendar();
+    }
+  } catch (e) {
+    window.bookings = [];
+    renderShoplistMonthCalendar();
+  }
+}
+// On switching to month view, load bookings from API
 function switchShoplistView(view) {
   document.getElementById('weekViewBtn').classList.remove('active');
   document.getElementById('monthViewBtn').classList.remove('active');
@@ -675,7 +693,7 @@ function switchShoplistView(view) {
     document.getElementById('monthCalendarView').style.display = '';
     document.getElementById('monthViewBtn').classList.add('active');
     document.getElementById('weekNav').style.display = 'none';
-    renderShoplistMonthCalendar();
+    loadMonthBookings();
   }
 }
 function getUserTimezone() {
