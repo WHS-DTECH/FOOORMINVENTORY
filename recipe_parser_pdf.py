@@ -61,19 +61,25 @@ def parse_recipes_from_text(text):
         # Try 'Making Activity :' or 'Recipe :' or 'Recipe:'
         if (re.match(r'^(making activity|recipe)\s*:', line_lower)):
             # save previous recipe if complete
-            if recipe_data and recipe_data.get('ingredients') and recipe_data.get('equipment') and recipe_data.get('method'):
-                recipes.append(format_recipe(recipe_data))
-
+            if recipe_data and (recipe_data.get('ingredients') or recipe_data.get('method')):
+                recipes.append(format_recipe(recipe_data, extra_fields))
             # start new recipe
             recipe_name = re.sub(r'^(making activity|recipe)\s*:', '', raw, flags=re.I).strip()
+            # Remove leading/trailing colons and whitespace, and strip 'Recipe:' if present
+            recipe_name = recipe_name.lstrip(':').strip()
+            recipe_name = re.sub(r'^recipe\s*:?\s*', '', recipe_name, flags=re.I).strip()
             recipe_data = {'name': recipe_name, 'ingredients': [], 'equipment': [], 'method': []}
+            # Reset extra_fields for each new recipe
+            extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
             current_section = None
             i += 1
             continue
 
         # All-caps line (likely a title) if not in a section and not junk
         if not recipe_data and line and line.isupper() and 3 < len(line) < 80 and not any(x in line_lower for x in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
-            recipe_data = {'name': line.title(), 'ingredients': [], 'equipment': [], 'method': []}
+            # Remove 'Recipe:' from all-caps lines
+            name = re.sub(r'^recipe\s*:?\s*', '', line, flags=re.I).strip().title()
+            recipe_data = {'name': name, 'ingredients': [], 'equipment': [], 'method': []}
             current_section = None
             i += 1
             continue
@@ -269,6 +275,10 @@ def format_recipe(recipe_data, extra_fields=None):
     for ing_line in recipe_data.get('ingredients', []):
         ing_line = ing_line.strip()
         if ing_line:
+            # Remove leading bullet or dash
+            ing_line = re.sub(r'^[•\-]\s*', '', ing_line)
+            # Remove leading numbers (e.g., '1. ')
+            ing_line = re.sub(r'^\d+\.\s*', '', ing_line)
             ingredients.append(parse_ingredient_line(ing_line))
 
     # Parse equipment into list (split by comma, semicolon, or newline)
@@ -287,15 +297,22 @@ def format_recipe(recipe_data, extra_fields=None):
     # Parse method - split steps by numbers or bullet points
     method_lines = recipe_data.get('method', [])
     method_text = '\n'.join(method_lines)
-    # Split by lines that start with a number, bullet, or dash
+    # Split by lines that start with a number, bullet, or dash (no look-behind)
     method_steps = []
+    step_pattern = re.compile(r'^(\d+\.|-|•)\s+', re.MULTILINE)
+    buffer = ''
     for line in method_lines:
-        # Match lines like '1. Do this', '- Do that', '• Do something'
-        steps = re.split(r'(?<=\n|^)(?:\d+\.|\-|•)\s+', line)
-        for step in steps:
-            step = step.strip()
-            if step:
-                method_steps.append(step)
+        if step_pattern.match(line):
+            if buffer:
+                method_steps.append(buffer.strip())
+            buffer = step_pattern.sub('', line, count=1)
+        else:
+            if buffer:
+                buffer += ' ' + line.strip()
+            else:
+                buffer = line.strip()
+    if buffer:
+        method_steps.append(buffer.strip())
     if method_steps:
         method_text = '\n'.join(method_steps)
 
@@ -338,6 +355,14 @@ def parse_ingredient_line(line):
         quantity_raw = match.group(1) or ""
         unit = (match.group(2) or "").strip()
         ingredient = (match.group(3) or "").strip()
+        # Always use all words after quantity and unit as ingredient
+        if unit:
+            # Tokenize line and reconstruct ingredient
+            tokens = line.split()
+            q_tokens = len(quantity_raw.split()) if quantity_raw else 0
+            u_tokens = len(unit.split()) if unit else 0
+            ingredient_tokens = tokens[q_tokens + u_tokens:]
+            ingredient = ' '.join(ingredient_tokens).strip()
         # Normalize quantity (handle fractions and ranges)
         quantity = quantity_raw.strip()
         # Convert unicode fractions to float
