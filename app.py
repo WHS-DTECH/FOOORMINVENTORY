@@ -502,15 +502,16 @@ def admin_user_roles():
         c.execute("SELECT email, STRING_AGG(role, ', ') as extra_roles FROM user_roles GROUP BY email")
         extra_roles_map = {row['email']: row['extra_roles'] for row in c.fetchall()}
 
-        # Build all_users: anyone with a teacher record or an extra role
-        all_emails = set([t['email'] for t in teachers]) | set(extra_roles_map.keys())
+        # Build all_users: anyone with a teacher record or an extra role (case-insensitive, trimmed)
+        def norm_email(e):
+            return e.strip().lower() if e else ''
+        teacher_map = {norm_email(t['email']): t for t in teachers}
+        all_emails = set(teacher_map.keys()) | set(norm_email(e) for e in extra_roles_map.keys())
         all_users = []
         for email in sorted(all_emails):
-            # Get base role from teacher code
+            teacher = teacher_map.get(email)
             base_role = None
-            teacher = next((t for t in teachers if t['email'] == email), None)
             if teacher:
-                # Map code to role
                 code = teacher['code']
                 if code == 'VP':
                     base_role = 'VP'
@@ -522,17 +523,17 @@ def admin_user_roles():
                     base_role = 'public'
             else:
                 base_role = 'public'
-            # Get extra roles
             extra_roles = extra_roles_map.get(email, '')
-            # Combine base and extra roles, remove duplicates
             all_roles = [base_role] if base_role else []
             if extra_roles:
                 for r in extra_roles.split(', '):
                     if r and r not in all_roles:
                         all_roles.append(r)
-            # Only show users who have any role other than public
-            if any(r in ['VP', 'DK', 'MU'] for r in all_roles):
-                all_users.append({'email': email, 'all_roles': ', '.join(all_roles)})
+            # Only show users who have any role other than public, or any extra role
+            if any(r in ['VP', 'DK', 'MU'] for r in all_roles) or extra_roles:
+                # Use original email casing from teachers or user_roles
+                orig_email = teacher['email'] if teacher else next((e for e in extra_roles_map.keys() if norm_email(e) == email), email)
+                all_users.append({'email': orig_email, 'all_roles': ', '.join(all_roles)})
 
     roles = ['VP', 'DK', 'MU', 'public']
     return render_template('admin_user_roles.html', all_users=all_users, teachers=teachers, roles=roles)
