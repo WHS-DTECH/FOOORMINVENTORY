@@ -96,6 +96,26 @@ window.addEventListener('DOMContentLoaded', function() {
           </div>
 
           <!-- Scheduled Bookings Modal -->
+          <script>
+          // Hide/show selected bookings panel based on view
+          function updateSelectedBookingsPanel() {
+            var panel = document.getElementById('selected-bookings-panel');
+            var weekViewBtn = document.getElementById('weekViewBtn');
+            if (!panel) return;
+            if (weekViewBtn && weekViewBtn.classList.contains('active')) {
+              panel.style.display = '';
+            } else {
+              panel.style.display = 'none';
+            }
+          }
+          window.addEventListener('DOMContentLoaded', updateSelectedBookingsPanel);
+          // Patch switchShoplistView to also update panel
+          const origSwitchShoplistView = window.switchShoplistView;
+          window.switchShoplistView = function(view) {
+            origSwitchShoplistView(view);
+            updateSelectedBookingsPanel();
+          };
+          </script>
           <div id="scheduledBookingsModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
             <div class="modal-content" style="background:#f9f9f9; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:900px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
               <span id="closeScheduledBookingsModal" style="position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
