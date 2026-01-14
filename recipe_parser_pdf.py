@@ -50,15 +50,33 @@ def parse_recipes_from_text(text):
     # Track extra fields
     extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
 
+
     while i < len(lines):
         raw = lines[i]
         line = raw.strip()
         line_lower = line.lower()
 
+        # --- Enhanced Recipe Title and Serving Size Extraction ---
+        # Look for a line that looks like a real recipe title, e.g., 'Quick Dinner Beef Nachos (per group of 4)' or 'Quick Dinner Beef Nachos Serves 4'
+        title_match = re.match(r'^(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', line, re.I)
+        if not recipe_data and title_match:
+            title_candidate = title_match.group(1).strip()
+            serves_candidate = title_match.group(2) or title_match.group(3)
+            # Heuristic: skip junk/worksheet/skills lines
+            if title_candidate and len(title_candidate) > 3 and not any(x in title_candidate.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']):
+                # Save previous recipe if complete
+                if recipe_data and (recipe_data.get('ingredients') or recipe_data.get('method')):
+                    recipes.append(format_recipe(recipe_data, extra_fields))
+                recipe_data = {'name': title_candidate, 'ingredients': [], 'equipment': [], 'method': []}
+                # Reset extra_fields for each new recipe
+                extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
+                if serves_candidate:
+                    extra_fields['serving_size'] = serves_candidate
+                current_section = None
+                i += 1
+                continue
 
         # Recipe title marker: support more formats (e.g., 'Recipe:', all caps, etc.)
-        title_match = None
-        # Try 'Making Activity :' or 'Recipe :' or 'Recipe:'
         if (re.match(r'^(making activity|recipe)\s*:', line_lower)):
             # save previous recipe if complete
             if recipe_data and (recipe_data.get('ingredients') or recipe_data.get('method')):
@@ -68,9 +86,19 @@ def parse_recipes_from_text(text):
             # Remove leading/trailing colons and whitespace, and strip 'Recipe:' if present
             recipe_name = recipe_name.lstrip(':').strip()
             recipe_name = re.sub(r'^recipe\s*:?\s*', '', recipe_name, flags=re.I).strip()
-            recipe_data = {'name': recipe_name, 'ingredients': [], 'equipment': [], 'method': []}
+            # Try to extract serving size from the name
+            serves_match = re.search(r'(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', recipe_name, re.I)
+            if serves_match:
+                recipe_name_clean = serves_match.group(1).strip()
+                serves_candidate = serves_match.group(2) or serves_match.group(3)
+            else:
+                recipe_name_clean = recipe_name
+                serves_candidate = None
+            recipe_data = {'name': recipe_name_clean, 'ingredients': [], 'equipment': [], 'method': []}
             # Reset extra_fields for each new recipe
             extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
+            if serves_candidate:
+                extra_fields['serving_size'] = serves_candidate
             current_section = None
             i += 1
             continue
@@ -79,7 +107,17 @@ def parse_recipes_from_text(text):
         if not recipe_data and line and line.isupper() and 3 < len(line) < 80 and not any(x in line_lower for x in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
             # Remove 'Recipe:' from all-caps lines
             name = re.sub(r'^recipe\s*:?\s*', '', line, flags=re.I).strip().title()
-            recipe_data = {'name': name, 'ingredients': [], 'equipment': [], 'method': []}
+            # Try to extract serving size from the name
+            serves_match = re.search(r'(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', name, re.I)
+            if serves_match:
+                name_clean = serves_match.group(1).strip()
+                serves_candidate = serves_match.group(2) or serves_match.group(3)
+            else:
+                name_clean = name
+                serves_candidate = None
+            recipe_data = {'name': name_clean, 'ingredients': [], 'equipment': [], 'method': []}
+            if serves_candidate:
+                extra_fields['serving_size'] = serves_candidate
             current_section = None
             i += 1
             continue
