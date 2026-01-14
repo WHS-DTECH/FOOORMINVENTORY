@@ -1325,6 +1325,41 @@ def recipes_page():
 
 
 
+@app.route('/suggest_recipe', methods=['POST'])
+def suggest_recipe_modal():
+    """Handle AJAX recipe suggestion submissions from modal and return JSON."""
+    try:
+        recipe_name = request.form.get('recipe_name', '').strip()
+        recipe_url = request.form.get('recipe_url', '').strip()
+        reason = request.form.get('reason', '').strip()
+        suggested_by_name = request.form.get('suggested_by_name', '').strip()
+        suggested_by_email = request.form.get('suggested_by_email', '').strip()
+
+        if not recipe_name or not suggested_by_name or not suggested_by_email:
+            return jsonify({'success': False, 'message': 'Recipe name, your name, and email are required.'})
+
+        # Save suggestion to the database
+        try:
+            with get_db_connection() as conn:
+                c = conn.cursor()
+                sql = '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
+                       VALUES (%s, %s, %s, %s, %s, NOW(), %s)'''
+                params = (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, 'pending')
+                c.execute(sql, params)
+                conn.commit()
+        except Exception as db_error:
+            print(f"[ERROR] Failed to save suggestion to DB (modal): {db_error}")
+            import traceback; traceback.print_exc()
+            return jsonify({'success': False, 'message': 'There was an error saving your suggestion. Please try again or contact the VP directly.'})
+
+        # Optionally send email (can be added here if needed)
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error in suggest_recipe_modal: {e}")
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'message': 'There was an error submitting your suggestion. Please try again or contact the VP directly.'})
+
+# Legacy route for admin/recipes page (kept for compatibility)
 @app.route('/recipes/suggest', methods=['POST'])
 @require_login
 def suggest_recipe():
