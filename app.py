@@ -1253,62 +1253,6 @@ def load_saved_list(list_id):
     return jsonify(list_data)
 
 
-@app.route('/recipes')
-@require_role('VP', 'DK', 'MU')
-def recipes_page():
-    q = request.args.get('q', '').strip()
-    dietary = request.args.get('dietary', '').strip()
-    cuisine = request.args.get('cuisine', '').strip()
-    difficulty = request.args.get('difficulty', '').strip()
-    
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        # Build dynamic query
-        query = "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes WHERE 1=1"
-        params = []
-        if q:
-            query += " AND (name ILIKE %s OR ingredients ILIKE %s OR instructions ILIKE %s)"
-            term = f"%{q}%"
-            params.extend([term, term, term])
-        if dietary:
-            query += " AND dietary_tags ILIKE %s"
-            params.append(f"%{dietary}%")
-        if cuisine:
-            query += " AND cuisine ILIKE %s"
-            params.append(f"%{cuisine}%")
-        if difficulty:
-            query += " AND difficulty = %s"
-            params.append(difficulty)
-        query += " ORDER BY LOWER(name)"
-        c.execute(query, params)
-        rows = [dict(r) for r in c.fetchall()]
-        # Get all unique values for filters
-        c.execute("SELECT DISTINCT cuisine FROM recipes WHERE cuisine IS NOT NULL AND cuisine != '' ORDER BY cuisine")
-        all_cuisines = [r['cuisine'] for r in c.fetchall()]
-        
-        c.execute("SELECT DISTINCT dietary_tags FROM recipes WHERE dietary_tags IS NOT NULL AND dietary_tags != ''")
-        all_tags_raw = [r[0] for r in c.fetchall()]
-        all_dietary_tags = set()
-        for tags in all_tags_raw:
-            if tags:
-                all_dietary_tags.update([t.strip() for t in tags.split(',')])
-        all_dietary_tags = sorted(all_dietary_tags)
-
-    # Decode JSON fields for template
-    for r in rows:
-        try:
-            r['ingredients'] = json.loads(r.get('ingredients') or '[]')
-        except Exception:
-            r['ingredients'] = []
-        try:
-            r['equipment'] = json.loads(r.get('equipment') or '[]')
-        except Exception:
-            r['equipment'] = []
-        # Parse dietary tags
-        r['dietary_tags_list'] = [t.strip() for t in (r.get('dietary_tags') or '').split(',') if t.strip()]
-
-    return render_template('recipes.html', rows=rows, q=q, dietary=dietary, cuisine=cuisine, difficulty=difficulty,
-                         all_cuisines=all_cuisines, all_dietary_tags=all_dietary_tags)
 
 
 
