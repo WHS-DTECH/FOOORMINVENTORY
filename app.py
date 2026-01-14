@@ -1,3 +1,18 @@
+# --- Update Recipe Source Route ---
+@app.route('/admin/update_recipe_source', methods=['POST'])
+@require_role('VP')
+def update_recipe_source():
+    recipe_id = request.form.get('recipe_id')
+    source = request.form.get('source', '').strip()
+    if recipe_id:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('UPDATE recipes SET source = %s WHERE id = %s', (source, recipe_id))
+            conn.commit()
+        flash('Recipe source updated.', 'success')
+    else:
+        flash('No recipe ID provided.', 'error')
+    return redirect(url_for('admin_recipe_book_setup'))
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import os
 import re
