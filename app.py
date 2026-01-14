@@ -1,5 +1,3 @@
-# ...existing code...
-
 # --- Recipe detail page for /recipe/<id> ---
 @app.route('/recipe/<int:recipe_id>')
 def recipe_details(recipe_id):
@@ -15,6 +13,9 @@ def recipe_details(recipe_id):
         return render_template('recipe_details.html', recipe=recipe, ingredients=ingredients)
 
 # ...existing code...
+
+# --- Recipe detail page for /recipe/<id> ---
+# (Moved below app creation to avoid NameError)
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import os
