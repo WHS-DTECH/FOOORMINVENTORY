@@ -1,3 +1,26 @@
+/* --- Mobile Responsive Shopping List Panel --- */
+@media (max-width: 900px) {
+  .shoplist-responsive-panel {
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 12px 0 !important;
+  }
+  .shoplist-responsive-card {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    margin-bottom: 18px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(66,133,244,0.07) !important;
+    padding: 16px 8px !important;
+  }
+  .shoplist-responsive-actions {
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    padding: 12px 0 !important;
+  }
+}
 /* Quick Filter Chips Bar */
 .quick-chips-bar {
   background: #f4fbf6;
