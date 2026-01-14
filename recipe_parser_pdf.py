@@ -2,9 +2,9 @@
 
 import re
 
-
 def parse_recipes_from_text(text):
-    """Parse recipes from PDF text that contain Ingredients, Equipment, and Method sections.
+    """
+    Parse recipes from PDF text that contain Ingredients, Equipment, and Method sections.
 
     This version is tolerant of trailing spaces, wrapped lines (equipment lists
     that continue on the next line), and repeated section headers.

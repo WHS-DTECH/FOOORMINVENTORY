@@ -257,9 +257,10 @@
             
             <hr class="my-4">
             <h1 class="mb-4 pb-2 border-bottom border-3 border-success">Suggestions List</h1>
-                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="View and review recipe suggestions submitted by users.">
-                                        <i class="bi bi-info-circle text-info"></i>
-                                    </span>
+            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="View and review recipe suggestions submitted by users.">
+                <i class="bi bi-info-circle text-info"></i>
+            </span>
+            <a href="/admin" class="btn btn-outline-primary btn-sm ms-2" style="float:right;">Admin Dashboard</a>
             {% if suggestions %}
             <form id="suggestionsBulkForm" method="post" action="/admin/suggestions_bulk_action">
             <div class="d-flex justify-content-between mb-2">
