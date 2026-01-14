@@ -63,7 +63,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <a href="/recipes">Recipes</a> |
       <a href="/recbk">Recipe Book</a> |
       <a href="/class_ingredients">Class Ingredients</a> |
-      <a href="/booking">Booking Calendar</a> |
+      <!-- Booking Calendar link removed -->
       <a href="/shoplist">Shopping List</a>
       {% if current_user.is_admin() %}
         | <a href="/admin">Admin</a>
@@ -656,11 +656,15 @@ function renderWeekGridHeadings() {
   });
 }
 // Update month calendar to show day names and class code
+// Persistent state for month/year
+let shoplistMonthView = {
+  year: (new Date()).getFullYear(),
+  month: (new Date()).getMonth()
+};
 function renderShoplistMonthCalendar() {
-  let currentDate = new Date();
   const bookings = window.bookings || [];
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const year = shoplistMonthView.year;
+  const month = shoplistMonthView.month;
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   document.getElementById('shoplist-calendar-date-label').textContent = `${monthNames[month]} ${year}`;
   const firstDay = new Date(year, month, 1).getDay();
@@ -690,6 +694,28 @@ function renderShoplistMonthCalendar() {
     html += `<div class='calendar-day other-month'><div class='day-number'></div></div>`;
   }
   document.getElementById('shoplist-calendar').innerHTML = html;
+}
+function shoplistPreviousMonth() {
+  shoplistMonthView.month--;
+  if (shoplistMonthView.month < 0) {
+    shoplistMonthView.month = 11;
+    shoplistMonthView.year--;
+  }
+  renderShoplistMonthCalendar();
+}
+function shoplistNextMonth() {
+  shoplistMonthView.month++;
+  if (shoplistMonthView.month > 11) {
+    shoplistMonthView.month = 0;
+    shoplistMonthView.year++;
+  }
+  renderShoplistMonthCalendar();
+}
+function shoplistToday() {
+  const now = new Date();
+  shoplistMonthView.year = now.getFullYear();
+  shoplistMonthView.month = now.getMonth();
+  renderShoplistMonthCalendar();
 }
 document.addEventListener('DOMContentLoaded', function() {
   renderShoplistLegend();

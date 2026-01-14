@@ -1498,31 +1498,6 @@ def update_recipe_tags(recipe_id):
     return jsonify({'success': True, 'message': 'Tags updated'})
 
 
-@app.route('/booking')
-@require_role('VP', 'DK', 'MU')
-def booking_calendar():
-    """Show booking calendar with all class bookings."""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('''
-            SELECT 
-                cb.id,
-                cb.date_required as date,
-                'Period ' || cb.period as period,
-                cb.staff_code,
-                cb.class_code,
-                cb.recipe_id,
-                cb.desired_servings as servings,
-                r.name as recipe_name,
-                t.first_name || ' ' || t.last_name as staff_name
-            FROM class_bookings cb
-            LEFT JOIN recipes r ON cb.recipe_id = r.id
-            LEFT JOIN teachers t ON cb.staff_code = t.code
-            ORDER BY cb.date_required, cb.period
-        ''')
-        bookings = [dict(row) for row in c.fetchall()]
-    
-    return render_template('booking.html', bookings=bookings)
 
 
 @app.route('/booking/export/ical')
