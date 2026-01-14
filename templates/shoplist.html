@@ -77,21 +77,14 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
   <!-- Week navigation moved below view toggle and above period grid as per user request -->
     <!-- Selected Bookings panel moved up under the title -->
-    <div id="selected-bookings-panel" class="popout-panel" style="margin-top: 18px; margin-bottom: 16px;">
+    <div id="selected-bookings-panel" class="popout-panel" style="margin-top: 18px; margin-bottom: 16px; display:none;">
       <div style="font-weight: bold; margin-bottom: 4px;">Selected Bookings</div>
       <div style="font-size: 0.95em; color: #444; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list. Click Generate Shopping List.</div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-            <button onclick="saveShoppingList()" style="display:none;">💾 Save List</button>
-            <button onclick="loadShoppingList()" style="display:none;">📂 Load Saved</button>
-            <button onclick="exportShoppingListCsv()" style="display:none;">📄 Export CSV</button>
-            <button class="primary" onclick="window.print()" style="display:none;">🖨️ Print</button>
-            <!-- Print Shopping List Only button moved below the grid -->
             <button onclick="selectAllWeek()">Select All</button>
             <button onclick="clearAllSelections()">Clear</button>
             <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
             <span style="flex: 1 1 auto;"></span>
-            <!-- Removed duplicate Generate Shopping List button from top panel -->
-            <!-- Removed duplicate Add to Google Calendar button; only one will be in Export Options below -->
             <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
           </div>
 

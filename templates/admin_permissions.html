@@ -35,9 +35,10 @@
             <thead>
                 <tr>
                     <th style="padding: 14px; text-align: left; border: 1px solid #000;">Role</th>
-                    {% for route in routes %}
-                    <th style="padding: 14px; text-align: center; border: 1px solid #000;">{{ route|title }}</th>
-                    {% endfor %}
+                    <th style="padding: 14px; text-align: center; border: 1px solid #000;">Recipe Book</th>
+                    <th style="padding: 14px; text-align: center; border: 1px solid #000;">Class Ingredients</th>
+                    <th style="padding: 14px; text-align: center; border: 1px solid #000;">Shopping List</th>
+                    <th style="padding: 14px; text-align: center; border: 1px solid #000;">Admin</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,33 +57,42 @@
                         {{ role }}
                         {% endif %}
                     </td>
-                    {% for route in routes %}
                     <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
-                        {% set has_permission = permissions.get(role, []) and route in permissions.get(role, []) %}
+                        {% set has_permission = permissions.get(role, []) and 'recbk' in permissions.get(role, []) %}
                         <form method="post" style="display: inline;">
                             <input type="hidden" name="role" value="{{ role }}">
-                            <input type="hidden" name="route" value="{{ route }}">
+                            <input type="hidden" name="route" value="recbk">
                             <input type="hidden" name="action" value="{% if has_permission %}remove{% else %}add{% endif %}">
-                            <button type="submit" style="
-                                background: none;
-                                border: none;
-                                cursor: pointer;
-                                font-size: 28px;
-                                padding: 0;
-                                font-weight: bold;
-                                {% if has_permission %}
-                                color: #00aa00;
-                                text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);
-                                {% else %}
-                                color: #ff0000;
-                                text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);
-                                {% endif %}
-                            " title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">
-                                {% if has_permission %}✓{% else %}✗{% endif %}
-                            </button>
+                            <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; {% if has_permission %}color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);{% else %}color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);{% endif %}" title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">{% if has_permission %}✓{% else %}✗{% endif %}</button>
                         </form>
                     </td>
-                    {% endfor %}
+                    <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
+                        {% set has_permission = permissions.get(role, []) and 'class_ingredients' in permissions.get(role, []) %}
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="role" value="{{ role }}">
+                            <input type="hidden" name="route" value="class_ingredients">
+                            <input type="hidden" name="action" value="{% if has_permission %}remove{% else %}add{% endif %}">
+                            <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; {% if has_permission %}color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);{% else %}color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);{% endif %}" title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">{% if has_permission %}✓{% else %}✗{% endif %}</button>
+                        </form>
+                    </td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
+                        {% set has_permission = permissions.get(role, []) and 'shoplist' in permissions.get(role, []) %}
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="role" value="{{ role }}">
+                            <input type="hidden" name="route" value="shoplist">
+                            <input type="hidden" name="action" value="{% if has_permission %}remove{% else %}add{% endif %}">
+                            <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; {% if has_permission %}color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);{% else %}color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);{% endif %}" title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">{% if has_permission %}✓{% else %}✗{% endif %}</button>
+                        </form>
+                    </td>
+                    <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
+                        {% set has_permission = permissions.get(role, []) and 'admin' in permissions.get(role, []) %}
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="role" value="{{ role }}">
+                            <input type="hidden" name="route" value="admin">
+                            <input type="hidden" name="action" value="{% if has_permission %}remove{% else %}add{% endif %}">
+                            <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; {% if has_permission %}color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);{% else %}color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);{% endif %}" title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">{% if has_permission %}✓{% else %}✗{% endif %}</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
