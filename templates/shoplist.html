@@ -562,15 +562,62 @@ window.addEventListener('DOMContentLoaded', function() {
     <!-- Sidebar Legend (desktop) or collapsible (mobile) -->
     <div class="col-12 col-md-4 mb-2" style="min-width:220px; max-width:320px; flex: 1 1 220px;">
       <div class="legend card p-3 h-100" id="shoplist-legend" style="background:#f8fafc; border:1px solid #e0e4ea; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-        <div class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-1" data-bs-toggle="tooltip" title="This legend explains the booking grid colors and icons."></i>Legend</div>
-        <ul class="list-unstyled mb-0">
-          <li class="mb-1"><span class="badge bg-success me-2" style="width:18px; height:18px; display:inline-block; vertical-align:middle;" data-bs-toggle="tooltip" title="A booking exists for this period."></span>Booked</li>
-          <li class="mb-1"><span class="badge bg-secondary me-2" style="width:18px; height:18px; display:inline-block; vertical-align:middle;" data-bs-toggle="tooltip" title="No booking for this period."></span>Empty</li>
-          <li class="mb-1"><i class="bi bi-hand-index-thumb text-warning me-2" data-bs-toggle="tooltip" title="Tap or click to select a booking for your shopping list."></i>Tap to select</li>
-          <li class="mb-1"><i class="bi bi-star text-info me-2" data-bs-toggle="tooltip" title="This booking is selected for the shopping list."></i>Selected Booking</li>
-        </ul>
+        <div class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-1" data-bs-toggle="tooltip" title="Each teacher is color-coded in the grid."></i>Legend</div>
+        <div id="teacher-legend" class="d-flex flex-wrap align-items-center" style="gap: 10px 18px;"></div>
       </div>
     </div>
+    <script>
+    // Teacher color mapping (should match the one used in applyTeacherColors)
+    function getTeacherColor(name) {
+      // Simple hash to color
+      const colors = [
+        '#4285f4', // blue
+        '#ea4335', // red
+        '#fbbc04', // yellow
+        '#34a853', // green
+        '#a142f4', // purple
+        '#ff6d01', // orange
+        '#46bdc6', // teal
+        '#b32851', // magenta
+        '#5f6368', // gray
+        '#00897b'  // cyan
+      ];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    }
+    function renderTeacherLegend() {
+      // Collect unique teacher names from bookings
+      const teacherSet = new Set();
+      (window.bookings || []).forEach(b => {
+        if (b.last_name) teacherSet.add(b.last_name);
+        else if (b.staff_code) teacherSet.add(b.staff_code);
+      });
+      const legendDiv = document.getElementById('teacher-legend');
+      legendDiv.innerHTML = '';
+      teacherSet.forEach(name => {
+        const swatch = document.createElement('span');
+        swatch.className = 'legend-color';
+        swatch.style.background = getTeacherColor(name);
+        swatch.style.display = 'inline-block';
+        swatch.style.width = '20px';
+        swatch.style.height = '20px';
+        swatch.style.marginRight = '6px';
+        swatch.style.borderRadius = '4px';
+        swatch.style.border = '1px solid #bbb';
+        const label = document.createElement('span');
+        label.textContent = name;
+        label.style.marginRight = '12px';
+        label.style.fontWeight = '500';
+        label.style.color = '#222';
+        legendDiv.appendChild(swatch);
+        legendDiv.appendChild(label);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', renderTeacherLegend);
+    // Also re-render legend after AJAX loads or view switches
+    window.renderTeacherLegend = renderTeacherLegend;
+    </script>
     <!-- View Toggle -->
     <div class="col-12 col-md-8 d-flex align-items-center" style="min-width:200px; flex: 2 1 320px;">
       <span class="fw-semibold text-secondary me-2" data-bs-toggle="tooltip" title="Switch between Week/Period and Month calendar views.">View:</span>
