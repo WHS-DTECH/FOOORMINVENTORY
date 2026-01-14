@@ -132,7 +132,7 @@ load_dotenv()
 if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-app = Flask(__name__
+app = Flask(__name__)
 
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
