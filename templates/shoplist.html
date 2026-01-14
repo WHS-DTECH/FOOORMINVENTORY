@@ -733,9 +733,9 @@ window.addEventListener('DOMContentLoaded', function() {
         <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
         <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
         <!-- Selection grid follows below -->
-        <div style="margin: 18px 0 8px 0; display: flex; gap: 8px; justify-content: flex-start;">
-          <button class="primary no-print" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
-          <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
+        <div class="card shadow-sm" style="margin: 24px 0 8px 0; padding: 18px 16px; background: #f5faff; border-radius: 12px; display: flex; gap: 16px; justify-content: flex-start; align-items: center;">
+          <button class="primary no-print" id="generateShoppingListBtn" style="background: linear-gradient(90deg, #0074d9 60%, #00c6ff 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="generateShoppingList()">Generate Shopping List</button>
+          <button class="primary no-print" id="printListOnlyBtn" style="background: linear-gradient(90deg, #28a745 60%, #a8e063 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
         </div>
         <div id="masterList" style="margin-top: 24px; background: #f7f7f7; border-radius: 8px; padding: 12px;">
           <h3 style="margin-top: 0;">Master Shopping List</h3>
