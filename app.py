@@ -132,7 +132,7 @@ load_dotenv()
 if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-app = Flask(__name__)
+app = Flask(__name__
 
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
@@ -1542,4 +1542,80 @@ def export_ical():
             ORDER BY cb.date_required, cb.period
         ''')
         bookings = c.fetchall()
-    
+
+    # Build iCal content
+    ical = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//WHS Food Room//NONSGML v1.0//EN'
+    ]
+    for b in bookings:
+        dt = b['date_required']
+        summary = f"{b['class_code']} - {b['recipe_name']}"
+        description = f"Servings: {b['servings']}"
+        uid = str(uuid.uuid4())
+        ical.append('BEGIN:VEVENT')
+        ical.append(f"UID:{uid}")
+        ical.append(f"DTSTAMP:{dt.strftime('%Y%m%dT000000Z')}")
+        ical.append(f"DTSTART;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"DTEND;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"SUMMARY:{summary}")
+        ical.append(f"DESCRIPTION:{description}")
+        ical.append('END:VEVENT')
+    ical.append('END:VCALENDAR')
+    ical_str = '\r\n'.join(ical)
+    response = app.response_class(
+        ical_str,
+        mimetype='text/calendar',
+        headers={
+            'Content-Disposition': 'attachment; filename=bookings.ics'
+        }
+    )
+    return response
+
+
+@app.route('/shoplist/export/ical')
+def export_shoplist_ical():
+    """Export shopping list bookings as iCal format for Google Calendar import."""
+    from datetime import datetime, timedelta
+    import uuid
+    # Get current week's bookings
+    today = datetime.now()
+    monday = today - timedelta(days=today.weekday())
+    friday = monday + timedelta(days=4)
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''SELECT date_required, period, class_code, recipe_name, servings FROM class_bookings cb
+                     LEFT JOIN recipes r ON cb.recipe_id = r.id
+                     WHERE date_required >= %s AND date_required <= %s
+                     ORDER BY date_required, period''', (monday.date(), friday.date()))
+        bookings = c.fetchall()
+    # Build iCal content
+    ical = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//WHS Food Room//NONSGML v1.0//EN'
+    ]
+    for b in bookings:
+        dt = b['date_required']
+        summary = f"{b['class_code']} - {b['recipe_name']}"
+        description = f"Servings: {b['servings']}"
+        uid = str(uuid.uuid4())
+        ical.append('BEGIN:VEVENT')
+        ical.append(f"UID:{uid}")
+        ical.append(f"DTSTAMP:{dt.strftime('%Y%m%dT000000Z')}")
+        ical.append(f"DTSTART;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"DTEND;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"SUMMARY:{summary}")
+        ical.append(f"DESCRIPTION:{description}")
+        ical.append('END:VEVENT')
+    ical.append('END:VCALENDAR')
+    ical_str = '\r\n'.join(ical)
+    response = app.response_class(
+        ical_str,
+        mimetype='text/calendar',
+        headers={
+            'Content-Disposition': 'attachment; filename=shoplist.ics'
+        }
+    )
+    return response
