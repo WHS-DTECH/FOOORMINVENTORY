@@ -1,63 +1,19 @@
-# --- Update Recipe Source Route ---
-@app.route('/admin/update_recipe_source', methods=['POST'])
-@require_role('VP')
-def update_recipe_source():
-    recipe_id = request.form.get('recipe_id')
-    source = request.form.get('source', '').strip()
-    if recipe_id:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            c.execute('UPDATE recipes SET source = %s WHERE id = %s', (source, recipe_id))
-            conn.commit()
-        flash('Recipe source updated.', 'success')
-    else:
-        flash('No recipe ID provided.', 'error')
-    return redirect(url_for('admin_recipe_book_setup'))
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+
+# =======================
+# Imports
+# =======================
 import os
 import re
-# ...existing imports...
-
-# Create Flask app and set secret key
-app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
-
-# Register Jinja2 filter after app creation and all imports
-@app.template_filter('format_nz_week')
-def format_nz_week(label):
-    # Expects label in format yyyy-mm-dd to yyyy-mm-dd
-    match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
-    if match:
-        start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
-        end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
-        return f"{start} to {end}"
-    return label
+import datetime
+import json
+import csv
+import io
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
 import psycopg2
 import psycopg2.extras
-import json
-import csv
-import io
-
-# --- Delete Recipe Route ---
-@app.route('/admin/delete_recipe', methods=['POST'])
-@require_role('VP')
-def delete_recipe():
-    recipe_id = request.form.get('recipe_id')
-    if recipe_id:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
-            conn.commit()
-        flash('Recipe deleted successfully.', 'success')
-    else:
-        flash('No recipe ID provided.', 'error')
-    return redirect(url_for('admin_recipe_book_setup'))
-import re
-import os
-import datetime
-from dotenv import load_dotenv
 try:
     import PyPDF2
 except ImportError:
@@ -71,45 +27,91 @@ except ImportError:
 from recipe_parser_pdf import parse_recipes_from_text, format_recipe, parse_ingredient_line
 from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
 
-
-# PostgreSQL connection string from environment variable
-POSTGRES_URL = os.getenv('DATABASE_URL')
-
-def get_db_connection():
-    # --- Utility: Ensure all users have 'public' base role in user_roles ---
-    @app.route('/admin/fix_public_roles')
-    @require_role('VP')
-    def fix_public_roles():
-        """Ensure every user in teachers and user_roles has a 'public' role in user_roles if not already present."""
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Get all unique emails from teachers and user_roles
-            c.execute('SELECT DISTINCT email FROM teachers WHERE email IS NOT NULL')
-            teacher_emails = {row['email'].strip().lower() for row in c.fetchall()}
-            c.execute('SELECT DISTINCT email FROM user_roles')
-            user_roles_emails = {row['email'].strip().lower() for row in c.fetchall()}
-            all_emails = teacher_emails | user_roles_emails
-            # Find emails missing a public role
-            missing_public = []
-            for email in all_emails:
-                c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'public'))
-                if not c.fetchone():
-                    missing_public.append(email)
-            # Insert missing public roles
-            for email in missing_public:
-                c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'public'))
-            conn.commit()
-        return f"Added 'public' role for {len(missing_public)} users: {', '.join(missing_public)}"
-    return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
-
-
-# Load environment variables
+# =======================
+# App Configuration
+# =======================
 load_dotenv()
+app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 
 # Allow OAuth over HTTP for local development (DO NOT use in production)
-# Only enable in development, not production
 if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# =======================
+# Utility Functions
+# =======================
+POSTGRES_URL = os.getenv('DATABASE_URL')
+def get_db_connection():
+    return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+
+@app.template_filter('format_nz_week')
+def format_nz_week(label):
+    """Format NZ week label from yyyy-mm-dd to dd-mm-yyyy."""
+    match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
+    if match:
+        start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+        end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
+        return f"{start} to {end}"
+    return label
+
+# =======================
+# Admin Utility Routes
+# =======================
+@app.route('/admin/fix_public_roles')
+@require_role('VP')
+def fix_public_roles():
+    """Ensure every user in teachers and user_roles has a 'public' role in user_roles if not already present."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT DISTINCT email FROM teachers WHERE email IS NOT NULL')
+        teacher_emails = {row['email'].strip().lower() for row in c.fetchall()}
+        c.execute('SELECT DISTINCT email FROM user_roles')
+        user_roles_emails = {row['email'].strip().lower() for row in c.fetchall()}
+        all_emails = teacher_emails | user_roles_emails
+        missing_public = []
+        for email in all_emails:
+            c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'public'))
+            if not c.fetchone():
+                missing_public.append(email)
+        for email in missing_public:
+            c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'public'))
+        conn.commit()
+    return f"Added 'public' role for {len(missing_public)} users: {', '.join(missing_public)}"
+
+# =======================
+# Admin Recipe Routes
+# =======================
+@app.route('/admin/delete_recipe', methods=['POST'])
+@require_role('VP')
+def delete_recipe():
+    """Delete a recipe by ID."""
+    recipe_id = request.form.get('recipe_id')
+    if recipe_id:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
+            conn.commit()
+        flash('Recipe deleted successfully.', 'success')
+    else:
+        flash('No recipe ID provided.', 'error')
+    return redirect(url_for('admin_recipe_book_setup'))
+
+@app.route('/admin/update_recipe_source', methods=['POST'])
+@require_role('VP')
+def update_recipe_source():
+    """Update the source field for a recipe."""
+    recipe_id = request.form.get('recipe_id')
+    source = request.form.get('source', '').strip()
+    if recipe_id:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('UPDATE recipes SET source = %s WHERE id = %s', (source, recipe_id))
+            conn.commit()
+        flash('Recipe source updated.', 'success')
+    else:
+        flash('No recipe ID provided.', 'error')
+    return redirect(url_for('admin_recipe_book_setup'))
 
 ## ...already created above...
 # --- Admin Recipe Book Setup Page Route ---
