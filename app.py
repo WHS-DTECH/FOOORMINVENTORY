@@ -1621,7 +1621,7 @@ def api_scheduled_bookings():
         with get_db_connection() as conn:
             c = conn.cursor()
             c.execute('''
-                SELECT cb.date_required, cb.period, cb.class_code, r.name as recipe_name, cb.servings,
+                SELECT cb.date_required, cb.period, cb.class_code, r.name as recipe_name, cb.desired_servings AS servings,
                        t.last_name, t.first_name, t.title, t.code as staff_code
                 FROM class_bookings cb
                 LEFT JOIN recipes r ON cb.recipe_id = r.id
