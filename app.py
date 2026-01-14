@@ -1,3 +1,49 @@
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask_login import LoginManager, login_user, logout_user, current_user
+from google_auth_oauthlib.flow import Flow
+import psycopg2
+import psycopg2.extras
+import json
+import csv
+import io
+import re
+import os
+import datetime
+from dotenv import load_dotenv
+try:
+    import PyPDF2
+except ImportError:
+    PyPDF2 = None
+try:
+    import requests
+    from bs4 import BeautifulSoup
+except ImportError:
+    requests = None
+    BeautifulSoup = None
+from recipe_parser import parse_recipes_from_text, format_recipe, parse_ingredient_line
+from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
+
+
+# PostgreSQL connection string from environment variable
+POSTGRES_URL = os.getenv('DATABASE_URL')
+
+def get_db_connection():
+    return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+
+
+# Load environment variables
+load_dotenv()
+
+# Allow OAuth over HTTP for local development (DO NOT use in production)
+# Only enable in development, not production
+if os.getenv('FLASK_ENV') == 'development':
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+app = Flask(__name__)
+
+
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
 # --- Recipe Import from URL Endpoint ---
 @app.route('/upload_url', methods=['POST'])
 @require_role('VP')
