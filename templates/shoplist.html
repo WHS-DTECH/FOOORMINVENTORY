@@ -611,11 +611,11 @@ window.addEventListener('DOMContentLoaded', function() {
       // Collect unique teacher names from bookings (including all selected teachers)
       const teacherSet = new Set();
       (window.bookings || []).forEach(b => {
-        // Try all possible fields for teacher name
-        if (b.teacher) teacherSet.add(b.teacher);
+        // Always prefer last_name + ', ' + first_name if present
+        if (b.last_name && b.first_name) teacherSet.add(b.last_name + ', ' + b.first_name);
+        else if (b.teacher) teacherSet.add(b.teacher);
         else if (b.teacher_display) teacherSet.add(b.teacher_display);
         else if (b.teacher_name) teacherSet.add(b.teacher_name);
-        else if (b.last_name && b.first_name) teacherSet.add(b.last_name + ', ' + b.first_name);
         else if (b.last_name) teacherSet.add(b.last_name);
         else if (b.staff_code) teacherSet.add(b.staff_code);
       });
