@@ -222,17 +222,7 @@
     {% if q %}<a href="/recbk" style="margin-left:8px;">Clear</a>{% endif %}
   </form>
 
-  <!-- Quick Filter Chips for Dietary Tags -->
-  <div class="d-flex flex-wrap gap-2 justify-content-center mb-2" style="max-width:700px;margin:auto;">
-    {% set quick_tags = ['Vegetarian', 'Vegan', 'Gluten Free', 'Dairy Free', 'Nut Free'] %}
-    {% for tag in quick_tags %}
-      <form method="get" action="/recbk" style="display:inline;">
-        <input type="hidden" name="dietary" value="{{ tag }}">
-        <button type="submit" class="btn btn-sm rounded-pill px-3 py-1 quick-chip {% if dietary == tag %}btn-success text-white{% else %}btn-outline-success{% endif %}"
-          style="margin-bottom:2px;min-width:90px;" aria-pressed="{{ 'true' if dietary == tag else 'false' }}">{{ tag }}</button>
-      </form>
-    {% endfor %}
-  </div>
+
 
   {% if q %}
     <p style="color:#666;font-size:14px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
@@ -241,10 +231,13 @@
   {% endif %}
 
   {% if rows %}
-        <!-- Table view removed: only grid view is available -->
-        {% for r in rows %}
-          <div class="recipe-card">
-            <ul>
+    <div class="recipe-grid">
+      {% for r in rows %}
+        <div class="recipe-card">
+          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
+          <div class="recipe-meta">Serves {{ r.serving_size or '—' }} | {{ r.ingredients|length }} ingredients</div>
+          <div class="recipe-ingredients">
+            <ul style="padding-left: 18px; margin-bottom: 0;">
               {% for ing in r.ingredients[:5] %}
                 <li>
                   {% if ing.quantity or ing.unit %}
@@ -257,12 +250,13 @@
                 <li style="color:#999;">+ {{ r.ingredients|length - 5 }} more...</li>
               {% endif %}
             </ul>
-            <div class="mt-2 d-flex justify-content-end">
-              <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
-            </div>
           </div>
-        {% endfor %}
-      </div>
+          <div class="mt-2 d-flex justify-content-end">
+            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
   
   <!-- TABLE VIEW -->
   <div id="tableView" class="recipe-table hidden">
