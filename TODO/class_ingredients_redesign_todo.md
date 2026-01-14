@@ -1,3 +1,25 @@
+# ---
+# Additional Suggestions (2026-01-15)
+
+## Further Improvements for Class Ingredients Page
+
+1. **Dropdown Search Enhancement:**  
+  Use a searchable dropdown (e.g., Select2 or Choices.js) for Staff, Class, and Recipe fields to improve usability, especially with long lists.
+
+2. **Action Icons:**  
+  Add a trash can icon to the Delete button in the Scheduled Bookings table for clearer visual affordance.
+
+3. **Helper Text/Tooltips:**  
+  Add tooltips or helper text for fields like "Desired Servings" and "Class slot (period)" for clarity.
+
+4. **Accessibility:**  
+  Ensure all form fields and buttons have proper labels and ARIA attributes for screen readers.
+
+5. **Loading/Feedback States:**  
+  Add a loading spinner or feedback message when saving a booking or calculating ingredients.
+
+6. **Keyboard Navigation:**  
+  Ensure all interactive elements are easily accessible via keyboard (tab order, focus states).
 # TODO: Class Ingredients Page Redesign (Professional UI)
 
 ## 1. Modern Card Layout
