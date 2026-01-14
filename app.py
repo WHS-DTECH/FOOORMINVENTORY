@@ -499,7 +499,7 @@ def admin_user_roles():
         teachers = [dict(row) for row in c.fetchall()]
 
         # Get all users with additional roles
-        c.execute('SELECT email, STRING_AGG(role, ", ") as extra_roles FROM user_roles GROUP BY email')
+        c.execute("SELECT email, STRING_AGG(role, ', ') as extra_roles FROM user_roles GROUP BY email")
         extra_roles_map = {row['email']: row['extra_roles'] for row in c.fetchall()}
 
         # Build all_users: anyone with a teacher record or an extra role
