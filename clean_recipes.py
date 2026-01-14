@@ -7,6 +7,8 @@ import os
 import json
 import re
 import argparse
+import logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 def get_database_path():
     parser = argparse.ArgumentParser(description='Clean up recipe database - remove duplicates and non-recipes.')
@@ -61,7 +63,7 @@ def remove_junk_recipes(conn):
         
         # Skip recipes with very short names (likely junk)
         if name and len(name.strip()) < 3:
-            print(f"Deleting recipe with too-short name: '{name}'")
+            logging.info(f"Deleting recipe with too-short name: '{name}'")
             c.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
             deleted.append(name)
             continue
@@ -74,7 +76,7 @@ def remove_junk_recipes(conn):
                 break
         
         if is_junk:
-            print(f"Deleting junk recipe: {name}")
+            logging.info(f"Deleting junk recipe: {name}")
             c.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
             deleted.append(name)
     
@@ -104,7 +106,7 @@ def remove_duplicate_recipes(conn):
         norm_name = normalize(name)
         
         if norm_name in seen:
-            print(f"Deleting duplicate: {name} (keeping id {seen[norm_name]})")
+            logging.info(f"Deleting duplicate: {name} (keeping id {seen[norm_name]})")
             c.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
             deleted.append(name)
         else:
@@ -156,12 +158,12 @@ def fix_recipe_names(conn):
         name = re.sub(r'\s+', ' ', name).strip()
         
         if name != original_name:
-            print(f"Fixing name: '{original_name}' -> '{name}'")
+            logging.info(f"Fixing name: '{original_name}' -> '{name}'")
             # Check if this name already exists (duplicate after cleaning)
             c.execute('SELECT id FROM recipes WHERE name = ? AND id != ?', (name, recipe_id))
             existing = c.fetchone()
             if existing:
-                print(f"  -> Would create duplicate, deleting this entry instead")
+                logging.info(f"  -> Would create duplicate, deleting this entry instead")
                 c.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
             else:
                 c.execute('UPDATE recipes SET name = ? WHERE id = ?', (name, recipe_id))
@@ -173,33 +175,33 @@ def fix_recipe_names(conn):
 
 def main():
     db_path = get_database_path()
-    print(f"Cleaning database: {db_path}")
+    logging.info(f"Cleaning database: {db_path}")
 
     with sqlite3.connect(db_path) as conn:
-        print("\n1. Removing junk recipes...")
+        logging.info("\n1. Removing junk recipes...")
         junk = remove_junk_recipes(conn)
-        print(f"   Deleted {len(junk)} junk entries")
-        
-        print("\n2. Removing duplicates...")
+        logging.info(f"   Deleted {len(junk)} junk entries")
+
+        logging.info("\n2. Removing duplicates...")
         dupes = remove_duplicate_recipes(conn)
-        print(f"   Deleted {len(dupes)} duplicates")
-        
-        print("\n3. Fixing recipe names...")
+        logging.info(f"   Deleted {len(dupes)} duplicates")
+
+        logging.info("\n3. Fixing recipe names...")
         fixed = fix_recipe_names(conn)
-        print(f"   Fixed {len(fixed)} names")
-        
-        print("\n4. Final recipe count...")
+        logging.info(f"   Fixed {len(fixed)} names")
+
+        logging.info("\n4. Final recipe count...")
         c = conn.cursor()
         c.execute('SELECT COUNT(*) FROM recipes')
         count = c.fetchone()[0]
-        print(f"   Total recipes: {count}")
-        
-        print("\n5. Recipe list:")
+        logging.info(f"   Total recipes: {count}")
+
+        logging.info("\n5. Recipe list:")
         c.execute('SELECT id, name FROM recipes ORDER BY name')
         for row in c.fetchall():
-            print(f"   [{row[0]}] {row[1]}")
-    
-    print("\nDone!")
+            logging.info(f"   [{row[0]}] {row[1]}")
+
+    logging.info("\nDone!")
 
 
 if __name__ == '__main__':
