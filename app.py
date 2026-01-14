@@ -1,3 +1,16 @@
+# --- Recipe detail page for /recipe/<id> ---
+@app.route('/recipe/<int:recipe_id>')
+def recipe_details(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+        if not recipe:
+            return render_template('404.html'), 404
+        # If you have ingredients in a separate table, join and fetch them here
+        c.execute('SELECT * FROM recipe_ingredients WHERE recipe_id = %s', (recipe_id,))
+        ingredients = c.fetchall()
+        return render_template('recipe_details.html', recipe=recipe, ingredients=ingredients)
 
 # ...existing code...
 
