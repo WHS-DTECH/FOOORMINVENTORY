@@ -72,17 +72,24 @@ if os.getenv('FLASK_ENV') == 'development':
 @require_login
 def add_shoplist_to_gcal():
     try:
-        # Get current week's bookings (reuse logic from shoplist route)
-        from datetime import datetime, timedelta
-        today = datetime.now()
-        monday = today - timedelta(days=today.weekday())
-        friday = monday + timedelta(days=4)
+        # Get year and month from query params, default to current month
+        from datetime import datetime
+        year = request.args.get('year', type=int)
+        month = request.args.get('month', type=int)
+        if not year or not month:
+            today = datetime.now()
+            year = today.year
+            month = today.month
+        from calendar import monthrange
+        first_day = datetime(year, month, 1)
+        last_day = datetime(year, month, monthrange(year, month)[1])
         with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('''SELECT date_required, period, class_code, r.name AS recipe_name, servings FROM class_bookings cb
+            c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+                         FROM class_bookings cb
                          LEFT JOIN recipes r ON cb.recipe_id = r.id
-                         WHERE date_required >= %s AND date_required <= %s
-                         ORDER BY date_required, period''', (monday.date(), friday.date()))
+                         WHERE cb.date_required >= %s AND cb.date_required <= %s
+                         ORDER BY cb.date_required, cb.period''', (first_day.date(), last_day.date()))
             bookings = c.fetchall()
 
         # Google Calendar API setup
@@ -1573,16 +1580,23 @@ def export_shoplist_ical():
     """Export shopping list bookings as iCal format for Google Calendar import."""
     from datetime import datetime, timedelta
     import uuid
-    # Get current week's bookings
-    today = datetime.now()
-    monday = today - timedelta(days=today.weekday())
-    friday = monday + timedelta(days=4)
+    # Get year and month from query params, default to current month
+    year = request.args.get('year', type=int)
+    month = request.args.get('month', type=int)
+    if not year or not month:
+        today = datetime.now()
+        year = today.year
+        month = today.month
+    from calendar import monthrange
+    first_day = datetime(year, month, 1)
+    last_day = datetime(year, month, monthrange(year, month)[1])
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('''SELECT date_required, period, class_code, recipe_name, servings FROM class_bookings cb
+        c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+                     FROM class_bookings cb
                      LEFT JOIN recipes r ON cb.recipe_id = r.id
-                     WHERE date_required >= %s AND date_required <= %s
-                     ORDER BY date_required, period''', (monday.date(), friday.date()))
+                     WHERE cb.date_required >= %s AND cb.date_required <= %s
+                     ORDER BY cb.date_required, cb.period''', (first_day.date(), last_day.date()))
         bookings = c.fetchall()
     # Build iCal content
     ical = [
