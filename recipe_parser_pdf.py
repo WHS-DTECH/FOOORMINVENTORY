@@ -10,7 +10,23 @@ def parse_recipes_from_text(text):
     that continue on the next line), and repeated section headers.
     """
     recipes = []
-    lines = text.split('\n')
+    import unicodedata
+    def normalize_line(s):
+        # Normalize unicode quotes/dashes to ASCII
+        replacements = {
+            '\u2018': "'", '\u2019': "'", '\u201c': '"', '\u201d': '"',
+            '\u2013': '-', '\u2014': '-', '\u2212': '-',
+        }
+        for k, v in replacements.items():
+            s = s.replace(k, v)
+        # Normalize unicode to NFKC
+        s = unicodedata.normalize('NFKC', s)
+        # Remove non-printable characters
+        s = ''.join(c for c in s if c.isprintable())
+        return s
+
+    # Normalize all lines
+    lines = [normalize_line(line) for line in text.split('\n')]
 
     recipe_data = None
     current_section = None
