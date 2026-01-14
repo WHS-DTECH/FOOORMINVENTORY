@@ -242,13 +242,14 @@
 
   {% if rows %}
         <!-- Table view removed: only grid view is available -->
-                <li>
-                  {% if ing.quantity or ing.unit %}
-                    {{ ing.quantity }} {{ ing.unit }}
-                  {% endif %}
-                  {{ ing.ingredient }}
-                </li>
-              {% endif %}
+                {% for ing in r.ingredients[:5] %}
+                  <li>
+                    {% if ing.quantity or ing.unit %}
+                      {{ ing.quantity }} {{ ing.unit }}
+                    {% endif %}
+                    {{ ing.ingredient }}
+                  </li>
+                {% endfor %}
               {% if r.ingredients|length > 5 %}
                 <li style="color:#999;">+ {{ r.ingredients|length - 5 }} more...</li>
               {% endif %}
