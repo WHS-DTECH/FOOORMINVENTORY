@@ -4,7 +4,7 @@
 import sys
 sys.path.insert(0, '/home/WHSDTECH/FOOORMINVENTORY')
 
-from recipe_parser import parse_recipes_from_text
+from recipe_parser_pdf import parse_recipes_from_text
 import PyPDF2
 
 # Test with Year 8 PDF - Beef Nachos on page 45
