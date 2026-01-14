@@ -475,6 +475,18 @@ def uploadclass():
     if 'skipped_rows' in locals():
         flash(f'Skipped {skipped_rows} row(s) with missing ClassCode or LineNo.')
     
+    # Fetch suggestions for admin page
+    suggestions = []
+    try:
+        with get_db_connection() as conn2:
+            c2 = conn2.cursor()
+            c2.execute('''SELECT id, recipe_name, recipe_url, reason, suggested_by_name, \
+                        suggested_by_email, created_at, status \
+                        FROM recipe_suggestions \
+                        ORDER BY created_at DESC''')
+            suggestions = c2.fetchall()
+    except Exception:
+        suggestions = []
     return render_template('admin.html', preview_data=rows, suggestions=suggestions)
 
 
