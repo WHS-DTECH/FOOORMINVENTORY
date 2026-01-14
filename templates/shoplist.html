@@ -19,9 +19,10 @@ function switchShoplistView(view) {
     if (weekPeriodView) weekPeriodView.style.display = 'none';
     if (monthCalendarView) monthCalendarView.style.display = '';
     // Always load bookings and render calendar
-    loadMonthBookings();
+    window.loadMonthBookings();
   }
 }
+window.switchShoplistView = switchShoplistView;
 
 // Ensure correct initial state on page load
 window.addEventListener('DOMContentLoaded', function() {
@@ -29,13 +30,13 @@ window.addEventListener('DOMContentLoaded', function() {
   const monthView = document.getElementById('monthCalendarView');
   // If Month View is active or visible, always show and render it
   if ((monthBtn && monthBtn.classList.contains('active')) || (monthView && monthView.style.display !== 'none' && monthView.style.display !== '')) {
-    switchShoplistView('month');
+    window.switchShoplistView('month');
   } else {
-    switchShoplistView('week');
+    window.switchShoplistView('week');
   }
   // Defensive: if Month View is visible, always load bookings and render calendar
   if (monthView && monthView.style.display !== 'none') {
-    loadMonthBookings();
+    window.loadMonthBookings();
     monthView.style.display = '';
   }
 });
@@ -833,6 +834,7 @@ async function loadMonthBookings() {
     renderShoplistMonthCalendar();
   }
 }
+window.loadMonthBookings = loadMonthBookings;
 function getUserTimezone() {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
