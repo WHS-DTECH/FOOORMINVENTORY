@@ -1,3 +1,4 @@
+# --- Admin Recipe Book Setup Page Route ---
 @app.route('/admin/recipe_book_setup')
 @require_role('VP')
 def admin_recipe_book_setup():
