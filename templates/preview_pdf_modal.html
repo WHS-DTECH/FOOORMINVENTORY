@@ -1,11 +1,21 @@
-<!-- Modal for PDF Recipe Preview -->
+<!-- Modal for PDF Recipe Preview (Two-Step) -->
 <div id="pdfPreviewModal" class="modal" style="display:none;">
   <div class="modal-content">
     <span class="close" onclick="closePdfPreviewModal()">&times;</span>
     <h2>PDF Recipe Preview</h2>
-    <div id="pdfPreviewList">
-      <!-- Recipe titles will be injected here -->
+    <div id="pdfPreviewStep1" style="display:block;">
+      <p id="pdfPreviewStep1Info"></p>
+      <div id="pdfRecipeListStep1"></div>
+      <button id="step1NextBtn" onclick="goToStep2()" style="margin-top:10px;">Next: Edit Selected</button>
     </div>
-    <button id="confirmPdfUploadBtn" onclick="confirmPdfUpload()">Confirm Upload</button>
+    <div id="pdfPreviewStep2" style="display:none;">
+      <button onclick="backToStep1()">&lt; Back</button>
+      <div id="pdfRecipeEditStep2"></div>
+      <div style="margin-top:10px;">
+        <button onclick="prevRecipeEdit()">Previous</button>
+        <button onclick="nextRecipeEdit()">Next</button>
+        <button id="confirmPdfUploadBtn" onclick="confirmPdfUpload()">Confirm Upload</button>
+      </div>
+    </div>
   </div>
 </div>

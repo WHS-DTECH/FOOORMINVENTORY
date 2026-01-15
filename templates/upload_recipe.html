@@ -111,22 +111,102 @@
         });
     }
 
+    // --- Two-step PDF Preview Modal ---
+    let pdfPreviewSelectedIdxs = [];
+    let pdfPreviewEditIdx = 0;
     function showPdfPreviewModal(recipes) {
         const modal = document.getElementById('pdfPreviewModal');
-        const listDiv = document.getElementById('pdfPreviewList');
-        let html = `<p>Detected <b>${recipes.length}</b> recipe(s) in PDF:</p>`;
+        // Step 1: List detected recipes with checkboxes
+        const step1Div = document.getElementById('pdfPreviewStep1');
+        const infoP = document.getElementById('pdfPreviewStep1Info');
+        const listDiv = document.getElementById('pdfRecipeListStep1');
+        infoP.innerHTML = `Detected <b>${recipes.length}</b> recipe(s) in PDF. Select which to upload:`;
+        let html = '';
         if (recipes.length === 0) {
             html += '<p style="color:red;">No recipes detected. Please check your PDF or report missing recipes.</p>';
         } else {
             html += '<ul>';
             recipes.forEach((r, idx) => {
-                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-idx="${idx}" checked> <input type="text" class="pdf-recipe-title-input" value="${r.name.replace(/"/g, '&quot;')}" data-idx="${idx}" style="width: 60%; font-weight: bold;"> </li>`;
+                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-idx="${idx}" checked> <b>${r.name ? r.name.replace(/"/g, '&quot;') : 'Recipe ' + (idx+1)}</b></li>`;
             });
             html += '</ul>';
-            html += '<p style="font-size:0.9em; color:#555;">You can edit recipe titles before confirming upload.</p>';
         }
         listDiv.innerHTML = html;
+        step1Div.style.display = 'block';
+        document.getElementById('pdfPreviewStep2').style.display = 'none';
         modal.style.display = 'block';
+        pdfPreviewSelectedIdxs = [];
+        pdfPreviewEditIdx = 0;
+    }
+
+    function goToStep2() {
+        // Gather selected recipe indexes
+        const checkboxes = document.querySelectorAll('.pdf-recipe-checkbox:checked');
+        pdfPreviewSelectedIdxs = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-idx')));
+        if (pdfPreviewSelectedIdxs.length === 0) {
+            alert('Please select at least one recipe to edit/upload.');
+            return;
+        }
+        pdfPreviewEditIdx = 0;
+        showRecipeEditStep2();
+        document.getElementById('pdfPreviewStep1').style.display = 'none';
+        document.getElementById('pdfPreviewStep2').style.display = 'block';
+    }
+
+    function showRecipeEditStep2() {
+        const idx = pdfPreviewSelectedIdxs[pdfPreviewEditIdx];
+        const r = pdfRecipesPreview[idx];
+        let html = `<div class="pdf-recipe-preview" style="border:1px solid #ccc;padding:10px;margin-bottom:10px;border-radius:6px;">
+            <b>Recipe ${pdfPreviewEditIdx+1} of ${pdfPreviewSelectedIdxs.length}</b><br>
+            <label>Title: <input type="text" class="pdf-recipe-title-input" value="${r.name ? r.name.replace(/"/g, '&quot;') : ''}" data-idx="${idx}" style="width: 60%; font-weight: bold;"></label><br>
+            <label>Ingredients:<br>
+                <textarea class="pdf-recipe-ingredients-input" data-idx="${idx}" rows="4" style="width:95%;">${Array.isArray(r.ingredients) ? r.ingredients.join('\n') : (r.ingredients || '')}</textarea>
+            </label><br>
+            <label>Instructions:<br>
+                <textarea class="pdf-recipe-instructions-input" data-idx="${idx}" rows="4" style="width:95%;">${r.method || ''}</textarea>
+            </label><br>
+        </div>`;
+        document.getElementById('pdfRecipeEditStep2').innerHTML = html;
+    }
+
+    function nextRecipeEdit() {
+        if (pdfPreviewEditIdx < pdfPreviewSelectedIdxs.length - 1) {
+            saveCurrentRecipeEdit();
+            pdfPreviewEditIdx++;
+            showRecipeEditStep2();
+        }
+    }
+    function prevRecipeEdit() {
+        if (pdfPreviewEditIdx > 0) {
+            saveCurrentRecipeEdit();
+            pdfPreviewEditIdx--;
+            showRecipeEditStep2();
+        }
+    }
+    function backToStep1() {
+        saveCurrentRecipeEdit();
+        document.getElementById('pdfPreviewStep2').style.display = 'none';
+        document.getElementById('pdfPreviewStep1').style.display = 'block';
+    }
+    function saveCurrentRecipeEdit() {
+        // Save edits to pdfRecipesPreview
+        const idx = pdfPreviewSelectedIdxs[pdfPreviewEditIdx];
+        // Title
+        const titleInput = document.querySelector(`.pdf-recipe-title-input[data-idx="${idx}"]`);
+        if (titleInput) {
+            pdfRecipesPreview[idx].name = titleInput.value;
+        }
+        // Ingredients
+        const ingInput = document.querySelector(`.pdf-recipe-ingredients-input[data-idx="${idx}"]`);
+        if (ingInput) {
+            pdfRecipesPreview[idx].ingredients = ingInput.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        }
+        // Instructions
+        const instrInput = document.querySelector(`.pdf-recipe-instructions-input[data-idx="${idx}"]`);
+        if (instrInput) {
+            pdfRecipesPreview[idx].method = instrInput.value;
+        }
+    }
     }
 
     function closePdfPreviewModal() {
@@ -140,17 +220,12 @@
             alert('Please select at least one recipe to upload.');
             return;
         }
-        // Build array of recipes to save
-        const recipesToSave = [];
-        checkboxes.forEach(cb => {
-            const idx = parseInt(cb.getAttribute('data-idx'));
-            const input = document.querySelector(`.pdf-recipe-title-input[data-idx="${idx}"]`);
-            let recipe = Object.assign({}, pdfRecipesPreview[idx]);
-            if (input) {
-                recipe.name = input.value;
-            }
-            recipesToSave.push(recipe);
-        });
+        // Save any edits to the current recipe
+        if (document.getElementById('pdfPreviewStep2').style.display === 'block') {
+            saveCurrentRecipeEdit();
+        }
+        // Build array of recipes to save (only selected)
+        const recipesToSave = pdfPreviewSelectedIdxs.map(idx => Object.assign({}, pdfRecipesPreview[idx]));
         // Send to backend for saving
         fetch('/upload', {
             method: 'POST',
