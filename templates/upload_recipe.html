@@ -74,7 +74,11 @@
 </div>
 <script>
 
-    // --- PDF Preview Logic ---
+
+    // --- PDF Preview Logic (Two-step upload) ---
+    let pdfRecipesPreview = [];
+    let pdfFilenamePreview = '';
+
     function previewPdfRecipes() {
         const pdfInput = document.getElementById('pdfFile');
         if (!pdfInput.files || pdfInput.files.length === 0) {
@@ -83,11 +87,7 @@
         }
         const formData = new FormData();
         formData.append('pdfFile', pdfInput.files[0]);
-        const pageRange = document.getElementById('pageRange').value.trim();
-        if (pageRange) {
-            formData.append('pageRange', pageRange);
-        }
-        fetch('/preview_pdf_recipes', {
+        fetch('/upload', {
             method: 'POST',
             body: formData
         })
@@ -97,23 +97,25 @@
                 alert('Error: ' + data.error);
                 return;
             }
-            showPdfPreviewModal(data.recipes, data.page_count);
+            pdfRecipesPreview = data.recipes;
+            pdfFilenamePreview = data.pdf_filename;
+            showPdfPreviewModal(pdfRecipesPreview);
         })
         .catch(err => {
             alert('Error previewing PDF: ' + err);
         });
     }
 
-    function showPdfPreviewModal(recipes, pageCount) {
+    function showPdfPreviewModal(recipes) {
         const modal = document.getElementById('pdfPreviewModal');
         const listDiv = document.getElementById('pdfPreviewList');
-        let html = `<p>Detected <b>${recipes.length}</b> recipe(s) in PDF (${pageCount} pages):</p>`;
+        let html = `<p>Detected <b>${recipes.length}</b> recipe(s) in PDF:</p>`;
         if (recipes.length === 0) {
             html += '<p style="color:red;">No recipes detected. Please check your PDF or report missing recipes.</p>';
         } else {
             html += '<ul>';
             recipes.forEach((r, idx) => {
-                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-title="${r.title}" data-page="${r.page}" checked> <input type="text" class="pdf-recipe-title-input" value="${r.title.replace(/"/g, '&quot;')}" data-idx="${idx}" style="width: 60%; font-weight: bold;"> (Page ${r.page})</li>`;
+                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-idx="${idx}" checked> <input type="text" class="pdf-recipe-title-input" value="${r.name.replace(/"/g, '&quot;')}" data-idx="${idx}" style="width: 60%; font-weight: bold;"> </li>`;
             });
             html += '</ul>';
             html += '<p style="font-size:0.9em; color:#555;">You can edit recipe titles before confirming upload.</p>';
@@ -133,21 +135,39 @@
             alert('Please select at least one recipe to upload.');
             return;
         }
-        // Get edited titles
-        const titleInputs = document.querySelectorAll('.pdf-recipe-title-input');
+        // Build array of recipes to save
+        const recipesToSave = [];
         checkboxes.forEach(cb => {
-            const li = cb.closest('li');
-            if (li) {
-                const input = li.querySelector('.pdf-recipe-title-input');
-                if (input) {
-                    cb.setAttribute('data-title', input.value);
-                }
+            const idx = parseInt(cb.getAttribute('data-idx'));
+            const input = document.querySelector(`.pdf-recipe-title-input[data-idx="${idx}"]`);
+            let recipe = Object.assign({}, pdfRecipesPreview[idx]);
+            if (input) {
+                recipe.name = input.value;
             }
+            recipesToSave.push(recipe);
         });
-        // Optionally, pass selected titles/pages to backend for upload (not implemented here)
-        // For now, just close modal and submit the form
-        closePdfPreviewModal();
-        document.getElementById('pdfUploadForm').submit();
+        // Send to backend for saving
+        fetch('/upload', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                recipes: recipesToSave,
+                pdf_filename: pdfFilenamePreview
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            closePdfPreviewModal();
+            if (data.success) {
+                alert(`Saved ${data.saved_count} recipe(s). Skipped ${data.skipped_count}.`);
+                window.location.href = '/recipes';
+            } else {
+                alert('Error saving recipes: ' + (data.errors ? data.errors.join('; ') : 'Unknown error'));
+            }
+        })
+        .catch(err => {
+            alert('Error saving recipes: ' + err);
+        });
     }
 
     function reportMissingRecipes() {
