@@ -1032,10 +1032,10 @@ def upload():
             return jsonify({'error': 'No PDF file selected'}), 400
         # --- Page Range Support ---
         page_range_str = request.form.get('pageRange', '').strip()
+        titles_only = request.form.get('titlesOnly', '').lower() == 'true'
         try:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
             total_pages = len(pdf_reader.pages)
-            # Parse page range string (e.g. '1-3,5,7-8')
             def parse_page_range(page_range, max_page):
                 if not page_range:
                     return list(range(max_page))
@@ -1070,7 +1070,6 @@ def upload():
                 if page_text and page_text.strip():
                     full_text += page_text + "\n"
                 elif pytesseract and Image:
-                    # Try OCR if no text extracted
                     try:
                         xobj = page.get("/Resources", {}).get("/XObject")
                         if xobj:
@@ -1085,7 +1084,16 @@ def upload():
                                         full_text += ocr_text + "\n"
                     except Exception as ocr_e:
                         print(f"[OCR ERROR] {ocr_e}")
-                # else: skip page if no text and no OCR
+            # --- Titles Only Mode ---
+            if titles_only:
+                recipes_found = parse_recipes_from_text(full_text)
+                titles = [r.get('name', '').strip() for r in recipes_found if r.get('name')]
+                return jsonify({
+                    'pdf_filename': pdf_file.filename,
+                    'recipe_titles': titles,
+                    'count': len(titles)
+                })
+            # --- Full Extraction (default) ---
             recipes_found = parse_recipes_from_text(full_text)
             if not recipes_found:
                 # Log extraction failure
@@ -1102,19 +1110,19 @@ def upload():
                     print(f'[ANALYTICS LOG ERROR] {log_e}')
                 return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
             # Log flagged recipes (e.g., those with warnings or similarity issues)
-            try:
-                analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
-                for recipe in recipes_found:
-                    if recipe.get('flagged', False) or recipe.get('warnings'):
-                        with open(analytics_path, 'a', encoding='utf-8') as f:
-                            f.write(json.dumps({
-                                'event': 'flagged_recipe',
-                                'pdf_filename': pdf_file.filename,
-                                'recipe': recipe,
-                                'timestamp': datetime.datetime.utcnow().isoformat()
-                            }) + '\n')
-            except Exception as log_e:
-                print(f'[ANALYTICS LOG ERROR] {log_e}')
+                try:
+                    analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
+                    for recipe in recipes_found:
+                        if isinstance(recipe, dict) and (recipe.get('flagged', False) or recipe.get('warnings')):
+                            with open(analytics_path, 'a', encoding='utf-8') as f:
+                                f.write(json.dumps({
+                                    'event': 'flagged_recipe',
+                                    'pdf_filename': pdf_file.filename,
+                                    'recipe': recipe,
+                                    'timestamp': datetime.datetime.utcnow().isoformat()
+                                }) + '\n')
+                except Exception as log_e:
+                    print(f'[ANALYTICS LOG ERROR] {log_e}')
             # Return recipes for preview/correction (do not save yet)
             return jsonify({
                 'recipes': recipes_found,
