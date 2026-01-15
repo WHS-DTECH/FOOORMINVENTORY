@@ -938,15 +938,15 @@ def upload():
             error_details = []
             with get_db_connection() as conn:
                 c = conn.cursor()
-                for recipe in recipes_found:
-                    # Duplicate detection: check for existing recipe by name (case-insensitive)
-                    c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
-                    existing = c.fetchone()
-                    if existing:
-                        skipped_count += 1
-                        error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
-                        continue
-                    try:
+                try:
+                    for recipe in recipes_found:
+                        # Duplicate detection: check for existing recipe by name (case-insensitive)
+                        c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
+                        existing = c.fetchone()
+                        if existing:
+                            skipped_count += 1
+                            error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
+                            continue
                         c.execute(
                             "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
                             (
@@ -964,16 +964,13 @@ def upload():
                             (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
                         )
                         saved_count += 1
-                    except psycopg2.IntegrityError as e:
-                        conn.rollback()  # Rollback the failed insert
-                        skipped_count += 1
-                        error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
-                    except Exception as e:
-                        conn.rollback()
-                        skipped_count += 1
-                        error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
-                # Commit after all inserts
-                conn.commit()
+                    # Commit after all inserts
+                    conn.commit()
+                except Exception as e:
+                    conn.rollback()
+                    error_details.append(f'Bulk upload failed: {str(e)}')
+                    saved_count = 0
+                    skipped_count = len(recipes_found)
 
             # Run cleaners after insert (temporarily disabled for debugging)
             # dup_deleted = remove_duplicate_recipes()
