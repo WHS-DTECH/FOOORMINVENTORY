@@ -25,8 +25,37 @@ def parse_recipes_from_text(text):
         s = ''.join(c for c in s if c.isprintable())
         return s
 
-    # Normalize all lines
+
+    # --- Global Filtering: Remove blank pages, repeated headers/footers, and known non-recipe lines ---
+    def is_junk_line(line):
+        junk_patterns = [
+            r'^\s*$',  # blank line
+            r'^page \d+',  # page numbers
+            r'^(food technology|assessment|evaluation|scenario|brief|attributes|learning objective|copyright|school name|westland high school)',
+            r'^\d{1,3}$',  # single numbers (page numbers)
+            r'^(recipe book setup|recipe index|admin|shopping list|class ingredients|food room)',
+            r'^\W+$',  # lines with only non-word chars
+        ]
+        for pat in junk_patterns:
+            if re.match(pat, line.strip(), re.I):
+                return True
+        return False
+
+    # Normalize all lines and filter out junk lines
     lines = [normalize_line(line) for line in text.split('\n')]
+    # Remove repeated headers/footers and junk lines
+    filtered_lines = []
+    seen_lines = set()
+    for line in lines:
+        norm = line.strip().lower()
+        if is_junk_line(line):
+            continue
+        # Remove repeated lines (headers/footers)
+        if norm and norm in seen_lines:
+            continue
+        seen_lines.add(norm)
+        filtered_lines.append(line)
+    lines = filtered_lines
 
     recipe_data = None
     current_section = None
