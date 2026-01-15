@@ -355,7 +355,19 @@ def load_recipe_url():
     ingredients = []
     instructions = []
     current_step = None
-    for tag in soup.find_all(['li', 'span', 'p']):
+    # --- Find the main ingredients block ---
+    ingredients_block = None
+    # Try common class/id names for ingredients
+    for selector in [
+        '[class*="ingredient"]', '[id*="ingredient"]',
+        'ul', 'ol', 'div', 'section']:
+        block = soup.select_one(selector)
+        if block and len(block.find_all(['li', 'span', 'p'])) > 1:
+            ingredients_block = block
+            break
+    # Fallback: use the whole document if no block found
+    search_scope = ingredients_block if ingredients_block else soup
+    for tag in search_scope.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
         if not text:
             continue
