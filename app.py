@@ -935,6 +935,7 @@ def upload():
             # Save recipes to database (skip duplicates)
             saved_count = 0
             skipped_count = 0
+            error_details = []
             with get_db_connection() as conn:
                 c = conn.cursor()
                 for recipe in recipes_found:
@@ -943,6 +944,7 @@ def upload():
                     existing = c.fetchone()
                     if existing:
                         skipped_count += 1
+                        error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
                         continue
                     try:
                         c.execute(
@@ -962,9 +964,14 @@ def upload():
                             (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
                         )
                         saved_count += 1
-                    except psycopg2.IntegrityError:
+                    except psycopg2.IntegrityError as e:
                         conn.rollback()  # Rollback the failed insert
                         skipped_count += 1
+                        error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
+                    except Exception as e:
+                        conn.rollback()
+                        skipped_count += 1
+                        error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
                 # Commit after all inserts
                 conn.commit()
 
@@ -976,7 +983,9 @@ def upload():
 
             message = f'Saved {saved_count} new recipe(s).'
             if skipped_count > 0:
-                message += f' Skipped {skipped_count} duplicate(s).'
+                message += f' Skipped {skipped_count} recipe(s) due to errors or duplicates.'
+            if error_details:
+                message += ' Errors: ' + '; '.join(error_details)
             # if len(dup_deleted) > 0 or len(nonfood_deleted) > 0:
             #     message += f' Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.'
 
