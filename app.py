@@ -1169,58 +1169,51 @@ def shoplist():
     # Organize bookings into a grid structure
     grid = {}
     for date_obj in dates:
-                    for recipe in recipes_found:
-                        # Duplicate detection: check for existing recipe by name (case-insensitive)
-                        c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
-                        existing = c.fetchone()
-                        if existing:
-                            skipped_count += 1
-                            error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
-                            print(f'[PDF UPLOAD] SKIP DUPLICATE: {recipe["name"]}')
-                            continue
-                        try:
-                            c.execute(
-                                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                                (
-                                    recipe['name'],
-                                    json.dumps(recipe.get('ingredients', [])),
-                                    recipe.get('method', ''),
-                                    recipe.get('serving_size'),
-                                    json.dumps(recipe.get('equipment', []))
-                                ),
-                            )
-                            recipe_id = c.fetchone()[0]
-                            # Insert into recipe_upload
-                            c.execute(
-                                "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
-                                (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
-                            )
-                            saved_count += 1
-                            print(f'[PDF UPLOAD] SUCCESS: {recipe["name"]}')
-                        except psycopg2.IntegrityError as e:
-                            conn.rollback()  # Rollback the failed insert
-                            skipped_count += 1
-                            error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
-                            print(f'[PDF UPLOAD] DB ERROR: {recipe["name"]} - {str(e)}')
-                        except Exception as e:
-                            conn.rollback()
-                            skipped_count += 1
-                            error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
-                            print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
-                    # Commit after all inserts
-                    conn.commit()
-            except Exception as e:
-    conn.rollback()
-    error_details.append(f'Bulk upload failed: {str(e)}')
-    saved_count = 0
-    skipped_count = len(recipes_found)
-    r.serving_size,
-    t.first_name || ' ' || t.last_name as teacher_name
-        FROM class_bookings cb
-        LEFT JOIN recipes r ON cb.recipe_id = r.id
-        LEFT JOIN teachers t ON cb.staff_code = t.code
-        WHERE cb.id IN ({placeholders})
-    ''', booking_ids)
+        for recipe in recipes_found:
+        # Duplicate detection: check for existing recipe by name (case-insensitive)
+        c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
+        existing = c.fetchone()
+        if existing:
+            skipped_count += 1
+            error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
+            print(f'[PDF UPLOAD] SKIP DUPLICATE: {recipe["name"]}')
+            continue
+        try:
+            c.execute(
+                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                (
+                     recipe['name'],
+                     json.dumps(recipe.get('ingredients', [])),
+                     recipe.get('method', ''),
+                     recipe.get('serving_size'),
+                     json.dumps(recipe.get('equipment', []))
+                     ),
+                     )
+            recipe_id = c.fetchone()[0]
+            # Insert into recipe_upload
+            c.execute(
+                "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
+                (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
+                )
+            saved_count += 1
+            print(f'[PDF UPLOAD] SUCCESS: {recipe["name"]}')
+        except psycopg2.IntegrityError as e:
+            conn.rollback()  # Rollback the failed insert
+            skipped_count += 1
+            error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
+            print(f'[PDF UPLOAD] DB ERROR: {recipe["name"]} - {str(e)}')
+        except Exception as e:
+            conn.rollback()
+            skipped_count += 1
+            error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
+            print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
+            r.serving_size,
+            t.first_name || ' ' || t.last_name as teacher_name
+                FROM class_bookings cb
+                LEFT JOIN recipes r ON cb.recipe_id = r.id
+                LEFT JOIN teachers t ON cb.staff_code = t.code
+                WHERE cb.id IN ({placeholders})
+                ''', booking_ids)
         bookings = [dict(row) for row in c.fetchall()]
     
     # Aggregate ingredients
