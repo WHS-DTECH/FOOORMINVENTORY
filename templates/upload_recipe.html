@@ -27,6 +27,10 @@
                     <input type="text" id="pageRange" name="pageRange" placeholder="All" style="width:120px;">
                     <span style="font-size:0.9em;color:#666;">(Optional)</span>
                 </div>
+                <div style="margin:8px 0;">
+                    <input type="checkbox" id="titlesOnly" name="titlesOnly" value="true">
+                    <label for="titlesOnly">Show only recipe titles (first step)</label>
+                </div>
                 <button type="button" onclick="previewPdfRecipes()">Preview PDF Recipes</button>
                 {% if from_url %}
                 <p style="background:#fff3cd;padding:8px;border:1px solid #ffc107;border-radius:4px;">
@@ -87,10 +91,15 @@
         }
         const pageRangeInput = document.getElementById('pageRange');
         const pageRange = pageRangeInput ? pageRangeInput.value.trim() : '';
+        const titlesOnlyInput = document.getElementById('titlesOnly');
+        const titlesOnly = titlesOnlyInput && titlesOnlyInput.checked;
         const formData = new FormData();
         formData.append('pdfFile', pdfInput.files[0]);
         if (pageRange) {
             formData.append('pageRange', pageRange);
+        }
+        if (titlesOnly) {
+            formData.append('titlesOnly', 'true');
         }
         fetch('/upload', {
             method: 'POST',
@@ -102,6 +111,11 @@
                 alert('Error: ' + data.error);
                 return;
             }
+            // If titlesOnly mode, show titles list and offer to proceed
+            if (data.recipe_titles) {
+                showTitlesOnlyModal(data.recipe_titles, data.pdf_filename);
+                return;
+            }
             pdfRecipesPreview = data.recipes;
             pdfFilenamePreview = data.pdf_filename;
             showPdfPreviewModal(pdfRecipesPreview);
@@ -109,6 +123,40 @@
         .catch(err => {
             alert('Error previewing PDF: ' + err);
         });
+    }
+
+    // Show a modal with just the recipe titles and a button to proceed to full extraction
+    function showTitlesOnlyModal(titles, pdfFilename) {
+        const modal = document.getElementById('pdfPreviewModal');
+        const step1Div = document.getElementById('pdfPreviewStep1');
+        const step2Div = document.getElementById('pdfPreviewStep2');
+        const infoP = document.getElementById('pdfPreviewStep1Info');
+        const listDiv = document.getElementById('pdfRecipeListStep1');
+        infoP.innerHTML = `Detected <b>${titles.length}</b> recipe title(s) in PDF:`;
+        let html = '';
+        if (titles.length === 0) {
+            html += '<p style="color:red;">No recipe titles detected. Please check your PDF or try a different page range.</p>';
+        } else {
+            html += '<ol>';
+            titles.forEach((t, idx) => {
+                html += `<li><b>${t ? t.replace(/"/g, '&quot;') : 'Recipe ' + (idx+1)}</b></li>`;
+            });
+            html += '</ol>';
+        }
+        // Add a button to proceed to full extraction
+        html += '<button id="proceedFullExtractBtn" style="margin-top:10px;">Proceed to Full Extraction</button>';
+        listDiv.innerHTML = html;
+        step1Div.style.display = 'block';
+        step2Div.style.display = 'none';
+        modal.style.display = 'block';
+        // Add event listener for the proceed button
+        document.getElementById('proceedFullExtractBtn').onclick = function() {
+            closePdfPreviewModal();
+            // Uncheck titlesOnly and re-trigger preview
+            const titlesOnlyInput = document.getElementById('titlesOnly');
+            if (titlesOnlyInput) titlesOnlyInput.checked = false;
+            previewPdfRecipes();
+        };
     }
 
     // --- Two-step PDF Preview Modal ---
