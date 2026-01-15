@@ -5,6 +5,9 @@ except ImportError:
     pytesseract = None
     Image = None
 # =======================
+# Imports (Standard, Third-party, Local)
+# =======================
+# =======================
 # Feedback Route: Store user feedback on missing/misidentified recipes
 # =======================
 @app.route('/report_missing_recipes', methods=['POST'])
