@@ -1207,14 +1207,7 @@ def shoplist():
             skipped_count += 1
             error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
             print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
-            r.serving_size,
-            t.first_name || ' ' || t.last_name as teacher_name
-                FROM class_bookings cb
-                LEFT JOIN recipes r ON cb.recipe_id = r.id
-                LEFT JOIN teachers t ON cb.staff_code = t.code
-                WHERE cb.id IN ({placeholders})
-                ''', booking_ids)
-        bookings = [dict(row) for row in c.fetchall()]
+        # ...existing code continues here...
     
     # Aggregate ingredients
     ingredient_map = {}  # {normalized_name: {qty, unit, original_name}}
