@@ -78,6 +78,38 @@ def parse_recipes_from_text(text):
         'equipment': re.compile(r'\b(equipm[ea]nt|tools?)\b', re.I),
         'method': re.compile(r'\b(meth[oa]d|steps?|instructions?)\b', re.I),
     }
+
+    # Ingredient line regex: number + unit + food name
+    ingredient_line_re = re.compile(r'^(\d+[\d\s\/\.-]*)\s*(cup|cups|tsp|tbsp|tablespoon|teaspoon|g|gram|grams|kg|ml|l|litre|litres|oz|pound|lb|slice|slices|can|packet|bunch|handful|pinch|egg|eggs|clove|cloves|piece|pieces|stick|sticks|cm|mm|inch|inches|sheet|sheets|fillet|fillets|filet|filets|strip|strips|cube|cubes|sprig|sprigs|leaf|leaves|head|heads|jar|jars|bottle|bottles|container|containers|pack|packs|bag|bags|dozen|quart|pint|gal|gallon|liters|milliliter|millilitre|milliliters|millilitres)?\s+([A-Za-z].+)$', re.I)
+
+    # Helper: find likely title above a block of ingredient lines
+    def infer_title_above(lines, start_idx, ingredient_block):
+        # Look up to 5 lines above the first ingredient line
+        food_words = set()
+        for ing in ingredient_block:
+            # Take last word as food name, and all words after unit
+            tokens = ing.split()
+            if len(tokens) > 2:
+                food_words.add(tokens[-1].lower())
+                food_words.add(tokens[2].lower())
+        for j in range(1, 6):
+            idx = start_idx - j
+            if idx < 0:
+                break
+            candidate = lines[idx].strip()
+            if 2 < len(candidate) < 60:
+                # If any food word is in the candidate, likely a title
+                if any(word in candidate.lower() for word in food_words):
+                    return candidate
+        # Fallback: just return the closest non-empty line
+        for j in range(1, 6):
+            idx = start_idx - j
+            if idx < 0:
+                break
+            candidate = lines[idx].strip()
+            if 2 < len(candidate) < 60:
+                return candidate
+        return 'Unknown Recipe'
     # Acceptable section header alternatives/typos
     def detect_section(line):
         for section, pattern in section_patterns.items():
@@ -200,90 +232,27 @@ def parse_recipes_from_text(text):
             continue
 
         # If no recipe started yet, try to infer one from an ingredient line
-        if not recipe_data:
-            # simple ingredient detection: starts with a number or contains common units
-            ll = line.lower()
-            def looks_like_ingredient(s):
-                if not s:
-                    return False
-                # Skip single page numbers (1-3 digits alone)
-                if s.strip().isdigit() and len(s.strip()) <= 3:
-                    return False
-                if s[0].isdigit():
-                    return True
-                for token in ['g ', 'ml', 'cup', 'tsp', 'tbsp', 'tablespoon', 'teaspoon', 'slice', 'large', 'small', 'packet', 'can']:
-                    if token in s:
-                        return True
-                if s.startswith('•'):
-                    return True
-                return False
 
-            if looks_like_ingredient(ll):
-                # Look back for a plausible title within previous 15 lines
-                # Collect all non-junk lines, then pick the best title candidate
-                candidates = []
-                for j in range(1, 15):
-                    idx = i - j
-                    if idx < 0:
+        if not recipe_data:
+            # Use improved ingredient detection
+            if ingredient_line_re.match(line):
+                # Find the start of the ingredient block
+                block_start = i
+                ingredient_block = [line]
+                # Look ahead for more ingredient lines
+                for j in range(i+1, min(i+20, len(lines))):
+                    if ingredient_line_re.match(lines[j].strip()):
+                        ingredient_block.append(lines[j].strip())
+                    else:
                         break
-                    cand = lines[idx].strip()
-                    low = cand.lower()
-                    
-                    if not cand:
-                        continue
-                    
-                    # Skip obvious junk
-                    if low.isdigit():
-                        continue
-                    if any(k in low for k in ['learning objective', 'page ', 'food technology', 'assessment', 'evaluation', 'scenario:', 'brief:', 'attributes:']):
-                        continue
-                    
-                    # Check if it's an ingredient line (stop looking back)
-                    def _looks_like_ingredient(s):
-                        if not s:
-                            return False
-                        if s[0].isdigit():
-                            return True
-                        for token in ['g ', 'ml', 'cup', 'tsp', 'tbsp', 'tablespoon', 'teaspoon', 'slice']:
-                            if token in s:
-                                return True
-                        if s.startswith('•'):
-                            return True
-                        return False
-                    
-                    if _looks_like_ingredient(low):
-                        break
-                    
-                    # Add to candidates
-                    candidates.append(cand)
-                
-                # Find best title from candidates
-                title = None
-                for cand in candidates:
-                    low = cand.lower()
-                    # Skip section headers like "Week 9 :" 
-                    if 'week ' in low and ':' in cand:
-                        continue
-                    # Skip continuation lines that aren't real titles
-                    if cand.startswith(('group of', ')', 'work in pairs')):
-                        continue
-                    # Prefer lines that look like recipe names (not too long, no excessive punctuation)
-                    if 3 < len(cand) < 100 and cand.count('.') < 3:
-                        # This looks like a good title
-                        title = cand
-                        break
-                
-                if title:
-                    # Clean up title - remove common prefixes/suffixes
-                    title = re.sub(r'\(per.*$', '', title).strip()  # Remove "(per..." to end
-                    title = re.sub(r'\(makes \d+ .*?\)', '', title, flags=re.I).strip()
-                    title = re.sub(r'–\s*work in pairs', '', title, flags=re.I).strip()
-                else:
-                    # Use filename as fallback if available, else placeholder
-                    title = 'Unknown Recipe'
+                # Infer title from lines above
+                title = infer_title_above(lines, block_start, ingredient_block)
                 recipe_data = {'name': title, 'ingredients': [], 'equipment': [], 'method': []}
                 current_section = 'ingredients'
-                # fall through to collect this ingredient line
+                # Add all found ingredient lines
+                recipe_data['ingredients'].extend(ingredient_block)
+                i += len(ingredient_block)
+                continue
             else:
                 # Log unassigned line as warning
                 parse_warnings.append(f"Unassigned line (no recipe started): '{line}' at line {i+1}")
