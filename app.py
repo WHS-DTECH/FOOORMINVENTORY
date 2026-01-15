@@ -248,15 +248,26 @@ def upload_url():
     verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
     ingredients = []
     instructions = []
+    current_step = None
     for tag in soup.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
-        if text:
-            if ingredient_pattern.match(text):
-                ingredients.append(text)
-            elif instruction_pattern.match(text):
-                instructions.append(text)
-            elif verb_pattern.match(text):
-                instructions.append(text)
+        if not text:
+            continue
+        if ingredient_pattern.match(text):
+            ingredients.append(text)
+            continue
+        is_new_step = instruction_pattern.match(text) or verb_pattern.match(text)
+        if is_new_step:
+            if current_step:
+                instructions.append(current_step.strip())
+            current_step = text
+        else:
+            if current_step:
+                current_step += ' ' + text
+            else:
+                current_step = text
+    if current_step:
+        instructions.append(current_step.strip())
     if not ingredients:
         # Try schema.org/Recipe
         recipe_schema = soup.find('script', type='application/ld+json')
@@ -325,15 +336,26 @@ def load_recipe_url():
     verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
     ingredients = []
     instructions = []
+    current_step = None
     for tag in soup.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
-        if text:
-            if ingredient_pattern.match(text):
-                ingredients.append(text)
-            elif instruction_pattern.match(text):
-                instructions.append(text)
-            elif verb_pattern.match(text):
-                instructions.append(text)
+        if not text:
+            continue
+        if ingredient_pattern.match(text):
+            ingredients.append(text)
+            continue
+        is_new_step = instruction_pattern.match(text) or verb_pattern.match(text)
+        if is_new_step:
+            if current_step:
+                instructions.append(current_step.strip())
+            current_step = text
+        else:
+            if current_step:
+                current_step += ' ' + text
+            else:
+                current_step = text
+    if current_step:
+        instructions.append(current_step.strip())
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
         if recipe_schema:
