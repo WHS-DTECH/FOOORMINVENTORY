@@ -137,15 +137,25 @@
                 missing.push({title: cb.getAttribute('data-title'), page: cb.getAttribute('data-page')});
             }
         });
-        let msg = 'Reporting missing recipes:';
-        if (missing.length === 0) {
-            msg += '\nNone (all detected recipes are selected).';
-        } else {
-            missing.forEach(m => {
-                msg += `\n- ${m.title} (Page ${m.page})`;
-            });
-        }
-        alert(msg + '\n(Feature to send this info to backend can be implemented next.)');
+        // Try to get the PDF filename if available
+        const pdfInput = document.getElementById('pdfFile');
+        let pdfFilename = pdfInput && pdfInput.files.length > 0 ? pdfInput.files[0].name : '';
+        fetch('/report_missing_recipes', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                pdf_filename: pdfFilename,
+                missing_recipes: missing
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || 'Feedback submitted.');
+            closePdfPreviewModal();
+        })
+        .catch(err => {
+            alert('Error reporting missing recipes: ' + err);
+        });
     }
     // Auto-parse ingredients on page load if prefilled
     window.addEventListener('load', function() {

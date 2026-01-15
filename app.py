@@ -1,3 +1,21 @@
+# --- Report Missing Recipes Endpoint ---
+from flask import request, jsonify
+
+@app.route('/report_missing_recipes', methods=['POST'])
+@login_required
+def report_missing_recipes():
+    try:
+        data = request.get_json()
+        pdf_filename = data.get('pdf_filename')
+        missing_recipes = data.get('missing_recipes', [])
+        user = current_user.get_id() if current_user.is_authenticated else 'anonymous'
+        # Log/report the missing recipes for further review
+        with open('missing_recipes_report.log', 'a', encoding='utf-8') as f:
+            f.write(f"[{datetime.datetime.now()}] User: {user}, PDF: {pdf_filename}, Missing: {missing_recipes}\n")
+        # Optionally, store in DB or send notification here
+        return jsonify({'status': 'success', 'message': 'Missing recipes reported. Thank you for your feedback!'}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 # --- PDF Recipe Preview Endpoint ---
 from flask import jsonify
 
