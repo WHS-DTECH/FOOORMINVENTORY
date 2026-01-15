@@ -71,11 +71,13 @@ SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile'
 ]
 
+
 # =======================
-# Utility Functions
+# Utility Functions & Filters
 # =======================
 POSTGRES_URL = os.getenv('DATABASE_URL')
 def get_db_connection():
+    """Get a new database connection using the configured POSTGRES_URL."""
     return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
 
 @app.template_filter('format_nz_week')
@@ -222,22 +224,9 @@ def add_shoplist_to_gcal():
 ## ...existing imports already above...
 
 
-# PostgreSQL connection string from environment variable
-POSTGRES_URL = os.getenv('DATABASE_URL')
-
 def get_db_connection():
-    return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
 
-
-# Load environment variables
-load_dotenv()
-
-# Allow OAuth over HTTP for local development (DO NOT use in production)
-# Only enable in development, not production
-if os.getenv('FLASK_ENV') == 'development':
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-## ...already created above...
+# (Removed duplicate POSTGRES_URL, get_db_connection, and config already defined above)
 
 # Configure Flask-Login
 login_manager = LoginManager()
