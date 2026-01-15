@@ -11,17 +11,7 @@ def parse_recipes_from_text(text):
     """
     recipes = []
     # --- Improved: Extract lines matching 'Making Activity :' and real recipe headings ---
-    improved_titles = []
-    making_activity_pattern = re.compile(r'Making Activity\s*:\s*(.+)', re.I)
-    for line in text.split('\n'):
-        match = making_activity_pattern.search(line)
-        if match:
-            title = match.group(1).strip()
-            improved_titles.append({'name': title})
-
-    # If improved titles found and no recipes detected, return them as recipes
-    if improved_titles:
-        return improved_titles
+    # Removed early return of only titles if 'Making Activity :' is found
     import unicodedata
     def normalize_line(s):
         # Normalize unicode quotes/dashes to ASCII
