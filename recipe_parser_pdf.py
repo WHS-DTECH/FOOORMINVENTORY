@@ -76,8 +76,45 @@ def parse_recipes_from_text(text):
                 return section
         return None
 
+    # --- Advanced Title Detection ---
+    # Try to use spaCy for NLP-based title detection if available
+    try:
+        import spacy
+        nlp = spacy.load('en_core_web_sm')
+    except Exception:
+        nlp = None
+
+    def is_likely_title(line, prev_line=None, font_size=None, is_bold=None):
+        # Heuristics: not a section header, not all lowercase, not too short, not junk
+        if not line or len(line) < 4:
+            return False
+        if detect_section(line):
+            return False
+        if line.islower():
+            return False
+        if re.match(r'^[\d\W]+$', line):
+            return False
+        # If font size or boldness is available, prefer larger/bold lines
+        if font_size is not None and font_size < 10:
+            return False
+        if is_bold is not None and not is_bold:
+            return False
+        # Use NLP to check if line is a noun phrase or title
+        if nlp:
+            doc = nlp(line)
+            if any(ent.label_ == 'WORK_OF_ART' for ent in doc.ents):
+                return True
+            # If the line is a single noun chunk, likely a title
+            if len(list(doc.noun_chunks)) == 1 and len(line.split()) < 10:
+                return True
+        # Fallback: Title case and not a known junk line
+        if line[0].isupper() and not any(x in line.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']):
+            return True
+        return False
+
     # Track extra fields
     extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
+
 
 
     while i < len(lines):
@@ -85,25 +122,27 @@ def parse_recipes_from_text(text):
         line = raw.strip()
         line_lower = line.lower()
 
-        # --- Enhanced Recipe Title and Serving Size Extraction ---
-        # Look for a line that looks like a real recipe title, e.g., 'Quick Dinner Beef Nachos (per group of 4)' or 'Quick Dinner Beef Nachos Serves 4'
-        title_match = re.match(r'^(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', line, re.I)
-        if not recipe_data and title_match:
-            title_candidate = title_match.group(1).strip()
-            serves_candidate = title_match.group(2) or title_match.group(3)
-            # Heuristic: skip junk/worksheet/skills lines
-            if title_candidate and len(title_candidate) > 3 and not any(x in title_candidate.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']):
-                # Save previous recipe if complete
-                if recipe_data and (recipe_data.get('ingredients') or recipe_data.get('method')):
-                    recipes.append(format_recipe(recipe_data, extra_fields))
-                recipe_data = {'name': title_candidate, 'ingredients': [], 'equipment': [], 'method': []}
-                # Reset extra_fields for each new recipe
-                extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
-                if serves_candidate:
-                    extra_fields['serving_size'] = serves_candidate
-                current_section = None
-                i += 1
-                continue
+        # --- Advanced Recipe Title and Serving Size Extraction ---
+        # Try to use advanced heuristics and NLP for title detection
+        if not recipe_data and is_likely_title(line):
+            # Try to extract serving size from the line
+            title_match = re.match(r'^(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', line, re.I)
+            title_candidate = title_match.group(1).strip() if title_match else line.strip()
+            serves_candidate = title_match.group(2) or title_match.group(3) if title_match else None
+            # Save previous recipe if complete
+            if recipe_data and (recipe_data.get('ingredients') or recipe_data.get('method')):
+                recipes.append(format_recipe(recipe_data, extra_fields))
+            recipe_data = {'name': title_candidate, 'ingredients': [], 'equipment': [], 'method': []}
+            # Reset extra_fields for each new recipe
+            extra_fields = {"notes": [], "tips": [], "prep_time": None, "serving_size": None}
+            if serves_candidate:
+                extra_fields['serving_size'] = serves_candidate
+            current_section = None
+            # Warn if the title is ambiguous (e.g., very short or generic)
+            if len(title_candidate.split()) < 2:
+                parse_warnings.append(f"Ambiguous recipe title detected: '{title_candidate}' on line {i+1}")
+            i += 1
+            continue
 
         # Recipe title marker: support more formats (e.g., 'Recipe:', all caps, etc.)
         if (re.match(r'^(making activity|recipe)\s*:', line_lower)):
