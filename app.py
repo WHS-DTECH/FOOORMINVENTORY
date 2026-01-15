@@ -1027,10 +1027,10 @@ def upload():
     if 'pdfFile' in request.files:
         try:
             if not PyPDF2:
-                return jsonify({'error': 'PyPDF2 not installed - cannot parse PDF files'}), 400
+                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='PyPDF2 not installed - cannot parse PDF files')
             pdf_file = request.files.get('pdfFile')
             if not pdf_file or pdf_file.filename == '':
-                return jsonify({'error': 'No PDF file selected'}), 400
+                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='No PDF file selected')
             # --- Page Range Support ---
             page_range_str = request.form.get('pageRange', '').strip()
             titles_only = request.form.get('titlesOnly', '').lower() == 'true'
@@ -1062,7 +1062,7 @@ def upload():
                 return sorted(pages)
             selected_pages = parse_page_range(page_range_str, total_pages)
             if not selected_pages:
-                return jsonify({'error': 'No valid pages selected. Please check your page range.'}), 400
+                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='No valid pages selected. Please check your page range.')
             full_text = ""
             for i in selected_pages:
                 page = pdf_reader.pages[i]
@@ -1089,14 +1089,10 @@ def upload():
                 try:
                     recipes_found = parse_recipes_from_text(full_text)
                     titles = [r.get('name', '').strip() for r in recipes_found if isinstance(r, dict) and r.get('name')]
-                    return jsonify({
-                        'pdf_filename': pdf_file.filename,
-                        'recipe_titles': titles,
-                        'count': len(titles)
-                    })
+                    return render_template('upload_result.html', recipes=[{'name': t} for t in titles], pdf_filename=pdf_file.filename, titles_only=True)
                 except Exception as e:
                     print(f"[ERROR] Titles only extraction failed: {e}")
-                    return jsonify({'error': f'Titles only extraction failed: {str(e)}'}), 500
+                    return render_template('upload_result.html', recipes=[], pdf_filename=pdf_file.filename, error=f'Titles only extraction failed: {str(e)}')
             # --- Full Extraction (default) ---
             try:
                 recipes_found = parse_recipes_from_text(full_text)
@@ -1113,7 +1109,7 @@ def upload():
                             }) + '\n')
                     except Exception as log_e:
                         print(f'[ANALYTICS LOG ERROR] {log_e}')
-                    return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
+                    return render_template('upload_result.html', recipes=[], pdf_filename=pdf_file.filename, error=f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.')
                 # Log flagged recipes (e.g., those with warnings or similarity issues)
                 try:
                     analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
@@ -1128,17 +1124,14 @@ def upload():
                                 }) + '\n')
                 except Exception as log_e:
                     print(f'[ANALYTICS LOG ERROR] {log_e}')
-                # Return recipes for preview/correction (do not save yet)
-                return jsonify({
-                    'recipes': recipes_found,
-                    'pdf_filename': pdf_file.filename
-                })
+                # Render confirmation page for preview/correction (do not save yet)
+                return render_template('upload_result.html', recipes=recipes_found, pdf_filename=pdf_file.filename)
             except Exception as e:
                 print(f"[ERROR] Full extraction failed: {e}")
-                return jsonify({'error': f'Full extraction failed: {str(e)}'}), 500
+                return render_template('upload_result.html', recipes=[], pdf_filename=pdf_file.filename, error=f'Full extraction failed: {str(e)}')
         except Exception as e:
             print(f"[ERROR] PDF upload failed: {e}")
-            return jsonify({'error': f'PDF upload failed: {str(e)}'}), 500
+            return render_template('upload_result.html', recipes=[], pdf_filename=None, error=f'PDF upload failed: {str(e)}')
     
     # Handle form data upload
     name = request.form.get('name', '').strip()
