@@ -1211,33 +1211,9 @@ def shoplist():
         day = monday + timedelta(days=i)
         dates.append({'date': day.strftime('%Y-%m-%d'), 'weekday': day.strftime('%A')})
 
-    # You may need to fetch bookings_list and all_recipes here if not already present
-    # For now, assume bookings_list and all_recipes are defined elsewhere in the function
-
-    # Organize bookings into a grid structure
-    grid = {}
-    for date_obj in dates:
-        for recipe in recipes_found:
-        # Duplicate detection: check for existing recipe by name (case-insensitive)
-        c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
-        existing = c.fetchone()
-        if existing:
-            skipped_count += 1
-            error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
-            print(f'[PDF UPLOAD] SKIP DUPLICATE: {recipe["name"]}')
-            continue
-        try:
-            c.execute(
-                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                (
-                     recipe['name'],
-                     json.dumps(recipe.get('ingredients', [])),
-                     recipe.get('method', ''),
-                     recipe.get('serving_size'),
-                     json.dumps(recipe.get('equipment', []))
-                     ),
-                     )
-            recipe_id = c.fetchone()[0]
+    # ...existing code for building dates list...
+    # (If you need to return dates for a template, do so here)
+    return render_template('shoplist.html', dates=dates)
             # Insert into recipe_upload
             c.execute(
                 "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
