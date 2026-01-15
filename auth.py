@@ -10,11 +10,24 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-# Role definitions based on staff codes
+
+# Role mapping between display names and legacy codes
+ROLE_NAME_TO_CODE = {
+    'Admin': 'VP',
+    'Teacher': 'DK',
+    'Technician': 'MU',
+    'Public Access': 'public',
+    'VP': 'VP',
+    'DK': 'DK',
+    'MU': 'MU',
+    'public': 'public',
+}
+ROLE_CODE_TO_NAME = {v: k for k, v in ROLE_NAME_TO_CODE.items()}
+
 # Legacy fallback - now permissions are stored in database
 ROLE_PERMISSIONS = {
     'VP': {
-        'name': 'Vice Principal',
+        'name': 'Admin',
         'routes': ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'dashboard']
     },
     'DK': {
@@ -22,11 +35,11 @@ ROLE_PERMISSIONS = {
         'routes': ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist']
     },
     'MU': {
-        'name': 'Booking Staff',
+        'name': 'Technician',
         'routes': ['recipes', 'recbk', 'booking', 'shoplist']
     },
     'public': {
-        'name': 'Public',
+        'name': 'Public Access',
         'routes': ['recbk']
     }
 }
@@ -69,8 +82,11 @@ class User(UserMixin):
     
     def _get_role(self):
         """Determine user role based on staff code."""
+        # Accept both legacy code and new display name
         if self.staff_code in ROLE_PERMISSIONS:
             return self.staff_code
+        if self.staff_code in ROLE_NAME_TO_CODE:
+            return ROLE_NAME_TO_CODE[self.staff_code]
         # Default to public if staff code not recognized
         return 'public'
     
@@ -85,10 +101,17 @@ class User(UserMixin):
             return []
     
     def get_all_roles(self):
-        """Get all roles for this user (primary + additional)."""
+        """Get all roles for this user (primary + additional), normalized to both code and display name."""
         roles = [self.role]
         roles.extend(self.additional_roles)
-        return list(set(roles))  # Remove duplicates
+        # Normalize: include both code and display name for each role
+        normalized = set()
+        for r in roles:
+            code = ROLE_NAME_TO_CODE.get(r, r)
+            name = ROLE_CODE_TO_NAME.get(code, code)
+            normalized.add(code)
+            normalized.add(name)
+        return list(normalized)
     
     def has_access(self, endpoint):
         """Check if user has access to the given endpoint."""
@@ -161,7 +184,7 @@ def require_role(*allowed_roles):
             if 'user' not in session:
                 flash('Please log in to access this page.')
                 return redirect(url_for('login'))
-            
+
             user_data = session['user']
             user = User(
                 user_data['google_id'],
@@ -169,13 +192,20 @@ def require_role(*allowed_roles):
                 user_data['name'],
                 user_data.get('staff_code')
             )
-            
-            # Check if user has any of the allowed roles (including additional roles)
-            user_roles = user.get_all_roles()
-            if not any(role in allowed_roles for role in user_roles):
+
+            # Normalize allowed_roles to include both code and display name
+            allowed = set()
+            for r in allowed_roles:
+                code = ROLE_NAME_TO_CODE.get(r, r)
+                name = ROLE_CODE_TO_NAME.get(code, code)
+                allowed.add(code)
+                allowed.add(name)
+
+            user_roles = set(user.get_all_roles())
+            if not user_roles & allowed:
                 flash(f'You do not have permission to access this page. Required role: {", ".join(allowed_roles)}')
                 return redirect(url_for('recbk'))
-            
+
             return f(*args, **kwargs)
         return decorated_function
     return decorator
