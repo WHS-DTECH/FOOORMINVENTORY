@@ -932,72 +932,81 @@ def upload():
         return render_template('upload_recipe.html')
     
     # POST request - handle form submission
-    # Check if PDF file is being uploaded
+    # Step 2: If JSON, save corrected recipes
+    if request.is_json:
+        data = request.get_json()
+        recipes_to_save = data.get('recipes', [])
+        pdf_filename = data.get('pdf_filename', 'manual_upload')
+        saved_count = 0
+        skipped_count = 0
+        error_details = []
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            try:
+                for recipe in recipes_to_save:
+                    # Duplicate detection: check for existing recipe by name (case-insensitive)
+                    c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
+                    existing = c.fetchone()
+                    if existing:
+                        skipped_count += 1
+                        error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
+                        continue
+                    try:
+                        c.execute(
+                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                            (
+                                recipe['name'],
+                                json.dumps(recipe.get('ingredients', [])),
+                                recipe.get('method', ''),
+                                recipe.get('serving_size'),
+                                json.dumps(recipe.get('equipment', []))
+                            ),
+                        )
+                        recipe_id = c.fetchone()[0]
+                        # Insert into recipe_upload
+                        c.execute(
+                            "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
+                            (recipe_id, 'pdf', pdf_filename, getattr(current_user, 'email', None))
+                        )
+                        saved_count += 1
+                    except psycopg2.IntegrityError as e:
+                        conn.rollback()
+                        skipped_count += 1
+                        error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
+            except Exception as e:
+                conn.rollback()
+                error_details.append(f'Bulk upload failed: {str(e)}')
+                saved_count = 0
+                skipped_count = len(recipes_to_save)
+        return jsonify({
+            'success': True,
+            'saved_count': saved_count,
+            'skipped_count': skipped_count,
+            'errors': error_details
+        })
+
+    # Step 1: If PDF file, parse and return detected recipes for preview/correction
     if 'pdfFile' in request.files:
         if not PyPDF2:
-            flash('PyPDF2 not installed - cannot parse PDF files', 'error')
-            return redirect(url_for('recipes_page'))
-        
+            return jsonify({'error': 'PyPDF2 not installed - cannot parse PDF files'}), 400
         pdf_file = request.files.get('pdfFile')
         if not pdf_file or pdf_file.filename == '':
-            flash('No PDF file selected', 'error')
-            return redirect(url_for('recipes_page'))
-        
+            return jsonify({'error': 'No PDF file selected'}), 400
         try:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
-            # Extract ALL text from entire PDF first (recipes span multiple pages)
-            print(f"DEBUG: PDF has {len(pdf_reader.pages)} pages")  # Debug
             full_text = ""
             for page in pdf_reader.pages:
                 full_text += page.extract_text() + "\n"
-
-            # Parse the complete text for recipes
             recipes_found = parse_recipes_from_text(full_text)
-            print(f"DEBUG: Total recipes found: {len(recipes_found)}")  # Debug
             if not recipes_found:
-                flash(f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.', 'warning')
-                return redirect(url_for('recipes_page'))
-
-            # Save recipes to database (skip duplicates)
-            saved_count = 0
-            skipped_count = 0
-            error_details = []
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                try:
-                    for recipe in recipes_found:
-                        # Duplicate detection: check for existing recipe by name (case-insensitive)
-                        c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
-                        existing = c.fetchone()
-                        if existing:
-                            skipped_count += 1
-                            error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
-                            print(f'[PDF UPLOAD] SKIP DUPLICATE: {recipe["name"]}')
-                            continue
-                        try:
-                            c.execute(
-                                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                                (
-                                    recipe['name'],
-                                    json.dumps(recipe.get('ingredients', [])),
-                                    recipe.get('method', ''),
-                                    recipe.get('serving_size'),
-                                    json.dumps(recipe.get('equipment', []))
-                                ),
-                            )
-                            recipe_id = c.fetchone()[0]
-                            # Insert into recipe_upload
-                            c.execute(
-                                "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
-                                (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
-                            )
-                            saved_count += 1
-                            print(f'[PDF UPLOAD] SUCCESS: {recipe["name"]}')
-                        except psycopg2.IntegrityError as e:
-                            conn.rollback()  # Rollback the failed insert
-                            skipped_count += 1
-                            error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
-                            print(f'[PDF UPLOAD] DB ERROR: {recipe["name"]} - {str(e)}')
+                return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.'}), 400
+            # Return recipes for preview/correction (do not save yet)
+            return jsonify({
+                'recipes': recipes_found,
+                'pdf_filename': pdf_file.filename
+            })
+        except Exception as e:
+            return jsonify({'error': f'Error parsing PDF: {str(e)}'}), 500
                         except Exception as e:
                             conn.rollback()
                             skipped_count += 1
