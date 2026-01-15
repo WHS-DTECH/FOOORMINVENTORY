@@ -968,11 +968,19 @@ def upload():
             pdf_file = request.files.get('pdfFile')
             if not pdf_file or pdf_file.filename == '':
                 return render_template('upload_result.html', recipes=[], pdf_filename=None, error='No PDF file selected')
-            # Save PDF to session (as bytes)
-            session['pdf_bytes'] = pdf_file.read()
+            # Save PDF to a temp file, store temp filename in session
+            import uuid
+            tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            tmp_filename = f"pdf_{uuid.uuid4().hex}.pdf"
+            tmp_path = os.path.join(tmp_dir, tmp_filename)
+            pdf_bytes = pdf_file.read()
+            with open(tmp_path, 'wb') as f:
+                f.write(pdf_bytes)
+            session['pdf_tmpfile'] = tmp_filename
             session['pdf_filename'] = pdf_file.filename
-            pdf_file.seek(0)
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(session['pdf_bytes']))
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
             full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
             # Extract titles only
             recipes_found = parse_recipes_from_text(full_text)
@@ -986,11 +994,15 @@ def upload():
     # Step 2: Confirmed titles, extract full details
     if request.form.get('step') == 'titles_confirmed':
         try:
-            pdf_bytes = session.get('pdf_bytes')
+            tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+            tmp_filename = session.get('pdf_tmpfile')
             pdf_filename = session.get('pdf_filename')
             selected_titles = request.form.getlist('selected_titles')
-            if not pdf_bytes or not selected_titles:
+            if not tmp_filename or not selected_titles:
                 return render_template('upload_result.html', recipes=[], pdf_filename=None, error='Session expired or no titles selected.')
+            tmp_path = os.path.join(tmp_dir, tmp_filename)
+            with open(tmp_path, 'rb') as f:
+                pdf_bytes = f.read()
             pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
             full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
             # Extract all recipes, then filter for selected titles
@@ -1006,6 +1018,8 @@ def upload():
     if request.form.get('step') == 'details_confirmed':
         recipes_to_save = session.get('recipes_to_save', [])
         pdf_filename = session.get('pdf_filename', 'manual_upload')
+        tmp_filename = session.get('pdf_tmpfile')
+        tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
         saved_count = 0
         skipped_count = 0
         error_details = []
@@ -1053,7 +1067,15 @@ def upload():
                 error_details.append(f'Bulk upload failed: {str(e)}')
                 saved_count = 0
                 skipped_count = len(recipes_to_save)
-        session.pop('pdf_bytes', None)
+        # Clean up temp file and session
+        if tmp_filename:
+            tmp_path = os.path.join(tmp_dir, tmp_filename)
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except Exception as e:
+                print(f"[WARN] Could not remove temp PDF: {e}")
+        session.pop('pdf_tmpfile', None)
         session.pop('pdf_filename', None)
         session.pop('detected_titles', None)
         session.pop('recipes_to_save', None)
