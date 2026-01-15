@@ -224,11 +224,13 @@ def upload_url():
     soup = BeautifulSoup(html, 'html.parser')
     # Example: Try to extract a recipe name and ingredients (customize as needed)
     title = soup.title.string.strip() if soup.title and soup.title.string else url
-    # Try to find ingredients (very basic, real logic should be more robust)
+    # Improved: Extract only lines that look like ingredients (e.g., '1 cup sugar')
+    import re as _re
+    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
     ingredients = []
     for tag in soup.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
-        if text and ('ingredient' in text.lower() or 'g ' in text or 'ml ' in text):
+        if text and ingredient_pattern.match(text):
             ingredients.append(text)
     if not ingredients:
         # Try schema.org/Recipe
@@ -270,10 +272,12 @@ def load_recipe_url():
     html = resp.text
     soup = BeautifulSoup(html, 'html.parser')
     title = soup.title.string.strip() if soup.title and soup.title.string else url
+    import re as _re
+    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
     ingredients = []
     for tag in soup.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
-        if text and ('ingredient' in text.lower() or 'g ' in text or 'ml ' in text):
+        if text and ingredient_pattern.match(text):
             ingredients.append(text)
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
