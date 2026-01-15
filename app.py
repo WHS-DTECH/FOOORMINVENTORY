@@ -1139,17 +1139,15 @@ def shoplist():
     monday = today - timedelta(days=today.weekday())  # Get Monday of current week
     monday = monday + timedelta(weeks=week_offset)  # Adjust by week offset
 
-    # Build dates list for the week (Monday to Friday)
-    # ...existing code for building and displaying the shopping list goes here...
 
-# (The following block should be outside the above try/except/redirect logic)
-# Example context for correct indentation:
-# for r in recipes:
-#     try:
-#         ings = json.loads(r['ingredients'] or '[]')
-#     except Exception:
-#         ings = []
-#     all_recipes[r['id']] = {'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']}
+    # Build dates list for the week (Monday to Friday)
+    dates = []
+    for i in range(5):
+        day = monday + timedelta(days=i)
+        dates.append({'date': day.strftime('%Y-%m-%d'), 'weekday': day.strftime('%A')})
+
+    # You may need to fetch bookings_list and all_recipes here if not already present
+    # For now, assume bookings_list and all_recipes are defined elsewhere in the function
 
     # Organize bookings into a grid structure
     grid = {}
