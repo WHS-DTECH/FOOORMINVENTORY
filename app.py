@@ -946,24 +946,37 @@ def upload():
                         if existing:
                             skipped_count += 1
                             error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
+                            print(f'[PDF UPLOAD] SKIP DUPLICATE: {recipe["name"]}')
                             continue
-                        c.execute(
-                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                            (
-                                recipe['name'],
-                                json.dumps(recipe.get('ingredients', [])),
-                                recipe.get('method', ''),
-                                recipe.get('serving_size'),
-                                json.dumps(recipe.get('equipment', []))
-                            ),
-                        )
-                        recipe_id = c.fetchone()[0]
-                        # Insert into recipe_upload
-                        c.execute(
-                            "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
-                            (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
-                        )
-                        saved_count += 1
+                        try:
+                            c.execute(
+                                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                                (
+                                    recipe['name'],
+                                    json.dumps(recipe.get('ingredients', [])),
+                                    recipe.get('method', ''),
+                                    recipe.get('serving_size'),
+                                    json.dumps(recipe.get('equipment', []))
+                                ),
+                            )
+                            recipe_id = c.fetchone()[0]
+                            # Insert into recipe_upload
+                            c.execute(
+                                "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
+                                (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
+                            )
+                            saved_count += 1
+                            print(f'[PDF UPLOAD] SUCCESS: {recipe["name"]}')
+                        except psycopg2.IntegrityError as e:
+                            conn.rollback()  # Rollback the failed insert
+                            skipped_count += 1
+                            error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
+                            print(f'[PDF UPLOAD] DB ERROR: {recipe["name"]} - {str(e)}')
+                        except Exception as e:
+                            conn.rollback()
+                            skipped_count += 1
+                            error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
+                            print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
                     # Commit after all inserts
                     conn.commit()
                 except Exception as e:
