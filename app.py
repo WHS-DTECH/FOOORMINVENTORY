@@ -1129,8 +1129,9 @@ def upload():
     equipment_text = request.form.get('equipment', '')
 
     # Collect structured ingredients
+
     quantities = request.form.getlist('quantity[]')
-            # nonfood_deleted = remove_nonfood_recipes()  # Function not defined; left for future use if implemented
+    units = request.form.getlist('unit[]')
     ingredients_names = request.form.getlist('ingredient[]')
 
     # Check if ingredients were parsed
