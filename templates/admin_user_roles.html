@@ -179,10 +179,12 @@ document.getElementById('removeModal').addEventListener('click', function(e) {
 });
 
 // Filter table rows to show only users with additional roles
+<!--//@Grapplinks[#PDF]-->
 document.addEventListener('DOMContentLoaded', function() {
     var filterBox = document.getElementById('filterAdditionalRoles');
     var table = document.getElementById('userRolesTable');
     if (filterBox && table) {
+        <!--//@Grapplinks[#PDF]-->
         filterBox.addEventListener('change', function() {
             var showOnlyAdditional = filterBox.checked;
             var rows = table.querySelectorAll('tbody tr');

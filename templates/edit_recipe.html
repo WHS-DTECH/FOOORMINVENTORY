@@ -89,6 +89,7 @@
     }
     document.getElementById('add-ingredient').addEventListener('click', function(){ addRow('ingredients-list','ingredient_line','remove-ing'); });
     document.getElementById('add-equipment').addEventListener('click', function(){ addRow('equipment-list','equipment_item','remove-eq'); });
+    <!--//@Grapplinks[#PDF]-->
     document.addEventListener('click', function(e){
       if(e.target && e.target.classList.contains('remove-ing')){
         e.target.parentNode.remove();

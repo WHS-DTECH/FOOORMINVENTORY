@@ -953,6 +953,7 @@ function shoplistToday() {
   shoplistMonthView.month = now.getMonth();
   renderShoplistMonthCalendar();
 }
+<!--//@Grapplinks[#PDF]-->
 document.addEventListener('DOMContentLoaded', function() {
   renderShoplistLegend();
   applyTeacherColors();
@@ -964,6 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
     monthView.style.display = '';
   }
 });
+<!--//@Grapplinks[#PDF]-->
 document.addEventListener('click', function() {
   // Re-apply colors after DOM updates
   setTimeout(applyTeacherColors, 100);
