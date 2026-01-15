@@ -269,6 +269,16 @@ def upload_url():
                 current_step = text
     if current_step:
         instructions.append(current_step.strip())
+
+    # Deduplicate ingredients while preserving order
+    seen_ingredients = set()
+    deduped_ingredients = []
+    for ing in ingredients:
+        ing_norm = ing.strip().lower()
+        if ing_norm not in seen_ingredients:
+            deduped_ingredients.append(ing)
+            seen_ingredients.add(ing_norm)
+    ingredients = deduped_ingredients
     if not ingredients:
         # Try schema.org/Recipe
         recipe_schema = soup.find('script', type='application/ld+json')
@@ -357,6 +367,16 @@ def load_recipe_url():
                 current_step = text
     if current_step:
         instructions.append(current_step.strip())
+
+    # Deduplicate ingredients while preserving order
+    seen_ingredients = set()
+    deduped_ingredients = []
+    for ing in ingredients:
+        ing_norm = ing.strip().lower()
+        if ing_norm not in seen_ingredients:
+            deduped_ingredients.append(ing)
+            seen_ingredients.add(ing_norm)
+    ingredients = deduped_ingredients
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
         if recipe_schema:
