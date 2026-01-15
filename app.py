@@ -27,7 +27,6 @@ except ImportError:
 from recipe_parser_pdf import parse_recipes_from_text
 from auth import User, get_staff_code_from_email, require_login, require_role
 
-
 # =======================
 # App Creation & Configuration
 # =======================
@@ -71,7 +70,6 @@ SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile'
 ]
 
-
 # =======================
 # Utility Functions & Filters
 # =======================
@@ -89,6 +87,20 @@ def format_nz_week(label):
         end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
         return f"{start} to {end}"
     return label
+
+# =======================
+# Error Handlers
+# =======================
+@app.errorhandler(404)
+def not_found_error(error):
+    """Render custom 404 error page."""
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Render custom 500 error page."""
+    return "An internal error occurred. Please try again later.", 500
+
 
 # =======================
 # Admin Utility Routes
