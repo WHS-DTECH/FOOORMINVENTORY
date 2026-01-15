@@ -228,6 +228,24 @@ def upload_url():
     import re as _re
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
     instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
+    # List of common cooking verbs for instructional language
+    cooking_verbs = [
+        'preheat', 'heat', 'bake', 'roast', 'grill', 'boil', 'simmer', 'fry', 'saute', 'steam', 'poach',
+        'mix', 'combine', 'stir', 'whisk', 'beat', 'fold', 'blend', 'chop', 'slice', 'dice', 'mince',
+        'add', 'pour', 'drain', 'spread', 'layer', 'arrange', 'place', 'put', 'remove', 'transfer',
+        'serve', 'garnish', 'season', 'cool', 'let', 'allow', 'cover', 'uncover', 'grease', 'line',
+        'melt', 'microwave', 'refrigerate', 'freeze', 'marinate', 'soak', 'press', 'squeeze', 'peel',
+        'cut', 'roll', 'shape', 'form', 'knead', 'proof', 'rest', 'rise', 'sprinkle', 'dust', 'coat',
+        'brush', 'glaze', 'fill', 'pipe', 'decorate', 'frost', 'ice', 'dip', 'toss', 'turn', 'flip',
+        'cook', 'reduce', 'increase', 'check', 'test', 'taste', 'adjust', 'divide', 'portion', 'weigh',
+        'measure', 'set', 'remove', 'discard', 'reserve', 'keep', 'store', 'wrap', 'unwrap', 'break',
+        'crack', 'separate', 'whip', 'pour', 'drizzle', 'spoon', 'scrape', 'baste', 'skewer', 'thread',
+        'insert', 'poke', 'prick', 'score', 'carve', 'shred', 'grate', 'zest', 'seed', 'core', 'hull',
+        'devein', 'shell', 'shuck', 'trim', 'clean', 'wash', 'rinse', 'dry', 'pat', 'blanch', 'parboil',
+        'refresh', 'shock', 'strain', 'sift', 'dust', 'coat', 'toss', 'fold', 'layer', 'arrange', 'stack',
+        'assemble', 'build', 'mount', 'gather', 'prepare', 'preheat', 'finish', 'garnish', 'serve', 'enjoy'
+    ]
+    verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
     ingredients = []
     instructions = []
     for tag in soup.find_all(['li', 'span', 'p']):
@@ -236,6 +254,8 @@ def upload_url():
             if ingredient_pattern.match(text):
                 ingredients.append(text)
             elif instruction_pattern.match(text):
+                instructions.append(text)
+            elif verb_pattern.match(text):
                 instructions.append(text)
     if not ingredients:
         # Try schema.org/Recipe
@@ -286,6 +306,23 @@ def load_recipe_url():
     import re as _re
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
     instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
+    cooking_verbs = [
+        'preheat', 'heat', 'bake', 'roast', 'grill', 'boil', 'simmer', 'fry', 'saute', 'steam', 'poach',
+        'mix', 'combine', 'stir', 'whisk', 'beat', 'fold', 'blend', 'chop', 'slice', 'dice', 'mince',
+        'add', 'pour', 'drain', 'spread', 'layer', 'arrange', 'place', 'put', 'remove', 'transfer',
+        'serve', 'garnish', 'season', 'cool', 'let', 'allow', 'cover', 'uncover', 'grease', 'line',
+        'melt', 'microwave', 'refrigerate', 'freeze', 'marinate', 'soak', 'press', 'squeeze', 'peel',
+        'cut', 'roll', 'shape', 'form', 'knead', 'proof', 'rest', 'rise', 'sprinkle', 'dust', 'coat',
+        'brush', 'glaze', 'fill', 'pipe', 'decorate', 'frost', 'ice', 'dip', 'toss', 'turn', 'flip',
+        'cook', 'reduce', 'increase', 'check', 'test', 'taste', 'adjust', 'divide', 'portion', 'weigh',
+        'measure', 'set', 'remove', 'discard', 'reserve', 'keep', 'store', 'wrap', 'unwrap', 'break',
+        'crack', 'separate', 'whip', 'pour', 'drizzle', 'spoon', 'scrape', 'baste', 'skewer', 'thread',
+        'insert', 'poke', 'prick', 'score', 'carve', 'shred', 'grate', 'zest', 'seed', 'core', 'hull',
+        'devein', 'shell', 'shuck', 'trim', 'clean', 'wash', 'rinse', 'dry', 'pat', 'blanch', 'parboil',
+        'refresh', 'shock', 'strain', 'sift', 'dust', 'coat', 'toss', 'fold', 'layer', 'arrange', 'stack',
+        'assemble', 'build', 'mount', 'gather', 'prepare', 'preheat', 'finish', 'garnish', 'serve', 'enjoy'
+    ]
+    verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
     ingredients = []
     instructions = []
     for tag in soup.find_all(['li', 'span', 'p']):
@@ -294,6 +331,8 @@ def load_recipe_url():
             if ingredient_pattern.match(text):
                 ingredients.append(text)
             elif instruction_pattern.match(text):
+                instructions.append(text)
+            elif verb_pattern.match(text):
                 instructions.append(text)
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
