@@ -270,10 +270,17 @@ def upload_url():
     if current_step:
         instructions.append(current_step.strip())
 
+    # Format: Add a space between number+unit and ingredient name
+    import re as _re2
+    formatted_ingredients = []
+    for ing in ingredients:
+        # e.g., '300mlMeadow Fresh Cream' -> '300ml Meadow Fresh Cream'
+        formatted = _re2.sub(r'^(\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+[a-zA-Z]+)([A-Z])', r'\1 \2', ing)
+        formatted_ingredients.append(formatted)
     # Deduplicate ingredients while preserving order
     seen_ingredients = set()
     deduped_ingredients = []
-    for ing in ingredients:
+    for ing in formatted_ingredients:
         ing_norm = ing.strip().lower()
         if ing_norm not in seen_ingredients:
             deduped_ingredients.append(ing)
@@ -368,10 +375,16 @@ def load_recipe_url():
     if current_step:
         instructions.append(current_step.strip())
 
+    # Format: Add a space between number+unit and ingredient name
+    import re as _re2
+    formatted_ingredients = []
+    for ing in ingredients:
+        formatted = _re2.sub(r'^(\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+[a-zA-Z]+)([A-Z])', r'\1 \2', ing)
+        formatted_ingredients.append(formatted)
     # Deduplicate ingredients while preserving order
     seen_ingredients = set()
     deduped_ingredients = []
-    for ing in ingredients:
+    for ing in formatted_ingredients:
         ing_norm = ing.strip().lower()
         if ing_norm not in seen_ingredients:
             deduped_ingredients.append(ing)
