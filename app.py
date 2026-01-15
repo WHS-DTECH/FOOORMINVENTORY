@@ -938,9 +938,15 @@ def upload():
             with get_db_connection() as conn:
                 c = conn.cursor()
                 for recipe in recipes_found:
+                    # Duplicate detection: check for existing recipe by name (case-insensitive)
+                    c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
+                    existing = c.fetchone()
+                    if existing:
+                        skipped_count += 1
+                        continue
                     try:
                         c.execute(
-                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s)",
+                            "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
                             (
                                 recipe['name'],
                                 json.dumps(recipe.get('ingredients', [])),
@@ -948,6 +954,12 @@ def upload():
                                 recipe.get('serving_size'),
                                 json.dumps(recipe.get('equipment', []))
                             ),
+                        )
+                        recipe_id = c.fetchone()[0]
+                        # Insert into recipe_upload
+                        c.execute(
+                            "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
+                            (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
                         )
                         saved_count += 1
                     except psycopg2.IntegrityError:
@@ -1074,35 +1086,38 @@ def shoplist():
     monday = monday + timedelta(weeks=week_offset)  # Adjust by week offset
 
     # Build dates list for the week (Monday to Friday)
-    dates = []
-    for i in range(5):
-        day = monday + timedelta(days=i)
-        dates.append({
-            'date': day.strftime('%Y-%m-%d'),
-            'label': day.strftime('%A %d %b'),
-            'day_name': day.strftime('%A'),
-            'nz_date': day.strftime('%d/%m/%Y')
-        })
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            # Check if recipe name already exists
+            c.execute("SELECT id, name FROM recipes WHERE name = %s", (name,))
+            existing = c.fetchone()
+            if existing:
+                flash(f'Recipe "{name}" already exists in the database. Please use a different name or edit the existing recipe.', 'warning')
+                return redirect(url_for('admin'))
+            c.execute(
+                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                (name, json.dumps(ingredients), instructions, serving_size, json.dumps(equipment_list)),
+            )
+            recipe_id = c.fetchone()[0]
+            # Insert into recipe_upload
+            c.execute(
+                "INSERT INTO recipe_upload (recipe_id, upload_source_type, uploaded_by) VALUES (%s, %s, %s)",
+                (recipe_id, 'manual', getattr(current_user, 'email', None))
+            )
+            conn.commit()
+        # Run cleaners after form insert
+        dup_deleted = remove_duplicate_recipes()
+        nonfood_deleted = remove_nonfood_recipes()
 
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        # Get all bookings for this week
-        week_start = dates[0]['date']
-        week_end = dates[4]['date']
-        c.execute('''SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, 
-                           cb.recipe_id, cb.desired_servings, r.name as recipe_name, t.last_name, t.first_name
-                    FROM class_bookings cb
-                    LEFT JOIN recipes r ON cb.recipe_id = r.id
-                    LEFT JOIN teachers t ON cb.staff_code = t.code
-                    WHERE cb.date_required BETWEEN %s AND %s
-                    ORDER BY cb.date_required, cb.period''',
-                   (week_start, week_end))
-        bookings_list = [dict(r) for r in c.fetchall()]
-        # Get all recipes for ingredient lookup
-        c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY name')
-        all_recipes = {}
-        for r in c.fetchall():
-            try:
+        flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
+    except psycopg2.IntegrityError as e:
+        flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
+        return redirect(url_for('admin'))
+    except Exception as e:
+        flash(f'Error saving recipe: {str(e)}', 'error')
+        return redirect(url_for('admin'))
+    return redirect(url_for('recipes_page'))
                 ings = json.loads(r['ingredients'] or '[]')
             except Exception:
                 ings = []
