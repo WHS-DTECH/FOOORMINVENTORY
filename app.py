@@ -1088,7 +1088,7 @@ def upload():
             if titles_only:
                 try:
                     recipes_found = parse_recipes_from_text(full_text)
-                    titles = [r.get('name', '').strip() for r in recipes_found if r.get('name')]
+                    titles = [r.get('name', '').strip() for r in recipes_found if isinstance(r, dict) and r.get('name')]
                     return jsonify({
                         'pdf_filename': pdf_file.filename,
                         'recipe_titles': titles,
