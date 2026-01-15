@@ -1152,51 +1152,51 @@ def shoplist():
     # Organize bookings into a grid structure
     grid = {}
     for date_obj in dates:
-        for period in range(1, 6):
-            grid[f"{date_obj['date']}_P{period}"] = None
-
-    for booking in bookings_list:
-        # Ensure date_required is a string in YYYY-MM-DD format
-        date_str = str(booking['date_required'])
-        if hasattr(booking['date_required'], 'strftime'):
-            date_str = booking['date_required'].strftime('%Y-%m-%d')
-        key = f"{date_str}_P{booking['period']}"
-        if key in grid:
-            grid[key] = booking
-
-    # Calculate previous and next week offsets and week label
-    prev_week = week_offset - 1 if week_offset is not None else -1
-    next_week = week_offset + 1 if week_offset is not None else 1
-    week_label = f"{dates[0]['date']} to {dates[-1]['date']}"
-
-    return render_template('shoplist.html', dates=dates, grid=grid, bookings=bookings_list, recipes=all_recipes, 
-                          week_offset=week_offset, prev_week=prev_week, next_week=next_week, week_label=week_label)
-
-
-@app.route('/api/generate-shopping-list', methods=['POST'])
-@require_role('Admin', 'Teacher', 'Technician')
-def generate_shopping_list():
-    """Auto-generate shopping list from selected booking IDs."""
-    data = request.get_json()
-    booking_ids = data.get('booking_ids', [])
-    
-    if not booking_ids:
-        return jsonify({'error': 'No bookings selected'}), 400
-    
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        # Get all bookings with their recipes
-        placeholders = ','.join(['%s'] * len(booking_ids))
-        c.execute(f'''
-            SELECT 
-                cb.id,
-                cb.recipe_id,
-                cb.desired_servings,
-                cb.date_required,
-                cb.period,
-                cb.class_code,
-                r.name as recipe_name,
-                r.ingredients,
+                    for recipe in recipes_found:
+                        # Duplicate detection: check for existing recipe by name (case-insensitive)
+                        c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
+                        existing = c.fetchone()
+                        if existing:
+                            skipped_count += 1
+                            error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
+                            print(f'[PDF UPLOAD] SKIP DUPLICATE: {recipe["name"]}')
+                            continue
+                        try:
+                            c.execute(
+                                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                                (
+                                    recipe['name'],
+                                    json.dumps(recipe.get('ingredients', [])),
+                                    recipe.get('method', ''),
+                                    recipe.get('serving_size'),
+                                    json.dumps(recipe.get('equipment', []))
+                                ),
+                            )
+                            recipe_id = c.fetchone()[0]
+                            # Insert into recipe_upload
+                            c.execute(
+                                "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
+                                (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
+                            )
+                            saved_count += 1
+                            print(f'[PDF UPLOAD] SUCCESS: {recipe["name"]}')
+                        except psycopg2.IntegrityError as e:
+                            conn.rollback()  # Rollback the failed insert
+                            skipped_count += 1
+                            error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
+                            print(f'[PDF UPLOAD] DB ERROR: {recipe["name"]} - {str(e)}')
+                        except Exception as e:
+                            conn.rollback()
+                            skipped_count += 1
+                            error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
+                            print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
+                    # Commit after all inserts
+                    conn.commit()
+            except Exception as e:
+                conn.rollback()
+                error_details.append(f'Bulk upload failed: {str(e)}')
+                saved_count = 0
+                skipped_count = len(recipes_found)
                 r.serving_size,
                 t.first_name || ' ' || t.last_name as teacher_name
             FROM class_bookings cb
