@@ -1,1 +1,62 @@
-Recipe saved successfully!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Confirm Recipe Upload</title>
+	<style>
+		body { font-family: Arial, sans-serif; margin: 2em; }
+		.recipe-list { margin-bottom: 1.5em; }
+		.confirm-btn { padding: 0.5em 1.5em; font-size: 1.1em; }
+		.status { margin-top: 1em; color: green; }
+		.error { color: red; }
+	</style>
+</head>
+<body>
+	<h2>Detected Recipe Titles</h2>
+	<ul class="recipe-list" id="recipeList">
+		<!-- Recipe titles will be inserted here -->
+	</ul>
+	<button class="confirm-btn" id="confirmBtn">CONFIRM</button>
+	<div class="status" id="statusMsg"></div>
+
+	<script>
+	// These variables should be rendered by Flask with the detected recipes and PDF filename
+	const detectedRecipes = {{ recipe_titles|tojson|safe }};
+	const pdfFilename = {{ pdf_filename|tojson|safe }};
+
+	// Populate the list
+	const listElem = document.getElementById('recipeList');
+	detectedRecipes.forEach(title => {
+		const li = document.createElement('li');
+		li.textContent = title;
+		listElem.appendChild(li);
+	});
+
+	document.getElementById('confirmBtn').onclick = async function() {
+		this.disabled = true;
+		document.getElementById('statusMsg').textContent = 'Saving recipes...';
+		try {
+			// For demo, we only send titles. In real use, send full recipe objects.
+			const response = await fetch('/upload', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					recipes: detectedRecipes.map(name => ({ name })),
+					pdf_filename: pdfFilename
+				})
+			});
+			const result = await response.json();
+			if (result.success) {
+				document.getElementById('statusMsg').textContent = `Saved: ${result.saved_count}, Skipped: ${result.skipped_count}`;
+			} else {
+				document.getElementById('statusMsg').textContent = 'Error saving recipes.';
+				document.getElementById('statusMsg').classList.add('error');
+			}
+		} catch (e) {
+			document.getElementById('statusMsg').textContent = 'Error: ' + e;
+			document.getElementById('statusMsg').classList.add('error');
+		}
+	};
+	</script>
+</body>
+</html>
