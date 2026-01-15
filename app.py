@@ -236,15 +236,7 @@ def add_shoplist_to_gcal():
 ## ...existing imports already above...
 
 
-def get_db_connection():
-
-# (Removed duplicate POSTGRES_URL, get_db_connection, and config already defined above)
-
-# Configure Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-class AnonymousUser:
+## ...existing code continues here (duplicates removed)...
     is_authenticated = False
     def is_admin(self):
         return False
