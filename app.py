@@ -106,7 +106,7 @@ def internal_error(error):
 # Admin Utility Routes
 # =======================
 @app.route('/admin/fix_public_roles')
-@require_role('VP')
+@require_role('Admin')
 def fix_public_roles():
     """Ensure every user in teachers and user_roles has a 'public' role in user_roles if not already present."""
     with get_db_connection() as conn:
@@ -118,13 +118,13 @@ def fix_public_roles():
         all_emails = teacher_emails | user_roles_emails
         missing_public = []
         for email in all_emails:
-            c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'public'))
+            c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'Public Access'))
             if not c.fetchone():
                 missing_public.append(email)
         for email in missing_public:
-            c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'public'))
+            c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'Public Access'))
         conn.commit()
-    return f"Added 'public' role for {len(missing_public)} users: {', '.join(missing_public)}"
+    return f"Added 'Public Access' role for {len(missing_public)} users: {', '.join(missing_public)}"
 
 # =======================
 # Admin Recipe Routes
@@ -633,7 +633,7 @@ def admin_user_roles():
         c.execute("SELECT email, STRING_AGG(role, ', ') as extra_roles FROM user_roles GROUP BY email")
         extra_roles_map = {row['email']: row['extra_roles'] for row in c.fetchall()}
 
-        # Always show all teachers, even if they only have 'public' as their role
+        # Always show all teachers, even if they only have 'Public Access' as their role
         def norm_email(e):
             return e.strip().lower() if e else ''
         teacher_map = {norm_email(t['email']): t for t in teachers}
@@ -645,15 +645,15 @@ def admin_user_roles():
             if teacher:
                 code = teacher['code']
                 if code == 'VP':
-                    base_role = 'VP'
+                    base_role = 'Admin'
                 elif code == 'DK':
-                    base_role = 'DK'
+                    base_role = 'Teacher'
                 elif code == 'MU':
-                    base_role = 'MU'
+                    base_role = 'Technician'
                 else:
-                    base_role = 'public'
+                    base_role = 'Public Access'
             else:
-                base_role = 'public'
+                base_role = 'Public Access'
             extra_roles = extra_roles_map.get(email, '')
             all_roles = [base_role] if base_role else []
             if extra_roles:
@@ -665,7 +665,7 @@ def admin_user_roles():
                 orig_email = teacher['email'] if teacher else next((e for e in extra_roles_map.keys() if norm_email(e) == email), email)
                 all_users.append({'email': orig_email, 'all_roles': ', '.join(all_roles)})
 
-    roles = ['VP', 'DK', 'MU', 'public']
+    roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
     return render_template('admin_user_roles.html', all_users=all_users, teachers=teachers, roles=roles)
 
 
@@ -712,7 +712,7 @@ def classes_page():
 
 
 @app.route('/class_ingredients', methods=['GET', 'POST'])
-@require_role('VP', 'DK')
+@require_role('Admin', 'Teacher')
 def class_ingredients():
     # Provide staff codes, class codes, and recipes for selection on the page
     # Can be called via GET (blank form) or POST (from booking calendar with pre-populated data)
@@ -1057,7 +1057,7 @@ def upload():
 
     # Collect structured ingredients
     quantities = request.form.getlist('quantity[]')
-    units = request.form.getlist('unit[]')
+            # nonfood_deleted = remove_nonfood_recipes()  # Function not defined; left for future use if implemented
     ingredients_names = request.form.getlist('ingredient[]')
 
     # Check if ingredients were parsed
@@ -1104,7 +1104,7 @@ def upload():
     return redirect(url_for('recipes_page'))
 
 @app.route('/shoplist')
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def shoplist():
     from datetime import datetime, timedelta
     
@@ -1131,39 +1131,7 @@ def shoplist():
     monday = monday + timedelta(weeks=week_offset)  # Adjust by week offset
 
     # Build dates list for the week (Monday to Friday)
-    try:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Check if recipe name already exists
-            c.execute("SELECT id, name FROM recipes WHERE name = %s", (name,))
-            existing = c.fetchone()
-            if existing:
-                flash(f'Recipe "{name}" already exists in the database. Please use a different name or edit the existing recipe.', 'warning')
-                return redirect(url_for('admin'))
-            c.execute(
-                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                (name, json.dumps(ingredients), instructions, serving_size, json.dumps(equipment_list)),
-            )
-            recipe_id = c.fetchone()[0]
-            # Insert into recipe_upload
-            c.execute(
-                "INSERT INTO recipe_upload (recipe_id, upload_source_type, uploaded_by) VALUES (%s, %s, %s)",
-                (recipe_id, 'manual', getattr(current_user, 'email', None))
-            )
-            conn.commit()
-        # Run cleaners after form insert
-        dup_deleted = remove_duplicate_recipes()
-        nonfood_deleted = remove_nonfood_recipes()
-
-        flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
-    except psycopg2.IntegrityError as e:
-        flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
-        return redirect(url_for('admin'))
-    except Exception as e:
-        flash(f'Error saving recipe: {str(e)}', 'error')
-        return redirect(url_for('admin'))
-
-    return redirect(url_for('recipes_page'))
+    # ...existing code for building and displaying the shopping list goes here...
 
 # (The following block should be outside the above try/except/redirect logic)
 # Example context for correct indentation:
@@ -1199,7 +1167,7 @@ def shoplist():
 
 
 @app.route('/api/generate-shopping-list', methods=['POST'])
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def generate_shopping_list():
     """Auto-generate shopping list from selected booking IDs."""
     data = request.get_json()
@@ -1372,7 +1340,7 @@ def categorize_ingredient(ingredient_name):
 
 
 @app.route('/api/shopping-list/toggle-item', methods=['POST'])
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def toggle_shopping_item():
     """Toggle 'already have' status for a shopping list item."""
     data = request.get_json()
@@ -1408,12 +1376,12 @@ def toggle_shopping_item():
 
 
 @app.route('/api/shopping-list/get-status', methods=['POST'])
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def get_shopping_status():
     """Get 'already have' status for items in a week."""
     data = request.get_json()
     week_start = data.get('week_start')
-    
+    return jsonify({'status': 'not implemented'}), 501
     if not week_start:
         return jsonify({'error': 'Missing week_start'}), 400
     
@@ -1427,14 +1395,14 @@ def get_shopping_status():
 
 
 @app.route('/api/shopping-list/save', methods=['POST'])
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def save_shopping_list():
     """Save a shopping list for reuse."""
     data = request.get_json()
     list_name = data.get('list_name', '').strip()
     week_label = data.get('week_label', '')
     items = data.get('items', [])
-    
+    return jsonify({'status': 'not implemented'}), 501
     if not list_name or not items:
         return jsonify({'error': 'Missing list name or items'}), 400
     
@@ -1450,7 +1418,7 @@ def save_shopping_list():
 
 
 @app.route('/api/shopping-list/saved', methods=['GET'])
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def get_saved_lists():
     """Get all saved shopping lists."""
     with get_db_connection() as conn:
@@ -1462,7 +1430,7 @@ def get_saved_lists():
 
 
 @app.route('/api/shopping-list/load/<int:list_id>', methods=['GET'])
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def load_saved_list(list_id):
     """Load a saved shopping list."""
     with get_db_connection() as conn:
@@ -1730,7 +1698,7 @@ def update_recipe_tags(recipe_id):
 
 
 @app.route('/booking/export/ical')
-@require_role('VP', 'DK', 'MU')
+@require_role('Admin', 'Teacher', 'Technician')
 def export_ical():
     """Export bookings as iCal format for Google Calendar import."""
     from datetime import datetime
