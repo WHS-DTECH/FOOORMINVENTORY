@@ -1101,7 +1101,33 @@ def upload():
                 # else: skip page if no text and no OCR
             recipes_found = parse_recipes_from_text(full_text)
             if not recipes_found:
+                # Log extraction failure
+                try:
+                    analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
+                    with open(analytics_path, 'a', encoding='utf-8') as f:
+                        f.write(json.dumps({
+                            'event': 'no_recipes_found',
+                            'pdf_filename': pdf_file.filename,
+                            'selected_pages': selected_pages,
+                            'timestamp': datetime.datetime.utcnow().isoformat()
+                        }) + '\n')
+                except Exception as log_e:
+                    print(f'[ANALYTICS LOG ERROR] {log_e}')
                 return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
+            # Log flagged recipes (e.g., those with warnings or similarity issues)
+            try:
+                analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
+                for recipe in recipes_found:
+                    if recipe.get('flagged', False) or recipe.get('warnings'):
+                        with open(analytics_path, 'a', encoding='utf-8') as f:
+                            f.write(json.dumps({
+                                'event': 'flagged_recipe',
+                                'pdf_filename': pdf_file.filename,
+                                'recipe': recipe,
+                                'timestamp': datetime.datetime.utcnow().isoformat()
+                            }) + '\n')
+            except Exception as log_e:
+                print(f'[ANALYTICS LOG ERROR] {log_e}')
             # Return recipes for preview/correction (do not save yet)
             return jsonify({
                 'recipes': recipes_found,
