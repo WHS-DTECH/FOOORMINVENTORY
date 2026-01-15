@@ -1,3 +1,9 @@
+try:
+    import pytesseract
+    from PIL import Image
+except ImportError:
+    pytesseract = None
+    Image = None
 # =======================
 # Feedback Route: Store user feedback on missing/misidentified recipes
 # =======================
@@ -1074,8 +1080,25 @@ def upload():
             for i in selected_pages:
                 page = pdf_reader.pages[i]
                 page_text = page.extract_text()
-                if page_text:
+                if page_text and page_text.strip():
                     full_text += page_text + "\n"
+                elif pytesseract and Image:
+                    # Try OCR if no text extracted
+                    try:
+                        xobj = page.get("/Resources", {}).get("/XObject")
+                        if xobj:
+                            for obj in xobj:
+                                img_obj = xobj[obj]
+                                if img_obj.get("/Subtype") == "/Image":
+                                    data = img_obj.get_data()
+                                    mode = "RGB" if img_obj.get("/ColorSpace") == "/DeviceRGB" else "L"
+                                    img = Image.frombytes(mode, (img_obj["/Width"], img_obj["/Height"]), data)
+                                    ocr_text = pytesseract.image_to_string(img)
+                                    if ocr_text.strip():
+                                        full_text += ocr_text + "\n"
+                    except Exception as ocr_e:
+                        print(f"[OCR ERROR] {ocr_e}")
+                # else: skip page if no text and no OCR
             recipes_found = parse_recipes_from_text(full_text)
             if not recipes_found:
                 return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
