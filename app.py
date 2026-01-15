@@ -1077,14 +1077,14 @@ def upload():
             c = conn.cursor()
             
             # Check if recipe name already exists
-            c.execute("SELECT id, name FROM recipes WHERE name = ?", (name,))
+            c.execute("SELECT id, name FROM recipes WHERE name = %s", (name,))
             existing = c.fetchone()
             if existing:
                 flash(f'Recipe "{name}" already exists in the database. Please use a different name or edit the existing recipe.', 'warning')
                 return redirect(url_for('admin'))
             
             c.execute(
-                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s)",
                 (name, json.dumps(ingredients), instructions, serving_size, json.dumps(equipment_list)),
             )
             conn.commit()
