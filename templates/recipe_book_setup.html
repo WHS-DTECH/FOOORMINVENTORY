@@ -159,32 +159,6 @@ function uploadPdfWithTitlesOption() {
         alert('Please select a PDF file first.');
         return;
     }
-    var formData = new FormData();
-    formData.append('pdfFile', pdfInput.files[0]);
-    if (titlesOnlyInput && titlesOnlyInput.checked) {
-        formData.append('titlesOnly', 'true');
-    }
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', '/upload', true);
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            try {
-                var data = JSON.parse(xhr.responseText);
-                if (data.recipe_titles) {
-                    alert('Detected recipe titles:\n' + data.recipe_titles.join('\n'));
-                } else if (data.recipes) {
-                    alert('Detected recipes:\n' + data.recipes.map(r => r.name).join('\n'));
-                } else if (data.error) {
-                    alert('Error: ' + data.error);
-                }
-            } catch (e) {
-                alert('Upload complete, but could not parse response.');
-            }
-        } else {
-            alert('Upload failed: ' + xhr.status);
-        }
-    };
-    xhr.send(formData);
-}
+    // PDF upload should use standard form POST, not AJAX. No JS needed here.
 </script>
 {% endblock %}
