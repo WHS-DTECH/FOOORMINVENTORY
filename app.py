@@ -1240,24 +1240,6 @@ def shoplist():
     # ...existing code for building dates list...
     # (If you need to return dates for a template, do so here)
     return render_template('shoplist.html', dates=dates)
-            # Insert into recipe_upload
-            c.execute(
-                "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
-                (recipe_id, 'pdf', pdf_file.filename, getattr(current_user, 'email', None))
-                )
-            saved_count += 1
-            print(f'[PDF UPLOAD] SUCCESS: {recipe["name"]}')
-        except psycopg2.IntegrityError as e:
-            conn.rollback()  # Rollback the failed insert
-            skipped_count += 1
-            error_details.append(f'DB IntegrityError for "{recipe["name"]}": {str(e)}')
-            print(f'[PDF UPLOAD] DB ERROR: {recipe["name"]} - {str(e)}')
-        except Exception as e:
-            conn.rollback()
-            skipped_count += 1
-            error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
-            print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
-        # ...existing code continues here...
     
     # Aggregate ingredients
     ingredient_map = {}  # {normalized_name: {qty, unit, original_name}}
