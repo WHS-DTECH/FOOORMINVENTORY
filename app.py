@@ -1025,15 +1025,15 @@ def upload():
 
     # Step 1: If PDF file, parse and return detected recipes for preview/correction
     if 'pdfFile' in request.files:
-        if not PyPDF2:
-            return jsonify({'error': 'PyPDF2 not installed - cannot parse PDF files'}), 400
-        pdf_file = request.files.get('pdfFile')
-        if not pdf_file or pdf_file.filename == '':
-            return jsonify({'error': 'No PDF file selected'}), 400
-        # --- Page Range Support ---
-        page_range_str = request.form.get('pageRange', '').strip()
-        titles_only = request.form.get('titlesOnly', '').lower() == 'true'
         try:
+            if not PyPDF2:
+                return jsonify({'error': 'PyPDF2 not installed - cannot parse PDF files'}), 400
+            pdf_file = request.files.get('pdfFile')
+            if not pdf_file or pdf_file.filename == '':
+                return jsonify({'error': 'No PDF file selected'}), 400
+            # --- Page Range Support ---
+            page_range_str = request.form.get('pageRange', '').strip()
+            titles_only = request.form.get('titlesOnly', '').lower() == 'true'
             pdf_reader = PyPDF2.PdfReader(pdf_file)
             total_pages = len(pdf_reader.pages)
             def parse_page_range(page_range, max_page):
@@ -1086,30 +1086,35 @@ def upload():
                         print(f"[OCR ERROR] {ocr_e}")
             # --- Titles Only Mode ---
             if titles_only:
-                recipes_found = parse_recipes_from_text(full_text)
-                titles = [r.get('name', '').strip() for r in recipes_found if r.get('name')]
-                return jsonify({
-                    'pdf_filename': pdf_file.filename,
-                    'recipe_titles': titles,
-                    'count': len(titles)
-                })
-            # --- Full Extraction (default) ---
-            recipes_found = parse_recipes_from_text(full_text)
-            if not recipes_found:
-                # Log extraction failure
                 try:
-                    analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
-                    with open(analytics_path, 'a', encoding='utf-8') as f:
-                        f.write(json.dumps({
-                            'event': 'no_recipes_found',
-                            'pdf_filename': pdf_file.filename,
-                            'selected_pages': selected_pages,
-                            'timestamp': datetime.datetime.utcnow().isoformat()
-                        }) + '\n')
-                except Exception as log_e:
-                    print(f'[ANALYTICS LOG ERROR] {log_e}')
-                return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
-            # Log flagged recipes (e.g., those with warnings or similarity issues)
+                    recipes_found = parse_recipes_from_text(full_text)
+                    titles = [r.get('name', '').strip() for r in recipes_found if r.get('name')]
+                    return jsonify({
+                        'pdf_filename': pdf_file.filename,
+                        'recipe_titles': titles,
+                        'count': len(titles)
+                    })
+                except Exception as e:
+                    print(f"[ERROR] Titles only extraction failed: {e}")
+                    return jsonify({'error': f'Titles only extraction failed: {str(e)}'}), 500
+            # --- Full Extraction (default) ---
+            try:
+                recipes_found = parse_recipes_from_text(full_text)
+                if not recipes_found:
+                    # Log extraction failure
+                    try:
+                        analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
+                        with open(analytics_path, 'a', encoding='utf-8') as f:
+                            f.write(json.dumps({
+                                'event': 'no_recipes_found',
+                                'pdf_filename': pdf_file.filename,
+                                'selected_pages': selected_pages,
+                                'timestamp': datetime.datetime.utcnow().isoformat()
+                            }) + '\n')
+                    except Exception as log_e:
+                        print(f'[ANALYTICS LOG ERROR] {log_e}')
+                    return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
+                # Log flagged recipes (e.g., those with warnings or similarity issues)
                 try:
                     analytics_path = os.path.join(os.path.dirname(__file__), 'extraction_analytics.log')
                     for recipe in recipes_found:
@@ -1123,13 +1128,17 @@ def upload():
                                 }) + '\n')
                 except Exception as log_e:
                     print(f'[ANALYTICS LOG ERROR] {log_e}')
-            # Return recipes for preview/correction (do not save yet)
-            return jsonify({
-                'recipes': recipes_found,
-                'pdf_filename': pdf_file.filename
-            })
+                # Return recipes for preview/correction (do not save yet)
+                return jsonify({
+                    'recipes': recipes_found,
+                    'pdf_filename': pdf_file.filename
+                })
+            except Exception as e:
+                print(f"[ERROR] Full extraction failed: {e}")
+                return jsonify({'error': f'Full extraction failed: {str(e)}'}), 500
         except Exception as e:
-            return jsonify({'error': f'Error parsing PDF: {str(e)}'}), 500
+            print(f"[ERROR] PDF upload failed: {e}")
+            return jsonify({'error': f'PDF upload failed: {str(e)}'}), 500
     
     # Handle form data upload
     name = request.form.get('name', '').strip()
