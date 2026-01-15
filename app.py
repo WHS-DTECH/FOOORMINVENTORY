@@ -226,7 +226,8 @@ def upload_url():
     title = soup.title.string.strip() if soup.title and soup.title.string else url
     # Improved: Extract only lines that look like ingredients (e.g., '1 cup sugar')
     import re as _re
-    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
+    # Match number+unit (with or without space), e.g., '300ml', '2 cups', '1½tbsp'
+    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
     instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
     # List of common cooking verbs for instructional language
     cooking_verbs = [
@@ -315,7 +316,7 @@ def load_recipe_url():
     soup = BeautifulSoup(html, 'html.parser')
     title = soup.title.string.strip() if soup.title and soup.title.string else url
     import re as _re
-    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
+    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
     instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
     cooking_verbs = [
         'preheat', 'heat', 'bake', 'roast', 'grill', 'boil', 'simmer', 'fry', 'saute', 'steam', 'poach',
