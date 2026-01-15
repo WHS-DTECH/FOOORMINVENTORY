@@ -1,3 +1,14 @@
+def simple_similarity(a, b):
+    """Return a similarity score between 0 and 1 based on Levenshtein distance (if available) or substring match."""
+    try:
+        import Levenshtein
+        return Levenshtein.ratio(a.lower(), b.lower())
+    except ImportError:
+        # Fallback: substring match
+        a, b = a.lower(), b.lower()
+        if a in b or b in a:
+            return 0.8
+        return 0.0
 
 # =======================
 # Imports (Standard, Third-party, Local)
@@ -943,6 +954,9 @@ def upload():
         with get_db_connection() as conn:
             c = conn.cursor()
             try:
+                # Fetch all existing recipe names for similarity check
+                c.execute("SELECT name FROM recipes")
+                all_existing_names = [row['name'] for row in c.fetchall()]
                 for recipe in recipes_to_save:
                     # Duplicate detection: check for existing recipe by name (case-insensitive)
                     c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
@@ -951,6 +965,13 @@ def upload():
                         skipped_count += 1
                         error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
                         continue
+                    # Similarity check
+                    similar = []
+                    for existing_name in all_existing_names:
+                        if simple_similarity(recipe['name'], existing_name) >= 0.7:
+                            similar.append(existing_name)
+                    if similar:
+                        error_details.append(f'Warning: "{recipe["name"]}" is similar to existing recipe(s): {", ".join(similar)}.')
                     try:
                         c.execute(
                             "INSERT INTO recipes (name, ingredients, instructions, serving_size, equipment) VALUES (%s, %s, %s, %s, %s) RETURNING id",
