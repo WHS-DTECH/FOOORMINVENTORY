@@ -85,8 +85,13 @@
             alert('Please select a PDF file first.');
             return;
         }
+        const pageRangeInput = document.getElementById('pageRange');
+        const pageRange = pageRangeInput ? pageRangeInput.value.trim() : '';
         const formData = new FormData();
         formData.append('pdfFile', pdfInput.files[0]);
+        if (pageRange) {
+            formData.append('pageRange', pageRange);
+        }
         fetch('/upload', {
             method: 'POST',
             body: formData

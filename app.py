@@ -992,14 +992,48 @@ def upload():
         pdf_file = request.files.get('pdfFile')
         if not pdf_file or pdf_file.filename == '':
             return jsonify({'error': 'No PDF file selected'}), 400
+        # --- Page Range Support ---
+        page_range_str = request.form.get('pageRange', '').strip()
         try:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
+            total_pages = len(pdf_reader.pages)
+            # Parse page range string (e.g. '1-3,5,7-8')
+            def parse_page_range(page_range, max_page):
+                if not page_range:
+                    return list(range(max_page))
+                pages = set()
+                for part in page_range.split(','):
+                    part = part.strip()
+                    if '-' in part:
+                        start, end = part.split('-')
+                        try:
+                            start = int(start) - 1
+                            end = int(end) - 1
+                        except ValueError:
+                            continue
+                        if start < 0 or end >= max_page or start > end:
+                            continue
+                        pages.update(range(start, end + 1))
+                    else:
+                        try:
+                            idx = int(part) - 1
+                        except ValueError:
+                            continue
+                        if 0 <= idx < max_page:
+                            pages.add(idx)
+                return sorted(pages)
+            selected_pages = parse_page_range(page_range_str, total_pages)
+            if not selected_pages:
+                return jsonify({'error': 'No valid pages selected. Please check your page range.'}), 400
             full_text = ""
-            for page in pdf_reader.pages:
-                full_text += page.extract_text() + "\n"
+            for i in selected_pages:
+                page = pdf_reader.pages[i]
+                page_text = page.extract_text()
+                if page_text:
+                    full_text += page_text + "\n"
             recipes_found = parse_recipes_from_text(full_text)
             if not recipes_found:
-                return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the PDF ({len(pdf_reader.pages)} pages scanned). Try using manual recipe upload instead.'}), 400
+                return jsonify({'error': f'No recipes found with Ingredients, Equipment, and Method sections in the selected PDF pages ({len(selected_pages)} pages scanned). Try using manual recipe upload instead.'}), 400
             # Return recipes for preview/correction (do not save yet)
             return jsonify({
                 'recipes': recipes_found,
