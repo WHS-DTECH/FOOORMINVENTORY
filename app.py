@@ -30,18 +30,57 @@ def preview_pdf_recipes():
     try:
         pdf_reader = PyPDF2.PdfReader(pdf_file)
         preview = []
-        for i, page in enumerate(pdf_reader.pages):
+        # Handle page range selection
+        page_range = request.form.get('pageRange', '').strip()
+        total_pages = len(pdf_reader.pages)
+        def parse_page_range(page_range, total_pages):
+            if not page_range:
+                return list(range(total_pages))
+            pages = set()
+            for part in page_range.split(','):
+                part = part.strip()
+                if '-' in part:
+                    start, end = part.split('-')
+                    try:
+                        start, end = int(start)-1, int(end)-1
+                        for p in range(start, end+1):
+                            if 0 <= p < total_pages:
+                                pages.add(p)
+                    except:
+                        continue
+                else:
+                    try:
+                        p = int(part)-1
+                        if 0 <= p < total_pages:
+                            pages.add(p)
+                    except:
+                        continue
+            return sorted(pages)
+
+        selected_pages = parse_page_range(page_range, total_pages)
+        for i in selected_pages:
+            page = pdf_reader.pages[i]
             text = page.extract_text() or ''
-            # Use the same title extraction logic as the parser, but just for titles
             import re
             lines = text.split('\n')
             for line in lines:
                 line = line.strip()
-                # Heuristic: looks like a real recipe title
+                # Enhanced title detection: all-caps, title case, or bold-like patterns
+                # (Font info not available in PyPDF2, so use heuristics)
+                if not line or len(line) < 4:
+                    continue
+                # Exclude common non-recipe headings
+                if any(x in line.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective', 'ingredients', 'method', 'instructions', 'equipment', 'notes', 'introduction', 'contents', 'index', 'page', 'copyright', 'school', 'teacher', 'student', 'class', 'term', 'week', 'lesson', 'date', 'name', 'recipe book', 'table of', 'nutrition', 'allergy', 'serving suggestion']):
+                    continue
+                # Look for lines that are all uppercase or title case (likely titles)
+                is_all_caps = line.isupper() and len(line.split()) <= 8
+                is_title_case = line.istitle() and len(line.split()) <= 8
+                # Also match original regex for 'serves' or '(per group of ...)'
                 title_match = re.match(r'^(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', line, re.I)
-                if title_match:
-                    title_candidate = title_match.group(1).strip()
-                    if title_candidate and len(title_candidate) > 3 and not any(x in title_candidate.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']):
+                if is_all_caps or is_title_case or (title_match and title_match.group(1).strip()):
+                    title_candidate = title_match.group(1).strip() if title_match else line.strip()
+                    # Filter out lines that are too generic or short
+                    if title_candidate and len(title_candidate) > 3 and not any(x in title_candidate.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective', 'ingredients', 'method', 'instructions', 'equipment', 'notes', 'introduction', 'contents', 'index', 'page', 'copyright', 'school', 'teacher', 'student', 'class', 'term', 'week', 'lesson', 'date', 'name', 'recipe book', 'table of', 'nutrition', 'allergy', 'serving suggestion']):
                         preview.append({'title': title_candidate, 'page': i+1})
         return jsonify({'recipes': preview, 'page_count': len(pdf_reader.pages)})
     except Exception as e:

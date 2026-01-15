@@ -22,6 +22,11 @@
                 <h2>Upload Recipe</h2>
                 <label for="pdfFile">Upload Recipe PDF:</label>
                 <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf">
+                <div style="margin:8px 0;">
+                    <label for="pageRange">Page Range (e.g. 1-10 or 3,5,7):</label>
+                    <input type="text" id="pageRange" name="pageRange" placeholder="All" style="width:120px;">
+                    <span style="font-size:0.9em;color:#666;">(Optional)</span>
+                </div>
                 <button type="button" onclick="previewPdfRecipes()">Preview PDF Recipes</button>
                 {% if from_url %}
                 <p style="background:#fff3cd;padding:8px;border:1px solid #ffc107;border-radius:4px;">
@@ -78,6 +83,10 @@
         }
         const formData = new FormData();
         formData.append('pdfFile', pdfInput.files[0]);
+        const pageRange = document.getElementById('pageRange').value.trim();
+        if (pageRange) {
+            formData.append('pageRange', pageRange);
+        }
         fetch('/preview_pdf_recipes', {
             method: 'POST',
             body: formData
@@ -104,9 +113,10 @@
         } else {
             html += '<ul>';
             recipes.forEach((r, idx) => {
-                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-title="${r.title}" data-page="${r.page}" checked> <b>${r.title}</b> (Page ${r.page})</li>`;
+                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-title="${r.title}" data-page="${r.page}" checked> <input type="text" class="pdf-recipe-title-input" value="${r.title.replace(/"/g, '&quot;')}" data-idx="${idx}" style="width: 60%; font-weight: bold;"> (Page ${r.page})</li>`;
             });
             html += '</ul>';
+            html += '<p style="font-size:0.9em; color:#555;">You can edit recipe titles before confirming upload.</p>';
         }
         listDiv.innerHTML = html;
         modal.style.display = 'block';
@@ -117,12 +127,23 @@
     }
 
     function confirmPdfUpload() {
-        // Collect selected recipes
+        // Collect selected recipes and their (possibly edited) titles
         const checkboxes = document.querySelectorAll('.pdf-recipe-checkbox:checked');
         if (checkboxes.length === 0) {
             alert('Please select at least one recipe to upload.');
             return;
         }
+        // Get edited titles
+        const titleInputs = document.querySelectorAll('.pdf-recipe-title-input');
+        checkboxes.forEach(cb => {
+            const li = cb.closest('li');
+            if (li) {
+                const input = li.querySelector('.pdf-recipe-title-input');
+                if (input) {
+                    cb.setAttribute('data-title', input.value);
+                }
+            }
+        });
         // Optionally, pass selected titles/pages to backend for upload (not implemented here)
         // For now, just close modal and submit the form
         closePdfPreviewModal();
