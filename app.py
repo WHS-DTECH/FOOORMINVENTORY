@@ -1,3 +1,27 @@
+# =======================
+# Feedback Route: Store user feedback on missing/misidentified recipes
+# =======================
+@app.route('/report_missing_recipes', methods=['POST'])
+@require_role('VP')
+def report_missing_recipes():
+    data = request.get_json()
+    pdf_filename = data.get('pdf_filename', 'unknown')
+    missing_recipes = data.get('missing_recipes', [])
+    user_email = getattr(current_user, 'email', 'unknown')
+    feedback_entry = {
+        'pdf_filename': pdf_filename,
+        'missing_recipes': missing_recipes,
+        'user_email': user_email,
+        'timestamp': datetime.datetime.utcnow().isoformat()
+    }
+    # Store feedback in a feedback table or log file (here: append to feedback.log)
+    try:
+        feedback_path = os.path.join(os.path.dirname(__file__), 'feedback.log')
+        with open(feedback_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(feedback_entry) + '\n')
+        return jsonify({'success': True, 'message': 'Thank you for your feedback!'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Failed to store feedback: {str(e)}'}), 500
 def simple_similarity(a, b):
     """Return a similarity score between 0 and 1 based on Levenshtein distance (if available) or substring match."""
     try:
