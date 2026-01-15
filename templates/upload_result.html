@@ -8,55 +8,77 @@
 		.recipe-list { margin-bottom: 1.5em; }
 		.confirm-btn { padding: 0.5em 1.5em; font-size: 1.1em; }
 		.status { margin-top: 1em; color: green; }
-		.error { color: red; }
-	</style>
-</head>
-<body>
-	<h2>Detected Recipe Titles</h2>
-	<ul class="recipe-list" id="recipeList">
-		<!-- Recipe titles will be inserted here -->
-	</ul>
-	<button class="confirm-btn" id="confirmBtn">CONFIRM</button>
-	<div class="status" id="statusMsg"></div>
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Confirm Recipe Upload</title>
+			<style>
+				body { font-family: Arial, sans-serif; margin: 2em; }
+				.recipe-list { margin-bottom: 1.5em; }
+				.recipe-block { border: 1px solid #ccc; padding: 1em; margin-bottom: 1em; border-radius: 6px; background: #fafafa; }
+				.confirm-btn { padding: 0.5em 1.5em; font-size: 1.1em; }
+				.status { margin-top: 1em; color: green; }
+				.error { color: red; }
+				.section-title { font-weight: bold; margin-top: 0.5em; }
+				ul, ol { margin: 0.2em 0 0.5em 1.5em; }
+			</style>
+		</head>
+		<body>
+			<h2>Detected Recipes</h2>
+			<div class="recipe-list" id="recipeList">
+				<!-- Recipe details will be inserted here -->
+			</div>
+			<button class="confirm-btn" id="confirmBtn">CONFIRM</button>
+			<div class="status" id="statusMsg"></div>
 
-	<script>
-	// These variables should be rendered by Flask with the detected recipes and PDF filename
-	const detectedRecipes = {{ recipe_titles|tojson|safe }};
-	const pdfFilename = {{ pdf_filename|tojson|safe }};
+			<script>
+			// These variables should be rendered by Flask with the detected recipes and PDF filename
+			const detectedRecipes = {{ recipes|tojson|safe }};
+			const pdfFilename = {{ pdf_filename|tojson|safe }};
 
-	// Populate the list
-	const listElem = document.getElementById('recipeList');
-	detectedRecipes.forEach(title => {
-		const li = document.createElement('li');
-		li.textContent = title;
-		listElem.appendChild(li);
-	});
-
-	document.getElementById('confirmBtn').onclick = async function() {
-		this.disabled = true;
-		document.getElementById('statusMsg').textContent = 'Saving recipes...';
-		try {
-			// For demo, we only send titles. In real use, send full recipe objects.
-			const response = await fetch('/upload', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					recipes: detectedRecipes.map(name => ({ name })),
-					pdf_filename: pdfFilename
-				})
+			// Populate the list with full details
+			const listElem = document.getElementById('recipeList');
+			detectedRecipes.forEach(recipe => {
+				const div = document.createElement('div');
+				div.className = 'recipe-block';
+				div.innerHTML = `
+					<div><b>Name:</b> ${recipe.name || ''}</div>
+					<div class="section-title">Ingredients:</div>
+					<ul>${(recipe.ingredients || []).map(ing => `<li>${typeof ing === 'string' ? ing : (ing.quantity ? ing.quantity + ' ' : '') + (ing.unit ? ing.unit + ' ' : '') + (ing.ingredient || ing)}</li>`).join('')}</ul>
+					<div class="section-title">Equipment:</div>
+					<ul>${(recipe.equipment || []).map(eq => `<li>${eq}</li>`).join('')}</ul>
+					<div class="section-title">Method:</div>
+					<ol>${(recipe.method || '').split('\n').map(step => `<li>${step}</li>`).join('')}</ol>
+					<div><b>Serving Size:</b> ${recipe.serving_size || ''}</div>
+				`;
+				listElem.appendChild(div);
 			});
-			const result = await response.json();
-			if (result.success) {
-				document.getElementById('statusMsg').textContent = `Saved: ${result.saved_count}, Skipped: ${result.skipped_count}`;
-			} else {
-				document.getElementById('statusMsg').textContent = 'Error saving recipes.';
-				document.getElementById('statusMsg').classList.add('error');
-			}
-		} catch (e) {
-			document.getElementById('statusMsg').textContent = 'Error: ' + e;
-			document.getElementById('statusMsg').classList.add('error');
-		}
-	};
-	</script>
-</body>
-</html>
+
+			document.getElementById('confirmBtn').onclick = async function() {
+				this.disabled = true;
+				document.getElementById('statusMsg').textContent = 'Saving recipes...';
+				try {
+					const response = await fetch('/upload', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							recipes: detectedRecipes,
+							pdf_filename: pdfFilename
+						})
+					});
+					const result = await response.json();
+					if (result.success) {
+						document.getElementById('statusMsg').textContent = `Saved: ${result.saved_count}, Skipped: ${result.skipped_count}`;
+					} else {
+						document.getElementById('statusMsg').textContent = 'Error saving recipes.';
+						document.getElementById('statusMsg').classList.add('error');
+					}
+				} catch (e) {
+					document.getElementById('statusMsg').textContent = 'Error: ' + e;
+					document.getElementById('statusMsg').classList.add('error');
+				}
+			};
+			</script>
+		</body>
+		</html>
