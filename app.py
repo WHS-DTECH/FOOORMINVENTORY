@@ -1041,44 +1041,6 @@ def upload():
             })
         except Exception as e:
             return jsonify({'error': f'Error parsing PDF: {str(e)}'}), 500
-                        except Exception as e:
-                            conn.rollback()
-                            skipped_count += 1
-                            error_details.append(f'Error for "{recipe["name"]}": {str(e)}')
-                            print(f'[PDF UPLOAD] ERROR: {recipe["name"]} - {str(e)}')
-                    # Commit after all inserts
-                    conn.commit()
-                except Exception as e:
-                    conn.rollback()
-                    error_details.append(f'Bulk upload failed: {str(e)}')
-                    saved_count = 0
-                    skipped_count = len(recipes_found)
-
-            # Run cleaners after insert (temporarily disabled for debugging)
-            # dup_deleted = remove_duplicate_recipes()
-            # nonfood_deleted = remove_nonfood_recipes()
-            dup_deleted = []
-            nonfood_deleted = []
-
-            message = f'Saved {saved_count} new recipe(s).'
-            if skipped_count > 0:
-                message += f' Skipped {skipped_count} recipe(s) due to errors or duplicates.'
-            if error_details:
-                message += ' Errors: ' + '; '.join(error_details)
-            # if len(dup_deleted) > 0 or len(nonfood_deleted) > 0:
-            #     message += f' Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.'
-
-            flash(message, 'success')
-            return redirect(url_for('recipes_page'))
-        except Exception as e:
-            # Rollback if a transaction is open
-            try:
-                if 'conn' in locals():
-                    conn.rollback()
-            except Exception:
-                pass
-            flash(f'Error uploading PDF: {str(e)}', 'error')
-            return redirect(url_for('recipes_page'))
     
     # Handle form data upload
     name = request.form.get('name', '').strip()
@@ -1227,17 +1189,17 @@ def shoplist():
                     # Commit after all inserts
                     conn.commit()
             except Exception as e:
-                conn.rollback()
-                error_details.append(f'Bulk upload failed: {str(e)}')
-                saved_count = 0
-                skipped_count = len(recipes_found)
-                r.serving_size,
-                t.first_name || ' ' || t.last_name as teacher_name
-            FROM class_bookings cb
-            LEFT JOIN recipes r ON cb.recipe_id = r.id
-            LEFT JOIN teachers t ON cb.staff_code = t.code
-            WHERE cb.id IN ({placeholders})
-        ''', booking_ids)
+    conn.rollback()
+    error_details.append(f'Bulk upload failed: {str(e)}')
+    saved_count = 0
+    skipped_count = len(recipes_found)
+    r.serving_size,
+    t.first_name || ' ' || t.last_name as teacher_name
+        FROM class_bookings cb
+        LEFT JOIN recipes r ON cb.recipe_id = r.id
+        LEFT JOIN teachers t ON cb.staff_code = t.code
+        WHERE cb.id IN ({placeholders})
+    ''', booking_ids)
         bookings = [dict(row) for row in c.fetchall()]
     
     # Aggregate ingredients
