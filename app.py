@@ -111,8 +111,8 @@ try:
 except ImportError:
     requests = None
     BeautifulSoup = None
-from recipe_parser_pdf import parse_recipes_from_text, format_recipe, parse_ingredient_line
-from auth import User, get_staff_code_from_email, require_login, require_role, public_with_auth
+from recipe_parser_pdf import parse_recipes_from_text
+from auth import User, get_staff_code_from_email, require_login, require_role
 
 # =======================
 # App Configuration
