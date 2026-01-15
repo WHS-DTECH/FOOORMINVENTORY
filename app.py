@@ -1,47 +1,7 @@
-try:
-    import pytesseract
-    from PIL import Image
-except ImportError:
-    pytesseract = None
-    Image = None
-# =======================
-# Imports (Standard, Third-party, Local)
-# =======================
-# =======================
-# Feedback Route: Store user feedback on missing/misidentified recipes
-# =======================
-@app.route('/report_missing_recipes', methods=['POST'])
-@require_role('VP')
-def report_missing_recipes():
-    data = request.get_json()
-    pdf_filename = data.get('pdf_filename', 'unknown')
-    missing_recipes = data.get('missing_recipes', [])
-    user_email = getattr(current_user, 'email', 'unknown')
-    feedback_entry = {
-        'pdf_filename': pdf_filename,
-        'missing_recipes': missing_recipes,
-        'user_email': user_email,
-        'timestamp': datetime.datetime.utcnow().isoformat()
-    }
-    # Store feedback in a feedback table or log file (here: append to feedback.log)
-    try:
-        feedback_path = os.path.join(os.path.dirname(__file__), 'feedback.log')
-        with open(feedback_path, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(feedback_entry) + '\n')
-        return jsonify({'success': True, 'message': 'Thank you for your feedback!'}), 200
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Failed to store feedback: {str(e)}'}), 500
-def simple_similarity(a, b):
-    """Return a similarity score between 0 and 1 based on Levenshtein distance (if available) or substring match."""
-    try:
-        import Levenshtein
-        return Levenshtein.ratio(a.lower(), b.lower())
-    except ImportError:
-        # Fallback: substring match
-        a, b = a.lower(), b.lower()
-        if a in b or b in a:
-            return 0.8
-        return 0.0
+"""
+Inventory app main entrypoint
+Best practice: All imports first, then utility functions, then app creation/config, then routes.
+"""
 
 # =======================
 # Imports (Standard, Third-party, Local)
@@ -52,6 +12,13 @@ import datetime
 import json
 import csv
 import io
+try:
+    import uuid
+    import pytesseract
+    from PIL import Image
+except ImportError:
+    pytesseract = None
+    Image = None
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, current_user
@@ -70,6 +37,23 @@ except ImportError:
     BeautifulSoup = None
 from recipe_parser_pdf import parse_recipes_from_text
 from auth import User, get_staff_code_from_email, require_login, require_role
+
+# =======================
+# Utility Functions
+# =======================
+def simple_similarity(a, b):
+    """Return a similarity score between 0 and 1 based on Levenshtein distance (if available) or substring match."""
+    try:
+        import Levenshtein
+        return Levenshtein.ratio(a.lower(), b.lower())
+    except ImportError:
+        # Fallback: substring match
+        a, b = a.lower(), b.lower()
+        if a in b or b in a:
+            return 0.8
+        return 0.0
+
+
 
 # =======================
 # App Creation & Configuration
@@ -1193,9 +1177,14 @@ def upload():
             conn.commit()
             
         # Run cleaners after form insert
-        dup_deleted = remove_duplicate_recipes()
-        nonfood_deleted = remove_nonfood_recipes()
-
+        try:
+            dup_deleted = remove_duplicate_recipes()
+        except Exception:
+            dup_deleted = []
+        try:
+            nonfood_deleted = remove_nonfood_recipes()
+        except Exception:
+            nonfood_deleted = []
         flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
     except psycopg2.IntegrityError as e:
         flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
