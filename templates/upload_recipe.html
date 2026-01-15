@@ -16,22 +16,28 @@
     <div class="container">
     <!-- PDF Preview Modal -->
     {% include 'preview_pdf_modal.html' %}
-    <form id="pdfUploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+    <!-- PDF Upload Form -->
+    <form id="pdfUploadForm" action="/upload" method="POST" enctype="multipart/form-data" style="margin-bottom:2em;">
+        <h2>Upload Recipe PDF</h2>
+        <label for="pdfFile">Upload Recipe PDF:</label>
+        <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf">
+        <div style="margin:8px 0;">
+            <label for="pageRange">Page Range (e.g. 1-10 or 3,5,7):</label>
+            <input type="text" id="pageRange" name="pageRange" placeholder="All" style="width:120px;">
+            <span style="font-size:0.9em;color:#666;">(Optional)</span>
+        </div>
+        <div style="margin:8px 0;">
+            <input type="checkbox" id="titlesOnly" name="titlesOnly" value="true">
+            <label for="titlesOnly">Show only recipe titles (first step)</label>
+        </div>
+        <button type="submit">Upload PDF and Preview Recipes</button>
+    </form>
+
+    <!-- Manual Entry Form -->
+    <form id="manualEntryForm" action="/upload" method="POST">
         <div class="flex-row">
             <div class="left-column">
-                <h2>Upload Recipe</h2>
-                <label for="pdfFile">Upload Recipe PDF:</label>
-                <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf">
-                <div style="margin:8px 0;">
-                    <label for="pageRange">Page Range (e.g. 1-10 or 3,5,7):</label>
-                    <input type="text" id="pageRange" name="pageRange" placeholder="All" style="width:120px;">
-                    <span style="font-size:0.9em;color:#666;">(Optional)</span>
-                </div>
-                <div style="margin:8px 0;">
-                    <input type="checkbox" id="titlesOnly" name="titlesOnly" value="true">
-                    <label for="titlesOnly">Show only recipe titles (first step)</label>
-                </div>
-                <button type="submit">Upload PDF and Preview Recipes</button>
+                <h2>Manual Recipe Entry</h2>
                 {% if from_url %}
                 <p style="background:#fff3cd;padding:8px;border:1px solid #ffc107;border-radius:4px;">
                     <strong>⚠️ Recipe loaded from URL</strong> - Please review all fields carefully before saving.
