@@ -1,0 +1,22 @@
+Year7RecipeBook.pdf:  
+    Fruit Smoothie (Pg 16), 
+    Vietnamese Style Lettuce Cups (Pg 26), 
+    Courgette and Cheese Muffins (Pg 32), 
+    Banana & Chocolate chip Muffins (Pg 36), 
+    Vegetable Couscous (Pg 43), 
+    Apple and Sultana Crumble (Pg 45), 
+    Forfar Bridies (Pg 49), 
+    Beef Nachos (Pg 53), 
+    S'more cake in a mug (Pg 55)
+
+Year8RecipeBook.pdf: 
+    Mini Carrot Cakes (Pg 8), 
+    Mushroom Risotto (Pg 19),
+    Fajitas (Pg 23), 
+    Pizza (Pg 27), 
+    Cauliflower Cheese (Pg 33), 
+
+both Year 7 and 8 Recipes book.pdfs:
+    Vietnamese Style Lettuce Cups (Pg 13), 
+    Vegetable Couscous (Pg 41)
+    Beef Nachos (Pg 45)?  
