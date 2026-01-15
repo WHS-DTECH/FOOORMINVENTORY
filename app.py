@@ -960,29 +960,67 @@ def upload():
         return render_template('upload_recipe.html')
     
     # POST request - handle form submission
-    # Step 2: If JSON, save corrected recipes
-    if request.is_json:
-        data = request.get_json()
-        recipes_to_save = data.get('recipes', [])
-        pdf_filename = data.get('pdf_filename', 'manual_upload')
+    # Step 1: PDF upload, extract and show titles
+    if 'pdfFile' in request.files:
+        try:
+            if not PyPDF2:
+                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='PyPDF2 not installed - cannot parse PDF files')
+            pdf_file = request.files.get('pdfFile')
+            if not pdf_file or pdf_file.filename == '':
+                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='No PDF file selected')
+            # Save PDF to session (as bytes)
+            session['pdf_bytes'] = pdf_file.read()
+            session['pdf_filename'] = pdf_file.filename
+            pdf_file.seek(0)
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(session['pdf_bytes']))
+            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
+            # Extract titles only
+            recipes_found = parse_recipes_from_text(full_text)
+            titles = [r.get('name', '').strip() for r in recipes_found if isinstance(r, dict) and r.get('name')]
+            session['detected_titles'] = titles
+            return render_template('upload_result.html', recipes=[{'name': t} for t in titles], pdf_filename=pdf_file.filename, step='titles')
+        except Exception as e:
+            print(f"[ERROR] PDF upload failed: {e}")
+            return render_template('upload_result.html', recipes=[], pdf_filename=None, error=f'PDF upload failed: {str(e)}')
+
+    # Step 2: Confirmed titles, extract full details
+    if request.form.get('step') == 'titles_confirmed':
+        try:
+            pdf_bytes = session.get('pdf_bytes')
+            pdf_filename = session.get('pdf_filename')
+            selected_titles = request.form.getlist('selected_titles')
+            if not pdf_bytes or not selected_titles:
+                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='Session expired or no titles selected.')
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
+            # Extract all recipes, then filter for selected titles
+            all_recipes = parse_recipes_from_text(full_text)
+            recipes_to_show = [r for r in all_recipes if r.get('name') in selected_titles]
+            session['recipes_to_save'] = recipes_to_show
+            return render_template('upload_result.html', recipes=recipes_to_show, pdf_filename=pdf_filename, step='details')
+        except Exception as e:
+            print(f"[ERROR] Full details extraction failed: {e}")
+            return render_template('upload_result.html', recipes=[], pdf_filename=None, error=f'Full details extraction failed: {str(e)}')
+
+    # Step 3: Confirmed full details, save to DB
+    if request.form.get('step') == 'details_confirmed':
+        recipes_to_save = session.get('recipes_to_save', [])
+        pdf_filename = session.get('pdf_filename', 'manual_upload')
         saved_count = 0
         skipped_count = 0
         error_details = []
         with get_db_connection() as conn:
             c = conn.cursor()
             try:
-                # Fetch all existing recipe names for similarity check
                 c.execute("SELECT name FROM recipes")
                 all_existing_names = [row['name'] for row in c.fetchall()]
                 for recipe in recipes_to_save:
-                    # Duplicate detection: check for existing recipe by name (case-insensitive)
                     c.execute("SELECT id FROM recipes WHERE LOWER(name) = LOWER(%s)", (recipe['name'],))
                     existing = c.fetchone()
                     if existing:
                         skipped_count += 1
                         error_details.append(f'Duplicate: "{recipe["name"]}" already exists.')
                         continue
-                    # Similarity check
                     similar = []
                     for existing_name in all_existing_names:
                         if simple_similarity(recipe['name'], existing_name) >= 0.7:
@@ -1001,7 +1039,6 @@ def upload():
                             ),
                         )
                         recipe_id = c.fetchone()[0]
-                        # Insert into recipe_upload
                         c.execute(
                             "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by) VALUES (%s, %s, %s, %s)",
                             (recipe_id, 'pdf', pdf_filename, getattr(current_user, 'email', None))
@@ -1016,12 +1053,11 @@ def upload():
                 error_details.append(f'Bulk upload failed: {str(e)}')
                 saved_count = 0
                 skipped_count = len(recipes_to_save)
-        return jsonify({
-            'success': True,
-            'saved_count': saved_count,
-            'skipped_count': skipped_count,
-            'errors': error_details
-        })
+        session.pop('pdf_bytes', None)
+        session.pop('pdf_filename', None)
+        session.pop('detected_titles', None)
+        session.pop('recipes_to_save', None)
+        return render_template('upload_result.html', recipes=recipes_to_save, pdf_filename=pdf_filename, step='done', saved_count=saved_count, skipped_count=skipped_count, errors=error_details)
 
     # Step 1: If PDF file, parse and return detected recipes for preview/correction
     if 'pdfFile' in request.files:

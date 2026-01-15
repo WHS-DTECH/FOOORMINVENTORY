@@ -6,79 +6,86 @@
 	<style>
 		body { font-family: Arial, sans-serif; margin: 2em; }
 		.recipe-list { margin-bottom: 1.5em; }
+		.recipe-block { border: 1px solid #ccc; padding: 1em; margin-bottom: 1em; border-radius: 6px; background: #fafafa; }
 		.confirm-btn { padding: 0.5em 1.5em; font-size: 1.1em; }
 		.status { margin-top: 1em; color: green; }
-		<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8">
-			<title>Confirm Recipe Upload</title>
-			<style>
-				body { font-family: Arial, sans-serif; margin: 2em; }
-				.recipe-list { margin-bottom: 1.5em; }
-				.recipe-block { border: 1px solid #ccc; padding: 1em; margin-bottom: 1em; border-radius: 6px; background: #fafafa; }
-				.confirm-btn { padding: 0.5em 1.5em; font-size: 1.1em; }
-				.status { margin-top: 1em; color: green; }
-				.error { color: red; }
-				.section-title { font-weight: bold; margin-top: 0.5em; }
-				ul, ol { margin: 0.2em 0 0.5em 1.5em; }
-			</style>
-		</head>
-		<body>
-			<h2>Detected Recipes</h2>
-			<div class="recipe-list" id="recipeList">
-				<!-- Recipe details will be inserted here -->
+		.error { color: red; }
+		.section-title { font-weight: bold; margin-top: 0.5em; }
+		ul, ol { margin: 0.2em 0 0.5em 1.5em; }
+	</style>
+</head>
+<body>
+	<h2>Recipe Upload Confirmation</h2>
+	{% if error %}
+		<div class="error">{{ error }}</div>
+	{% endif %}
+	{% if step == 'titles' %}
+		<form method="POST">
+			<input type="hidden" name="step" value="titles_confirmed">
+			<div class="recipe-list">
+				<p>Select the recipe titles you want to import:</p>
+				{% for recipe in recipes %}
+					<div class="recipe-block">
+						<label>
+							<input type="checkbox" name="selected_titles" value="{{ recipe.name }}" checked>
+							{{ recipe.name }}
+						</label>
+					</div>
+				{% endfor %}
 			</div>
-			<button class="confirm-btn" id="confirmBtn">CONFIRM</button>
-			<div class="status" id="statusMsg"></div>
-
-			<script>
-			// These variables should be rendered by Flask with the detected recipes and PDF filename
-			const detectedRecipes = {{ recipes|tojson|safe }};
-			const pdfFilename = {{ pdf_filename|tojson|safe }};
-
-			// Populate the list with full details
-			const listElem = document.getElementById('recipeList');
-			detectedRecipes.forEach(recipe => {
-				const div = document.createElement('div');
-				div.className = 'recipe-block';
-				div.innerHTML = `
-					<div><b>Name:</b> ${recipe.name || ''}</div>
-					<div class="section-title">Ingredients:</div>
-					<ul>${(recipe.ingredients || []).map(ing => `<li>${typeof ing === 'string' ? ing : (ing.quantity ? ing.quantity + ' ' : '') + (ing.unit ? ing.unit + ' ' : '') + (ing.ingredient || ing)}</li>`).join('')}</ul>
-					<div class="section-title">Equipment:</div>
-					<ul>${(recipe.equipment || []).map(eq => `<li>${eq}</li>`).join('')}</ul>
-					<div class="section-title">Method:</div>
-					<ol>${(recipe.method || '').split('\n').map(step => `<li>${step}</li>`).join('')}</ol>
-					<div><b>Serving Size:</b> ${recipe.serving_size || ''}</div>
-				`;
-				listElem.appendChild(div);
-			});
-
-			document.getElementById('confirmBtn').onclick = async function() {
-				this.disabled = true;
-				document.getElementById('statusMsg').textContent = 'Saving recipes...';
-				try {
-					const response = await fetch('/upload', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							recipes: detectedRecipes,
-							pdf_filename: pdfFilename
-						})
-					});
-					const result = await response.json();
-					if (result.success) {
-						document.getElementById('statusMsg').textContent = `Saved: ${result.saved_count}, Skipped: ${result.skipped_count}`;
-					} else {
-						document.getElementById('statusMsg').textContent = 'Error saving recipes.';
-						document.getElementById('statusMsg').classList.add('error');
-					}
-				} catch (e) {
-					document.getElementById('statusMsg').textContent = 'Error: ' + e;
-					document.getElementById('statusMsg').classList.add('error');
-				}
-			};
-			</script>
-		</body>
-		</html>
+			<button class="confirm-btn" type="submit">Confirm Titles</button>
+		</form>
+	{% elif step == 'details' %}
+		<form method="POST">
+			<input type="hidden" name="step" value="details_confirmed">
+			<div class="recipe-list">
+				<p>Review the full details for each recipe. Click confirm to save to the database.</p>
+				{% for recipe in recipes %}
+					<div class="recipe-block">
+						<div><b>Name:</b> {{ recipe.name }}</div>
+						<div class="section-title">Ingredients:</div>
+						<ul>
+						{% for ing in recipe.ingredients %}
+							<li>
+								{% if ing.quantity %}{{ ing.quantity }} {% endif %}
+								{% if ing.unit %}{{ ing.unit }} {% endif %}
+								{{ ing.ingredient or ing }}
+							</li>
+						{% endfor %}
+						</ul>
+						<div class="section-title">Equipment:</div>
+						<ul>
+						{% for eq in recipe.equipment %}
+							<li>{{ eq }}</li>
+						{% endfor %}
+						</ul>
+						<div class="section-title">Method:</div>
+						<ol>
+						{% for step in recipe.method.split('\n') %}
+							<li>{{ step }}</li>
+						{% endfor %}
+						</ol>
+						<div><b>Serving Size:</b> {{ recipe.serving_size }}</div>
+					</div>
+				{% endfor %}
+			</div>
+			<button class="confirm-btn" type="submit">Confirm & Save to Database</button>
+		</form>
+	{% elif step == 'done' %}
+		<div class="status">Recipes saved: {{ saved_count }} | Skipped: {{ skipped_count }}</div>
+		{% if errors %}
+			<div class="error">
+				<ul>
+				{% for err in errors %}
+					<li>{{ err }}</li>
+				{% endfor %}
+				</ul>
+			</div>
+		{% endif %}
+		<a href="/upload">Upload another PDF</a>
+	{% else %}
+		<div>No recipes found or invalid step.</div>
+		<a href="/upload">Back to upload</a>
+	{% endif %}
+</body>
+</html>
