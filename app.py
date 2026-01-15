@@ -202,7 +202,50 @@ def admin_recipe_book_setup():
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
 
-# ...existing code...
+
+# --- Upload Recipe Using URL Route ---
+@app.route('/upload_url', methods=['POST'])
+@require_role('VP')
+def upload_url():
+    url = request.form.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'No URL provided.'}), 400
+    if not (url.startswith('http://') or url.startswith('https://')):
+        return jsonify({'error': 'Invalid URL. Must start with http:// or https://'}), 400
+    if requests is None or BeautifulSoup is None:
+        return jsonify({'error': 'Required libraries (requests, BeautifulSoup) not installed.'}), 500
+    try:
+        resp = requests.get(url, timeout=10)
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Failed to fetch URL: {str(e)}'}), 400
+    if resp.status_code != 200:
+        return jsonify({'error': f'URL returned status code {resp.status_code}'}), 404
+    html = resp.text
+    soup = BeautifulSoup(html, 'html.parser')
+    # Example: Try to extract a recipe name and ingredients (customize as needed)
+    title = soup.title.string.strip() if soup.title and soup.title.string else url
+    # Try to find ingredients (very basic, real logic should be more robust)
+    ingredients = []
+    for tag in soup.find_all(['li', 'span', 'p']):
+        text = tag.get_text(strip=True)
+        if text and ('ingredient' in text.lower() or 'g ' in text or 'ml ' in text):
+            ingredients.append(text)
+    if not ingredients:
+        # Try schema.org/Recipe
+        recipe_schema = soup.find('script', type='application/ld+json')
+        if recipe_schema:
+            import json as _json
+            try:
+                data = _json.loads(recipe_schema.string)
+                if isinstance(data, dict) and data.get('@type') == 'Recipe':
+                    ingredients = data.get('recipeIngredient', [])
+                    title = data.get('name', title)
+            except Exception:
+                pass
+    if not ingredients:
+        return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
+    # Return extracted data for preview (do not save yet)
+    return jsonify({'success': True, 'title': title, 'ingredients': ingredients})
 
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
