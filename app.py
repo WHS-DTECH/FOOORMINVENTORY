@@ -27,8 +27,9 @@ except ImportError:
 from recipe_parser_pdf import parse_recipes_from_text
 from auth import User, get_staff_code_from_email, require_login, require_role
 
+
 # =======================
-# App Configuration
+# App Creation & Configuration
 # =======================
 load_dotenv()
 app = Flask(__name__)
@@ -37,6 +38,38 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 # Allow OAuth over HTTP for local development (DO NOT use in production)
 if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# Configure Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+class AnonymousUser:
+    is_authenticated = False
+    def is_admin(self):
+        return False
+    def is_teacher(self):
+        return False
+    def is_staff(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'https://WHS-DTECH.pythonanywhere.com/auth/callback')
+
+# Debug: Print loaded OAuth environment variables (remove after troubleshooting)
+print('GOOGLE_CLIENT_ID:', repr(GOOGLE_CLIENT_ID))
+print('GOOGLE_CLIENT_SECRET:', repr(GOOGLE_CLIENT_SECRET))
+print('GOOGLE_REDIRECT_URI:', repr(GOOGLE_REDIRECT_URI))
+
+SCOPES = [
+    'openid',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
+]
 
 # =======================
 # Utility Functions
