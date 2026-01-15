@@ -227,11 +227,16 @@ def upload_url():
     # Improved: Extract only lines that look like ingredients (e.g., '1 cup sugar')
     import re as _re
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
+    instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
     ingredients = []
+    instructions = []
     for tag in soup.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
-        if text and ingredient_pattern.match(text):
-            ingredients.append(text)
+        if text:
+            if ingredient_pattern.match(text):
+                ingredients.append(text)
+            elif instruction_pattern.match(text):
+                instructions.append(text)
     if not ingredients:
         # Try schema.org/Recipe
         recipe_schema = soup.find('script', type='application/ld+json')
@@ -242,12 +247,18 @@ def upload_url():
                 if isinstance(data, dict) and data.get('@type') == 'Recipe':
                     ingredients = data.get('recipeIngredient', [])
                     title = data.get('name', title)
+                    # Try to extract instructions from schema.org as well
+                    if 'recipeInstructions' in data:
+                        if isinstance(data['recipeInstructions'], list):
+                            instructions = [i['text'] if isinstance(i, dict) and 'text' in i else str(i) for i in data['recipeInstructions']]
+                        elif isinstance(data['recipeInstructions'], str):
+                            instructions = [data['recipeInstructions']]
             except Exception:
                 pass
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
     # Return extracted data for preview (do not save yet)
-    return jsonify({'success': True, 'title': title, 'ingredients': ingredients})
+    return jsonify({'success': True, 'title': title, 'ingredients': ingredients, 'instructions': instructions})
 
 # --- Alias for /load_recipe_url to support form submissions from templates ---
 @app.route('/load_recipe_url', methods=['POST'])
@@ -274,11 +285,16 @@ def load_recipe_url():
     title = soup.title.string.strip() if soup.title and soup.title.string else url
     import re as _re
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s+[a-zA-Z]+)?\s+.+$")
+    instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
     ingredients = []
+    instructions = []
     for tag in soup.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
-        if text and ingredient_pattern.match(text):
-            ingredients.append(text)
+        if text:
+            if ingredient_pattern.match(text):
+                ingredients.append(text)
+            elif instruction_pattern.match(text):
+                instructions.append(text)
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
         if recipe_schema:
@@ -288,11 +304,17 @@ def load_recipe_url():
                 if isinstance(data, dict) and data.get('@type') == 'Recipe':
                     ingredients = data.get('recipeIngredient', [])
                     title = data.get('name', title)
+                    # Try to extract instructions from schema.org as well
+                    if 'recipeInstructions' in data:
+                        if isinstance(data['recipeInstructions'], list):
+                            instructions = [i['text'] if isinstance(i, dict) and 'text' in i else str(i) for i in data['recipeInstructions']]
+                        elif isinstance(data['recipeInstructions'], str):
+                            instructions = [data['recipeInstructions']]
             except Exception:
                 pass
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
-    return jsonify({'success': True, 'title': title, 'ingredients': ingredients})
+    return jsonify({'success': True, 'title': title, 'ingredients': ingredients, 'instructions': instructions})
 
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
