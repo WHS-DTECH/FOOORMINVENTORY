@@ -1231,7 +1231,7 @@ def shoplist():
 
     # ...existing code for building dates list...
     # (If you need to return dates for a template, do so here)
-    return render_template('shoplist.html', dates=dates, bookings=[])
+    return render_template('shoplist.html', dates=dates, bookings=[], recipes=[])
     
     # Aggregate ingredients
     ingredient_map = {}  # {normalized_name: {qty, unit, original_name}}
