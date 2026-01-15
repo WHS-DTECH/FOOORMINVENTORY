@@ -1223,11 +1223,17 @@ def shoplist():
     except Exception as e:
         flash(f'Error saving recipe: {str(e)}', 'error')
         return redirect(url_for('admin'))
+
     return redirect(url_for('recipes_page'))
-                ings = json.loads(r['ingredients'] or '[]')
-            except Exception:
-                ings = []
-            all_recipes[r['id']] = {'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']}
+
+# (The following block should be outside the above try/except/redirect logic)
+# Example context for correct indentation:
+# for r in recipes:
+#     try:
+#         ings = json.loads(r['ingredients'] or '[]')
+#     except Exception:
+#         ings = []
+#     all_recipes[r['id']] = {'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']}
 
     # Organize bookings into a grid structure
     grid = {}
