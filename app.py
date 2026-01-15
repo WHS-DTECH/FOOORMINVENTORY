@@ -1,3 +1,33 @@
+# --- PDF Recipe Preview Endpoint ---
+from flask import jsonify
+
+@app.route('/preview_pdf_recipes', methods=['POST'])
+@require_role('VP')
+def preview_pdf_recipes():
+    if not PyPDF2:
+        return jsonify({'error': 'PyPDF2 not installed - cannot parse PDF files'}), 400
+    pdf_file = request.files.get('pdfFile')
+    if not pdf_file or pdf_file.filename == '':
+        return jsonify({'error': 'No PDF file selected'}), 400
+    try:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        preview = []
+        for i, page in enumerate(pdf_reader.pages):
+            text = page.extract_text() or ''
+            # Use the same title extraction logic as the parser, but just for titles
+            import re
+            lines = text.split('\n')
+            for line in lines:
+                line = line.strip()
+                # Heuristic: looks like a real recipe title
+                title_match = re.match(r'^(.*?)(?:\s*\(per group of (\d+)\))?(?:\s*serves\s*(\d+))?$', line, re.I)
+                if title_match:
+                    title_candidate = title_match.group(1).strip()
+                    if title_candidate and len(title_candidate) > 3 and not any(x in title_candidate.lower() for x in ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']):
+                        preview.append({'title': title_candidate, 'page': i+1})
+        return jsonify({'recipes': preview, 'page_count': len(pdf_reader.pages)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # =======================
 # Imports

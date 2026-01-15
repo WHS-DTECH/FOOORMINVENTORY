@@ -14,10 +14,15 @@
             <a href="/admin">Admin</a>
         </nav>
     <div class="container">
-    <form action="/upload" method="POST">
+    <!-- PDF Preview Modal -->
+    {% include 'preview_pdf_modal.html' %}
+    <form id="pdfUploadForm" action="/upload" method="POST" enctype="multipart/form-data">
         <div class="flex-row">
             <div class="left-column">
                 <h2>Upload Recipe</h2>
+                <label for="pdfFile">Upload Recipe PDF:</label>
+                <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf">
+                <button type="button" onclick="previewPdfRecipes()">Preview PDF Recipes</button>
                 {% if from_url %}
                 <p style="background:#fff3cd;padding:8px;border:1px solid #ffc107;border-radius:4px;">
                     <strong>⚠️ Recipe loaded from URL</strong> - Please review all fields carefully before saving.
@@ -63,6 +68,85 @@
     </form>
 </div>
 <script>
+
+    // --- PDF Preview Logic ---
+    function previewPdfRecipes() {
+        const pdfInput = document.getElementById('pdfFile');
+        if (!pdfInput.files || pdfInput.files.length === 0) {
+            alert('Please select a PDF file first.');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('pdfFile', pdfInput.files[0]);
+        fetch('/preview_pdf_recipes', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            showPdfPreviewModal(data.recipes, data.page_count);
+        })
+        .catch(err => {
+            alert('Error previewing PDF: ' + err);
+        });
+    }
+
+    function showPdfPreviewModal(recipes, pageCount) {
+        const modal = document.getElementById('pdfPreviewModal');
+        const listDiv = document.getElementById('pdfPreviewList');
+        let html = `<p>Detected <b>${recipes.length}</b> recipe(s) in PDF (${pageCount} pages):</p>`;
+        if (recipes.length === 0) {
+            html += '<p style="color:red;">No recipes detected. Please check your PDF or report missing recipes.</p>';
+        } else {
+            html += '<ul>';
+            recipes.forEach((r, idx) => {
+                html += `<li><input type="checkbox" class="pdf-recipe-checkbox" data-title="${r.title}" data-page="${r.page}" checked> <b>${r.title}</b> (Page ${r.page})</li>`;
+            });
+            html += '</ul>';
+        }
+        listDiv.innerHTML = html;
+        modal.style.display = 'block';
+    }
+
+    function closePdfPreviewModal() {
+        document.getElementById('pdfPreviewModal').style.display = 'none';
+    }
+
+    function confirmPdfUpload() {
+        // Collect selected recipes
+        const checkboxes = document.querySelectorAll('.pdf-recipe-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert('Please select at least one recipe to upload.');
+            return;
+        }
+        // Optionally, pass selected titles/pages to backend for upload (not implemented here)
+        // For now, just close modal and submit the form
+        closePdfPreviewModal();
+        document.getElementById('pdfUploadForm').submit();
+    }
+
+    function reportMissingRecipes() {
+        const checkboxes = document.querySelectorAll('.pdf-recipe-checkbox');
+        let missing = [];
+        checkboxes.forEach(cb => {
+            if (!cb.checked) {
+                missing.push({title: cb.getAttribute('data-title'), page: cb.getAttribute('data-page')});
+            }
+        });
+        let msg = 'Reporting missing recipes:';
+        if (missing.length === 0) {
+            msg += '\nNone (all detected recipes are selected).';
+        } else {
+            missing.forEach(m => {
+                msg += `\n- ${m.title} (Page ${m.page})`;
+            });
+        }
+        alert(msg + '\n(Feature to send this info to backend can be implemented next.)');
+    }
     // Auto-parse ingredients on page load if prefilled
     window.addEventListener('load', function() {
         const ingredientText = document.getElementById('ingredient_text').value;
