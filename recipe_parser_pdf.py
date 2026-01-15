@@ -11,7 +11,14 @@ def parse_recipes_from_text(text):
     """
     recipes = []
     # --- Improved: Extract lines matching 'Making Activity :' and real recipe headings ---
-    # Removed early return of only titles if 'Making Activity :' is found
+    # Use 'Making Activity :' to help identify recipe titles, but continue parsing for details
+    making_activity_indices = []
+    making_activity_pattern = re.compile(r'Making Activity\s*:\s*(.+)', re.I)
+    lines = text.split('\n')
+    for idx, line in enumerate(lines):
+        match = making_activity_pattern.search(line)
+        if match:
+            making_activity_indices.append((idx, match.group(1).strip()))
     import unicodedata
     def normalize_line(s):
         # Normalize unicode quotes/dashes to ASCII
