@@ -61,7 +61,7 @@
 						</ul>
 						<div class="section-title">Method:</div>
 						<ol>
-						{% for step in recipe.method.split('\n') %}
+						{% for step in (recipe.method|default('')).split('\n') %}
 							<li>{{ step }}</li>
 						{% endfor %}
 						</ol>

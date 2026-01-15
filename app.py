@@ -1007,7 +1007,20 @@ def upload():
             full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
             # Extract all recipes, then filter for selected titles
             all_recipes = parse_recipes_from_text(full_text)
-            recipes_to_show = [r for r in all_recipes if r.get('name') in selected_titles]
+            recipes_to_show = []
+            for r in all_recipes:
+                if r.get('name') in selected_titles:
+                    # Ensure all required keys exist for template safety
+                    recipe = dict(r)
+                    if 'method' not in recipe:
+                        recipe['method'] = ''
+                    if 'ingredients' not in recipe:
+                        recipe['ingredients'] = []
+                    if 'equipment' not in recipe:
+                        recipe['equipment'] = []
+                    if 'serving_size' not in recipe:
+                        recipe['serving_size'] = ''
+                    recipes_to_show.append(recipe)
             session['recipes_to_save'] = recipes_to_show
             return render_template('upload_result.html', recipes=recipes_to_show, pdf_filename=pdf_filename, step='details')
         except Exception as e:
