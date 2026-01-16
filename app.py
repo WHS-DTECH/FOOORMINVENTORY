@@ -1,21 +1,3 @@
-# --- View Raw Extracted Data for Upload ---
-@app.route('/view_raw_upload')
-@require_role('VP')
-def view_raw_upload():
-    source = request.args.get('source')
-    if not source:
-        return 'No source specified.', 400
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT raw_text, upload_source_detail, uploaded_by, upload_date FROM recipe_upload WHERE upload_source_detail = %s ORDER BY upload_date DESC LIMIT 1', (source,))
-        row = c.fetchone()
-        if not row:
-            return f'No raw data found for source: {source}', 404
-        raw_text = row['raw_text']
-        upload_source_detail = row['upload_source_detail']
-        uploaded_by = row['uploaded_by']
-        upload_date = row['upload_date']
-    return render_template('view_raw_upload.html', raw_text=raw_text, upload_source_detail=upload_source_detail, uploaded_by=uploaded_by, upload_date=upload_date)
 
 # =======================
 # Imports (Standard, Third-party, Local)
