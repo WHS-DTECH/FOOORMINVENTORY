@@ -1980,10 +1980,11 @@ def shoplist():
         ''', (dates[0]['date'], dates[-1]['date']))
         bookings = [dict(row) for row in c.fetchall()]
 
-    # Build grid: {(date, period): booking}
+    # Build grid: {(date, period): booking} with date as YYYY-MM-DD string
     grid = {}
     for b in bookings:
-        key = (b['date_required'], str(b['period']))
+        date_str = str(b['date_required'])[:10]  # Ensure format YYYY-MM-DD
+        key = (date_str, str(b['period']))
         grid[key] = b
 
     return render_template('shoplist.html', dates=dates, bookings=bookings, recipes=[], grid=grid)
