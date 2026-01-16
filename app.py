@@ -1,42 +1,3 @@
-# --- Debug endpoint: Show raw HTML/text for a recipe URL ---
-@app.route('/debug_raw_recipe', methods=['POST'])
-@require_role('VP')
-def debug_raw_recipe():
-    url = request.form.get('url') or request.form.get('recipe_url')
-    if not url:
-        return 'No URL provided.', 400
-    global requests
-    if requests is None:
-        return 'Requests library not installed.', 500
-    try:
-        resp = requests.get(url, timeout=10)
-    except Exception as e:
-        return f'Failed to fetch URL: {e}', 400
-    if resp.status_code != 200:
-        return f'URL returned status code {resp.status_code}', 404
-    content_type = resp.headers.get('Content-Type', '')
-    if 'pdf' in content_type or url.lower().endswith('.pdf'):
-        # Try to extract text from PDF
-        if not PyPDF2:
-            return 'PyPDF2 not installed.', 500
-        try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
-            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
-            return f'<pre style="white-space: pre-wrap;">{full_text}</pre>'
-        except Exception as e:
-            return f'PDF extraction failed: {e}', 500
-    else:
-        # Return raw HTML
-        html = resp.text
-        return f'<pre style="white-space: pre-wrap;">{html}</pre>'
-"""
-Inventory app main entrypoint
-Best practice: All imports first, then utility functions, then app creation/config, then routes.
-"""
-"""
-Inventory app main entrypoint
-Best practice: All imports first, then utility functions, then app creation/config, then routes.
-"""
 
 # =======================
 # Imports (Standard, Third-party, Local)
@@ -203,6 +164,42 @@ def fix_public_roles():
             c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'Public Access'))
         conn.commit()
     return f"Added 'Public Access' role for {len(missing_public)} users: {', '.join(missing_public)}"
+
+"""
+Inventory app main entrypoint
+Best practice: All imports first, then utility functions, then app creation/config, then routes.
+"""
+# --- Debug endpoint: Show raw HTML/text for a recipe URL ---
+@app.route('/debug_raw_recipe', methods=['POST'])
+@require_role('VP')
+def debug_raw_recipe():
+    url = request.form.get('url') or request.form.get('recipe_url')
+    if not url:
+        return 'No URL provided.', 400
+    global requests
+    if requests is None:
+        return 'Requests library not installed.', 500
+    try:
+        resp = requests.get(url, timeout=10)
+    except Exception as e:
+        return f'Failed to fetch URL: {e}', 400
+    if resp.status_code != 200:
+        return f'URL returned status code {resp.status_code}', 404
+    content_type = resp.headers.get('Content-Type', '')
+    if 'pdf' in content_type or url.lower().endswith('.pdf'):
+        # Try to extract text from PDF
+        if not PyPDF2:
+            return 'PyPDF2 not installed.', 500
+        try:
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
+            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
+            return f'<pre style="white-space: pre-wrap;">{full_text}</pre>'
+        except Exception as e:
+            return f'PDF extraction failed: {e}', 500
+    else:
+        # Return raw HTML
+        html = resp.text
+        return f'<pre style="white-space: pre-wrap;">{html}</pre>'
 
 # =======================
 # Admin Recipe Routes
