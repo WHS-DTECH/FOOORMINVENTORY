@@ -737,15 +737,20 @@ def load_recipe_url():
         result = c.fetchone()
         if result is None:
             return jsonify({'error': 'Recipe was not saved to the database.'}), 500
-        # Support both tuple and dict result
         if isinstance(result, dict):
             recipe_id = result.get('id')
         else:
             recipe_id = result[0]
+        # Save raw extracted text to recipe_upload
+        c.execute(
+            "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by, raw_text) VALUES (%s, %s, %s, %s, %s)",
+            (recipe_id, 'url', url, getattr(current_user, 'email', None), visible_text if 'visible_text' in locals() else '')
+        )
         conn.commit()
     return render_template(
         "recipe_added.html",
-        recipe_id=recipe_id
+        recipe_id=recipe_id,
+        source_url=url
     )
 
 # --- Recipe detail page for /recipe/<id> ---
