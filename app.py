@@ -16,7 +16,6 @@ def view_raw_upload():
         uploaded_by = row['uploaded_by']
         upload_date = row['upload_date']
     return render_template('view_raw_upload.html', raw_text=raw_text, upload_source_detail=upload_source_detail, uploaded_by=uploaded_by, upload_date=upload_date)
-# --- Route to serve the debug extract text form ---
 
 # =======================
 # Imports (Standard, Third-party, Local)
