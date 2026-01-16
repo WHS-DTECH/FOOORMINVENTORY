@@ -406,8 +406,16 @@ def load_recipe_url():
     import re as _re2
     formatted_ingredients = []
     for ing in ingredients:
-        formatted = _re2.sub(r'^(\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+[a-zA-Z]+)([A-Z])', r'\1 \2', ing)
-        formatted_ingredients.append(formatted)
+        # Add space between number/unit and food word, and after unit/brand as needed
+        # e.g., '2 cupsChelsea Caster Sugar(450g)' -> '2 cups Chelsea Caster Sugar (450g)'
+        formatted = ing
+        # Space between number/unit and food word
+        formatted = _re2.sub(r'([\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+\s*[a-zA-Z]+)([A-Z])', r'\1 \2', formatted)
+        # Space after unit/brand if missing before parenthesis
+        formatted = _re2.sub(r'([a-zA-Z])\(', r'\1 (', formatted)
+        # Space after unit/brand if missing before digit
+        formatted = _re2.sub(r'([a-zA-Z])([\d])', r'\1 \2', formatted)
+        formatted_ingredients.append(formatted.strip())
     # Deduplicate ingredients while preserving order
     seen_ingredients = set()
     deduped_ingredients = []
