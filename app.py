@@ -120,6 +120,8 @@ def get_db_connection():
 @app.template_filter('format_nz_week')
 def format_nz_week(label):
     """Format NZ week label from yyyy-mm-dd to dd-mm-yyyy."""
+    if not label or not isinstance(label, str):
+        return ""
     match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
     if match:
         start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
@@ -748,32 +750,58 @@ def load_recipe_url():
                             instructions = [data['recipeInstructions']]
             except Exception:
                 pass
-    # Fallback: If instructions are still missing, forcibly extract the first line after a 'Method' or 'Instructions' header, or the first numbered step from visible text
+    # Fallback: If instructions are still missing, try to extract stepwise instructions, else use previous broad fallback
     if not instructions:
-        # 1. Try to find the first line after a 'Method' or 'Instructions' header in visible_text
         lines = visible_text.split('\n')
         found_method = False
+        step_lines = []
+        step_pattern = re.compile(r"^\s*(\d+|•|\*)[\.\-\)]?\s+(.+)$")
+        unrelated_phrases = [
+            'school holidays', 'step by step', 'valentine', 'print', 'share', 'rate', 'products in recipe',
+            'learn about', 'subscribe', 'faq', 'corporate', 'contact us', 'terms', 'privacy', 'newsletter', 'enjoy', 'view all', 'resources', 'history', 'about us', 'sitemap', 'policy', 'events', 'kids', 'blog', 'news', 'shop', 'store', 'careers', 'enquiry', 'copyright'
+        ]
         for i, line in enumerate(lines):
             l = line.strip().lower()
             if not found_method and (l.startswith('method') or l.startswith('instructions')):
                 found_method = True
                 continue
-            if found_method and line.strip():
-                instructions = [line.strip()]
-                break
-        # 2. If still not found, try to find the first numbered step
-        if not instructions:
+            if found_method:
+                # Stop if we hit a blank line after starting
+                if not line.strip() and step_lines:
+                    break
+                # Remove unrelated/footer content
+                if any(phrase in l for phrase in unrelated_phrases):
+                    continue
+                # Only keep lines that look like steps (numbered or bulleted)
+                m = step_pattern.match(line)
+                if m:
+                    step_lines.append(m.group(2).strip())
+                # Or, if the line is not a step but is not empty, treat as a continuation of the previous step
+                elif line.strip() and step_lines:
+                    step_lines[-1] += ' ' + line.strip()
+                # Limit to 12 steps
+                if len(step_lines) >= 12:
+                    break
+        # Remove steps that are just ingredient lists or repeated content
+        clean_steps = []
+        for s in step_lines:
+            if not any(phrase in s.lower() for phrase in unrelated_phrases) and len(s.split()) > 3:
+                clean_steps.append(s)
+        if clean_steps:
+            instructions = clean_steps
+        else:
+            # 2. If still not found, try to find the first numbered step
             import re as _re_fallback
             for line in lines:
                 if _re_fallback.match(r"^\s*\d+[\.\-\)]?\s+.+$", line):
                     instructions = [line.strip()]
                     break
-        # 3. If still not found, fallback to first non-empty line after ingredients
-        if not instructions:
-            for line in lines:
-                if line.strip():
-                    instructions = [line.strip()]
-                    break
+            # 3. If still not found, fallback to first non-empty line after ingredients
+            if not instructions:
+                for line in lines:
+                    if line.strip():
+                        instructions = [line.strip()]
+                        break
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
     # Save to database (after extraction logic)
