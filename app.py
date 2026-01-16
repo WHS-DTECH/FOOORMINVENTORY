@@ -342,6 +342,7 @@ def load_recipe_url():
         r'(\d+\s*pieces)',
         r'(\d+\s*portions)',
     ]
+    import re as _re
     for tag in soup.find_all(['li', 'span', 'p', 'div']):
         text = tag.get_text(strip=True)
         for pat in serving_patterns:
@@ -352,7 +353,6 @@ def load_recipe_url():
         if serving_size:
             break
     title = soup.title.string.strip() if soup.title and soup.title.string else url
-    import re as _re
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
     instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
     cooking_verbs = [
