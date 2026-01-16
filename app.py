@@ -448,7 +448,7 @@ def load_recipe_url():
     if ingredient_block:
         ingredients = ingredient_block
     else:
-        # Fallback to previous logic (largest block)
+        # Fallback: use the first contiguous block found (not the largest)
         ingredient_blocks = []
         for selector in [
             '[class*="ingredient"]', '[id*="ingredient"]',
@@ -476,7 +476,7 @@ def load_recipe_url():
                     if block_lines:
                         ingredient_blocks.append(block_lines)
         if ingredient_blocks:
-            ingredients = max(ingredient_blocks, key=len)
+            ingredients = ingredient_blocks[0]  # Use the first block found
         else:
             ingredients = []
     method_block = None
