@@ -520,6 +520,7 @@ def load_recipe_url():
             '''
             INSERT INTO recipes (name, ingredients, instructions, serving_size, source_url)
             VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
             ''',
             (
                 title,
@@ -529,15 +530,12 @@ def load_recipe_url():
                 url
             )
         )
+        recipe_id = c.fetchone()[0]
         conn.commit()
-    return jsonify({
-        'success': True,
-        'title': title,
-        'ingredients': ingredients,
-        'instructions': instructions,
-        'serving_size': serving_size,
-        'source_url': url
-    })
+    return render_template(
+        "recipe_added.html",
+        recipe_id=recipe_id
+    )
 
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
