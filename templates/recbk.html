@@ -238,35 +238,33 @@
         </div>
       {% endfor %}
     </div>
-    {% endif %}
-  
-  <!-- TABLE VIEW -->
-  <div id="tableView" class="recipe-table hidden">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Serves</th>
-          <th>Ingredients</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in rows %}
-        <tr>
-          <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
-          <td>{{ r.serving_size or '—' }}</td>
-          <td>
-            {% if r.ingredients %}
-              {{ r.ingredients|length }} items
-            {% else %}
-              —
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <!-- TABLE VIEW -->
+    <div id="tableView" class="recipe-table hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Serves</th>
+            <th>Ingredients</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
+            <td>{{ r.serving_size or '—' }}</td>
+            <td>
+              {% if r.ingredients %}
+                {{ r.ingredients|length }} items
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <div class="no-results">
       <p style="font-size:18px;">No recipes found.</p>
