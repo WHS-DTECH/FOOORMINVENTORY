@@ -705,7 +705,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <tr role="row">
             <td><span class="period" aria-label="Period {{ period }}">P{{ period }}</span></td>
             {% for d in dates %}
-              {% set key = d.date + '_P' + period|string %}
+              {% set key = (d.date, period|string) %}
               {% set booking = grid.get(key) %}
               <td role="cell">
                 {% if booking %}
