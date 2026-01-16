@@ -106,9 +106,9 @@ body { background: #f8fafc; font-family: 'Inter', 'Roboto', Arial, sans-serif; }
 </div>
 <button type="button" id="suggestBtn" class="suggest-btn-float">➕ Suggest a Recipe</button>
 {% if q %}
-  <p style="color:#666;font-size:14px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
+  <p style="color:#666;font-size:14px; margin-left:24px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
 {% else %}
-  <p style="color:#666;font-size:14px;">Showing all {{ rows|length }} recipe(s)</p>
+  <p style="color:#666;font-size:14px; margin-left:24px;">Showing all {{ rows|length }} recipe(s)</p>
 {% endif %}
 {% if rows %}
   <div class="recipe-grid">
