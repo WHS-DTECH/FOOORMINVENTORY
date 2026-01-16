@@ -479,28 +479,70 @@ def load_recipe_url():
             ingredients = ingredient_blocks[0]  # Use the first block found
         else:
             ingredients = []
-    method_block = None
-    for selector in [
-        '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
-        '[class*="steps"]', '[id*="steps"]', 'div', 'section']:
-        block = soup.select_one(selector)
-        if block and len(block.find_all(['li', 'span', 'p'])) > 1:
-            method_block = block
+    # --- Improved: Look for a heading like 'Method' or 'Instructions' and extract the block after it ---
+    import re as _re3
+    method_headings = ['method', 'instructions', 'preparation', 'directions', 'steps']
+    method_heading_tag = None
+    for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'strong', 'b']):
+        text = tag.get_text(strip=True).lower()
+        if any(h in text for h in method_headings):
+            method_heading_tag = tag
             break
-    method_scope = method_block if method_block else soup
-    for tag in method_scope.find_all(['li', 'span', 'p']):
-        text = tag.get_text(strip=True)
-        if not text:
-            continue
-        # Instructional language: look for cooking/action verbs
-        if verb_pattern.match(text):
-            instructions.append(text)
-            continue
-        # Fallback: if sentence contains a cooking verb anywhere
-        for verb in cooking_verbs:
-            if verb in text.lower():
-                instructions.append(text)
+    method_block = None
+    if method_heading_tag:
+        # Look for the first block (ul/ol/div/section) or paragraphs after the heading
+        next_node = method_heading_tag.find_next_sibling()
+        while next_node:
+            if getattr(next_node, 'name', None) in ['ul', 'ol', 'div', 'section']:
+                method_block = next_node
                 break
+            # If it's a paragraph, collect consecutive paragraphs
+            if getattr(next_node, 'name', None) == 'p':
+                paras = []
+                while next_node and getattr(next_node, 'name', None) == 'p':
+                    paras.append(next_node)
+                    next_node = next_node.find_next_sibling()
+                if paras:
+                    method_block = paras
+                break
+            next_node = next_node.find_next_sibling()
+    # Extract instructions from the found block, or fallback to previous logic
+    if method_block:
+        if isinstance(method_block, list):
+            # List of paragraphs
+            for tag in method_block:
+                text = tag.get_text(strip=True)
+                if text:
+                    instructions.append(text)
+        else:
+            for tag in method_block.find_all(['li', 'span', 'p']):
+                text = tag.get_text(strip=True)
+                if text:
+                    instructions.append(text)
+    else:
+        # Fallback: previous logic
+        method_block = None
+        for selector in [
+            '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
+            '[class*="steps"]', '[id*="steps"]', 'div', 'section']:
+            block = soup.select_one(selector)
+            if block and len(block.find_all(['li', 'span', 'p'])) > 1:
+                method_block = block
+                break
+        method_scope = method_block if method_block else soup
+        for tag in method_scope.find_all(['li', 'span', 'p']):
+            text = tag.get_text(strip=True)
+            if not text:
+                continue
+            # Instructional language: look for cooking/action verbs
+            if verb_pattern.match(text):
+                instructions.append(text)
+                continue
+            # Fallback: if sentence contains a cooking verb anywhere
+            for verb in cooking_verbs:
+                if verb in text.lower():
+                    instructions.append(text)
+                    break
 
     # Format: Add a space between number+unit and ingredient name
     import re as _re2
