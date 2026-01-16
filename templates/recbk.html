@@ -236,24 +236,8 @@
         <div class="recipe-card">
           <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
           <div class="recipe-meta">
-            <strong>Title:</strong> {{ r.name }}<br>
             <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
-            <span>{{ r.ingredients|length }} ingredients</span>
-          </div>
-          <div class="recipe-ingredients">
-            <ul style="padding-left: 18px; margin-bottom: 0;">
-              {% for ing in r.ingredients[:5] %}
-                <li>
-                  {% if ing.quantity or ing.unit %}
-                    {{ ing.quantity }} {{ ing.unit }}
-                  {% endif %}
-                  {{ ing.ingredient }}
-                </li>
-              {% endfor %}
-              {% if r.ingredients|length > 5 %}
-                <li style="color:#999;">+ {{ r.ingredients|length - 5 }} more...</li>
-              {% endif %}
-            </ul>
+            <strong>Source:</strong> <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a>
           </div>
           <div class="mt-2 d-flex justify-content-end">
             <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
@@ -291,36 +275,20 @@
   </div>
   
   {% else %}
-    <div class="no-results">
-      <p style="font-size:18px;">No recipes found.</p>
-      {% if q %}
-        <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
-      {% else %}
-        <p>Start by <a href="/">uploading some recipes</a>!</p>
-      {% endif %}
+    <div class="recipe-grid">
+      {% for r in rows %}
+        <div class="recipe-card">
+          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
+          <div class="recipe-meta">
+            <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
+            <strong>Source:</strong> <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a>
+          </div>
+          <div class="mt-2 d-flex justify-content-end">
+            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
+        </div>
+      {% endfor %}
     </div>
-  {% endif %}
-
-<script>
-// Modal logic for Suggest a Recipe
-const suggestBtn = document.getElementById('suggestBtn');
-const suggestModal = document.getElementById('suggestModal');
-const closeModal = document.getElementById('closeModal');
-const suggestForm = document.getElementById('suggestForm');
-const suggestMsg = document.getElementById('suggestMsg');
-
-suggestBtn.onclick = function() {
-  suggestModal.style.display = 'block';
-  suggestMsg.textContent = '';
-  suggestForm.reset();
-}
-closeModal.onclick = function() {
-  suggestModal.style.display = 'none';
-}
-window.onclick = function(event) {
-  if (event.target === suggestModal) {
-    suggestModal.style.display = 'none';
-  }
 }
 
 // Optional: AJAX submit for better UX
