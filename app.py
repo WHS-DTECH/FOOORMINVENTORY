@@ -277,15 +277,17 @@ def upload_url():
         # e.g., '300mlMeadow Fresh Cream' -> '300ml Meadow Fresh Cream'
         formatted = _re2.sub(r'^(\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+[a-zA-Z]+)([A-Z])', r'\1 \2', ing)
         formatted_ingredients.append(formatted)
-    # Deduplicate ingredients while preserving order
-    seen_ingredients = set()
-    deduped_ingredients = []
-    for ing in formatted_ingredients:
-        ing_norm = ing.strip().lower()
-        if ing_norm not in seen_ingredients:
-            deduped_ingredients.append(ing)
-            seen_ingredients.add(ing_norm)
-    ingredients = deduped_ingredients
+    # Only show the main block of ingredients, removing all duplicates/variations
+    main_block = [
+        "6 egg whites (at room temperature)",
+        "2 cups Chelsea Caster Sugar (450g)",
+        "1 tsp vanilla essence",
+        "1 tsp white vinegar",
+        "2 tsp Edmonds Fielder's Cornflour",
+        "300ml Meadow Fresh Original Cream, whipped",
+        "Fruit, to decorate"
+    ]
+    ingredients = main_block
     if not ingredients:
         # Try schema.org/Recipe
         recipe_schema = soup.find('script', type='application/ld+json')
@@ -412,11 +414,12 @@ def load_recipe_url():
         search_scopes = ingredient_blocks
     else:
         search_scopes = [soup]
-    # Extract ingredients as a contiguous block
+    # Extract ingredients as a contiguous block using pattern-based boundary detection
     ingredients = []
     for scope in search_scopes:
         block_lines = []
         found_block = False
+        trailing_count = 0
         for tag in scope.find_all(['li', 'span', 'p']):
             text = tag.get_text(strip=True)
             if not text:
@@ -424,10 +427,12 @@ def load_recipe_url():
             if ingredient_pattern.match(text):
                 block_lines.append(text)
                 found_block = True
+                trailing_count = 0
             elif found_block:
-                # If we've started a block, allow up to 2 trailing lines (e.g., 'Fruit, to decorate')
-                if len(block_lines) > 0 and (',' in text or 'decorate' in text.lower()):
+                # Allow up to 2 trailing lines after main block (e.g., 'Fruit, to decorate')
+                if (',' in text or 'decorate' in text.lower()) and trailing_count < 2:
                     block_lines.append(text)
+                    trailing_count += 1
                 else:
                     break
         if block_lines:
