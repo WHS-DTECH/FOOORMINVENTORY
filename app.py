@@ -1968,94 +1968,25 @@ def shoplist():
         day = monday + timedelta(days=i)
         dates.append({'date': day.strftime('%Y-%m-%d'), 'weekday': day.strftime('%A')})
 
-    # ...existing code for building dates list...
-    # (If you need to return dates for a template, do so here)
-    return render_template('shoplist.html', dates=dates, bookings=[], recipes=[], grid={})
-    
-    # Aggregate ingredients
-    ingredient_map = {}  # {normalized_name: {qty, unit, original_name}}
-    
-    for booking in bookings:
-        if not booking['ingredients']:
-            continue
-        
-        try:
-            ingredients = json.loads(booking['ingredients'])
-        except:
-            continue
-        
-        recipe_servings = booking['serving_size'] or 1
-        desired_servings = booking['desired_servings'] or recipe_servings
-        scale_factor = desired_servings / recipe_servings if recipe_servings > 0 else 1
-        
-        for ing in ingredients:
-            if isinstance(ing, dict):
-                name = ing.get('name', ing.get('item', ''))
-                qty = ing.get('qty', ing.get('quantity', 0))
-                unit = ing.get('unit', '')
-            elif isinstance(ing, str):
-                # Parse string format
-                parts = ing.split()
-                qty = 0
-                unit = ''
-                name = ing
-                if len(parts) >= 2:
-                    try:
-                        qty = float(parts[0])
-                        unit = parts[1]
-                        name = ' '.join(parts[2:]) if len(parts) > 2 else parts[1]
-                    except:
-                        pass
-            else:
-                continue
-            
-            if not name:
-                continue
-            
-            # Normalize name for aggregation
-            normalized = name.lower().strip()
-            
-            # Scale quantity
-            scaled_qty = (float(qty) if qty else 0) * scale_factor
-            
-            if normalized in ingredient_map:
-                # Add to existing
-                if unit == ingredient_map[normalized]['unit']:
-                    ingredient_map[normalized]['qty'] += scaled_qty
-                else:
-                    # Different units - keep separate
-                    key = f"{normalized}_{unit}"
-                    if key in ingredient_map:
-                        ingredient_map[key]['qty'] += scaled_qty
-                    else:
-                        ingredient_map[key] = {
-                            'qty': scaled_qty,
-                            'unit': unit,
-                            'name': name
-                        }
-            else:
-                ingredient_map[normalized] = {
-                    'qty': scaled_qty,
-                    'unit': unit,
-                    'name': name
-                }
-    
-    # Convert to list and sort
-    shopping_list = []
-    for key, data in ingredient_map.items():
-        shopping_list.append({
-            'name': data['name'],
-            'quantity': round(data['qty'], 2) if data['qty'] else '',
-            'unit': data['unit']
-        })
-    
-    shopping_list.sort(key=lambda x: x['name'].lower())
-    
-    return jsonify({
-        'items': shopping_list,
-        'total_count': len(shopping_list),
-        'bookings_processed': len(bookings)
-    })
+    # Fetch bookings for the week
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''
+            SELECT cb.id, cb.date_required, cb.period, cb.class_code, cb.staff_name, cb.recipe_id, cb.desired_servings, r.name AS recipe_name, r.ingredients, r.serving_size
+            FROM class_bookings cb
+            LEFT JOIN recipes r ON cb.recipe_id = r.id
+            WHERE cb.date_required >= %s AND cb.date_required <= %s
+            ORDER BY cb.date_required, cb.period
+        ''', (dates[0]['date'], dates[-1]['date']))
+        bookings = [dict(row) for row in c.fetchall()]
+
+    # Build grid: {(date, period): booking}
+    grid = {}
+    for b in bookings:
+        key = (b['date_required'], str(b['period']))
+        grid[key] = b
+
+    return render_template('shoplist.html', dates=dates, bookings=bookings, recipes=[], grid=grid)
 
 
 def categorize_ingredient(ingredient_name):
