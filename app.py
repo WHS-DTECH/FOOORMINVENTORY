@@ -556,12 +556,13 @@ def load_recipe_url():
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
     # Insert recipe into database
     import json
+    from datetime import datetime
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute(
             '''
-            INSERT INTO recipes (name, ingredients, instructions, serving_size, source_url)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO recipes (name, ingredients, instructions, serving_size, source_url, upload_method, uploaded_by, upload_date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
             (
@@ -569,7 +570,10 @@ def load_recipe_url():
                 json.dumps(ingredients),
                 "\n".join(instructions),
                 int(serving_size) if serving_size and str(serving_size).isdigit() else None,
-                url
+                url,
+                'url',
+                getattr(current_user, 'email', None),
+                datetime.now()
             )
         )
         result = c.fetchone()
@@ -955,11 +959,11 @@ def uploadclass():
     # Fetch suggestions for admin page
     suggestions = []
     try:
-        with get_db_connection() as conn2:
-            c2 = conn2.cursor()
-            c2.execute('''SELECT id, recipe_name, recipe_url, reason, suggested_by_name, \
-                        suggested_by_email, created_at, status \
-                        FROM recipe_suggestions \
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes ORDER BY name')
+            recipe_list = [dict(row) for row in c.fetchall()]
+        return render_template('recipe_book_setup.html', recipe_list=recipe_list)
                         ORDER BY created_at DESC''')
             suggestions = c2.fetchall()
     except Exception:

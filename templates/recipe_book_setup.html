@@ -80,6 +80,17 @@
                                                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                                                     </div>
                                                                                     <div class="modal-body">
+                                                                                        <div>
+                                                                                            <strong>Upload Method:</strong> {{ recipe.upload_method or 'N/A' }}<br>
+                                                                                            <strong>Source URL:</strong> 
+                                                                                            {% if recipe.source_url %}
+                                                                                                <a href="{{ recipe.source_url }}" target="_blank">{{ recipe.source_url }}</a>
+                                                                                            {% else %}
+                                                                                                N/A
+                                                                                            {% endif %}<br>
+                                                                                            <strong>Uploaded By:</strong> {{ recipe.uploaded_by or 'N/A' }}<br>
+                                                                                            <strong>Upload Date:</strong> {{ recipe.upload_date or 'N/A' }}<br>
+                                                                                        </div>
                                                                                         <form id="sourceForm{{ recipe.id }}" method="post" action="/admin/update_recipe_source">
                                                                                             <input type="hidden" name="recipe_id" value="{{ recipe.id }}">
                                                                                             <div class="mb-3">
