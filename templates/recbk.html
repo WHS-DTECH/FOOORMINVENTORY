@@ -235,7 +235,11 @@
       {% for r in rows %}
         <div class="recipe-card">
           <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
-          <div class="recipe-meta">Serves {{ r.serving_size or '—' }} | {{ r.ingredients|length }} ingredients</div>
+          <div class="recipe-meta">
+            <strong>Title:</strong> {{ r.name }}<br>
+            <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
+            <span>{{ r.ingredients|length }} ingredients</span>
+          </div>
           <div class="recipe-ingredients">
             <ul style="padding-left: 18px; margin-bottom: 0;">
               {% for ing in r.ingredients[:5] %}
