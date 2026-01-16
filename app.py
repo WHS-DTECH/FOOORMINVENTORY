@@ -159,6 +159,7 @@ def fix_public_roles():
 # =======================
 @app.route('/admin/delete_recipe', methods=['POST'])
 @require_role('VP')
+# @Grapplinks[#URL]
 def delete_recipe():
     """Delete a recipe by ID."""
     recipe_id = request.form.get('recipe_id')
@@ -192,6 +193,7 @@ def update_recipe_source():
 # --- Admin Recipe Book Setup Page Route ---
 @app.route('/admin/recipe_book_setup')
 @require_role('VP')
+# @Grapplinks[#URL]
 def admin_recipe_book_setup():
     # Query recipes from the database
     with get_db_connection() as conn:
@@ -533,7 +535,11 @@ def load_recipe_url():
         result = c.fetchone()
         if result is None:
             return jsonify({'error': 'Recipe was not saved to the database.'}), 500
-        recipe_id = result[0]
+        # Support both tuple and dict result
+        if isinstance(result, dict):
+            recipe_id = result.get('id')
+        else:
+            recipe_id = result[0]
         conn.commit()
     return render_template(
         "recipe_added.html",
@@ -1968,6 +1974,7 @@ def suggest_recipe_modal():
 # Legacy route for admin/recipes page (kept for compatibility)
 @app.route('/recipes/suggest', methods=['POST'])
 @require_login
+# @Grapplinks[#URL]
 def suggest_recipe():
     """Handle recipe suggestion submissions and email to VP"""
     try:
@@ -2299,6 +2306,7 @@ def api_scheduled_bookings():
 
 # --- Recipe detail page for /recipe/<id> ---
 @app.route('/recipe/<int:recipe_id>')
+# @Grapplinks[#URL]
 def recipe_details(recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
