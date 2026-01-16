@@ -1,80 +1,131 @@
+
 {% extends "base.html" %}
 {% block extra_css %}
 <style>
-  .recipe-ingredients { font-size: 13px; color: #444; max-height: 120px; overflow: hidden; position: relative; }
-  .recipe-ingredients::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, white); }
-  .recipe-table { margin-top: 20px; }
-  .recipe-table table { width: 100%; border-collapse: collapse; background: white; }
-  .recipe-table th, .recipe-table td { padding: 12px; text-align: left; border: 1px solid #ddd; }
-  .recipe-table th { background: #f5f5f5; font-weight: 600; }
-  .recipe-table a { color: #0066cc; text-decoration: none; }
-  .recipe-table a:hover { text-decoration: underline; }
-  .diet-tag { display: inline-block; padding: 2px 8px; margin: 2px; background: #e8f5e9; color: #2e7d32; border-radius: 3px; font-size: 12px; }
-  .search-bar { max-width: 600px; margin: 20px 0; }
-  .search-bar input[type="search"] { width: 100%; max-width: 400px; padding: 10px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px; }
-  .search-bar button { margin-left: 8px; }
-  .no-results { text-align: center; padding: 40px; color: #666; }
-  .hidden { display: none !important; }
-  .favorite-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: #ccc; transition: all 0.2s; z-index: 10; padding: 5px; line-height: 1; }
-  .favorite-btn:hover { color: #ffd700; transform: scale(1.2); }
-  .favorite-btn.favorited { color: #ffd700; }
+body { background: #f8fafc; font-family: 'Inter', 'Roboto', Arial, sans-serif; }
+.recipe-book-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.recipe-book-title { font-size: 2.2rem; font-weight: 700; margin: 0; color: #222; letter-spacing: -1px; }
+.suggest-btn-float {
+  position: fixed;
+  top: 110px;
+  right: 40px;
+  z-index: 100;
+  background: #00b894;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 28px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0,184,148,0.13);
+  transition: background 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.suggest-btn-float:hover { background: #00997a; box-shadow: 0 8px 32px rgba(0,184,148,0.18); }
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+.recipe-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.5rem 1.3rem 1.2rem 1.3rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+.recipe-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+}
+.recipe-title {
+  font-size: 1.18rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #0074d9;
+  text-decoration: none;
+  transition: color 0.13s;
+}
+.recipe-title:hover { color: #00b894; text-decoration: underline; }
+.recipe-meta {
+  font-size: 0.97rem;
+  color: #555;
+  margin-bottom: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.servings-icon { color: #00b894; margin-right: 6px; }
+.source-link { font-size: 0.97em; color: #888; word-break: break-all; }
+.view-btn {
+  background: #0074d9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  align-self: flex-end;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.view-btn:hover { background: #005fa3; }
+.no-results { text-align: center; padding: 40px; color: #666; }
+.search-bar { max-width: 600px; margin: 20px 0; }
+.search-bar input[type="search"] { width: 100%; max-width: 400px; padding: 10px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px; }
+.search-bar button { margin-left: 8px; }
+@media (max-width: 700px) {
+  .recipe-grid { grid-template-columns: 1fr; }
+  .suggest-btn-float { right: 16px; top: 80px; padding: 12px 18px; font-size: 1rem; }
+}
 </style>
 {% endblock %}
 {% block content %}
-  <h1>Recipe Book</h1>
-  <button type="button" id="suggestBtn" style="float:right; margin-top: -10px; margin-bottom: 10px; background: #337ab7; color: white; border: none; border-radius: 4px; padding: 10px 18px; font-size: 15px; cursor: pointer;">➕ Suggest a Recipe</button>
-  {% if rows %}
-    <div id="gridView" class="recipe-grid">
-      {% for r in rows %}
-        <div class="recipe-card">
-          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
-          <div class="recipe-meta">
-            <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
-            <strong>Source:</strong> <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a>
-          </div>
-          <div class="mt-2 d-flex justify-content-end">
-            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
-          </div>
+<div class="recipe-book-header">
+  <h1 class="recipe-book-title">Recipe Book</h1>
+  <form class="search-bar" method="get" action="/recbk">
+    <input type="search" name="q" placeholder="Search recipes by name or ingredient..." value="{{ q }}" />
+    <button type="submit">Search</button>
+    {% if q %}<a href="/recbk" style="margin-left:8px;">Clear</a>{% endif %}
+  </form>
+</div>
+<button type="button" id="suggestBtn" class="suggest-btn-float">➕ Suggest a Recipe</button>
+{% if q %}
+  <p style="color:#666;font-size:14px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
+{% else %}
+  <p style="color:#666;font-size:14px;">Showing all {{ rows|length }} recipe(s)</p>
+{% endif %}
+{% if rows %}
+  <div class="recipe-grid">
+    {% for r in rows %}
+      <div class="recipe-card">
+        <a href="/recipe/{{ r.id }}" class="recipe-title">{{ r.name }}</a>
+        <div class="recipe-meta">
+          <span><span class="servings-icon">🍽️</span> {{ r.serving_size or '—' }} servings</span>
+          <span class="source-link">🔗 <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a></span>
         </div>
-      {% endfor %}
-    </div>
-    <!-- TABLE VIEW -->
-    <div id="tableView" class="recipe-table hidden">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Serves</th>
-            <th>Ingredients</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-          <tr>
-            <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
-            <td>{{ r.serving_size or '—' }}</td>
-            <td>
-              {% if r.ingredients %}
-                {{ r.ingredients|length }} items
-              {% else %}
-                —
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="no-results">
-      <p style="font-size:18px;">No recipes found.</p>
-      {% if q %}
-        <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
-      {% else %}
-        <p>Start by <a href="/">uploading some recipes</a>!</p>
-      {% endif %}
-    </div>
-  {% endif %}
+        <a href="/recipe/{{ r.id }}" class="view-btn">View</a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="no-results">
+    <p style="font-size:18px;">No recipes found.</p>
+    {% if q %}
+      <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
+    {% else %}
+      <p>Start by <a href="/">uploading some recipes</a>!</p>
+    {% endif %}
+  </div>
+{% endif %}
 {% endblock %}
 
   <div id="suggestModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
