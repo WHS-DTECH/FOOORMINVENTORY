@@ -1,3 +1,8 @@
+# --- Route to serve the debug extract text form ---
+@app.route('/debug_extract_text_form')
+@require_role('VP')
+def debug_extract_text_form():
+    return render_template('debug_extract_text_form.html')
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
