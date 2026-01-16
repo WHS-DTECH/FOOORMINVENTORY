@@ -964,9 +964,6 @@ def uploadclass():
             c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes ORDER BY name')
             recipe_list = [dict(row) for row in c.fetchall()]
         return render_template('recipe_book_setup.html', recipe_list=recipe_list)
-        # The following line was incorrectly indented and caused an error:
-        # ORDER BY created_at DESC''')
-        # suggestions = c2.fetchall()
     except Exception:
         suggestions = []
     return render_template('admin.html', preview_data=rows, suggestions=suggestions)
