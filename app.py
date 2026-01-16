@@ -819,12 +819,7 @@ def load_recipe_url():
             raw_lines = row['raw_text'].splitlines()
             # List of common instructional verbs (case-insensitive)
             verbs = [
-                'crush', 'chop', 'add', 'roll', 'mix', 'combine', 'pour', 'bake', 'cook', 'stir', 'beat', 'whisk',
-                'spread', 'slice', 'cut', 'peel', 'grate', 'boil', 'simmer', 'fry', 'heat', 'serve', 'dust', 'place',
-                'put', 'remove', 'let', 'allow', 'cover', 'preheat', 'grease', 'line', 'divide', 'spoon', 'press',
-                'arrange', 'layer', 'fold', 'drain', 'season', 'sprinkle', 'shape', 'form', 'dip', 'melt', 'cool',
-                'decorate', 'garnish', 'fill', 'brush', 'pour', 'set', 'sift', 'knead', 'proof', 'rest', 'wrap', 'seal',
-                'dust'
+                'crush', 'chop', 'add', 'roll', 'dust'
             ]
             import re
             verb_pattern = re.compile(r'(^|\b)(' + '|'.join(verbs) + r')\b', re.IGNORECASE)
