@@ -58,6 +58,7 @@
           </ul>
           <h3 class="mt-4 mb-2 text-info">Instructions</h3>
           <div class="recipe-instructions bg-light p-3 rounded shadow-sm mb-3" style="font-size:1.08em; line-height:1.7;">
+
             {% if recipe.instructions %}
               <ol class="ps-3">
                 {% for step in recipe.instructions.split('\n') if step.strip() %}
@@ -71,7 +72,7 @@
               <div class="mt-3"><strong>Source:</strong> <a href="{{ recipe.source_url }}" target="_blank">{{ recipe.source_url }}</a></div>
             {% endif %}
           </div>
-          {% if current_user.is_authenticated and current_user.is_admin() %}
+          {% if current_user.is_authenticated and ('Admin' in current_user.get_all_roles() or 'Recipe Editor' in current_user.get_all_roles()) %}
             <form method="post" action="/edit_instructions/{{ recipe.id }}" class="mb-3">
               <button type="submit" class="btn btn-warning">Edit Instructions</button>
             </form>
