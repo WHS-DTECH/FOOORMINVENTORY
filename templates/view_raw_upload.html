@@ -14,9 +14,10 @@
 <body>
     <h2>Raw Extracted Recipe Data</h2>
     <div class="meta">
+        {% if recipe_name %}<b>Recipe Name:</b> {{ recipe_name }}<br>{% endif %}
         <b>Source File:</b> {{ upload_source_detail }}<br>
         <b>Uploaded By:</b> {{ uploaded_by }}<br>
-        <b>Upload Date:</b> {{ upload_date }}
+        <b>Upload Date:</b> {{ created_at }}
     </div>
     <pre>{{ raw_text }}</pre>
     <a href="/upload">Back to Upload</a>
