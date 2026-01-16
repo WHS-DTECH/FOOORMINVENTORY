@@ -267,23 +267,16 @@
       </tbody>
     </table>
   </div>
-  
   {% else %}
-    <div class="recipe-grid">
-      {% for r in rows %}
-        <div class="recipe-card">
-          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
-          <div class="recipe-meta">
-            <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
-            <strong>Source:</strong> <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a>
-          </div>
-          <div class="mt-2 d-flex justify-content-end">
-            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
-          </div>
-        </div>
-      {% endfor %}
+    <div class="no-results">
+      <p style="font-size:18px;">No recipes found.</p>
+      {% if q %}
+        <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
+      {% else %}
+        <p>Start by <a href="/">uploading some recipes</a>!</p>
+      {% endif %}
     </div>
-}
+  {% endif %}
 
 // Optional: AJAX submit for better UX
 suggestForm.onsubmit = async function(e) {
