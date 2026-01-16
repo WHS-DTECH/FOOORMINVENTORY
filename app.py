@@ -196,6 +196,20 @@ def recipe_details(recipe_id):
         return render_template('recipe_details.html', recipe=recipe)
 
 
+# --- Recipe Source Page ---
+@app.route('/recipe/<int:recipe_id>/source')
+@require_login
+def recipe_source(recipe_id):
+    """Display the source and source URL for a recipe."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT name, source, source_url FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+        if not recipe:
+            flash('Recipe not found.', 'error')
+            return redirect(url_for('recbk'))
+        return render_template('recipe_source.html', recipe=recipe)
+
 # --- Debug endpoint: Show raw HTML/text for a recipe URL ---
 @app.route('/debug_raw_recipe', methods=['POST'])
 @require_role('VP')
@@ -360,47 +374,76 @@ def upload_url():
         'assemble', 'build', 'mount', 'gather', 'prepare', 'preheat', 'finish', 'garnish', 'serve', 'enjoy'
     ]
     verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
+
+    # --- Robust block-based extraction for ingredients and instructions ---
     ingredients = []
     instructions = []
-    current_step = None
-    for tag in soup.find_all(['li', 'span', 'p']):
+    in_ingredients = False
+    in_instructions = False
+    ingredient_headers = ['ingredient', 'ingredients']
+    instruction_headers = ['method', 'instructions', 'steps', 'directions']
+    for tag in soup.find_all(['li', 'span', 'p', 'div']):
         text = tag.get_text(strip=True)
         if not text:
             continue
-        if ingredient_pattern.match(text):
-            ingredients.append(text)
+        lower = text.lower()
+        # Detect section headers
+        if any(h in lower for h in ingredient_headers):
+            in_ingredients = True
+            in_instructions = False
             continue
-        is_new_step = instruction_pattern.match(text) or verb_pattern.match(text)
-        if is_new_step:
-            if current_step:
-                instructions.append(current_step.strip())
-            current_step = text
-        else:
-            if current_step:
-                current_step += ' ' + text
-            else:
+        if any(h in lower for h in instruction_headers):
+            in_instructions = True
+            in_ingredients = False
+            continue
+        # End block if we hit another section or a long break
+        if in_ingredients and (any(h in lower for h in instruction_headers) or len(text) > 120):
+            in_ingredients = False
+        if in_instructions and (any(h in lower for h in ingredient_headers) or len(text) > 120):
+            in_instructions = False
+        # Collect lines
+        if in_ingredients:
+            ingredients.append(text)
+        elif in_instructions:
+            instructions.append(text)
+
+    # Fallback: If nothing found, use old pattern-based extraction
+    if not ingredients or not instructions:
+        ingredients_fallback = []
+        instructions_fallback = []
+        current_step = None
+        for tag in soup.find_all(['li', 'span', 'p']):
+            text = tag.get_text(strip=True)
+            if not text:
+                continue
+            if ingredient_pattern.match(text):
+                ingredients_fallback.append(text)
+                continue
+            is_new_step = instruction_pattern.match(text) or verb_pattern.match(text)
+            if is_new_step:
+                if current_step:
+                    instructions_fallback.append(current_step.strip())
                 current_step = text
-    if current_step:
-        instructions.append(current_step.strip())
+            else:
+                if current_step:
+                    current_step += ' ' + text
+                else:
+                    current_step = text
+        if current_step:
+            instructions_fallback.append(current_step.strip())
+        if not ingredients:
+            ingredients = ingredients_fallback
+        if not instructions:
+            instructions = instructions_fallback
 
     # Format: Add a space between number+unit and ingredient name
     import re as _re2
     formatted_ingredients = []
     for ing in ingredients:
-        # e.g., '300mlMeadow Fresh Cream' -> '300ml Meadow Fresh Cream'
         formatted = _re2.sub(r'^(\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+[a-zA-Z]+)([A-Z])', r'\1 \2', ing)
         formatted_ingredients.append(formatted)
-    # Only show the main block of ingredients, removing all duplicates/variations
-    main_block = [
-        "6 egg whites (at room temperature)",
-        "2 cups Chelsea Caster Sugar (450g)",
-        "1 tsp vanilla essence",
-        "1 tsp white vinegar",
-        "2 tsp Edmonds Fielder's Cornflour",
-        "300ml Meadow Fresh Original Cream, whipped",
-        "Fruit, to decorate"
-    ]
-    ingredients = main_block
+    ingredients = formatted_ingredients
+
     if not ingredients:
         # Try schema.org/Recipe
         recipe_schema = soup.find('script', type='application/ld+json')
