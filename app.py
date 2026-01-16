@@ -1,4 +1,3 @@
-
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
@@ -336,6 +335,8 @@ def upload_url():
         return jsonify({'error': f'URL returned status code {resp.status_code}'}), 404
     html = resp.text
     soup = BeautifulSoup(html, 'html.parser')
+    # Extract raw visible text for debug/raw upload
+    visible_text = '\n'.join(soup.stripped_strings)
     # Example: Try to extract a recipe name and ingredients (customize as needed)
     title = soup.title.string.strip() if soup.title and soup.title.string else url
     # Improved: Extract only lines that look like ingredients (e.g., '1 cup sugar')
@@ -739,7 +740,7 @@ def load_recipe_url():
             print(f"[DEBUG] File-based extraction failed: {e}")
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
-    # Insert recipe into database
+    # Save to database (after extraction logic)
     import json
     from datetime import datetime
     with get_db_connection() as conn:
@@ -754,7 +755,7 @@ def load_recipe_url():
                 title,
                 json.dumps(ingredients),
                 "\n".join(instructions),
-                int(serving_size) if serving_size and str(serving_size).isdigit() else None,
+                None,
                 url,
                 'url',
                 getattr(current_user, 'email', None),
@@ -762,16 +763,11 @@ def load_recipe_url():
             )
         )
         result = c.fetchone()
-        if result is None:
-            return jsonify({'error': 'Recipe was not saved to the database.'}), 500
-        if isinstance(result, dict):
-            recipe_id = result.get('id')
-        else:
-            recipe_id = result[0]
+        recipe_id = result['id'] if isinstance(result, dict) else result[0]
         # Save raw extracted text to recipe_upload
         c.execute(
             "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by, raw_text) VALUES (%s, %s, %s, %s, %s)",
-            (recipe_id, 'url', url, getattr(current_user, 'email', None), visible_text if 'visible_text' in locals() else '')
+            (recipe_id, 'url', url, getattr(current_user, 'email', None), visible_text)
         )
         conn.commit()
     return render_template(
@@ -779,9 +775,6 @@ def load_recipe_url():
         recipe_id=recipe_id,
         source_url=url
     )
-
-# --- Recipe detail page for /recipe/<id> ---
-# (Moved below app creation to avoid NameError)
 
 # Google Calendar integration for Shopping List
 @app.route('/shoplist/add_to_gcal', methods=['POST'])
@@ -1642,7 +1635,7 @@ def upload():
                         recipe_id = c.fetchone()[0]
                         # Save raw extracted text to recipe_upload
                         c.execute(
-                            "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by, raw_text) VALUES (%s, %s, %s, %s, %s)",
+                            "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by, raw_text) VALUES (%s, %s, %s, %s)",
                             (recipe_id, 'pdf', pdf_filename, getattr(current_user, 'email', None), full_text)
                         )
                         saved_count += 1
@@ -1708,7 +1701,7 @@ def upload():
                 return sorted(pages)
             selected_pages = parse_page_range(page_range_str, total_pages)
             if not selected_pages:
-                return render_template('upload_result.html', recipes=[], pdf_filename=None, error='No valid pages selected. Please check your page range.')
+                return render_template('upload_result.html', recipes=[], pdf_filename=pdf_file.filename, error='No valid pages selected. Please check your page range.')
             full_text = ""
             for i in selected_pages:
                 page = pdf_reader.pages[i]
@@ -2558,3 +2551,9 @@ def view_raw_upload():
                               upload_source_type=row['upload_source_type'],
                               upload_source_detail=row['upload_source_detail'],
                               created_at=row.get('created_at'))
+
+# --- Dedicated URL Upload Page Route ---
+@app.route('/upload_recipe_url', methods=['GET'])
+@require_role('VP')
+def upload_recipe_url():
+    return render_template('upload_recipe_url.html')
