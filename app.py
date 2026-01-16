@@ -345,6 +345,7 @@ def load_recipe_url():
     # Simulate a call to upload_url by copying its logic here for JSON response
     if not (url.startswith('http://') or url.startswith('https://')):
         return jsonify({'error': 'Invalid URL. Must start with http:// or https://'}), 400
+    global requests, BeautifulSoup
     if requests is None or BeautifulSoup is None:
         return jsonify({'error': 'Required libraries (requests, BeautifulSoup) not installed.'}), 500
     try:
