@@ -43,7 +43,11 @@
               <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}" class="img-fluid rounded shadow-sm mb-3" style="max-width:320px;"/>
             {% endif %}
           </div>
-          <h3 class="mt-3 mb-2 text-success">Ingredients</h3>
+          <h3 class="mt-3 mb-2 text-success d-flex align-items-center">Ingredients
+            {% if recipe.serving_size %}
+              <span class="badge bg-secondary ms-3" style="font-size:0.7em;">Serves {{ recipe.serving_size }}</span>
+            {% endif %}
+          </h3>
           <ul class="list-unstyled mb-4">
             {% for ing in recipe.ingredients %}
               <li class="mb-1">
