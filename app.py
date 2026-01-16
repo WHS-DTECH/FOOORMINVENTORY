@@ -1,3 +1,40 @@
+# --- Debug endpoint: Extract all visible text from a recipe URL (no filters) ---
+@app.route('/debug_extract_text', methods=['POST'])
+@require_role('VP')
+def debug_extract_text():
+    url = request.form.get('url') or request.form.get('recipe_url')
+    if not url:
+        return 'No URL provided.', 400
+    global requests, BeautifulSoup
+    if requests is None:
+        return 'Requests library not installed.', 500
+    try:
+        resp = requests.get(url, timeout=10)
+    except Exception as e:
+        return f'Failed to fetch URL: {e}', 400
+    if resp.status_code != 200:
+        return f'URL returned status code {resp.status_code}', 404
+    content_type = resp.headers.get('Content-Type', '')
+    if 'pdf' in content_type or url.lower().endswith('.pdf'):
+        # Extract all text from PDF
+        if not PyPDF2:
+            return 'PyPDF2 not installed.', 500
+        try:
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
+            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
+            return f'<pre style="white-space: pre-wrap;">{full_text}</pre>'
+        except Exception as e:
+            return f'PDF extraction failed: {e}', 500
+    else:
+        # Extract all visible text from HTML (no filters)
+        html = resp.text
+        if BeautifulSoup is None:
+            return html
+        soup = BeautifulSoup(html, 'html.parser')
+        # Get all visible text (not just from <p>, <li>, etc.)
+        texts = soup.stripped_strings
+        visible_text = "\n".join(texts)
+        return f'<pre style="white-space: pre-wrap;">{visible_text}</pre>'
 
 # =======================
 # Imports (Standard, Third-party, Local)
