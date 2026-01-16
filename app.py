@@ -747,7 +747,7 @@ def load_recipe_url():
         )
         conn.commit()
     return render_template(
-        "recipe_added.html",
+        "URL_recipe_added.html",
         recipe_id=recipe_id,
         source_url=url
     )
