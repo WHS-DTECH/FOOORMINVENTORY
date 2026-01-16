@@ -492,12 +492,12 @@ def load_recipe_url():
     # --- Serving size extraction ---
     serving_size = None
     serving_patterns = [
-        r'(serves\s*\d+)',
-        r'(makes\s*\d+)',
-        r'(yield[s]?\s*\d+)',
-        r'(\d+\s*servings)',
-        r'(\d+\s*pieces)',
-        r'(\d+\s*portions)',
+        r'serves\s*(\d+)',
+        r'makes\s*(\d+)',
+        r'yield[s]?\s*(\d+)',
+        r'(\d+)\s*servings',
+        r'(\d+)\s*pieces',
+        r'(\d+)\s*portions',
     ]
     import re as _re
     # First, try to find serving size using patterns
@@ -506,9 +506,14 @@ def load_recipe_url():
         for pat in serving_patterns:
             match = _re.search(pat, text, _re.IGNORECASE)
             if match:
-                serving_size = match.group(1)
-                break
-        if serving_size:
+                # Always extract just the number
+                for group in match.groups():
+                    if group and group.isdigit():
+                        serving_size = int(group)
+                        break
+                if serving_size is not None:
+                    break
+        if serving_size is not None:
             break
     # If not found, look for a label like 'SERVINGS' followed by a number
     if not serving_size:
