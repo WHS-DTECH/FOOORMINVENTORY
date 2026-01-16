@@ -1,3 +1,4 @@
+# @Grapplinks[#URL]
 """Recipe parser for extracting recipes from PDF documents."""
 
 import re
@@ -352,6 +353,7 @@ def parse_recipes_from_text(text):
     return recipes
 
 
+# @Grapplinks[#URL]
 def format_recipe(recipe_data, extra_fields=None):
     """Format parsed recipe data into structured format for database, with optional extra fields."""
     # Parse ingredients into structured format

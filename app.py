@@ -2305,7 +2305,7 @@ def api_scheduled_bookings():
         return jsonify({'success': False, 'error': str(e)})
 
 # --- Recipe detail page for /recipe/<id> ---
-@app.route('/recipe/<int:recipe_id>')
+@app.route('/recipe/<int:recipe_id>', endpoint='recipe_details')
 # @Grapplinks[#URL]
 def recipe_details(recipe_id):
     with get_db_connection() as conn:

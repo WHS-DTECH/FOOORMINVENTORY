@@ -1,3 +1,4 @@
+<!--//@Grapplinks[#URL]-->
 {% extends "base.html" %}
 {% block content %}
 <div class="container py-4">
@@ -8,7 +9,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">View Extracted Recipe</h5>
-            <a href="{{ url_for('view_recipe', recipe_id=recipe_id) }}" class="btn btn-primary">View Recipe Details</a>
+            <a href="{{ url_for('recipe_details', recipe_id=recipe_id) }}" class="btn btn-primary">View Recipe Details</a>
         </div>
     </div>
     <div class="text-center">
