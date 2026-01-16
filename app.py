@@ -316,6 +316,24 @@ def load_recipe_url():
     # ...existing code...
     html = resp.text
     soup = BeautifulSoup(html, 'html.parser')
+    # Accept both 'url' and 'recipe_url' as form keys for compatibility
+    url = request.form.get('url') or request.form.get('recipe_url')
+    if not url:
+        return jsonify({'error': 'No URL provided.'}), 400
+    # Reuse the upload_url logic
+    # Simulate a call to upload_url by copying its logic here for JSON response
+    if not (url.startswith('http://') or url.startswith('https://')):
+        return jsonify({'error': 'Invalid URL. Must start with http:// or https://'}), 400
+    if requests is None or BeautifulSoup is None:
+        return jsonify({'error': 'Required libraries (requests, BeautifulSoup) not installed.'}), 500
+    try:
+        resp = requests.get(url, timeout=10)
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Failed to fetch URL: {str(e)}'}), 400
+    if resp.status_code != 200:
+        return jsonify({'error': f'URL returned status code {resp.status_code}'}), 404
+    html = resp.text
+    soup = BeautifulSoup(html, 'html.parser')
     # --- Serving size extraction ---
     serving_size = None
     serving_patterns = [
@@ -335,24 +353,6 @@ def load_recipe_url():
                 break
         if serving_size:
             break
-    # Accept both 'url' and 'recipe_url' as form keys for compatibility
-    url = request.form.get('url') or request.form.get('recipe_url')
-    if not url:
-        return jsonify({'error': 'No URL provided.'}), 400
-    # Reuse the upload_url logic
-    # Simulate a call to upload_url by copying its logic here for JSON response
-    if not (url.startswith('http://') or url.startswith('https://')):
-        return jsonify({'error': 'Invalid URL. Must start with http:// or https://'}), 400
-    if requests is None or BeautifulSoup is None:
-        return jsonify({'error': 'Required libraries (requests, BeautifulSoup) not installed.'}), 500
-    try:
-        resp = requests.get(url, timeout=10)
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f'Failed to fetch URL: {str(e)}'}), 400
-    if resp.status_code != 200:
-        return jsonify({'error': f'URL returned status code {resp.status_code}'}), 404
-    html = resp.text
-    soup = BeautifulSoup(html, 'html.parser')
     title = soup.title.string.strip() if soup.title and soup.title.string else url
     import re as _re
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
