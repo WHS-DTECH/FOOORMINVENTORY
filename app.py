@@ -705,36 +705,32 @@ def load_recipe_url():
                             instructions = [data['recipeInstructions']]
             except Exception:
                 pass
-    # Fallback: If instructions are still missing, try file-based extraction (PDF/text)
+    # Fallback: If instructions are still missing, forcibly extract the first line after a 'Method' or 'Instructions' header, or the first numbered step from visible text
     if not instructions:
-        # Try to extract from file if available (simulate with recipe_parser_pdf)
-        # For demo, fetch the text from the source URL if it's a PDF or text file
-        # If you have a local file, you can load and parse it here
-        try:
-            if url.lower().endswith('.pdf') and PyPDF2:
-                import requests
-                pdf_resp = requests.get(url)
-                if pdf_resp.status_code == 200:
-                    pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_resp.content))
-                    full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
-                    recipes_found = parse_recipes_from_text(full_text)
-                    # Try to match by title
-                    for r in recipes_found:
-                        if isinstance(r, dict) and r.get('name') and title.lower() in r.get('name').lower():
-                            instructions = r.get('method', [])
-                            break
-            elif url.lower().endswith('.txt'):
-                import requests
-                txt_resp = requests.get(url)
-                if txt_resp.status_code == 200:
-                    full_text = txt_resp.text
-                    recipes_found = parse_recipes_from_text(full_text)
-                    for r in recipes_found:
-                        if isinstance(r, dict) and r.get('name') and title.lower() in r.get('name').lower():
-                            instructions = r.get('method', [])
-                            break
-        except Exception as e:
-            print(f"[DEBUG] File-based extraction failed: {e}")
+        # 1. Try to find the first line after a 'Method' or 'Instructions' header in visible_text
+        lines = visible_text.split('\n')
+        found_method = False
+        for i, line in enumerate(lines):
+            l = line.strip().lower()
+            if not found_method and (l.startswith('method') or l.startswith('instructions')):
+                found_method = True
+                continue
+            if found_method and line.strip():
+                instructions = [line.strip()]
+                break
+        # 2. If still not found, try to find the first numbered step
+        if not instructions:
+            import re as _re_fallback
+            for line in lines:
+                if _re_fallback.match(r"^\s*\d+[\.\-\)]?\s+.+$", line):
+                    instructions = [line.strip()]
+                    break
+        # 3. If still not found, fallback to first non-empty line after ingredients
+        if not instructions:
+            for line in lines:
+                if line.strip():
+                    instructions = [line.strip()]
+                    break
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
     # Save to database (after extraction logic)
