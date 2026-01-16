@@ -514,7 +514,7 @@ def load_recipe_url():
         c.execute(
             '''
             INSERT INTO recipes (name, ingredients, instructions, serving_size, source_url)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             ''',
             (
                 title,
