@@ -613,6 +613,36 @@ def load_recipe_url():
                             instructions = [data['recipeInstructions']]
             except Exception:
                 pass
+    # Fallback: If instructions are still missing, try file-based extraction (PDF/text)
+    if not instructions:
+        # Try to extract from file if available (simulate with recipe_parser_pdf)
+        # For demo, fetch the text from the source URL if it's a PDF or text file
+        # If you have a local file, you can load and parse it here
+        try:
+            if url.lower().endswith('.pdf') and PyPDF2:
+                import requests
+                pdf_resp = requests.get(url)
+                if pdf_resp.status_code == 200:
+                    pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_resp.content))
+                    full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
+                    recipes_found = parse_recipes_from_text(full_text)
+                    # Try to match by title
+                    for r in recipes_found:
+                        if isinstance(r, dict) and r.get('name') and title.lower() in r.get('name').lower():
+                            instructions = r.get('method', [])
+                            break
+            elif url.lower().endswith('.txt'):
+                import requests
+                txt_resp = requests.get(url)
+                if txt_resp.status_code == 200:
+                    full_text = txt_resp.text
+                    recipes_found = parse_recipes_from_text(full_text)
+                    for r in recipes_found:
+                        if isinstance(r, dict) and r.get('name') and title.lower() in r.get('name').lower():
+                            instructions = r.get('method', [])
+                            break
+        except Exception as e:
+            print(f"[DEBUG] File-based extraction failed: {e}")
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
     # Insert recipe into database
