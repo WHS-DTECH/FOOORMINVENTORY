@@ -425,6 +425,16 @@ def load_recipe_url():
             deduped_ingredients.append(ing)
             seen_ingredients.add(ing_norm)
     ingredients = deduped_ingredients
+
+    # Deduplicate instructions while preserving order
+    seen_instructions = set()
+    deduped_instructions = []
+    for instr in instructions:
+        instr_norm = instr.strip().lower()
+        if instr_norm not in seen_instructions:
+            deduped_instructions.append(instr)
+            seen_instructions.add(instr_norm)
+    instructions = deduped_instructions
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
         if recipe_schema:
