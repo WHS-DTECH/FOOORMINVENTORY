@@ -812,6 +812,24 @@ def load_recipe_url():
             "INSERT INTO recipe_upload (recipe_id, upload_source_type, upload_source_detail, uploaded_by, raw_text) VALUES (%s, %s, %s, %s, %s)",
             (recipe_id, 'url', url, getattr(current_user, 'email', None), visible_text)
         )
+        # Now update instructions in recipes table using 12 lines after 'Method' from raw_text
+        c.execute("SELECT raw_text FROM recipe_upload WHERE recipe_id = %s ORDER BY id DESC LIMIT 1", (recipe_id,))
+        row = c.fetchone()
+        if row and row['raw_text']:
+            raw_lines = row['raw_text'].splitlines()
+            method_idx = None
+            for idx, line in enumerate(raw_lines):
+                if line.strip().lower() == 'method':
+                    method_idx = idx
+                    break
+            instructions_block = []
+            if method_idx is not None:
+                for i in range(0, 13):  # include 'Method' + 12 lines after
+                    if method_idx + i < len(raw_lines):
+                        instructions_block.append(raw_lines[method_idx + i])
+                    else:
+                        instructions_block.append("")
+                c.execute("UPDATE recipes SET instructions = %s WHERE id = %s", ("\n".join(instructions_block), recipe_id))
         conn.commit()
     return render_template(
         "URL_recipe_added.html",
