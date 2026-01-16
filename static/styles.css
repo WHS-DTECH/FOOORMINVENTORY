@@ -600,25 +600,26 @@ textarea {
 button {
   padding: 8px 12px;
   border-radius: 4px;
-  border: 1px solid #ccc;
-  background: #fff;
+  border: 1px solid #008080;
+  background: #008080;
+  color: #fff;
   cursor: pointer;
   font-weight: 600;
   transition: background 0.1s ease, border-color 0.1s ease;
 }
 
 button:hover {
-  background: #f2f4f8;
+  background: #006d6d;
 }
 
 button.primary {
-  background: #0b6cfb;
-  border-color: #0b6cfb;
+  background: #008080;
+  border-color: #008080;
   color: #fff;
 }
 
 button.primary:hover {
-  background: #0a60e0;
+  background: #006d6d;
 }
 
 /* Custom Button Styles */
