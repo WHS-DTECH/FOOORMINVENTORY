@@ -430,13 +430,9 @@ def upload_url():
 @app.route('/load_recipe_url', methods=['POST'])
 @require_role('VP')
 def load_recipe_url():
-    # ...existing code...
-    # Accept both 'url' and 'recipe_url' as form keys for compatibility
     url = request.form.get('url') or request.form.get('recipe_url')
     if not url:
         return jsonify({'error': 'No URL provided.'}), 400
-    # Reuse the upload_url logic
-    # Simulate a call to upload_url by copying its logic here for JSON response
     if not (url.startswith('http://') or url.startswith('https://')):
         return jsonify({'error': 'Invalid URL. Must start with http:// or https://'}), 400
     global requests, BeautifulSoup
@@ -450,6 +446,7 @@ def load_recipe_url():
         return jsonify({'error': f'URL returned status code {resp.status_code}'}), 404
     html = resp.text
     soup = BeautifulSoup(html, 'html.parser')
+    visible_text = '\n'.join(soup.stripped_strings)
     # --- Serving size extraction ---
     serving_size = None
     serving_patterns = [
@@ -755,7 +752,7 @@ def load_recipe_url():
                 title,
                 json.dumps(ingredients),
                 "\n".join(instructions),
-                None,
+                serving_size,
                 url,
                 'url',
                 getattr(current_user, 'email', None),
