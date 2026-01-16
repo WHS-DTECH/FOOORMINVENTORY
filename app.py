@@ -2554,3 +2554,22 @@ def view_raw_upload():
 @require_role('VP')
 def upload_recipe_url():
     return render_template('upload_recipe_url.html')
+
+# --- Manual Instruction Editing Route ---
+@app.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
+@require_role('VP')
+def edit_instructions(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        if request.method == 'POST':
+            new_instructions = request.form.get('instructions', '').strip()
+            c.execute('UPDATE recipes SET instructions = %s WHERE id = %s', (new_instructions, recipe_id))
+            conn.commit()
+            flash('Instructions updated.', 'success')
+            return redirect(url_for('recipe_details', recipe_id=recipe_id))
+        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+        if not recipe:
+            flash('Recipe not found.', 'error')
+            return redirect(url_for('recbk'))
+        return render_template('edit_instructions.html', recipe=recipe)
