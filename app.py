@@ -313,6 +313,25 @@ def upload_url():
 @app.route('/load_recipe_url', methods=['POST'])
 @require_role('VP')
 def load_recipe_url():
+        # --- Serving size extraction ---
+        serving_size = None
+        serving_patterns = [
+            r'(serves\s*\d+)',
+            r'(makes\s*\d+)',
+            r'(yield[s]?\s*\d+)',
+            r'(\d+\s*servings)',
+            r'(\d+\s*pieces)',
+            r'(\d+\s*portions)',
+        ]
+        for tag in soup.find_all(['li', 'span', 'p', 'div']):
+            text = tag.get_text(strip=True)
+            for pat in serving_patterns:
+                match = _re.search(pat, text, _re.IGNORECASE)
+                if match:
+                    serving_size = match.group(1)
+                    break
+            if serving_size:
+                break
     # Accept both 'url' and 'recipe_url' as form keys for compatibility
     url = request.form.get('url') or request.form.get('recipe_url')
     if not url:
@@ -465,7 +484,13 @@ def load_recipe_url():
                 pass
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
-    return jsonify({'success': True, 'title': title, 'ingredients': ingredients, 'instructions': instructions})
+    return jsonify({
+        'success': True,
+        'title': title,
+        'ingredients': ingredients,
+        'instructions': instructions,
+        'serving_size': serving_size
+    })
 
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
