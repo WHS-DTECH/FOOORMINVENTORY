@@ -356,16 +356,29 @@ def load_recipe_url():
     instructions = []
     current_step = None
     # --- Find the main ingredients block ---
-    ingredients_block = None
+    # --- Find all possible ingredient blocks ---
+    ingredient_blocks = []
     for selector in [
         '[class*="ingredient"]', '[id*="ingredient"]',
         'ul', 'ol', 'div', 'section']:
-        block = soup.select_one(selector)
-        if block and len(block.find_all(['li', 'span', 'p'])) > 1:
-            ingredients_block = block
-            break
-    search_scope = ingredients_block if ingredients_block else soup
-    # --- Find the main instructions/method block ---
+        blocks = soup.select(selector)
+        for block in blocks:
+            if block and len(block.find_all(['li', 'span', 'p'])) > 1:
+                ingredient_blocks.append(block)
+    # If no blocks found, fallback to whole page
+    if ingredient_blocks:
+        search_scopes = ingredient_blocks
+    else:
+        search_scopes = [soup]
+    # Extract ingredients from all found blocks (or whole page)
+    ingredients = []
+    for scope in search_scopes:
+        for tag in scope.find_all(['li', 'span', 'p']):
+            text = tag.get_text(strip=True)
+            if not text:
+                continue
+            if ingredient_pattern.match(text):
+                ingredients.append(text)
     method_block = None
     for selector in [
         '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
