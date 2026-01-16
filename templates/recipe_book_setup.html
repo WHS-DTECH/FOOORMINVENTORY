@@ -68,7 +68,7 @@
                                     </div>
                                     <div class="d-flex align-items-center">
                                         <a href="/recipe/{{ recipe.id }}" class="btn btn-outline-secondary btn-sm">View</a>
-                                        <a href="/recipe/{{ recipe.id }}/source" class="btn btn-info btn-sm ms-2">Source</a>
+                                        <a href="/recipe/{{ recipe.id }}/source" class="btn btn-{% if recipe.upload_method == 'url' %}success{% else %}info{% endif %} btn-sm ms-2">Source</a>
                                         <form method="post" action="/recipe/{{ recipe.id }}/delete" style="display:inline;">
                                             <button type="submit" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this recipe?');">Delete</button>
                                         </form>
