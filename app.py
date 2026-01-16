@@ -384,38 +384,25 @@ def upload_url():
     in_instructions = False
     ingredient_headers = ['ingredient', 'ingredients']
     instruction_headers = ['method', 'instructions', 'steps', 'directions']
-    method_lines = []
-    found_method = False
-    collecting_method = False
-    for tag in soup.find_all(['li', 'span', 'p', 'div']):
-        text = tag.get_text(" ", strip=True)
-        if not text:
-            continue
-        lower = text.lower()
-        # Detect section headers
-        if any(h in lower for h in ingredient_headers):
-            in_ingredients = True
-            collecting_method = False
-            continue
-        if any(h in lower for h in instruction_headers):
-            collecting_method = True
-            in_ingredients = False
-            found_method = True
-            continue
-        # End block if we hit another section header
-        if collecting_method and any(h in lower for h in ingredient_headers):
-            collecting_method = False
-        # Collect all lines in the block, even if blank or not matching a pattern
-        if in_ingredients:
-            ingredients.append(text)
-        elif collecting_method:
-            method_lines.append(text)
 
-    # If we found a method/instructions section, join all lines as a single string (raw paste)
-    if found_method and method_lines:
-        instructions = ["\n".join(method_lines)]
-    else:
-        instructions = method_lines
+    # --- Extract 12 lines after 'Method' from raw visible text ---
+    raw_lines = visible_text.splitlines()
+    method_idx = None
+    for idx, line in enumerate(raw_lines):
+        if line.strip().lower() == 'method':
+            method_idx = idx
+            break
+    instructions = []
+    if method_idx is not None:
+        # Get the next 12 lines after 'Method'
+        for i in range(1, 13):
+            if method_idx + i < len(raw_lines):
+                instructions.append(raw_lines[method_idx + i])
+            else:
+                instructions.append("")
+    # Fallback: if 'Method' not found, use previous logic (empty or whatever was found)
+    if not instructions:
+        instructions = []
 
     # Fallback: If nothing found, use old pattern-based extraction
     if not ingredients or not instructions:
