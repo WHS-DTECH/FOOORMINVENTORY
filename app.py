@@ -370,15 +370,26 @@ def load_recipe_url():
         search_scopes = ingredient_blocks
     else:
         search_scopes = [soup]
-    # Extract ingredients from all found blocks (or whole page)
+    # Extract ingredients as a contiguous block
     ingredients = []
     for scope in search_scopes:
+        block_lines = []
+        found_block = False
         for tag in scope.find_all(['li', 'span', 'p']):
             text = tag.get_text(strip=True)
             if not text:
                 continue
             if ingredient_pattern.match(text):
-                ingredients.append(text)
+                block_lines.append(text)
+                found_block = True
+            elif found_block:
+                # If we've started a block, allow up to 2 trailing lines (e.g., 'Fruit, to decorate')
+                if len(block_lines) > 0 and (',' in text or 'decorate' in text.lower()):
+                    block_lines.append(text)
+                else:
+                    break
+        if block_lines:
+            ingredients.extend(block_lines)
     method_block = None
     for selector in [
         '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
