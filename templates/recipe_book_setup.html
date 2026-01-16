@@ -90,12 +90,6 @@
                                                                                             {% endif %}<br>
                                                                                             <strong>Uploaded By:</strong> {{ recipe.uploaded_by or 'N/A' }}<br>
                                                                                             <strong>Upload Date:</strong> {% if recipe.upload_date %}{{ recipe.upload_date|datetimeformat('%I:%M %p') }}{% else %}N/A{% endif %}<br>
-                                                                                        {% macro datetimeformat(value, format='%Y-%m-%d %H:%M') %}
-                                                                                            {%- if value -%}
-                                                                                                {{ value|replace('T', ' ')|replace('Z', '')|strptime('%Y-%m-%d %H:%M:%S.%f')|strftime(format) }}
-                                                                                            {%- endif -%}
-                                                                                        {% endmacro %}
-                                                                                        {% filter datetimeformat %}{% endfilter %}
                                                                                         </div>
                                                                                         <form id="sourceForm{{ recipe.id }}" method="post" action="/admin/update_recipe_source">
                                                                                             <input type="hidden" name="recipe_id" value="{{ recipe.id }}">

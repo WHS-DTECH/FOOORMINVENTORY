@@ -1,3 +1,16 @@
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%I:%M %p'):
+    from datetime import datetime
+    if not value:
+        return ''
+    # Try parsing with microseconds, then without
+    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
+        try:
+            dt = datetime.strptime(str(value).replace('T', ' ').replace('Z', ''), fmt)
+            return dt.strftime(format)
+        except Exception:
+            continue
+    return value
 """
 Inventory app main entrypoint
 Best practice: All imports first, then utility functions, then app creation/config, then routes.
