@@ -314,8 +314,6 @@ def upload_url():
 @require_role('VP')
 def load_recipe_url():
     # ...existing code...
-    html = resp.text
-    soup = BeautifulSoup(html, 'html.parser')
     # Accept both 'url' and 'recipe_url' as form keys for compatibility
     url = request.form.get('url') or request.form.get('recipe_url')
     if not url:
