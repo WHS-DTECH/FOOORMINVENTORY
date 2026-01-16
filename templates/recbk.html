@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   {% if rows %}
-    <div class="recipe-grid">
+    <div id="gridView" class="recipe-grid">
       {% for r in rows %}
         <div class="recipe-card">
           <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
@@ -15,6 +15,33 @@
           </div>
         </div>
       {% endfor %}
+    </div>
+    <!-- TABLE VIEW -->
+    <div id="tableView" class="recipe-table hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Serves</th>
+            <th>Ingredients</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
+            <td>{{ r.serving_size or '—' }}</td>
+            <td>
+              {% if r.ingredients %}
+                {{ r.ingredients|length }} items
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   {% else %}
     <div class="no-results">
