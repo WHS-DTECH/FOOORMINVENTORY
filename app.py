@@ -507,12 +507,31 @@ def load_recipe_url():
                 pass
     if not ingredients:
         return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
+    # Insert recipe into database
+    import json
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute(
+            '''
+            INSERT INTO recipes (name, ingredients, instructions, serving_size, source_url)
+            VALUES (?, ?, ?, ?, ?)
+            ''',
+            (
+                title,
+                json.dumps(ingredients),
+                "\n".join(instructions),
+                int(serving_size) if serving_size and str(serving_size).isdigit() else None,
+                url
+            )
+        )
+        conn.commit()
     return jsonify({
         'success': True,
         'title': title,
         'ingredients': ingredients,
         'instructions': instructions,
-        'serving_size': serving_size
+        'serving_size': serving_size,
+        'source_url': url
     })
 
 # --- Recipe detail page for /recipe/<id> ---
