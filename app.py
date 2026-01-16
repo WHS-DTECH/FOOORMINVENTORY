@@ -2363,14 +2363,14 @@ def recbk():
         if q:
             term = f"%{q}%"
             c.execute(
-                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
+                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty, source_url FROM recipes "
                 "WHERE name ILIKE %s OR ingredients ILIKE %s "
                 "ORDER BY LOWER(name)",
                 (term, term),
             )
         else:
             c.execute(
-                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty FROM recipes "
+                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty, source_url FROM recipes "
                 "ORDER BY LOWER(name)"
             )
         rows = [dict(r) for r in c.fetchall()]
