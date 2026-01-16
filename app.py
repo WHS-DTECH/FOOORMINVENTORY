@@ -417,7 +417,7 @@ def load_recipe_url():
     else:
         search_scopes = [soup]
     # Extract ingredients as a contiguous block using pattern-based boundary detection
-    ingredients = []
+    ingredient_blocks = []
     for scope in search_scopes:
         block_lines = []
         found_block = False
@@ -438,7 +438,12 @@ def load_recipe_url():
                 else:
                     break
         if block_lines:
-            ingredients.extend(block_lines)
+            ingredient_blocks.append(block_lines)
+    # Use the largest contiguous block (most lines)
+    if ingredient_blocks:
+        ingredients = max(ingredient_blocks, key=len)
+    else:
+        ingredients = []
     method_block = None
     for selector in [
         '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
@@ -480,7 +485,7 @@ def load_recipe_url():
     seen_ingredients = set()
     deduped_ingredients = []
     for ing in formatted_ingredients:
-        ing_norm = ing.strip().lower()
+        ing_norm = ' '.join(ing.strip().lower().split())  # normalize whitespace
         if ing_norm not in seen_ingredients:
             deduped_ingredients.append(ing)
             seen_ingredients.add(ing_norm)
