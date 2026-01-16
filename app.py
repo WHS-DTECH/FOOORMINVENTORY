@@ -401,49 +401,84 @@ def load_recipe_url():
     ingredients = []
     instructions = []
     current_step = None
-    # --- Find the main ingredients block ---
-    # --- Find all possible ingredient blocks ---
-    ingredient_blocks = []
-    for selector in [
-        '[class*="ingredient"]', '[id*="ingredient"]',
-        'ul', 'ol', 'div', 'section']:
-        blocks = soup.select(selector)
-        for block in blocks:
-            if block and len(block.find_all(['li', 'span', 'p'])) > 1:
-                ingredient_blocks.append(block)
-    # If no blocks found, fallback to whole page
-    if ingredient_blocks:
-        search_scopes = ingredient_blocks
-    else:
-        search_scopes = [soup]
-    # Extract ingredients as a contiguous block using pattern-based boundary detection
-    ingredient_blocks = []
-    for scope in search_scopes:
-        block_lines = []
-        found_block = False
-        trailing_count = 0
-        for tag in scope.find_all(['li', 'span', 'p']):
-            text = tag.get_text(strip=True)
-            if not text:
-                continue
-            if ingredient_pattern.match(text):
-                block_lines.append(text)
-                found_block = True
+    # --- Find the ingredient block directly under the recipe title ---
+    # 1. Find the title node in the DOM (try h1, h2, h3, or use soup.title)
+    # 2. Walk the DOM after the title to find the first block with ingredient-like lines
+    def find_title_node(soup, title):
+        # Try to find a heading with the title text
+        for tag in soup.find_all(['h1', 'h2', 'h3']):
+            if tag.get_text(strip=True).lower() == title.lower():
+                return tag
+        # Fallback: use <title> tag's parent
+        if soup.title and soup.title.string and soup.title.string.strip().lower() == title.lower():
+            return soup.title
+        return None
+
+    title_node = find_title_node(soup, title)
+    ingredient_block = None
+    if title_node:
+        # Walk siblings after the title node
+        next_node = title_node.find_next_sibling()
+        while next_node:
+            # Only consider element nodes
+            if getattr(next_node, 'name', None) in ['ul', 'ol', 'div', 'section']:
+                # Check if this block has at least 2 ingredient-like lines
+                block_lines = []
+                found_block = False
                 trailing_count = 0
-            elif found_block:
-                # Allow up to 2 trailing lines after main block (e.g., 'Fruit, to decorate')
-                if (',' in text or 'decorate' in text.lower()) and trailing_count < 2:
-                    block_lines.append(text)
-                    trailing_count += 1
-                else:
+                for tag in next_node.find_all(['li', 'span', 'p']):
+                    text = tag.get_text(strip=True)
+                    if not text:
+                        continue
+                    if ingredient_pattern.match(text):
+                        block_lines.append(text)
+                        found_block = True
+                        trailing_count = 0
+                    elif found_block:
+                        if (',' in text or 'decorate' in text.lower()) and trailing_count < 2:
+                            block_lines.append(text)
+                            trailing_count += 1
+                        else:
+                            break
+                if len(block_lines) > 1:
+                    ingredient_block = block_lines
                     break
-        if block_lines:
-            ingredient_blocks.append(block_lines)
-    # Use the largest contiguous block (most lines)
-    if ingredient_blocks:
-        ingredients = max(ingredient_blocks, key=len)
+            next_node = next_node.find_next_sibling()
+    # Fallback: use previous logic if not found
+    if ingredient_block:
+        ingredients = ingredient_block
     else:
-        ingredients = []
+        # Fallback to previous logic (largest block)
+        ingredient_blocks = []
+        for selector in [
+            '[class*="ingredient"]', '[id*="ingredient"]',
+            'ul', 'ol', 'div', 'section']:
+            blocks = soup.select(selector)
+            for block in blocks:
+                if block and len(block.find_all(['li', 'span', 'p'])) > 1:
+                    block_lines = []
+                    found_block = False
+                    trailing_count = 0
+                    for tag in block.find_all(['li', 'span', 'p']):
+                        text = tag.get_text(strip=True)
+                        if not text:
+                            continue
+                        if ingredient_pattern.match(text):
+                            block_lines.append(text)
+                            found_block = True
+                            trailing_count = 0
+                        elif found_block:
+                            if (',' in text or 'decorate' in text.lower()) and trailing_count < 2:
+                                block_lines.append(text)
+                                trailing_count += 1
+                            else:
+                                break
+                    if block_lines:
+                        ingredient_blocks.append(block_lines)
+        if ingredient_blocks:
+            ingredients = max(ingredient_blocks, key=len)
+        else:
+            ingredients = []
     method_block = None
     for selector in [
         '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
