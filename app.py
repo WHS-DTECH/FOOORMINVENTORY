@@ -343,6 +343,7 @@ def load_recipe_url():
         r'(\d+\s*portions)',
     ]
     import re as _re
+    # First, try to find serving size using patterns
     for tag in soup.find_all(['li', 'span', 'p', 'div']):
         text = tag.get_text(strip=True)
         for pat in serving_patterns:
@@ -352,6 +353,27 @@ def load_recipe_url():
                 break
         if serving_size:
             break
+    # If not found, look for a label like 'SERVINGS' followed by a number
+    if not serving_size:
+        # Look for tags containing 'SERVINGS' (case-insensitive)
+        for tag in soup.find_all(['div', 'span', 'p']):
+            if 'servings' in tag.get_text(strip=True).lower():
+                # Check next sibling or child for a number
+                # Try direct children first
+                for child in tag.find_all():
+                    num_match = _re.match(r'^(\d+)$', child.get_text(strip=True))
+                    if num_match:
+                        serving_size = num_match.group(1)
+                        break
+                if serving_size:
+                    break
+                # Try next sibling
+                next_sib = tag.find_next_sibling()
+                if next_sib:
+                    num_match = _re.match(r'^(\d+)$', next_sib.get_text(strip=True))
+                    if num_match:
+                        serving_size = num_match.group(1)
+                        break
     title = soup.title.string.strip() if soup.title and soup.title.string else url
     ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
     instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
