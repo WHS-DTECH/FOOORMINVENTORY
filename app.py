@@ -1887,15 +1887,7 @@ def upload():
             conn.commit()
             
         # Run cleaners after form insert
-        try:
-            dup_deleted = remove_duplicate_recipes()
-        except Exception:
-            dup_deleted = []
-        try:
-            nonfood_deleted = remove_nonfood_recipes()
-        except Exception:
-            nonfood_deleted = []
-        flash(f'Recipe "{name}" saved successfully! Cleaned {len(dup_deleted)} duplicates and {len(nonfood_deleted)} non-food entries.', 'success')
+        flash(f'Recipe "{name}" saved successfully!', 'success')
     except psycopg2.IntegrityError as e:
         flash(f'Recipe "{name}" already exists in the database. Please use a different name.', 'error')
         return redirect(url_for('admin'))
