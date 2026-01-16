@@ -313,6 +313,9 @@ def upload_url():
 @app.route('/load_recipe_url', methods=['POST'])
 @require_role('VP')
 def load_recipe_url():
+    # ...existing code...
+    html = resp.text
+    soup = BeautifulSoup(html, 'html.parser')
     # --- Serving size extraction ---
     serving_size = None
     serving_patterns = [
