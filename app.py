@@ -269,32 +269,18 @@ def debug_extract_text():
 # =======================
 # Admin Recipe Routes
 # =======================
-@app.route('/admin/delete_recipe', methods=['POST'])
-@require_role('VP')
-# @Grapplinks[#URL]
-def delete_recipe():
-    """Delete a recipe by ID."""
-    recipe_id = request.form.get('recipe_id')
-    if recipe_id:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
-            conn.commit()
-        flash('Recipe deleted successfully.', 'success')
-    else:
-        flash('No recipe ID provided.', 'error')
-    return redirect(url_for('admin_recipe_book_setup'))
 
-# --- Delete Recipe Route 
-# ---@app.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
-# ---@require_role('VP')  # Adjust role as needed
-# ---def delete_recipe(recipe_id):
-    # ---with get_db_connection() as conn:
-        # ---c = conn.cursor()
-        # ---c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
-        # ---conn.commit()
-    # ---flash('Recipe deleted.', 'success')
-    # ---return redirect(url_for('upload_recipe_url'))
+
+# --- Delete Recipe Route ---
+@app.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
+@require_role('VP')  # Adjust role as needed
+def delete_recipe(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
+        conn.commit()
+    flash('Recipe deleted.', 'success')
+    return redirect(url_for('upload_recipe_url'))
 
 @app.route('/admin/update_recipe_source', methods=['POST'])
 @require_role('VP')
