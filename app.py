@@ -378,6 +378,7 @@ def upload_url():
     # --- Robust block-based extraction for ingredients and instructions ---
     ingredients = []
     instructions = []
+
     in_ingredients = False
     in_instructions = False
     ingredient_headers = ['ingredient', 'ingredients']
@@ -396,12 +397,12 @@ def upload_url():
             in_instructions = True
             in_ingredients = False
             continue
-        # End block if we hit another section or a long break
-        if in_ingredients and (any(h in lower for h in instruction_headers) or len(text) > 120):
+        # End block if we hit another section header
+        if in_ingredients and any(h in lower for h in instruction_headers):
             in_ingredients = False
-        if in_instructions and (any(h in lower for h in ingredient_headers) or len(text) > 120):
+        if in_instructions and any(h in lower for h in ingredient_headers):
             in_instructions = False
-        # Collect lines
+        # Collect all lines in the block, even if blank or not matching a pattern
         if in_ingredients:
             ingredients.append(text)
         elif in_instructions:
