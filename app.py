@@ -198,8 +198,8 @@ def admin_recipe_book_setup():
     # Query recipes from the database
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, source FROM recipes ORDER BY name')
-        recipe_list = [{'id': row['id'], 'name': row['name'], 'source': row.get('source', '')} for row in c.fetchall()]
+        c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes ORDER BY name')
+        recipe_list = [dict(row) for row in c.fetchall()]
     return render_template('recipe_book_setup.html', recipe_list=recipe_list)
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
