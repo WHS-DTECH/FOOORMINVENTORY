@@ -48,10 +48,12 @@
                             {% elif role == 'DK' %}Teacher
                             {% elif role == 'MU' %}Technician
                             {% elif role == 'public' %}Public Access
+                            {% elif role == 'Recipe Editor' %}Recipe Editor
                             {% else %}{{ role }}
                             {% endif %}
                         </option>
                     {% endfor %}
+                    <option value="Recipe Editor">Recipe Editor</option>
                 </select>
             </div>
             

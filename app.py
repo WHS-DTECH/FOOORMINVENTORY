@@ -2557,7 +2557,7 @@ def upload_recipe_url():
 
 # --- Manual Instruction Editing Route ---
 @app.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
-@require_role('VP')
+@require_role(['Admin', 'Recipe Editor'])
 def edit_instructions(recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
