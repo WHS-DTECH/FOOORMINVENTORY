@@ -1,3 +1,4 @@
+
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
@@ -168,6 +169,33 @@ def fix_public_roles():
 Inventory app main entrypoint
 Best practice: All imports first, then utility functions, then app creation/config, then routes.
 """
+
+# =======================
+# Features: Recipe Book Routes
+# =======================
+
+# --- Recipe detail page for /recipe/<int:recipe_id> ---
+@app.route('/recipe/<int:recipe_id>')
+@require_login
+def recipe_details(recipe_id):
+    """Display details for a single recipe."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+        if not recipe:
+            flash('Recipe not found.', 'error')
+            return redirect(url_for('recbk'))
+        # Convert ingredients and instructions if stored as JSON/text
+        import json
+        try:
+            if isinstance(recipe['ingredients'], str):
+                recipe['ingredients'] = json.loads(recipe['ingredients'])
+        except Exception:
+            pass
+        return render_template('recipe_details.html', recipe=recipe)
+
+
 # --- Debug endpoint: Show raw HTML/text for a recipe URL ---
 @app.route('/debug_raw_recipe', methods=['POST'])
 @require_role('VP')
