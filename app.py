@@ -1,3 +1,13 @@
+# --- Delete Recipe Route ---
+@app.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
+@require_role('VP')  # Adjust role as needed
+def delete_recipe(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
+        conn.commit()
+    flash('Recipe deleted.', 'success')
+    return redirect(url_for('upload_recipe_url'))
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
