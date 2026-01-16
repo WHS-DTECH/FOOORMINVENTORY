@@ -823,7 +823,20 @@ def load_recipe_url():
             ]
             import re
             verb_pattern = re.compile(r'(^|\b)(' + '|'.join(verbs) + r')\b', re.IGNORECASE)
-            instructions_block = [line for line in raw_lines if verb_pattern.search(line)]
+            instructions_block = []
+            i = 0
+            while i < len(raw_lines):
+                line = raw_lines[i]
+                if verb_pattern.search(line):
+                    sentence = line
+                    # If the line does not end with a period, keep adding lines until a period is found
+                    while not sentence.strip().endswith('.') and i + 1 < len(raw_lines):
+                        i += 1
+                        sentence += ' ' + raw_lines[i].strip()
+                        if sentence.strip().endswith('.'):
+                            break
+                    instructions_block.append(sentence.strip())
+                i += 1
             if instructions_block:
                 c.execute("UPDATE recipes SET instructions = %s WHERE id = %s", ("\n".join(instructions_block), recipe_id))
         conn.commit()
