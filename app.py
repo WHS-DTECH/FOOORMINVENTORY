@@ -1,16 +1,7 @@
-@app.template_filter('datetimeformat')
-def datetimeformat(value, format='%I:%M %p'):
-    from datetime import datetime
-    if not value:
-        return ''
-    # Try parsing with microseconds, then without
-    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
-        try:
-            dt = datetime.strptime(str(value).replace('T', ' ').replace('Z', ''), fmt)
-            return dt.strftime(format)
-        except Exception:
-            continue
-    return value
+"""
+Inventory app main entrypoint
+Best practice: All imports first, then utility functions, then app creation/config, then routes.
+"""
 """
 Inventory app main entrypoint
 Best practice: All imports first, then utility functions, then app creation/config, then routes.
@@ -78,6 +69,21 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 # Allow OAuth over HTTP for local development (DO NOT use in production)
 if os.getenv('FLASK_ENV') == 'development':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# Register Jinja2 filter after app is created
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%I:%M %p'):
+    from datetime import datetime
+    if not value:
+        return ''
+    # Try parsing with microseconds, then without
+    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
+        try:
+            dt = datetime.strptime(str(value).replace('T', ' ').replace('Z', ''), fmt)
+            return dt.strftime(format)
+        except Exception:
+            continue
+    return value
 
 # Configure Flask-Login
 login_manager = LoginManager()
