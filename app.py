@@ -1,4 +1,3 @@
-
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
@@ -2510,25 +2509,24 @@ def api_scheduled_bookings():
         import traceback; traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)})
 
-# --- Recipe detail page for /recipe/<id> ---
-@app.route('/recipe/<int:recipe_id>', endpoint='recipe_details')
-# @Grapplinks[#URL]
-def recipe_details(recipe_id):
+# --- View Raw Upload Route ---
+@app.route('/view_raw_upload')
+@require_role('VP')
+def view_raw_upload():
+    source_url = request.args.get('source')
+    if not source_url:
+        return 'No source URL provided.', 400
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, instructions, serving_size, source, source_url FROM recipes WHERE id = %s', (recipe_id,))
+        c.execute("SELECT r.id, r.name, ru.raw_text, ru.uploaded_by, ru.upload_source_type, ru.upload_source_detail, ru.created_at FROM recipe_upload ru JOIN recipes r ON ru.recipe_id = r.id WHERE ru.upload_source_detail = %s ORDER BY ru.created_at DESC LIMIT 1", (source_url,))
         row = c.fetchone()
         if not row:
-            return render_template('recipe_details.html', recipe=None, error='Recipe not found'), 404
-        recipe = dict(row)
-        try:
-            recipe['ingredients'] = json.loads(recipe.get('ingredients') or '[]')
-        except Exception:
-            recipe['ingredients'] = []
-    return render_template('recipe_details.html', recipe=recipe, error=None)
-
-# --- Route to serve the debug extract text form ---
-@app.route('/debug_extract_text_form')
-@require_role('VP')
-def debug_extract_text_form():
-    return render_template('debug_extract_text_form.html')
+            return 'No raw upload found for this source URL.', 404
+        # Render a simple template to show the raw text and metadata
+        return render_template('view_raw_upload.html',
+                              recipe_name=row['name'],
+                              raw_text=row['raw_text'],
+                              uploaded_by=row['uploaded_by'],
+                              upload_source_type=row['upload_source_type'],
+                              upload_source_detail=row['upload_source_detail'],
+                              created_at=row.get('created_at'))
