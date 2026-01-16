@@ -386,37 +386,34 @@ def upload_url():
     instruction_headers = ['method', 'instructions', 'steps', 'directions']
     method_lines = []
     found_method = False
+    collecting_method = False
     for tag in soup.find_all(['li', 'span', 'p', 'div']):
-        text = tag.get_text(strip=True)
+        text = tag.get_text(" ", strip=True)
         if not text:
             continue
         lower = text.lower()
         # Detect section headers
         if any(h in lower for h in ingredient_headers):
             in_ingredients = True
-            in_instructions = False
+            collecting_method = False
             continue
         if any(h in lower for h in instruction_headers):
-            in_instructions = True
+            collecting_method = True
             in_ingredients = False
             found_method = True
             continue
         # End block if we hit another section header
-        if in_ingredients and any(h in lower for h in instruction_headers):
-            in_ingredients = False
-        if in_instructions and any(h in lower for h in ingredient_headers):
-            in_instructions = False
+        if collecting_method and any(h in lower for h in ingredient_headers):
+            collecting_method = False
         # Collect all lines in the block, even if blank or not matching a pattern
         if in_ingredients:
             ingredients.append(text)
-        elif in_instructions:
+        elif collecting_method:
             method_lines.append(text)
 
-    # If we found a method/instructions section, force at least 12 lines
-    if found_method:
-        while len(method_lines) < 12:
-            method_lines.append("")
-        instructions = method_lines[:12]
+    # If we found a method/instructions section, join all lines as a single string (raw paste)
+    if found_method and method_lines:
+        instructions = ["\n".join(method_lines)]
     else:
         instructions = method_lines
 
