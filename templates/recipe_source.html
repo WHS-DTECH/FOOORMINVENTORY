@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Recipe Source</h2>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ recipe.name }}</h5>
+            <p><strong>Upload Method:</strong> {{ recipe.upload_method or 'N/A' }}</p>
+            <p><strong>Source URL:</strong> <a href="{{ recipe.source_url }}" target="_blank">{{ recipe.source_url }}</a></p>
+            <p><strong>Uploaded By:</strong> {{ recipe.uploaded_by or 'N/A' }}</p>
+            <p><strong>Upload Date:</strong> {{ recipe.upload_date|datetimeformat('%Y-%m-%d %I:%M %p') if recipe.upload_date else 'N/A' }}</p>
+            <hr>
+            <p><strong>Source Details</strong></p>
+            <div>
+                {{ recipe.source or 'None' }}
+            </div>
+            <a href="{{ url_for('recipe_details', recipe_id=request.view_args['recipe_id']) }}" class="btn btn-secondary mt-2">Back to Recipe</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

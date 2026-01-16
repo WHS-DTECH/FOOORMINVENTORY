@@ -203,7 +203,7 @@ def recipe_source(recipe_id):
     """Display the source and source URL for a recipe."""
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT name, source, source_url FROM recipes WHERE id = %s', (recipe_id,))
+        c.execute('SELECT name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes WHERE id = %s', (recipe_id,))
         recipe = c.fetchone()
         if not recipe:
             flash('Recipe not found.', 'error')
@@ -777,12 +777,18 @@ def load_recipe_url():
     # Save to database (after extraction logic)
     import json
     from datetime import datetime
+
+    # Extract domain for source field
+    from urllib.parse import urlparse
+    parsed_url = urlparse(url)
+    source = parsed_url.netloc.replace('www.', '') if parsed_url.netloc else ''
+
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute(
             '''
-            INSERT INTO recipes (name, ingredients, instructions, serving_size, source_url, upload_method, uploaded_by, upload_date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO recipes (name, ingredients, instructions, serving_size, source, source_url, upload_method, uploaded_by, upload_date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
             (
@@ -790,6 +796,7 @@ def load_recipe_url():
                 json.dumps(ingredients),
                 "\n".join(instructions),
                 serving_size,
+                source,
                 url,
                 'url',
                 getattr(current_user, 'email', None),
