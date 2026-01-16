@@ -357,7 +357,6 @@ def load_recipe_url():
     current_step = None
     # --- Find the main ingredients block ---
     ingredients_block = None
-    # Try common class/id names for ingredients
     for selector in [
         '[class*="ingredient"]', '[id*="ingredient"]',
         'ul', 'ol', 'div', 'section']:
@@ -365,27 +364,30 @@ def load_recipe_url():
         if block and len(block.find_all(['li', 'span', 'p'])) > 1:
             ingredients_block = block
             break
-    # Fallback: use the whole document if no block found
     search_scope = ingredients_block if ingredients_block else soup
-    for tag in search_scope.find_all(['li', 'span', 'p']):
+    # --- Find the main instructions/method block ---
+    method_block = None
+    for selector in [
+        '[class*="method"]', '[id*="method"]', '[class*="instruction"]', '[id*="instruction"]',
+        '[class*="steps"]', '[id*="steps"]', 'div', 'section']:
+        block = soup.select_one(selector)
+        if block and len(block.find_all(['li', 'span', 'p'])) > 1:
+            method_block = block
+            break
+    method_scope = method_block if method_block else soup
+    for tag in method_scope.find_all(['li', 'span', 'p']):
         text = tag.get_text(strip=True)
         if not text:
             continue
-        if ingredient_pattern.match(text):
-            ingredients.append(text)
+        # Instructional language: look for cooking/action verbs
+        if verb_pattern.match(text):
+            instructions.append(text)
             continue
-        is_new_step = instruction_pattern.match(text) or verb_pattern.match(text)
-        if is_new_step:
-            if current_step:
-                instructions.append(current_step.strip())
-            current_step = text
-        else:
-            if current_step:
-                current_step += ' ' + text
-            else:
-                current_step = text
-    if current_step:
-        instructions.append(current_step.strip())
+        # Fallback: if sentence contains a cooking verb anywhere
+        for verb in cooking_verbs:
+            if verb in text.lower():
+                instructions.append(text)
+                break
 
     # Format: Add a space between number+unit and ingredient name
     import re as _re2
