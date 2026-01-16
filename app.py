@@ -1972,7 +1972,7 @@ def shoplist():
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
-            SELECT cb.id, cb.date_required, cb.period, cb.class_code, cb.staff_name, cb.recipe_id, cb.desired_servings, r.name AS recipe_name, r.ingredients, r.serving_size
+            SELECT cb.id, cb.date_required, cb.period, cb.class_code, cb.staff_code, cb.recipe_id, cb.desired_servings, r.name AS recipe_name, r.ingredients, r.serving_size
             FROM class_bookings cb
             LEFT JOIN recipes r ON cb.recipe_id = r.id
             WHERE cb.date_required >= %s AND cb.date_required <= %s
