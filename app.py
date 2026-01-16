@@ -530,7 +530,10 @@ def load_recipe_url():
                 url
             )
         )
-        recipe_id = c.fetchone()[0]
+        result = c.fetchone()
+        if result is None:
+            return jsonify({'error': 'Recipe was not saved to the database.'}), 500
+        recipe_id = result[0]
         conn.commit()
     return render_template(
         "recipe_added.html",
