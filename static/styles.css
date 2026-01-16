@@ -1,3 +1,14 @@
+/* Custom Red Button for 'Load from URL' */
+.btn-danger {
+  background: #d32f2f !important;
+  border-color: #b71c1c !important;
+  color: #fff !important;
+}
+.btn-danger:hover, .btn-danger:focus {
+  background: #b71c1c !important;
+  border-color: #d32f2f !important;
+  color: #fff !important;
+}
 /* --- Mobile Responsive Shopping List Panel --- */
 @media (max-width: 900px) {
   .shoplist-responsive-panel {
