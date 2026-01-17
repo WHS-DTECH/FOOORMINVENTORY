@@ -888,18 +888,13 @@ def add_shoplist_to_gcal():
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'error': str(e)}), 500
-## ...existing imports already above...
 
-
-## ...existing code continues here (duplicates removed)...
-    is_authenticated = False
-    def is_admin(self):
-        return False
-    def is_teacher(self):
-        return False
-    def is_staff(self):
-        return False
-
+# =======================
+# Flask-Login Manager Setup
+# =======================
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 login_manager.anonymous_user = AnonymousUser
 
 # Google OAuth Configuration
