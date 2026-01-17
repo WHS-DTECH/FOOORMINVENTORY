@@ -158,9 +158,8 @@
       </div>
     </div>
 
-<script>
-<!--//@Grapplinks[#PDF]-->
-document.addEventListener('DOMContentLoaded', function(){
+</script>
+{% endblock %}
   const recipes = {{ recipes|tojson | safe }};
   const preRecipeId = {{ pre_recipe_id or 'null' }};
   const preServings = {{ pre_servings or 'null' }};
