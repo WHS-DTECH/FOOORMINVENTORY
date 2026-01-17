@@ -755,15 +755,66 @@ def review_recipe_url_action():
         flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
         return redirect(url_for('admin_recipe_book_setup'))
     elif action == 'flag':
-        # Here you would flag the recipe for manual review
-        flash('Recipe flagged for manual review (not yet implemented).', 'warning')
-        return redirect(url_for('admin_recipe_book_setup'))
+        # Insert recipe into parser_test_recipes
+        test_recipe_id = None
+        try:
+            with get_db_connection() as conn:
+                c = conn.cursor()
+                c.execute('''
+                    INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                ''', (
+                    'url',
+                    recipe_data.get('source_url') or recipe_data.get('title') or '',
+                    getattr(current_user, 'email', 'unknown'),
+                    datetime.datetime.now(),
+                    'Flagged for parser testing',
+                    None
+                ))
+                test_recipe_id = c.fetchone()['id']
+                # Optionally store the full recipe JSON as a note or in a new column
+                # c.execute('UPDATE parser_test_recipes SET notes = %s WHERE id = %s', (json.dumps(recipe_data), test_recipe_id))
+                conn.commit()
+        except Exception as e:
+            error_message = f'Error saving flagged recipe for parser testing: {e}'
+            return render_template(
+                "review_recipe_url.html",
+                recipe_data=recipe_data or {},
+                extraction_warning=error_message
+            )
+        # Show Yes/No debug prompt on the draft page
+        return render_template(
+            "review_recipe_url.html",
+            recipe_data=recipe_data or {},
+            extraction_warning='Recipe flagged for manual review and stored for parser testing.',
+            show_debug_prompt=True,
+            test_recipe_id=test_recipe_id
+        )
     else:
         error_message = 'Unknown action.'
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data or {},
             extraction_warning=error_message
+        )
+
+# --- Handle Yes/No debug prompt after flag ---
+@app.route('/parser_test_decision', methods=['POST'])
+@require_role('VP')
+def parser_test_decision():
+    test_recipe_id = request.form.get('test_recipe_id')
+    debug_now = request.form.get('debug_now')
+    # Optionally fetch recipe_data for display
+    if debug_now == 'yes' and test_recipe_id:
+        # Redirect to parser debug page for this test recipe
+        return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+    else:
+        # Show confirmation message on the draft page
+        return render_template(
+            "review_recipe_url.html",
+            extraction_warning='Recipe stored in parser testing table as a test sample for future improvements.',
+            show_debug_prompt=False
         )
 def add_shoplist_to_gcal():
     try:
