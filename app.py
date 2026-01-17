@@ -687,6 +687,7 @@ def load_recipe_url():
             'source_url': url,
             'serving_size': serving_size
         }
+        session['raw_data'] = f'Invalid or missing URL: {url}'
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
@@ -702,6 +703,7 @@ def load_recipe_url():
             'source_url': url,
             'serving_size': serving_size
         }
+        session['raw_data'] = 'Required libraries (requests, BeautifulSoup) not installed.'
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
@@ -734,7 +736,7 @@ def load_recipe_url():
             'source_url': url,
             'serving_size': serving_size
         }
-        session['raw_data'] = ''
+        session['raw_data'] = f'Exception fetching URL: {str(e)}'
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
