@@ -1,4 +1,5 @@
 
+
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -217,6 +218,11 @@ def test_recipe_urls():
 # Features: Recipe Book Routes
 # =======================
 
+# Route to render the debug extract text form
+@app.route('/debug_extract_text_form', methods=['GET'])
+@require_role('VP')
+def debug_extract_text_form():
+    return render_template('debug_extract_text_form.html')
 
 # --- Raw Data View for flagged/test recipe ---
 @app.route('/parser_debug_raw/<int:test_recipe_id>')
