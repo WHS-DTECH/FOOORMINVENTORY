@@ -13,5 +13,82 @@
             <!-- Add more debug info or parser output here -->
         </div>
     </div>
+
+<div class="row g-3 mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span>Title</span>
+                <form method="post" action="/parser_debug_block">
+                    <input type="hidden" name="block" value="title">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ test_recipe.upload_source_detail }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
+                <span>Serving Size</span>
+                <form method="post" action="/parser_debug_block">
+                    <input type="hidden" name="block" value="serving_size">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <span>{{ test_recipe.serving_size or 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <span>Source URL</span>
+                <form method="post" action="/parser_debug_block">
+                    <input type="hidden" name="block" value="source_url">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <span>Ingredients</span>
+                <form method="post" action="/parser_debug_block">
+                    <input type="hidden" name="block" value="ingredients">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <span>{{ test_recipe.ingredients or 'No ingredients found.' }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <span>Instructions</span>
+                <form method="post" action="/parser_debug_block">
+                    <input type="hidden" name="block" value="instructions">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <span>{{ test_recipe.instructions or 'No instructions found.' }}</span>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
