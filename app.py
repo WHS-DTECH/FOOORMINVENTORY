@@ -1,3 +1,6 @@
+# =======================
+# DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
+# =======================
 
 # =======================
 # Imports (Standard, Third-party, Local)
@@ -891,7 +894,8 @@ def load_recipe_url():
                         instructions = [line.strip()]
                         break
     if not ingredients:
-        return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
+        flash('No ingredients found on the page. Not a valid recipe URL.', 'error')
+        return render_template('url_upload.html', url=url, result=None)
     # Save to database (after extraction logic)
     import json
     from datetime import datetime
