@@ -752,17 +752,14 @@ def load_recipe_url():
         'serving_size': serving_size
     }
     session['raw_data'] = html
+    # Remove raw_data if present before passing to template
+    recipe_data_no_raw = dict(recipe_data)
+    recipe_data_no_raw.pop('raw_data', None)
     if 'recipe_data' in locals():
         # Fallback: minimal blank review page
         return render_template(
             "review_recipe_url.html",
-            recipe_data={
-                'title': title if 'title' in locals() else '',
-                'ingredients': ingredients if 'ingredients' in locals() else [],
-                'instructions': instructions if 'instructions' in locals() else [],
-                'source_url': url if 'url' in locals() else '',
-                'serving_size': serving_size if 'serving_size' in locals() else None
-            },
+            recipe_data=recipe_data_no_raw,
             extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
         )
 

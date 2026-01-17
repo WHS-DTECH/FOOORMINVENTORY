@@ -82,7 +82,7 @@
 
     <form method="post" action="/review_recipe_url_action">
         {# Only include minimal recipe data, excluding raw_data #}
-        <textarea name="recipe_json" style="display:none;">{{ recipe_data | tojson(exclude=['raw_data']) }}</textarea>
+        <textarea name="recipe_json" style="display:none;">{{ recipe_data | tojson }}</textarea>
         <button type="submit" name="action" value="confirm" class="btn btn-success">CONFIRM</button>
         <button type="submit" name="action" value="flag" class="btn btn-warning ms-2">FLAG to TWEAK</button>
     </form>
