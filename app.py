@@ -716,7 +716,8 @@ def load_recipe_url():
                 'ingredients': ingredients,
                 'instructions': instructions,
                 'source_url': url,
-                'serving_size': serving_size
+                'serving_size': serving_size,
+                'raw_data': resp.text
             }
             return render_template(
                 "review_recipe_url.html",
@@ -731,23 +732,25 @@ def load_recipe_url():
             'ingredients': ingredients,
             'instructions': instructions,
             'source_url': url,
-            'serving_size': serving_size
+            'serving_size': serving_size,
+            'raw_data': ''
         }
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
             extraction_warning=extraction_warning
         )
-    
+
     # ...existing extraction logic for ingredients, instructions, etc. goes here...
 
     # Defensive: ensure a valid response is always returned
     recipe_data = {
-            'title': title,
-            'ingredients': ingredients,
-            'instructions': instructions,
-            'source_url': url,
-            'serving_size': serving_size
+        'title': title,
+        'ingredients': ingredients,
+        'instructions': instructions,
+        'source_url': url,
+        'serving_size': serving_size,
+        'raw_data': html
     }
     if 'recipe_data' in locals():
         # Fallback: minimal blank review page
@@ -758,7 +761,8 @@ def load_recipe_url():
                 'ingredients': ingredients if 'ingredients' in locals() else [],
                 'instructions': instructions if 'instructions' in locals() else [],
                 'source_url': url if 'url' in locals() else '',
-                'serving_size': serving_size if 'serving_size' in locals() else None
+                'serving_size': serving_size if 'serving_size' in locals() else None,
+                'raw_data': html if 'html' in locals() else ''
             },
             extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
         )
