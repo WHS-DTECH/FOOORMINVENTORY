@@ -49,90 +49,6 @@ def simple_similarity(a, b):
     except ImportError:
         # Fallback: substring match
         a, b = a.lower(), b.lower()
-        if a in b or b in a:
-            return 0.8
-        return 0.0
-
-
-
-# =======================
-# App Creation & Configuration
-# =======================
-load_dotenv()
-app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
-
-# Allow OAuth over HTTP for local development (DO NOT use in production)
-if os.getenv('FLASK_ENV') == 'development':
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
-# Register Jinja2 filter after app is created
-@app.template_filter('datetimeformat')
-def datetimeformat(value, format='%I:%M %p'):
-    from datetime import datetime
-    if not value:
-        return ''
-    # Try parsing with microseconds, then without
-    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
-        try:
-            dt = datetime.strptime(str(value).replace('T', ' ').replace('Z', ''), fmt)
-            return dt.strftime(format)
-        except Exception:
-            continue
-    return value
-
-# Configure Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-class AnonymousUser:
-    is_authenticated = False
-    def is_admin(self):
-        return False
-    def is_teacher(self):
-        return False
-    def is_staff(self):
-        return False
-
-login_manager.anonymous_user = AnonymousUser
-
-# Google OAuth Configuration
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'https://WHS-DTECH.pythonanywhere.com/auth/callback')
-
-# Debug: Print loaded OAuth environment variables (remove after troubleshooting)
-print('GOOGLE_CLIENT_ID:', repr(GOOGLE_CLIENT_ID))
-print('GOOGLE_CLIENT_SECRET:', repr(GOOGLE_CLIENT_SECRET))
-print('GOOGLE_REDIRECT_URI:', repr(GOOGLE_REDIRECT_URI))
-
-SCOPES = [
-    'openid',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile'
-]
-
-# =======================
-# Utility Functions & Filters
-# =======================
-POSTGRES_URL = os.getenv('DATABASE_URL')
-def get_db_connection():
-    """Get a new database connection using the configured POSTGRES_URL."""
-    return psycopg2.connect(POSTGRES_URL, cursor_factory=psycopg2.extras.RealDictCursor)
-
-@app.template_filter('format_nz_week')
-def format_nz_week(label):
-    """Format NZ week label from yyyy-mm-dd to dd-mm-yyyy."""
-    if not label or not isinstance(label, str):
-        return ""
-    match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
-    if match:
-        start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
-        end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
-        return f"{start} to {end}"
-    return label
-
 # =======================
 # Error Handlers
 # =======================
@@ -180,6 +96,11 @@ Best practice: All imports first, then utility functions, then app creation/conf
 # Test Routes
 # =======================
 
+# =======================
+# Debug Parser - Title Section
+# =======================
+
+
 # --- Test Recipe URL Suite ---
 import csv
 from datetime import datetime
@@ -212,19 +133,6 @@ def test_recipe_urls():
 @require_role('Admin', 'Teacher')
 
 
-# --- Debug Title Extraction Page ---
-@app.route('/debug_title/<int:test_recipe_id>')
-@require_role('VP')
-def debug_title(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
-    raw_data = test_recipe['raw_data']
-    strategies, best_guess = extract_title_candidates(raw_data)
-    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
 
 # --- Title Extraction Strategies ---
 def extract_title_candidates(raw_html):
