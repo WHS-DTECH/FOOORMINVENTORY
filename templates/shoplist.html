@@ -693,9 +693,9 @@ window.addEventListener('DOMContentLoaded', function() {
         <tr>
           <th scope="col"></th>
           {% for d in dates %}
-            <th style="text-align:center;" scope="col"> 
-              {{ d.day_name[:3] if d.day_name else '' }}<br>
-              <span class="small-muted">{{ d.nz_date }}</span>
+            <th style="text-align:center;" scope="col">
+              <div style="font-weight:600; font-size:1.08em;">{{ d.day_name[:3] if d.day_name else '' }}</div>
+              <div style="font-size:0.98em; color:#444;">{{ d.nz_date }}</div>
             </th>
           {% endfor %}
         </tr>
