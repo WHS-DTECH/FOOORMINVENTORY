@@ -16,78 +16,88 @@
     </div>
 
 <div class="row g-3 mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <span>Title</span>
-                <form method="post" action="/parser_debug_block">
-                    <input type="hidden" name="block" value="title">
-                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
-                </form>
-            </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">Title</div>
+            <div class="card-body">{{ test_recipe.upload_source_detail }}</div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-purple text-white">Serving Size</div>
+            <div class="card-body">{{ test_recipe.serving_size or 'N/A' }}</div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">Source URL</div>
+            <div class="card-body"><a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a></div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">Ingredients</div>
+            <div class="card-body">{{ test_recipe.ingredients or 'No ingredients found.' }}</div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">Instructions</div>
+            <div class="card-body">{{ test_recipe.instructions or 'No instructions found.' }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">Actions</div>
             <div class="card-body">
-                <h5 class="card-title">{{ test_recipe.upload_source_detail }}</h5>
+                <form method="get" action="/debug_title/{{ test_recipe.id }}" style="display:inline-block;">
+                    <button type="submit" class="btn btn-outline-info btn-sm mb-2">Debug Title</button>
+                </form>
+                <form method="post" action="/confirm_field" style="display:inline-block;">
+                    <input type="hidden" name="field" value="title">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-success btn-sm mb-2">CONFIRM</button>
+                </form>
+                <hr>
+                <form method="get" action="#" style="display:inline-block;">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-2" disabled>Debug Serving Size</button>
+                </form>
+                <form method="post" action="/confirm_field" style="display:inline-block;">
+                    <input type="hidden" name="field" value="serving_size">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-success btn-sm mb-2">CONFIRM</button>
+                </form>
+                <hr>
+                <form method="get" action="#" style="display:inline-block;">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-2" disabled>Debug Source URL</button>
+                </form>
+                <form method="post" action="/confirm_field" style="display:inline-block;">
+                    <input type="hidden" name="field" value="source_url">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-success btn-sm mb-2">CONFIRM</button>
+                </form>
+                <hr>
+                <form method="get" action="#" style="display:inline-block;">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-2" disabled>Debug Ingredients</button>
+                </form>
+                <form method="post" action="/confirm_field" style="display:inline-block;">
+                    <input type="hidden" name="field" value="ingredients">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-success btn-sm mb-2">CONFIRM</button>
+                </form>
+                <hr>
+                <form method="get" action="#" style="display:inline-block;">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-2" disabled>Debug Instructions</button>
+                </form>
+                <form method="post" action="/confirm_field" style="display:inline-block;">
+                    <input type="hidden" name="field" value="instructions">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="btn btn-success btn-sm mb-2">CONFIRM</button>
+                </form>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-6">
-        <div class="card">
-            <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
-                <span>Serving Size</span>
-                <form method="post" action="/parser_debug_block">
-                    <input type="hidden" name="block" value="serving_size">
-                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
-                </form>
-            </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">Confirmed Values</div>
             <div class="card-body">
-                <span>{{ test_recipe.serving_size or 'N/A' }}</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-6">
-        <div class="card">
-            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                <span>Source URL</span>
-                <form method="post" action="/parser_debug_block">
-                    <input type="hidden" name="block" value="source_url">
-                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
-                </form>
-            </div>
-            <div class="card-body">
-                <a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-6">
-        <div class="card">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <span>Ingredients</span>
-                <form method="post" action="/parser_debug_block">
-                    <input type="hidden" name="block" value="ingredients">
-                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
-                </form>
-            </div>
-            <div class="card-body">
-                <span>{{ test_recipe.ingredients or 'No ingredients found.' }}</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-6">
-        <div class="card">
-            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                <span>Instructions</span>
-                <form method="post" action="/parser_debug_block">
-                    <input type="hidden" name="block" value="instructions">
-                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="btn btn-outline-info btn-sm">Debug</button>
-                </form>
-            </div>
-            <div class="card-body">
-                <span>{{ test_recipe.instructions or 'No instructions found.' }}</span>
+                <div><strong>Title:</strong> {{ confirmed.title or '' }}</div>
+                <div><strong>Serving Size:</strong> {{ confirmed.serving_size or '' }}</div>
+                <div><strong>Source URL:</strong> {{ confirmed.source_url or '' }}</div>
+                <div><strong>Ingredients:</strong> {{ confirmed.ingredients or '' }}</div>
+                <div><strong>Instructions:</strong> {{ confirmed.instructions or '' }}</div>
             </div>
         </div>
     </div>
