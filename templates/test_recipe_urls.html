@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 2em auto;">
+  <h2>Test Recipe URL Suite</h2>
+  {% if message %}
+    <div class="alert alert-info">{{ message }}</div>
+  {% endif %}
+  <form method="post" class="mb-4">
+    <div class="form-group mb-2">
+      <label for="url">Recipe URL:</label>
+      <input type="url" class="form-control" id="url" name="url" placeholder="Paste recipe URL here" required>
+    </div>
+    <div class="form-group mb-2">
+      <label for="site">Site/Source:</label>
+      <input type="text" class="form-control" id="site" name="site" placeholder="e.g. Chelsea Sugar">
+    </div>
+    <div class="form-group mb-2">
+      <label for="notes">Notes:</label>
+      <input type="text" class="form-control" id="notes" name="notes" placeholder="Any notes or edge case info">
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Add to Test Suite</button>
+  </form>
+  <h4>Current Test URLs</h4>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>URL</th>
+        <th>Site</th>
+        <th>Notes</th>
+        <th>Added By</th>
+        <th>Added At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in urls %}
+      <tr>
+        <td><a href="{{ row.url }}" target="_blank">{{ row.url }}</a></td>
+        <td>{{ row.site }}</td>
+        <td>{{ row.notes }}</td>
+        <td>{{ row.added_by }}</td>
+        <td>{{ row.added_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

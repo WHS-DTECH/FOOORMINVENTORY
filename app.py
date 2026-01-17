@@ -1,4 +1,4 @@
-@require_role('Admin', 'Teacher')
+
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
@@ -171,6 +171,43 @@ def fix_public_roles():
 Inventory app main entrypoint
 Best practice: All imports first, then utility functions, then app creation/config, then routes.
 """
+
+# =======================
+# Test Routes
+# =======================
+
+# --- Test Recipe URL Suite ---
+import csv
+from datetime import datetime
+
+@app.route('/test_recipe_urls', methods=['GET', 'POST'])
+@require_role('Admin')
+def test_recipe_urls():
+    csv_path = os.path.join(os.path.dirname(__file__), 'test_recipe_urls.csv')
+    message = None
+    if request.method == 'POST':
+        url = request.form.get('url', '').strip()
+        site = request.form.get('site', '').strip()
+        notes = request.form.get('notes', '').strip()
+        added_by = getattr(current_user, 'email', 'unknown')
+        added_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if url:
+            with open(csv_path, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow([url, site, notes, added_by, added_at])
+            message = 'Recipe URL added.'
+        else:
+            message = 'URL is required.'
+    # Read all URLs
+    urls = []
+    if os.path.exists(csv_path):
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            urls = list(reader)
+    return render_template('test_recipe_urls.html', urls=urls, message=message)
+@require_role('Admin', 'Teacher')
+
+
 
 # =======================
 # Features: Recipe Book Routes
