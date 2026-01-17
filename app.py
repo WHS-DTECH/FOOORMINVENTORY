@@ -851,26 +851,50 @@ def load_recipe_url():
         row = c.fetchone()
         if row and row['raw_text']:
             raw_lines = row['raw_text'].splitlines()
-            # Only use this set of instructional verbs for this round
+            # Improved fallback: after 'Method', collect lines that are numbered or start with a verb, merge continuations, stop at unrelated content
             verbs = [
                 'preheat', 'sift', 'beat', 'spoon', 'pour', 'stir', 'top', 'bake', 'brush'
             ]
             import re
             verb_pattern = re.compile(r'^(%s)\b' % '|'.join(verbs), re.IGNORECASE)
+            step_number_pattern = re.compile(r'^\d+[\.:)]?\s+')
+            unrelated_markers = ['icing', 'products in recipe', 'reviews', 'you may like', 'video', 'preparation', 'ingredients', 'servings', 'difficulty', 'details', 'view recipe', 'school holidays', 'subscribe', 'policy', 'company', 'faq', 'contact', 'history', 'sitemap', 'privacy', 'terms', 'enquiry', 'blog', 'news', 'shop', 'store', 'careers', 'events', 'groups', 'kids', 'about us']
             instructions_block = []
+            in_method = False
             i = 0
             while i < len(raw_lines):
-                line = raw_lines[i]
-                if verb_pattern.match(line.strip()):
-                    sentence = line.strip()
-                    # If the line does not end with a period, keep adding lines until a period is found
-                    while not sentence.endswith('.') and i + 1 < len(raw_lines):
-                        i += 1
-                        sentence += ' ' + raw_lines[i].strip()
-                        if sentence.endswith('.'):
+                line = raw_lines[i].strip()
+                l = line.lower()
+                if not in_method:
+                    if l == 'method':
+                        in_method = True
+                    i += 1
+                    continue
+                # Stop if we hit unrelated/footer content or a new section
+                if not line or any(marker in l for marker in unrelated_markers):
+                    break
+                # Start of a new step: numbered or verb
+                if step_number_pattern.match(line) or verb_pattern.match(line):
+                    step = line
+                    # Merge following lines that are likely continuations (not a new step, not unrelated)
+                    j = i + 1
+                    while j < len(raw_lines):
+                        next_line = raw_lines[j].strip()
+                        next_l = next_line.lower()
+                        if not next_line or any(marker in next_l for marker in unrelated_markers):
                             break
-                    instructions_block.append(sentence)
-                i += 1
+                        if step_number_pattern.match(next_line) or verb_pattern.match(next_line):
+                            break
+                        # Merge ingredient lines or short fragments (e.g., 'Chelsea Caster Sugar')
+                        if len(next_line.split()) <= 5 or next_line.istitle():
+                            step += ' ' + next_line
+                        else:
+                            step += ' ' + next_line
+                        j += 1
+                    instructions_block.append(step.strip())
+                    i = j
+                else:
+                    i += 1
             if instructions_block:
                 c.execute("UPDATE recipes SET instructions = %s WHERE id = %s", ("\n".join(instructions_block), recipe_id))
         conn.commit()
