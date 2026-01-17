@@ -800,22 +800,14 @@ def review_recipe_url_action():
         flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
         return redirect(url_for('admin_recipe_book_setup'))
     elif action == 'flag':
-        # Insert recipe into parser_test_recipes, fetching raw_text from recipe_upload for this URL
+        # Insert recipe into parser_test_recipes for URL uploads: always use session['raw_data']
         test_recipe_id = None
         try:
             import datetime as dt
             source_url = recipe_data.get('source_url') or recipe_data.get('title') or ''
-            raw_data = ''
+            raw_data = session.get('raw_data', '')
             with get_db_connection() as conn:
                 c = conn.cursor()
-                # Try to fetch raw_text from recipe_upload using upload_source_detail (the URL)
-                c.execute("SELECT raw_text FROM recipe_upload WHERE upload_source_detail = %s ORDER BY created_at DESC LIMIT 1", (source_url,))
-                row = c.fetchone()
-                if row and row['raw_text']:
-                    raw_data = row['raw_text']
-                else:
-                    # Fallback: use session raw_data if available, else blank
-                    raw_data = session.get('raw_data', '')
                 c.execute('''
                     INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id, raw_data)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
