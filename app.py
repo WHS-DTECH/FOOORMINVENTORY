@@ -617,6 +617,7 @@ def upload_url():
                             instructions = [data['recipeInstructions']]
             except Exception:
                 pass
+            
 
 # --- Alias for /load_recipe_url to support form submissions from templates ---
 @app.route('/load_recipe_url', methods=['POST'])
@@ -2708,11 +2709,6 @@ def view_raw_upload():
                               upload_source_detail=row['upload_source_detail'],
                               created_at=row.get('created_at'))
 
-# --- Dedicated URL Upload Page Route ---
-@app.route('/upload_recipe_url', methods=['GET'])
-@require_role('VP')
-def upload_recipe_url():
-    return render_template('upload_recipe_url.html')
 
 # --- Manual Instruction Editing Route ---
 @app.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
