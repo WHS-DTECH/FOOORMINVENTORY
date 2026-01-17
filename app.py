@@ -1,3 +1,4 @@
+@require_role('Admin', 'Teacher')
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
