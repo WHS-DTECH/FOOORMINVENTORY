@@ -815,7 +815,7 @@ def review_recipe_url_action():
         # Always show Yes/No debug prompt and keep page open until user clicks a button
         return render_template(
             "review_recipe_url.html",
-            recipe_data=recipe_data or {},
+            recipe_data=recipe_data if recipe_data else {},
             extraction_warning='Recipe flagged for manual review and stored for parser testing.',
             show_debug_prompt=True,
             test_recipe_id=test_recipe_id
