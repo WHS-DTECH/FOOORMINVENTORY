@@ -38,6 +38,7 @@ except ImportError:
 from recipe_parser_pdf import parse_recipes_from_text
 from auth import User, get_staff_code_from_email, require_login, require_role
 
+
 # =======================
 # Utility Functions
 # =======================
@@ -49,9 +50,15 @@ def simple_similarity(a, b):
     except ImportError:
         # Fallback: substring match
         a, b = a.lower(), b.lower()
+
 # =======================
+# App Creation & Configuration
+# =======================
+load_dotenv()
+app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
 # Error Handlers
-# =======================
 @app.errorhandler(404)
 def not_found_error(error):
     """Render custom 404 error page."""
@@ -94,10 +101,6 @@ Best practice: All imports first, then utility functions, then app creation/conf
 
 # =======================
 # Test Routes
-# =======================
-
-# =======================
-# Debug Parser - Title Section
 # =======================
 
 
@@ -238,8 +241,22 @@ def extract_raw_text_from_url(url):
         return visible_text, None
 
 # =======================
-# Features: Recipe Book Routes
+# Debug Parser - Title Section
 # =======================
+
+# --- Debug Title Extraction Page ---
+@app.route('/debug_title/<int:test_recipe_id>')
+@require_role('VP')
+def debug_title(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    raw_data = test_recipe['raw_data']
+    strategies, best_guess = extract_title_candidates(raw_data)
+    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
 
 # Route to render the debug extract text form
 @app.route('/debug_extract_text_form', methods=['GET'])
@@ -261,18 +278,6 @@ def parser_debug_raw(test_recipe_id):
     return render_template('parser_debug_raw.html', test_recipe=test_recipe)
 
 
-
-# --- Delete flagged/test recipe from parser_test_recipes ---
-@app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
-@require_role('VP')
-def delete_parser_test_recipe(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        conn.commit()
-    flash('Flagged/test recipe deleted.', 'success')
-    return redirect(url_for('admin_recipe_book_setup'))
-
 # --- Parser Debug Page for flagged/test recipes ---
 @app.route('/parser_debug/<int:test_recipe_id>')
 @require_role('VP')
@@ -287,6 +292,38 @@ def parser_debug(test_recipe_id):
     # Optionally, fetch more details or run parser debug logic here
     return render_template('parser_debug.html', test_recipe=test_recipe)
 
+# --- Handle Yes/No debug prompt after flag ---
+@app.route('/parser_test_decision', methods=['POST'])
+@require_role('VP')
+def parser_test_decision():
+    test_recipe_id = request.form.get('test_recipe_id')
+    debug_now = request.form.get('debug_now')
+    # Optionally fetch recipe_data for display
+    if debug_now == 'yes' and test_recipe_id:
+        # Redirect to parser debug page for this test recipe
+        return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+    else:
+        # Show confirmation message on the draft page
+        return render_template(
+            "review_recipe_url.html",
+            extraction_warning='Recipe stored in parser testing table as a test sample for future improvements.',
+            show_debug_prompt=False)
+
+# =======================
+# Features: Recipe Book Routes
+# =======================
+
+
+# --- Delete flagged/test recipe from parser_test_recipes ---
+@app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
+@require_role('VP')
+def delete_parser_test_recipe(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        conn.commit()
+    flash('Flagged/test recipe deleted.', 'success')
+    return redirect(url_for('admin_recipe_book_setup'))
 
 
 # --- Recipe Index Draft/Test View ---
@@ -337,19 +374,6 @@ def recipe_details(recipe_id):
 
     log.append(f"Fetching URL: {url}")
 
-# --- Debug Title Extraction Page ---
-@app.route('/debug_title/<int:test_recipe_id>')
-@require_role('VP')
-def debug_title(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
-    raw_data = test_recipe['raw_data']
-    strategies, best_guess = extract_title_candidates(raw_data)
-    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
 
 # --- Title Extraction Strategies ---
 def extract_title_candidates(raw_html):
@@ -799,23 +823,7 @@ def review_recipe_url_action():
             extraction_warning=error_message
         )
 
-# --- Handle Yes/No debug prompt after flag ---
-@app.route('/parser_test_decision', methods=['POST'])
-@require_role('VP')
-def parser_test_decision():
-    test_recipe_id = request.form.get('test_recipe_id')
-    debug_now = request.form.get('debug_now')
-    # Optionally fetch recipe_data for display
-    if debug_now == 'yes' and test_recipe_id:
-        # Redirect to parser debug page for this test recipe
-        return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
-    else:
-        # Show confirmation message on the draft page
-        return render_template(
-            "review_recipe_url.html",
-            extraction_warning='Recipe stored in parser testing table as a test sample for future improvements.',
-            show_debug_prompt=False
-        )
+
 def add_shoplist_to_gcal():
     try:
         # Get year and month from query params, default to current month
