@@ -766,12 +766,11 @@ def load_recipe_url():
                 found_method = True
                 continue
             if found_method:
-                # Stop if we hit a blank line after starting
+                # Stop if we hit a blank line after starting, or unrelated/footer content
                 if not line.strip() and step_lines:
                     break
-                # Remove unrelated/footer content
                 if any(phrase in l for phrase in unrelated_phrases):
-                    continue
+                    break
                 # Only keep lines that look like steps (numbered or bulleted)
                 m = step_pattern.match(line)
                 if m:
@@ -785,7 +784,7 @@ def load_recipe_url():
         # Remove steps that are just ingredient lists or repeated content
         clean_steps = []
         for s in step_lines:
-            if not any(phrase in s.lower() for phrase in unrelated_phrases) and len(s.split()) > 3:
+            if not any(phrase in s.lower() for phrase in unrelated_phrases) and len(s.split()) > 3 and not ingredient_pattern.match(s):
                 clean_steps.append(s)
         if clean_steps:
             instructions = clean_steps
