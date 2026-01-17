@@ -695,7 +695,30 @@ def load_recipe_url():
             recipe_data=recipe_data,
             extraction_warning=extraction_warning
         )
-    # ...existing extraction logic continues here...
+    
+    # ...existing extraction logic for ingredients, instructions, etc. goes here...
+
+    # Defensive: ensure a valid response is always returned
+    recipe_data = {
+            'title': title,
+            'ingredients': ingredients,
+            'instructions': instructions,
+            'source_url': url,
+            'serving_size': serving_size
+    }
+    if 'recipe_data' in locals():
+        # Fallback: minimal blank review page
+        return render_template(
+            "review_recipe_url.html",
+            recipe_data={
+                'title': title if 'title' in locals() else '',
+                'ingredients': ingredients if 'ingredients' in locals() else [],
+                'instructions': instructions if 'instructions' in locals() else [],
+                'source_url': url if 'url' in locals() else '',
+                'serving_size': serving_size if 'serving_size' in locals() else None
+            },
+            extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
+        )
 def add_shoplist_to_gcal():
     try:
         # Get year and month from query params, default to current month
