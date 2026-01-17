@@ -381,11 +381,13 @@ def parse_recipe_with_log(url):
 @app.route('/url_upload', methods=['GET', 'POST'])
 def url_upload():
     result = None
-    url = ''
+    url = request.args.get('url', '').strip() if request.method == 'GET' else ''
     if request.method == 'POST':
         url = request.form.get('url', '').strip()
         if url:
             result = parse_recipe_with_log(url)
+    elif url:
+        result = parse_recipe_with_log(url)
     return render_template('url_upload.html', url=url, result=result)
 
 @app.route('/admin/update_recipe_source', methods=['POST'])
