@@ -282,21 +282,88 @@ def debug_extract_text():
         visible_text = "\n".join(texts)
         return f'<pre style="white-space: pre-wrap;">{visible_text}</pre>'
 
+
 # =======================
 # Admin Recipe Routes
 # =======================
 
 
-# --- Delete Recipe Route ---
-@app.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
-@require_role('VP')  # Adjust role as needed
-def delete_recipe(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
-        conn.commit()
-    flash('Recipe deleted.', 'success')
-    return redirect(url_for('upload_recipe_url'))
+
+# --- URL Upload Debug Page ---
+import requests
+from bs4 import BeautifulSoup
+import re
+
+def parse_recipe_with_log(url):
+    log = []
+    try:
+        log.append(f"Fetching URL: {url}")
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        html = resp.text
+        log.append("Fetched HTML successfully.")
+    except Exception as e:
+        log.append(f"Failed to fetch URL: {e}")
+        return {'instructions': [], 'log': log}
+
+    soup = BeautifulSoup(html, 'html.parser')
+    instructions = []
+    # Try to find instructions by common selectors
+    selectors = [
+        '[itemprop="recipeInstructions"]',
+        '.instructions',
+        '.method',
+        '.steps',
+        '.direction',
+        '.recipe-method',
+        '.recipe-instructions',
+    ]
+    found = False
+    for sel in selectors:
+        block = soup.select_one(sel)
+        if block:
+            log.append(f"Found instructions block using selector: {sel}")
+            # Try to split into steps
+            steps = [s.get_text(strip=True) for s in block.find_all(['li', 'p']) if s.get_text(strip=True)]
+            if steps:
+                log.append(f"Extracted {len(steps)} steps from block.")
+                instructions = steps
+                found = True
+                break
+            else:
+                log.append(f"Block found with selector {sel}, but no steps detected.")
+    if not found:
+        log.append("No instructions block found with common selectors. Trying fallback extraction.")
+        # Fallback: look for 'Method' or 'Instructions' in text
+        text = soup.get_text("\n", strip=True)
+        method_match = re.search(r'(Method|Instructions)(:)?(\n|\r|\r\n)(.+)', text, re.IGNORECASE | re.DOTALL)
+        if method_match:
+            log.append("Found 'Method' or 'Instructions' section in raw text.")
+            method_text = method_match.group(4)
+            # Split by step numbers (e.g., 1. 2. 3.)
+            steps = re.split(r'\n?\s*\d+\.\s+', method_text)
+            steps = [s.strip() for s in steps if s.strip()]
+            if len(steps) > 1:
+                log.append(f"Split into {len(steps)} numbered steps.")
+                instructions = steps
+            else:
+                log.append("Could not split into numbered steps. Returning full method text as one step.")
+                instructions = [method_text.strip()]
+        else:
+            log.append("No 'Method' or 'Instructions' section found. Returning empty instructions.")
+            instructions = []
+    return {'instructions': instructions, 'log': log}
+
+
+@app.route('/url_upload', methods=['GET', 'POST'])
+def url_upload():
+    result = None
+    url = ''
+    if request.method == 'POST':
+        url = request.form.get('url', '').strip()
+        if url:
+            result = parse_recipe_with_log(url)
+    return render_template('url_upload.html', url=url, result=result)
 
 @app.route('/admin/update_recipe_source', methods=['POST'])
 @require_role('VP')
