@@ -674,93 +674,20 @@ def load_recipe_url():
                 for child in tag.find_all():
                     num_match = _re.match(r'^(\d+)$', child.get_text(strip=True))
                     if num_match:
-                        serving_size = num_match.group(1)
-                        break
-                if serving_size:
-                    break
-                # Try next sibling
-                next_sib = tag.find_next_sibling()
-                if next_sib:
-                    num_match = _re.match(r'^(\d+)$', next_sib.get_text(strip=True))
-                    if num_match:
-                        serving_size = num_match.group(1)
-                        break
-    title = soup.title.string.strip() if soup.title and soup.title.string else url
-    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
-    instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
-    cooking_verbs = [
-        'preheat', 'heat', 'bake', 'roast', 'grill', 'boil', 'simmer', 'fry', 'saute', 'steam', 'poach',
-        'mix', 'combine', 'stir', 'whisk', 'beat', 'fold', 'blend', 'chop', 'slice', 'dice', 'mince',
-        'add', 'pour', 'drain', 'spread', 'layer', 'arrange', 'place', 'put', 'remove', 'transfer',
-        'serve', 'garnish', 'season', 'cool', 'let', 'allow', 'cover', 'uncover', 'grease', 'line',
-        'melt', 'microwave', 'refrigerate', 'freeze', 'marinate', 'soak', 'press', 'squeeze', 'peel',
-        'cut', 'roll', 'shape', 'form', 'knead', 'proof', 'rest', 'rise', 'sprinkle', 'dust', 'coat',
-        'brush', 'glaze', 'fill', 'pipe', 'decorate', 'frost', 'ice', 'dip', 'toss', 'turn', 'flip',
-        'cook', 'reduce', 'increase', 'check', 'test', 'taste', 'adjust', 'divide', 'portion', 'weigh',
-        'measure', 'set', 'remove', 'discard', 'reserve', 'keep', 'store', 'wrap', 'unwrap', 'break',
-        'crack', 'separate', 'whip', 'pour', 'drizzle', 'spoon', 'scrape', 'baste', 'skewer', 'thread',
-        'insert', 'poke', 'prick', 'score', 'carve', 'shred', 'grate', 'zest', 'seed', 'core', 'hull',
-        'devein', 'shell', 'shuck', 'trim', 'clean', 'wash', 'rinse', 'dry', 'pat', 'blanch', 'parboil',
-        'refresh', 'shock', 'strain', 'sift', 'dust', 'coat', 'toss', 'fold', 'layer', 'arrange', 'stack',
-        'assemble', 'build', 'mount', 'gather', 'prepare', 'preheat', 'finish', 'garnish', 'serve', 'enjoy'
-    ]
-    verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
-    ingredients = []
-    instructions = []
-    current_step = None
-    # --- Find the ingredient block directly under the recipe title ---
-    # 1. Find the title node in the DOM (try h1, h2, h3, or use soup.title)
-    # 2. Walk the DOM after the title to find the first block with ingredient-like lines
-    def find_title_node(soup, title):
-        # Try to find a heading with the title text
-        for tag in soup.find_all(['h1', 'h2', 'h3']):
-            if tag.get_text(strip=True).lower() == title.lower():
-                return tag
-        # Fallback: use <title> tag's parent
-        if soup.title and soup.title.string and soup.title.string.strip().lower() == title.lower():
-            return soup.title
-        return None
-
-    title_node = find_title_node(soup, title)
-    ingredient_block = None
-    if title_node:
-        # Walk siblings after the title node
-        next_node = title_node.find_next_sibling()
-        while next_node:
-            # Only consider element nodes
-            if getattr(next_node, 'name', None) in ['ul', 'ol', 'div', 'section']:
-                # Check if this block has at least 2 ingredient-like lines
-                block_lines = []
-                found_block = False
-                trailing_count = 0
-                for tag in next_node.find_all(['li', 'span', 'p']):
-                    text = tag.get_text(strip=True)
-                    if not text:
-                        continue
-                    if ingredient_pattern.match(text):
-                        block_lines.append(text)
-                        found_block = True
-                        trailing_count = 0
-                    elif found_block:
-                        if (',' in text or 'decorate' in text.lower()) and trailing_count < 2:
-                            block_lines.append(text)
-                            trailing_count += 1
-                        else:
-                            break
-                if len(block_lines) > 1:
-                    ingredient_block = block_lines
-                    break
-            next_node = next_node.find_next_sibling()
-    # Fallback: use previous logic if not found
-    if ingredient_block:
-        ingredients = ingredient_block
-    else:
-        # Fallback: use the first contiguous block found (not the largest)
-        ingredient_blocks = []
-        for selector in [
-            '[class*="ingredient"]', '[id*="ingredient"]',
-            'ul', 'ol', 'div', 'section']:
-            blocks = soup.select(selector)
+                        if not ingredients:
+                            return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
+                        # Instead of uploading to DB, render review page
+                        recipe_data = {
+                            'title': title,
+                            'ingredients': ingredients,
+                            'instructions': instructions,
+                            'source_url': url,
+                            'serving_size': serving_size
+                        }
+                        return render_template(
+                            "review_recipe_url.html",
+                            recipe_data=recipe_data
+                        )
             for block in blocks:
                 if block and len(block.find_all(['li', 'span', 'p'])) > 1:
                     block_lines = []

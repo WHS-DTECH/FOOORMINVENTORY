@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="alert alert-info mt-4 mb-4" role="alert">
+        <h4 class="alert-heading">Review Extracted Recipe</h4>
+        <p>Please review the extracted recipe below. Confirm if it is correct, or flag it for tweaking if there are extraction issues.</p>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ recipe_data.title }}</h5>
+            <h6>Ingredients</h6>
+            <ul>
+                {% for ing in recipe_data.ingredients %}
+                <li>{{ ing }}</li>
+                {% endfor %}
+            </ul>
+            <h6>Instructions</h6>
+            <ol>
+                {% for step in recipe_data.instructions %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <form method="post" action="/review_recipe_url_action">
+        <input type="hidden" name="recipe_json" value="{{ recipe_data|tojson }}">
+        <button type="submit" name="action" value="confirm" class="btn btn-success">CONFIRM</button>
+        <button type="submit" name="action" value="flag" class="btn btn-warning ms-2">FLAG to TWEAK</button>
+    </form>
+</div>
+{% endblock %}
