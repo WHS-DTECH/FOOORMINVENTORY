@@ -24,12 +24,12 @@
         </div>
         <div class="col-12 col-md-6">
             <div class="card">
-                <div class="card-header bg-info text-white">Serving Size</div>
+                <div class="card-header bg-purple text-white">Serving Size</div>
                 <div class="card-body">
                     {% if recipe_data.serving_size %}
                         <span>{{ recipe_data.serving_size }}</span>
                     {% else %}
-                        <span class="text-warning">No serving size found.</span>
+                        <span class="text-danger">No serving size found.</span>
                     {% endif %}
                 </div>
             </div>

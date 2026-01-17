@@ -1,3 +1,8 @@
+/* Custom purple background for Serving Size card */
+.bg-purple {
+  background: #8e24aa !important; /* Deep purple */
+  color: #fff !important;
+}
 /* Custom Red Button for 'Load from URL' */
 .btn-danger {
   background: #d32f2f !important;
