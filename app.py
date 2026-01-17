@@ -1760,7 +1760,7 @@ def class_ingredients_save():
         return jsonify({'error': str(e)}), 400
 
 @app.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
-@require_role('VP', 'DK')
+@require_role('Admin', 'Teacher')
 def class_ingredients_delete(booking_id):
     # Delete a booking
     with get_db_connection() as conn:
