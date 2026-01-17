@@ -719,6 +719,30 @@ def load_recipe_url():
             },
             extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
         )
+
+# --- Review Recipe URL Action Route ---
+@app.route('/review_recipe_url_action', methods=['POST'])
+@require_role('VP')
+def review_recipe_url_action():
+    import json
+    recipe_json = request.form.get('recipe_json')
+    action = request.form.get('action')
+    try:
+        recipe_data = json.loads(recipe_json) if recipe_json else {}
+    except Exception as e:
+        recipe_data = {}
+        flash(f'Error parsing recipe data: {e}', 'error')
+        return redirect(url_for('admin_recipe_book_setup'))
+
+    if action == 'confirm':
+        # Here you would save the recipe to the database
+        flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
+    elif action == 'flag':
+        # Here you would flag the recipe for manual review
+        flash('Recipe flagged for manual review (not yet implemented).', 'warning')
+    else:
+        flash('Unknown action.', 'error')
+    return redirect(url_for('admin_recipe_book_setup'))
 def add_shoplist_to_gcal():
     try:
         # Get year and month from query params, default to current month
