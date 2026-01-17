@@ -802,11 +802,13 @@ def review_recipe_url_action():
         test_recipe_id = None
         try:
             import datetime as dt
+            # Try to get raw_data from recipe_data if available, else blank
+            raw_data = recipe_data.get('raw_data') or recipe_data.get('raw_html') or recipe_data.get('raw_text') or ''
             with get_db_connection() as conn:
                 c = conn.cursor()
                 c.execute('''
-                    INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id, raw_data)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 ''', (
                     'url',
@@ -814,7 +816,8 @@ def review_recipe_url_action():
                     getattr(current_user, 'email', 'unknown'),
                     dt.datetime.now(),
                     'Flagged for parser testing',
-                    None
+                    None,
+                    raw_data
                 ))
                 test_recipe_id = c.fetchone()['id']
                 conn.commit()
