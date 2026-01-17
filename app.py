@@ -37,9 +37,21 @@ except ImportError:
     requests = None
     BeautifulSoup = None
 from recipe_parser_pdf import parse_recipes_from_text
-from auth import User, get_staff_code_from_email, require_login, require_role
+from auth import User, get_staff_code_from_email, require_login, require_role, get_db_connection
 
+# =======================
+# AnonymousUser Class for Flask-Login
+# =======================
+class AnonymousUser:
+    is_authenticated = False
+    def is_admin(self):
+        return False
+    def is_teacher(self):
+        return False
+    def is_staff(self):
+        return False
 
+        
 # =======================
 # Utility Functions
 # =======================
@@ -99,19 +111,7 @@ def fix_public_roles():
 Inventory app main entrypoint
 Best practice: All imports first, then utility functions, then app creation/config, then routes.
 """
-# =======================
-# AnonymousUser Class for Flask-Login
-# =======================
-class AnonymousUser:
-    is_authenticated = False
-    def is_admin(self):
-        return False
-    def is_teacher(self):
-        return False
-    def is_staff(self):
-        return False
 
-        
 # =======================
 # Test Routes
 # =======================
