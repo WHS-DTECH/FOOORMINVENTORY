@@ -716,9 +716,9 @@ def load_recipe_url():
                 'ingredients': ingredients,
                 'instructions': instructions,
                 'source_url': url,
-                'serving_size': serving_size,
-                'raw_data': resp.text
+                'serving_size': serving_size
             }
+            session['raw_data'] = resp.text
             return render_template(
                 "review_recipe_url.html",
                 recipe_data=recipe_data,
@@ -732,9 +732,9 @@ def load_recipe_url():
             'ingredients': ingredients,
             'instructions': instructions,
             'source_url': url,
-            'serving_size': serving_size,
-            'raw_data': ''
+            'serving_size': serving_size
         }
+        session['raw_data'] = ''
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
@@ -749,9 +749,9 @@ def load_recipe_url():
         'ingredients': ingredients,
         'instructions': instructions,
         'source_url': url,
-        'serving_size': serving_size,
-        'raw_data': html
+        'serving_size': serving_size
     }
+    session['raw_data'] = html
     if 'recipe_data' in locals():
         # Fallback: minimal blank review page
         return render_template(
@@ -761,8 +761,7 @@ def load_recipe_url():
                 'ingredients': ingredients if 'ingredients' in locals() else [],
                 'instructions': instructions if 'instructions' in locals() else [],
                 'source_url': url if 'url' in locals() else '',
-                'serving_size': serving_size if 'serving_size' in locals() else None,
-                'raw_data': html if 'html' in locals() else ''
+                'serving_size': serving_size if 'serving_size' in locals() else None
             },
             extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
         )
@@ -806,8 +805,8 @@ def review_recipe_url_action():
         test_recipe_id = None
         try:
             import datetime as dt
-            # Try to get raw_data from recipe_data if available, else blank
-            raw_data = recipe_data.get('raw_data') or recipe_data.get('raw_html') or recipe_data.get('raw_text') or ''
+            # Get raw_data from session (set during load_recipe_url)
+            raw_data = session.get('raw_data', '')
             with get_db_connection() as conn:
                 c = conn.cursor()
                 c.execute('''
