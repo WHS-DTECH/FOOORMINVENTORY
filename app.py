@@ -1,4 +1,3 @@
-
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
@@ -2065,7 +2064,7 @@ def shoplist():
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
-            SELECT cb.id, cb.date_required, cb.period, cb.class_code, cb.staff_code, cb.recipe_id, cb.desired_servings, r.name AS recipe_name, r.ingredients, r.serving_size
+            SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
             FROM class_bookings cb
             LEFT JOIN recipes r ON cb.recipe_id = r.id
             WHERE cb.date_required >= %s AND cb.date_required <= %s
@@ -2705,3 +2704,14 @@ def edit_instructions(recipe_id):
             flash('Recipe not found.', 'error')
             return redirect(url_for('recbk'))
         return render_template('edit_instructions.html', recipe=recipe)
+
+@app.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
+@require_login
+def delete_recipe(recipe_id):
+    """Delete a recipe and redirect to Recipe Book."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
+        conn.commit()
+    flash('Recipe deleted.', 'success')
+    return redirect(url_for('recbk'))
