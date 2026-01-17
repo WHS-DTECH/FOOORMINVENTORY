@@ -1997,7 +1997,21 @@ def shoplist():
         key = (date_str, str(b['period']))
         grid[key] = b
 
-    return render_template('shoplist.html', dates=dates, bookings=bookings, recipes=[], grid=grid)
+    # Calculate previous and next week offsets for navigation buttons
+    prev_week = week_offset - 1
+    next_week = week_offset + 1
+    # Optionally, build a week label for display (e.g., '19/01/2026 - 23/01/2026')
+    week_label = f"{dates[0]['nz_date']} - {dates[-1]['nz_date']}"
+    return render_template(
+        'shoplist.html',
+        dates=dates,
+        bookings=bookings,
+        recipes=[],
+        grid=grid,
+        prev_week=prev_week,
+        next_week=next_week,
+        week_label=week_label
+    )
 
 
 def categorize_ingredient(ingredient_name):
