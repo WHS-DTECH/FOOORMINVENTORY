@@ -724,14 +724,21 @@ def load_recipe_url():
             seen_ingredients.add(ing_norm)
     ingredients = deduped_ingredients
 
-    # Deduplicate instructions while preserving order
-    seen_instructions = set()
+    # Deduplicate instructions at the sentence level while preserving order
+    import re as _re_sent
+    seen_sentences = set()
     deduped_instructions = []
     for instr in instructions:
-        instr_norm = instr.strip().lower()
-        if instr_norm not in seen_instructions:
-            deduped_instructions.append(instr)
-            seen_instructions.add(instr_norm)
+        # Split into sentences using period, exclamation, or question mark as end
+        sentences = _re_sent.split(r'(?<=[.!?])\s+', instr.strip())
+        unique_sentences = []
+        for sent in sentences:
+            sent_norm = sent.strip().lower()
+            if sent_norm and sent_norm not in seen_sentences:
+                unique_sentences.append(sent.strip())
+                seen_sentences.add(sent_norm)
+        if unique_sentences:
+            deduped_instructions.append(' '.join(unique_sentences))
     instructions = deduped_instructions
     if not ingredients:
         recipe_schema = soup.find('script', type='application/ld+json')
