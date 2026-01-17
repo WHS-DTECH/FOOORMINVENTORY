@@ -1,87 +1,3 @@
-# --- Debug Title Extraction Page ---
-@app.route('/debug_title/<int:test_recipe_id>')
-@require_role('VP')
-def debug_title(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
-    raw_data = test_recipe['raw_data']
-    strategies, best_guess = extract_title_candidates(raw_data)
-    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
-
-# --- Title Extraction Strategies ---
-def extract_title_candidates(raw_html):
-    candidates = []
-    best_guess = None
-    import re
-    try:
-        from bs4 import BeautifulSoup
-    except ImportError:
-        BeautifulSoup = None
-    # 1. <title> tag
-    title_tag = None
-    if BeautifulSoup:
-        soup = BeautifulSoup(raw_html, 'html.parser')
-        title_tag = soup.title.string.strip() if soup.title and soup.title.string else None
-    else:
-        m = re.search(r'<title>(.*?)</title>', raw_html, re.I|re.S)
-        title_tag = m.group(1).strip() if m else None
-    candidates.append({'name': '<title> tag', 'value': title_tag or '', 'best': False})
-    # 2. og:title meta
-    og_title = None
-    if BeautifulSoup and soup:
-        og = soup.find('meta', property='og:title')
-        og_title = og['content'].strip() if og and og.get('content') else None
-    else:
-        m = re.search(r'<meta[^>]+property=["\"]og:title["\"][^>]+content=["\"](.*?)["\"]', raw_html, re.I|re.S)
-        og_title = m.group(1).strip() if m else None
-    candidates.append({'name': 'og:title meta', 'value': og_title or '', 'best': False})
-    # 3. First <h1>
-    h1 = None
-    if BeautifulSoup and soup:
-        h1tag = soup.find('h1')
-        h1 = h1tag.get_text(strip=True) if h1tag else None
-    else:
-        m = re.search(r'<h1[^>]*>(.*?)</h1>', raw_html, re.I|re.S)
-        h1 = m.group(1).strip() if m else None
-    candidates.append({'name': 'First <h1>', 'value': h1 or '', 'best': False})
-    # 4. JSON-LD schema.org name
-    jsonld_title = None
-    if BeautifulSoup and soup:
-        for script in soup.find_all('script', type='application/ld+json'):
-            try:
-                import json
-                data = json.loads(script.string)
-                if isinstance(data, dict) and 'name' in data:
-                    jsonld_title = data['name']
-                    break
-                elif isinstance(data, list):
-                    for entry in data:
-                        if isinstance(entry, dict) and 'name' in entry:
-                            jsonld_title = entry['name']
-                            break
-            except Exception:
-                continue
-    candidates.append({'name': 'schema.org/JSON-LD name', 'value': jsonld_title or '', 'best': False})
-    # 5. Heuristic: First large/bold text (e.g., <b>, <strong>, <h2>)
-    heuristic = None
-    if BeautifulSoup and soup:
-        for tag in soup.find_all(['h2', 'b', 'strong']):
-            txt = tag.get_text(strip=True)
-            if txt and len(txt) > 5:
-                heuristic = txt
-                break
-    candidates.append({'name': 'Heuristic: first large/bold text', 'value': heuristic or '', 'best': False})
-    # Pick best guess (first non-empty in priority order)
-    for cand in candidates:
-        if cand['value']:
-            cand['best'] = True
-            best_guess = cand['value']
-            break
-    return candidates, best_guess or ''
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
@@ -295,6 +211,92 @@ def test_recipe_urls():
     return render_template('test_recipe_urls.html', urls=urls, message=message)
 @require_role('Admin', 'Teacher')
 
+
+# --- Debug Title Extraction Page ---
+@app.route('/debug_title/<int:test_recipe_id>')
+@require_role('VP')
+def debug_title(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    raw_data = test_recipe['raw_data']
+    strategies, best_guess = extract_title_candidates(raw_data)
+    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
+
+# --- Title Extraction Strategies ---
+def extract_title_candidates(raw_html):
+    candidates = []
+    best_guess = None
+    import re
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        BeautifulSoup = None
+    # 1. <title> tag
+    title_tag = None
+    if BeautifulSoup:
+        soup = BeautifulSoup(raw_html, 'html.parser')
+        title_tag = soup.title.string.strip() if soup.title and soup.title.string else None
+    else:
+        m = re.search(r'<title>(.*?)</title>', raw_html, re.I|re.S)
+        title_tag = m.group(1).strip() if m else None
+    candidates.append({'name': '<title> tag', 'value': title_tag or '', 'best': False})
+    # 2. og:title meta
+    og_title = None
+    if BeautifulSoup and soup:
+        og = soup.find('meta', property='og:title')
+        og_title = og['content'].strip() if og and og.get('content') else None
+    else:
+        m = re.search(r'<meta[^>]+property=["\"]og:title["\"][^>]+content=["\"](.*?)["\"]', raw_html, re.I|re.S)
+        og_title = m.group(1).strip() if m else None
+    candidates.append({'name': 'og:title meta', 'value': og_title or '', 'best': False})
+    # 3. First <h1>
+    h1 = None
+    if BeautifulSoup and soup:
+        h1tag = soup.find('h1')
+        h1 = h1tag.get_text(strip=True) if h1tag else None
+    else:
+        m = re.search(r'<h1[^>]*>(.*?)</h1>', raw_html, re.I|re.S)
+        h1 = m.group(1).strip() if m else None
+    candidates.append({'name': 'First <h1>', 'value': h1 or '', 'best': False})
+    # 4. JSON-LD schema.org name
+    jsonld_title = None
+    if BeautifulSoup and soup:
+        for script in soup.find_all('script', type='application/ld+json'):
+            try:
+                import json
+                data = json.loads(script.string)
+                if isinstance(data, dict) and 'name' in data:
+                    jsonld_title = data['name']
+                    break
+                elif isinstance(data, list):
+                    for entry in data:
+                        if isinstance(entry, dict) and 'name' in entry:
+                            jsonld_title = entry['name']
+                            break
+            except Exception:
+                continue
+    candidates.append({'name': 'schema.org/JSON-LD name', 'value': jsonld_title or '', 'best': False})
+    # 5. Heuristic: First large/bold text (e.g., <b>, <strong>, <h2>)
+    heuristic = None
+    if BeautifulSoup and soup:
+        for tag in soup.find_all(['h2', 'b', 'strong']):
+            txt = tag.get_text(strip=True)
+            if txt and len(txt) > 5:
+                heuristic = txt
+                break
+    candidates.append({'name': 'Heuristic: first large/bold text', 'value': heuristic or '', 'best': False})
+    # Pick best guess (first non-empty in priority order)
+    for cand in candidates:
+        if cand['value']:
+            cand['best'] = True
+            best_guess = cand['value']
+            break
+    return candidates, best_guess or ''
+
 # =======================
 # Utility: Extract all visible text from a URL or PDF
 # =======================
@@ -422,160 +424,95 @@ def recipe_details(recipe_id):
 
 
 # --- Recipe Source Page ---
-@app.route('/recipe/<int:recipe_id>/source')
-@require_login
-def recipe_source(recipe_id):
-    """Display the source and source URL for a recipe."""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes WHERE id = %s', (recipe_id,))
-        recipe = c.fetchone()
-        if not recipe:
-            flash('Recipe not found.', 'error')
-            return redirect(url_for('recbk'))
-        return render_template('recipe_source.html', recipe=recipe)
 
-# --- Debug endpoint: Show raw HTML/text for a recipe URL ---
-@app.route('/debug_raw_recipe', methods=['POST'])
-@require_role('VP')
-def debug_raw_recipe():
-    url = request.form.get('url') or request.form.get('recipe_url')
-    if not url:
-        return 'No URL provided.', 400
-    global requests
-    if requests is None:
-        return 'Requests library not installed.', 500
-    try:
-        resp = requests.get(url, timeout=10)
-    except Exception as e:
-        return f'Failed to fetch URL: {e}', 400
-    if resp.status_code != 200:
-        return f'URL returned status code {resp.status_code}', 404
-    content_type = resp.headers.get('Content-Type', '')
-    if 'pdf' in content_type or url.lower().endswith('.pdf'):
-        # Try to extract text from PDF
-        if not PyPDF2:
-            return 'PyPDF2 not installed.', 500
-        try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
-            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
-            return f'<pre style="white-space: pre-wrap;">{full_text}</pre>'
-        except Exception as e:
-            return f'PDF extraction failed: {e}', 500
-    else:
-        # Return raw HTML
-        html = resp.text
-        return f'<pre style="white-space: pre-wrap;">{html}</pre>'
-
-# --- Debug endpoint: Extract all visible text from a recipe URL (no filters) ---
-
-# --- Debug endpoint: Extract all visible text from a recipe URL (no filters) ---
-@app.route('/debug_extract_text', methods=['POST'])
-@require_role('VP')
-def debug_extract_text():
-    url = request.form.get('url') or request.form.get('recipe_url')
-    if not url:
-        return 'No URL provided.', 400
-    raw_text, error = extract_raw_text_from_url(url)
-    if error:
-        return error, 400
-    return f'<pre style="white-space: pre-wrap;">{raw_text}</pre>'
-
-
-# =======================
-# Admin Recipe Routes
-# =======================
-
-
-
-# --- URL Upload Debug Page ---
-import requests
-from bs4 import BeautifulSoup
-import re
-
-def parse_recipe_with_log(url):
-    log = []
-    # Define all possible parser steps (in order)
-    all_steps = [
-        "Fetch URL",
-        "Fetch HTML",
-        "Find instructions block with common selectors",
-        "Extract steps from block",
-        "Fallback: Find 'Method' or 'Instructions' in raw text",
-        "Split into numbered steps",
-        "Return full method text as one step"
-    ]
     steps_applied = []
 
-    try:
-        log.append(f"Fetching URL: {url}")
-        steps_applied.append(all_steps[0])
-        resp = requests.get(url, timeout=10)
-        steps_applied.append(all_steps[1])
-        resp.raise_for_status()
-        html = resp.text
-        log.append("Fetched HTML successfully.")
-    except Exception as e:
-        log.append(f"Failed to fetch URL: {e}")
-        return {'instructions': [], 'log': log, 'all_steps': all_steps, 'steps_applied': steps_applied}
+    log.append(f"Fetching URL: {url}")
 
-    soup = BeautifulSoup(html, 'html.parser')
-    instructions = []
-    # Try to find instructions by common selectors
-    selectors = [
-        '[itemprop="recipeInstructions"]',
-        '.instructions',
-        '.method',
-        '.steps',
-        '.direction',
-        '.recipe-method',
-        '.recipe-instructions',
-    ]
-    found = False
-    for sel in selectors:
-        block = soup.select_one(sel)
-        if block:
-            log.append(f"Found instructions block using selector: {sel}")
-            if all_steps[2] not in steps_applied:
-                steps_applied.append(all_steps[2])
-            # Try to split into steps
-            steps = [s.get_text(strip=True) for s in block.find_all(['li', 'p']) if s.get_text(strip=True)]
-            if steps:
-                log.append(f"Extracted {len(steps)} steps from block.")
-                if all_steps[3] not in steps_applied:
-                    steps_applied.append(all_steps[3])
-                instructions = steps
-                found = True
+# --- Debug Title Extraction Page ---
+@app.route('/debug_title/<int:test_recipe_id>')
+@require_role('VP')
+def debug_title(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    raw_data = test_recipe['raw_data']
+    strategies, best_guess = extract_title_candidates(raw_data)
+    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
+
+# --- Title Extraction Strategies ---
+def extract_title_candidates(raw_html):
+    candidates = []
+    best_guess = None
+    import re
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        BeautifulSoup = None
+    # 1. <title> tag
+    title_tag = None
+    if BeautifulSoup:
+        soup = BeautifulSoup(raw_html, 'html.parser')
+        title_tag = soup.title.string.strip() if soup.title and soup.title.string else None
+    else:
+        m = re.search(r'<title>(.*?)</title>', raw_html, re.I|re.S)
+        title_tag = m.group(1).strip() if m else None
+    candidates.append({'name': '<title> tag', 'value': title_tag or '', 'best': False})
+    # 2. og:title meta
+    og_title = None
+    if BeautifulSoup and soup:
+        og = soup.find('meta', property='og:title')
+        og_title = og['content'].strip() if og and og.get('content') else None
+    else:
+        m = re.search(r'<meta[^>]+property=["\"]og:title["\"][^>]+content=["\"](.*?)["\"]', raw_html, re.I|re.S)
+        og_title = m.group(1).strip() if m else None
+    candidates.append({'name': 'og:title meta', 'value': og_title or '', 'best': False})
+    # 3. First <h1>
+    h1 = None
+    if BeautifulSoup and soup:
+        h1tag = soup.find('h1')
+        h1 = h1tag.get_text(strip=True) if h1tag else None
+    else:
+        m = re.search(r'<h1[^>]*>(.*?)</h1>', raw_html, re.I|re.S)
+        h1 = m.group(1).strip() if m else None
+    candidates.append({'name': 'First <h1>', 'value': h1 or '', 'best': False})
+    # 4. JSON-LD schema.org name
+    jsonld_title = None
+    if BeautifulSoup and soup:
+        for script in soup.find_all('script', type='application/ld+json'):
+            try:
+                import json
+                data = json.loads(script.string)
+                if isinstance(data, dict) and 'name' in data:
+                    jsonld_title = data['name']
+                    break
+                elif isinstance(data, list):
+                    for entry in data:
+                        if isinstance(entry, dict) and 'name' in entry:
+                            jsonld_title = entry['name']
+                            break
+            except Exception:
+                continue
+    candidates.append({'name': 'schema.org/JSON-LD name', 'value': jsonld_title or '', 'best': False})
+    # 5. Heuristic: First large/bold text (e.g., <b>, <strong>, <h2>)
+    heuristic = None
+    if BeautifulSoup and soup:
+        for tag in soup.find_all(['h2', 'b', 'strong']):
+            txt = tag.get_text(strip=True)
+            if txt and len(txt) > 5:
+                heuristic = txt
                 break
-            else:
-                log.append(f"Block found with selector {sel}, but no steps detected.")
-    if not found:
-        log.append("No instructions block found with common selectors. Trying fallback extraction.")
-        if all_steps[4] not in steps_applied:
-            steps_applied.append(all_steps[4])
-        # Fallback: look for 'Method' or 'Instructions' in text
-        text = soup.get_text("\n", strip=True)
-        method_match = re.search(r'(Method|Instructions)(:)?(\n|\r|\r\n)(.+)', text, re.IGNORECASE | re.DOTALL)
-        if method_match:
-            log.append("Found 'Method' or 'Instructions' section in raw text.")
-            method_text = method_match.group(4)
-            # Split by step numbers (e.g., 1. 2. 3.)
-            steps = re.split(r'\n?\s*\d+\.\s+', method_text)
-            steps = [s.strip() for s in steps if s.strip()]
-            if len(steps) > 1:
-                log.append(f"Split into {len(steps)} numbered steps.")
-                if all_steps[5] not in steps_applied:
-                    steps_applied.append(all_steps[5])
-                instructions = steps
-            else:
-                log.append("Could not split into numbered steps. Returning full method text as one step.")
-                if all_steps[6] not in steps_applied:
-                    steps_applied.append(all_steps[6])
-                instructions = [method_text.strip()]
-        else:
-            log.append("No 'Method' or 'Instructions' section found. Returning empty instructions.")
-            instructions = []
-    return {'instructions': instructions, 'log': log, 'all_steps': all_steps, 'steps_applied': steps_applied}
+    candidates.append({'name': 'Heuristic: first large/bold text', 'value': heuristic or '', 'best': False})
+    # Pick best guess (first non-empty in priority order)
+    for cand in candidates:
+        if cand['value']:
+            cand['best'] = True
+            best_guess = cand['value']
+            break
+    return candidates, best_guess or ''
 
 
 @app.route('/url_upload', methods=['GET', 'POST'])
@@ -585,9 +522,11 @@ def url_upload():
     if request.method == 'POST':
         url = request.form.get('url', '').strip()
         if url:
-            result = parse_recipe_with_log(url)
+            # TODO: Implement parse_recipe_with_log or use another extraction function
+            result = None
     elif url:
-        result = parse_recipe_with_log(url)
+        # TODO: Implement parse_recipe_with_log or use another extraction function
+        result = None
     return render_template('url_upload.html', url=url, result=result)
 
 @app.route('/admin/update_recipe_source', methods=['POST'])
