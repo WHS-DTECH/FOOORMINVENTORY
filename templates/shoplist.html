@@ -686,6 +686,20 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+  <div id="weekNav" class="week-nav no-print" style="margin: 0 0 18px 0; display: flex; flex-direction: column; align-items: center; width: 100%;">
+    <div id="weekRangeLabel" style="text-align: center; font-size: 2.2em; font-weight: 700; margin-bottom: 8px;">{{ week_label | format_nz_week }}</div>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="week" value="{{ prev_week }}">&#8592; Previous</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="week" value="0">Today</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="week" value="{{ next_week }}">Next &#8594;</button>
+      </form>
+    </div>
+  </div>
   <div id="weekPeriodView">
     <div style="overflow-x:auto; width:100%;">
     <table class="grid no-print" role="table" aria-label="Booking week grid">
