@@ -786,7 +786,7 @@ def review_recipe_url_action():
                 extraction_warning=error_message,
                 show_debug_prompt=False
             )
-        # Show Yes/No debug prompt on the draft page
+        # Always show Yes/No debug prompt and keep page open until user clicks a button
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data or {},
