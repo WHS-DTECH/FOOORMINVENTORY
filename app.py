@@ -1,16 +1,3 @@
-# --- Raw Data View for flagged/test recipe ---
-@app.route('/parser_debug_raw/<int:test_recipe_id>')
-@require_role('VP')
-def parser_debug_raw(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
-    # Show all raw fields in a simple preformatted block
-    return render_template('parser_debug_raw.html', test_recipe=test_recipe)
-
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
@@ -229,6 +216,22 @@ def test_recipe_urls():
 # =======================
 # Features: Recipe Book Routes
 # =======================
+
+
+# --- Raw Data View for flagged/test recipe ---
+@app.route('/parser_debug_raw/<int:test_recipe_id>')
+@require_role('VP')
+def parser_debug_raw(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    # Show all raw fields in a simple preformatted block
+    return render_template('parser_debug_raw.html', test_recipe=test_recipe)
+
+
 
 # --- Delete flagged/test recipe from parser_test_recipes ---
 @app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
