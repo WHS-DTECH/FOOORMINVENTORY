@@ -1,22 +1,4 @@
-# --- Recipe Index Draft/Test View ---
-@app.route('/recipe_index/<int:recipe_id>')
-@require_role('Admin')
-def recipe_index_view(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
-        recipe = c.fetchone()
-    return render_template('recipe_index_view.html', recipe=recipe)
 
-# --- Flag/Unflag Parser Issue ---
-@app.route('/flag_parser_issue/<int:recipe_id>', methods=['POST'])
-@require_role('Admin')
-def flag_parser_issue(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('UPDATE recipes SET parser_issue_flag = NOT COALESCE(parser_issue_flag, FALSE) WHERE id = %s', (recipe_id,))
-        conn.commit()
-    return redirect(url_for('recipe_index_view', recipe_id=recipe_id))
 
 # =======================
 # Imports (Standard, Third-party, Local)
@@ -231,6 +213,26 @@ def test_recipe_urls():
 # =======================
 # Features: Recipe Book Routes
 # =======================
+
+# --- Recipe Index Draft/Test View ---
+@app.route('/recipe_index/<int:recipe_id>')
+@require_role('Admin')
+def recipe_index_view(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+    return render_template('recipe_index_view.html', recipe=recipe)
+
+# --- Flag/Unflag Parser Issue ---
+@app.route('/flag_parser_issue/<int:recipe_id>', methods=['POST'])
+@require_role('Admin')
+def flag_parser_issue(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('UPDATE recipes SET parser_issue_flag = NOT COALESCE(parser_issue_flag, FALSE) WHERE id = %s', (recipe_id,))
+        conn.commit()
+    return redirect(url_for('recipe_index_view', recipe_id=recipe_id))
 
 # --- Recipe detail page for /recipe/<int:recipe_id> ---
 @app.route('/recipe/<int:recipe_id>')

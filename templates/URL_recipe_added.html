@@ -13,13 +13,7 @@
         </div>
     </div>
     <div class="text-center">
-        <p>You will be redirected to the recipe index shortly.</p>
-        <a href="{{ url_for('admin_recipe_book_setup') }}#recipe-index" class="btn btn-secondary">Go to Recipe Index Now</a>
+        <a href="{{ url_for('admin_recipe_book_setup') }}#recipe-index" class="btn btn-secondary">Go to Recipe Index</a>
     </div>
 </div>
-<script>
-    setTimeout(function() {
-        window.location.href = "{{ url_for('admin_recipe_book_setup') }}#recipe-index";
-    }, 4000);
-</script>
 {% endblock %}
