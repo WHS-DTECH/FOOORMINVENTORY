@@ -1,3 +1,79 @@
+# --- Handle Debug Prompt after Review ---
+@app.route('/review_recipe_url_debug_action', methods=['POST'])
+@require_role('VP')
+def review_recipe_url_debug_action():
+    recipe_id = request.form.get('recipe_id')
+    url = request.form.get('url')
+    debug = request.form.get('debug')
+    if debug == 'yes':
+        # Redirect to parser debug page (url_upload with ?url=...)
+        return redirect(url_for('url_upload') + f'?url={url}')
+    else:
+        flash('Recipe added as a test sample.','success')
+        return redirect(url_for('admin_recipe_book_setup'))
+# --- Review Recipe URL Action (CONFIRM/FLAG) ---
+from flask import Markup
+
+@app.route('/review_recipe_url_action', methods=['POST'])
+@require_role('VP')
+def review_recipe_url_action():
+    import json
+    from datetime import datetime
+    from urllib.parse import urlparse
+    action = request.form.get('action')
+    recipe_json = request.form.get('recipe_json')
+    if not recipe_json:
+        flash('No recipe data provided.', 'error')
+        return redirect(url_for('admin_recipe_book_setup'))
+    recipe_data = json.loads(recipe_json)
+    # Prepare DB fields
+    title = recipe_data.get('title')
+    ingredients = recipe_data.get('ingredients', [])
+    instructions = recipe_data.get('instructions', [])
+    url = recipe_data.get('source_url')
+    serving_size = recipe_data.get('serving_size')
+    parsed_url = urlparse(url)
+    source = parsed_url.netloc.replace('www.', '') if parsed_url and parsed_url.netloc else ''
+    user_email = getattr(current_user, 'email', None)
+    # Insert into recipes table (with or without flag)
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute(
+            '''
+            INSERT INTO recipes (name, ingredients, instructions, serving_size, source, source_url, upload_method, uploaded_by, upload_date, parser_issue_flag)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            ''',
+            (
+                title,
+                json.dumps(ingredients),
+                "\n".join(instructions),
+                serving_size,
+                source,
+                url,
+                'url',
+                user_email,
+                datetime.now(),
+                True if action == 'flag' else False
+            )
+        )
+        result = c.fetchone()
+        recipe_id = result['id'] if isinstance(result, dict) else result[0]
+        # Save to parser_test_recipes table as a test sample
+        c.execute(
+            '''
+            INSERT INTO parser_test_recipes (recipe_id, url, flagged, added_by, added_at)
+            VALUES (%s, %s, %s, %s, %s)
+            ''',
+            (recipe_id, url, True if action == 'flag' else False, user_email, datetime.now())
+        )
+        conn.commit()
+    # Prompt for debug
+    return render_template(
+        "review_recipe_url_debug_prompt.html",
+        recipe_id=recipe_id,
+        url=url
+    )
 
 
 # =======================
