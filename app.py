@@ -1,4 +1,5 @@
 
+
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -98,7 +99,19 @@ def fix_public_roles():
 Inventory app main entrypoint
 Best practice: All imports first, then utility functions, then app creation/config, then routes.
 """
+# =======================
+# AnonymousUser Class for Flask-Login
+# =======================
+class AnonymousUser:
+    is_authenticated = False
+    def is_admin(self):
+        return False
+    def is_teacher(self):
+        return False
+    def is_staff(self):
+        return False
 
+        
 # =======================
 # Test Routes
 # =======================
@@ -246,7 +259,7 @@ def extract_raw_text_from_url(url):
 
 # --- Debug Title Extraction Page ---
 @app.route('/debug_title/<int:test_recipe_id>')
-@require_role('VP')
+@require_role('Admin')
 def debug_title(test_recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -260,13 +273,13 @@ def debug_title(test_recipe_id):
 
 # Route to render the debug extract text form
 @app.route('/debug_extract_text_form', methods=['GET'])
-@require_role('VP')
+@require_role('Admin')
 def debug_extract_text_form():
     return render_template('debug_extract_text_form.html')
 
 # --- Raw Data View for flagged/test recipe ---
 @app.route('/parser_debug_raw/<int:test_recipe_id>')
-@require_role('VP')
+@require_role('Admin')
 def parser_debug_raw(test_recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -280,7 +293,7 @@ def parser_debug_raw(test_recipe_id):
 
 # --- Parser Debug Page for flagged/test recipes ---
 @app.route('/parser_debug/<int:test_recipe_id>')
-@require_role('VP')
+@require_role('Admin')
 def parser_debug(test_recipe_id):
     # Fetch the flagged/test recipe from parser_test_recipes
     with get_db_connection() as conn:
@@ -294,7 +307,7 @@ def parser_debug(test_recipe_id):
 
 # --- Handle Yes/No debug prompt after flag ---
 @app.route('/parser_test_decision', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def parser_test_decision():
     test_recipe_id = request.form.get('test_recipe_id')
     debug_now = request.form.get('debug_now')
@@ -316,7 +329,7 @@ def parser_test_decision():
 
 # --- Delete flagged/test recipe from parser_test_recipes ---
 @app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def delete_parser_test_recipe(test_recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -462,7 +475,7 @@ def url_upload():
     return render_template('url_upload.html', url=url, result=result)
 
 @app.route('/admin/update_recipe_source', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def update_recipe_source():
     """Update the source field for a recipe."""
     recipe_id = request.form.get('recipe_id')
@@ -480,7 +493,7 @@ def update_recipe_source():
 ## ...already created above...
 # --- Admin Recipe Book Setup Page Route ---
 @app.route('/admin/recipe_book_setup')
-@require_role('VP')
+@require_role('Admin')
 def admin_recipe_book_setup():
     # Query recipes from the database
     with get_db_connection() as conn:
@@ -497,7 +510,7 @@ def admin_recipe_book_setup():
 
 # --- Upload Recipe Using URL Route ---
 @app.route('/upload_url', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def upload_url():
     url = request.form.get('url', '').strip()
     if not url:
@@ -630,7 +643,7 @@ def upload_url():
 
 # --- Alias for /load_recipe_url to support form submissions from templates ---
 @app.route('/load_recipe_url', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def load_recipe_url():
     url = request.form.get('url') or request.form.get('recipe_url')
     ingredients = []
@@ -733,7 +746,7 @@ def load_recipe_url():
 
 # --- Review Recipe URL Action Route ---
 @app.route('/review_recipe_url_action', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def review_recipe_url_action():
     import json
     recipe_json = request.form.get('recipe_json')
@@ -1060,7 +1073,7 @@ def logout():
 
 
 @app.route('/admin', methods=['GET', 'POST'])
-@require_role('VP')
+@require_role('Admin')
 def admin():
     # Get recipe suggestions for display
     suggestions = []
@@ -1120,7 +1133,7 @@ def admin():
 
 
 @app.route('/uploadclass', methods=['POST'])
-@require_role('VP')
+@require_role('Admin')
 def uploadclass():
     uploaded = request.files.get('csvfile')
     if not uploaded:
@@ -1198,7 +1211,7 @@ def uploadclass():
 
 
 @app.route('/admin/permissions', methods=['GET', 'POST'])
-@require_role('VP')
+@require_role('Admin')
 def admin_permissions():
     """Manage role-based permissions."""
     if request.method == 'POST':
@@ -1239,7 +1252,7 @@ def admin_permissions():
 
 
 @app.route('/admin/user_roles', methods=['GET', 'POST'])
-@require_role('VP')
+@require_role('Admin')
 def admin_user_roles():
     """Manage additional user roles."""
     if request.method == 'POST':
@@ -1311,7 +1324,7 @@ def admin_user_roles():
 
 @app.route('/admin/clean_recipes', methods=['POST'])
 
-@require_role('VP')
+@require_role('Admin')
 def clean_recipes_route():
     """Clean recipe database - remove junk and duplicates."""
     try:
@@ -1332,7 +1345,7 @@ def clean_recipes_route():
 
 
 @app.route('/staff')
-@require_role('VP')
+@require_role('Admin')
 def staff():
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -1342,7 +1355,7 @@ def staff():
 
 
 @app.route('/classes')
-@require_role('VP')
+@require_role('Admin')
 def classes_page():
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -1565,7 +1578,7 @@ def class_ingredients_delete(booking_id):
     return jsonify({'success': True})
 
 @app.route('/upload', methods=['GET', 'POST'])
-@require_role('VP')
+@require_role('Admin')
 def upload():
     # GET request - show the upload form
     if request.method == 'GET':
@@ -2519,7 +2532,7 @@ def api_scheduled_bookings():
 
 # --- View Raw Upload Route ---
 @app.route('/view_raw_upload')
-@require_role('VP')
+@require_role('Admin')
 def view_raw_upload():
     source_url = request.args.get('source')
     if not source_url:
