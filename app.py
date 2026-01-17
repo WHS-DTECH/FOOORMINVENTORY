@@ -221,6 +221,24 @@ def extract_title_candidates(raw_html):
             break
     return candidates, best_guess or ''
 
+    
+# =======================
+# Jinja2 Filters
+# =======================
+@app.template_filter('format_nz_week')
+def format_nz_week(label):
+    """Format NZ week label from yyyy-mm-dd to dd-mm-yyyy."""
+    if not label or not isinstance(label, str):
+        return ""
+    import re
+    match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
+    if match:
+        start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+        end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
+        return f"{start} to {end}"
+    return label
+
+
 # =======================
 # Utility: Extract all visible text from a URL or PDF
 # =======================
