@@ -474,14 +474,16 @@ def update_recipe_source():
 # --- Admin Recipe Book Setup Page Route ---
 @app.route('/admin/recipe_book_setup')
 @require_role('VP')
-# @Grapplinks[#URL]
 def admin_recipe_book_setup():
     # Query recipes from the database
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes ORDER BY name')
+        c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date, serving_size FROM recipes ORDER BY name')
         recipe_list = [dict(row) for row in c.fetchall()]
-    return render_template('recipe_book_setup.html', recipe_list=recipe_list)
+        # Query flagged/test recipes for parser debug index
+        c.execute('SELECT id, upload_source_detail, uploaded_by, upload_date, notes FROM parser_test_recipes ORDER BY upload_date DESC')
+        parser_test_list = [dict(row) for row in c.fetchall()]
+    return render_template('recipe_book_setup.html', recipe_list=recipe_list, parser_test_list=parser_test_list)
 # --- Recipe detail page for /recipe/<id> ---
 # (Moved below app creation to avoid NameError)
 
@@ -758,6 +760,7 @@ def review_recipe_url_action():
         # Insert recipe into parser_test_recipes
         test_recipe_id = None
         try:
+            import datetime as dt
             with get_db_connection() as conn:
                 c = conn.cursor()
                 c.execute('''
@@ -768,20 +771,20 @@ def review_recipe_url_action():
                     'url',
                     recipe_data.get('source_url') or recipe_data.get('title') or '',
                     getattr(current_user, 'email', 'unknown'),
-                    datetime.datetime.now(),
+                    dt.datetime.now(),
                     'Flagged for parser testing',
                     None
                 ))
                 test_recipe_id = c.fetchone()['id']
-                # Optionally store the full recipe JSON as a note or in a new column
-                # c.execute('UPDATE parser_test_recipes SET notes = %s WHERE id = %s', (json.dumps(recipe_data), test_recipe_id))
                 conn.commit()
         except Exception as e:
             error_message = f'Error saving flagged recipe for parser testing: {e}'
+            # Do NOT redirect, just show error on the review page and keep the user there
             return render_template(
                 "review_recipe_url.html",
                 recipe_data=recipe_data or {},
-                extraction_warning=error_message
+                extraction_warning=error_message,
+                show_debug_prompt=False
             )
         # Show Yes/No debug prompt on the draft page
         return render_template(

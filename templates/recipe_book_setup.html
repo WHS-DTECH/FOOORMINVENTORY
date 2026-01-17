@@ -51,9 +51,9 @@
                 </div>
             </div>
         </div>
-        <!-- Right column: Recipe index list -->
+        <!-- Right column: Recipe index list and Parser Debug Index -->
         <div class="col-lg-6">
-            <div class="card shadow">
+            <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">Recipe Index</h3>
                 </div>
@@ -78,6 +78,31 @@
                         </ul>
                     {% else %}
                         <p class="text-muted">No recipes loaded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Parser Debug Index -->
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Parser Debug Index</h3>
+                </div>
+                <div class="card-body">
+                    {% if parser_test_list %}
+                        <ul class="list-group">
+                            {% for test in parser_test_list %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="fw-bold">{{ test.upload_source_detail or 'No Title' }}</span><br>
+                                        <span class="text-muted">Flagged by: {{ test.uploaded_by or 'Unknown' }} | {{ test.upload_date.strftime('%Y-%m-%d %H:%M') if test.upload_date else '' }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <a href="/parser_debug/{{ test.id }}" class="btn btn-outline-primary btn-sm">Debug</a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No flagged/test recipes yet.</p>
                     {% endif %}
                 </div>
             </div>
