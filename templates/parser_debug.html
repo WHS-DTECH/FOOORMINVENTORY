@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Parser Debug: Flagged/Test Recipe</h2>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ test_recipe.upload_source_detail }}</h5>
+            <p><strong>Flagged by:</strong> {{ test_recipe.uploaded_by }}</p>
+            <p><strong>Flagged at:</strong> {{ test_recipe.upload_date }}</p>
+            <p><strong>Notes:</strong> {{ test_recipe.notes }}</p>
+            <p><strong>Source Type:</strong> {{ test_recipe.upload_source_type }}</p>
+            <p><strong>Recipe ID:</strong> {{ test_recipe.recipe_id or 'N/A' }}</p>
+            <!-- Add more debug info or parser output here -->
+        </div>
+    </div>
+</div>
+{% endblock %}

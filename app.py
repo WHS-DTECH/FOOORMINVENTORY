@@ -1,3 +1,16 @@
+# --- Parser Debug Page for flagged/test recipes ---
+@app.route('/parser_debug/<int:test_recipe_id>')
+@require_role('VP')
+def parser_debug(test_recipe_id):
+    # Fetch the flagged/test recipe from parser_test_recipes
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    # Optionally, fetch more details or run parser debug logic here
+    return render_template('parser_debug.html', test_recipe=test_recipe)
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
