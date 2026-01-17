@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display: flex; gap: 2em;">
+  <div style="flex: 1;">
+    <h3>Raw Data (HTML/Text)</h3>
+    <pre style="max-height: 600px; overflow: auto; background: #f8f8f8; border: 1px solid #ccc; padding: 1em;">{{ raw_data|e }}</pre>
+  </div>
+  <div style="flex: 1;">
+    <h3>Title Extraction Strategies</h3>
+    <table class="table table-bordered">
+      <thead><tr><th>Strategy</th><th>Result</th></tr></thead>
+      <tbody>
+        {% for strat in strategies %}
+        <tr{% if strat.best %} style="background: #d0f5d0;"{% endif %}>
+          <td>{{ strat.name }}</td>
+          <td>{{ strat.value }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h4>Best Guess:</h4>
+    <div style="font-size: 1.2em; font-weight: bold; color: #0074d9;">{{ best_guess }}</div>
+  </div>
+</div>
+{% endblock %}

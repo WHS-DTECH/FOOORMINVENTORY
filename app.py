@@ -1,3 +1,87 @@
+# --- Debug Title Extraction Page ---
+@app.route('/debug_title/<int:test_recipe_id>')
+@require_role('VP')
+def debug_title(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    raw_data = test_recipe['raw_data']
+    strategies, best_guess = extract_title_candidates(raw_data)
+    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
+
+# --- Title Extraction Strategies ---
+def extract_title_candidates(raw_html):
+    candidates = []
+    best_guess = None
+    import re
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError:
+        BeautifulSoup = None
+    # 1. <title> tag
+    title_tag = None
+    if BeautifulSoup:
+        soup = BeautifulSoup(raw_html, 'html.parser')
+        title_tag = soup.title.string.strip() if soup.title and soup.title.string else None
+    else:
+        m = re.search(r'<title>(.*?)</title>', raw_html, re.I|re.S)
+        title_tag = m.group(1).strip() if m else None
+    candidates.append({'name': '<title> tag', 'value': title_tag or '', 'best': False})
+    # 2. og:title meta
+    og_title = None
+    if BeautifulSoup and soup:
+        og = soup.find('meta', property='og:title')
+        og_title = og['content'].strip() if og and og.get('content') else None
+    else:
+        m = re.search(r'<meta[^>]+property=["\"]og:title["\"][^>]+content=["\"](.*?)["\"]', raw_html, re.I|re.S)
+        og_title = m.group(1).strip() if m else None
+    candidates.append({'name': 'og:title meta', 'value': og_title or '', 'best': False})
+    # 3. First <h1>
+    h1 = None
+    if BeautifulSoup and soup:
+        h1tag = soup.find('h1')
+        h1 = h1tag.get_text(strip=True) if h1tag else None
+    else:
+        m = re.search(r'<h1[^>]*>(.*?)</h1>', raw_html, re.I|re.S)
+        h1 = m.group(1).strip() if m else None
+    candidates.append({'name': 'First <h1>', 'value': h1 or '', 'best': False})
+    # 4. JSON-LD schema.org name
+    jsonld_title = None
+    if BeautifulSoup and soup:
+        for script in soup.find_all('script', type='application/ld+json'):
+            try:
+                import json
+                data = json.loads(script.string)
+                if isinstance(data, dict) and 'name' in data:
+                    jsonld_title = data['name']
+                    break
+                elif isinstance(data, list):
+                    for entry in data:
+                        if isinstance(entry, dict) and 'name' in entry:
+                            jsonld_title = entry['name']
+                            break
+            except Exception:
+                continue
+    candidates.append({'name': 'schema.org/JSON-LD name', 'value': jsonld_title or '', 'best': False})
+    # 5. Heuristic: First large/bold text (e.g., <b>, <strong>, <h2>)
+    heuristic = None
+    if BeautifulSoup and soup:
+        for tag in soup.find_all(['h2', 'b', 'strong']):
+            txt = tag.get_text(strip=True)
+            if txt and len(txt) > 5:
+                heuristic = txt
+                break
+    candidates.append({'name': 'Heuristic: first large/bold text', 'value': heuristic or '', 'best': False})
+    # Pick best guess (first non-empty in priority order)
+    for cand in candidates:
+        if cand['value']:
+            cand['best'] = True
+            best_guess = cand['value']
+            break
+    return candidates, best_guess or ''
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
