@@ -2,6 +2,7 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Parser Debug: Flagged/Test Recipe</h2>
+
     <div class="card mt-3">
         <div class="card-body">
             <h5 class="card-title">{{ test_recipe.upload_source_detail }}</h5>
@@ -10,7 +11,7 @@
             <p><strong>Notes:</strong> {{ test_recipe.notes }}</p>
             <p><strong>Source Type:</strong> {{ test_recipe.upload_source_type }}</p>
             <p><strong>Recipe ID:</strong> {{ test_recipe.recipe_id or 'N/A' }}</p>
-            <!-- Add more debug info or parser output here -->
+            <a href="/parser_debug_raw/{{ test_recipe.id }}" class="btn btn-outline-dark btn-sm mt-2">View Raw Data</a>
         </div>
     </div>
 
