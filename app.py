@@ -1968,11 +1968,15 @@ def shoplist():
     monday = monday + timedelta(weeks=week_offset)  # Adjust by week offset
 
 
-    # Build dates list for the week (Monday to Friday)
+    # Build dates list for the week (Monday to Friday), with day_name and nz_date for template
     dates = []
     for i in range(5):
         day = monday + timedelta(days=i)
-        dates.append({'date': day.strftime('%Y-%m-%d'), 'weekday': day.strftime('%A')})
+        dates.append({
+            'date': day.strftime('%Y-%m-%d'),
+            'day_name': day.strftime('%A'),
+            'nz_date': day.strftime('%d/%m/%Y')
+        })
 
     # Fetch bookings for the week
     with get_db_connection() as conn:
