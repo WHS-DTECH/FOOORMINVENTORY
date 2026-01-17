@@ -727,22 +727,44 @@ def review_recipe_url_action():
     import json
     recipe_json = request.form.get('recipe_json')
     action = request.form.get('action')
+    error_message = None
     try:
         recipe_data = json.loads(recipe_json) if recipe_json else {}
     except Exception as e:
-        recipe_data = {}
-        flash(f'Error parsing recipe data: {e}', 'error')
-        return redirect(url_for('admin_recipe_book_setup'))
+        recipe_data = None
+        error_message = f'Error parsing recipe data: {e}'
+
+    if error_message or not recipe_data:
+        # Show error on the review page, do not redirect
+        # Try to recover original data for display if possible
+        # If recipe_json is not valid JSON, try to show as much as possible
+        try:
+            # Try to load as Python dict (if single quotes were used)
+            import ast
+            recipe_data = ast.literal_eval(recipe_json)
+        except Exception:
+            recipe_data = {}
+        return render_template(
+            "review_recipe_url.html",
+            recipe_data=recipe_data or {},
+            extraction_warning=error_message
+        )
 
     if action == 'confirm':
         # Here you would save the recipe to the database
         flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
+        return redirect(url_for('admin_recipe_book_setup'))
     elif action == 'flag':
         # Here you would flag the recipe for manual review
         flash('Recipe flagged for manual review (not yet implemented).', 'warning')
+        return redirect(url_for('admin_recipe_book_setup'))
     else:
-        flash('Unknown action.', 'error')
-    return redirect(url_for('admin_recipe_book_setup'))
+        error_message = 'Unknown action.'
+        return render_template(
+            "review_recipe_url.html",
+            recipe_data=recipe_data or {},
+            extraction_warning=error_message
+        )
 def add_shoplist_to_gcal():
     try:
         # Get year and month from query params, default to current month
