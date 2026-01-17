@@ -1,5 +1,4 @@
 
-
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -212,7 +211,37 @@ def test_recipe_urls():
     return render_template('test_recipe_urls.html', urls=urls, message=message)
 @require_role('Admin', 'Teacher')
 
-
+# =======================
+# Utility: Extract all visible text from a URL or PDF
+# =======================
+def extract_raw_text_from_url(url):
+    global requests, BeautifulSoup, PyPDF2
+    if requests is None:
+        return None, 'Requests library not installed.'
+    try:
+        resp = requests.get(url, timeout=10)
+    except Exception as e:
+        return None, f'Failed to fetch URL: {e}'
+    if resp.status_code != 200:
+        return None, f'URL returned status code {resp.status_code}'
+    content_type = resp.headers.get('Content-Type', '')
+    if 'pdf' in content_type or url.lower().endswith('.pdf'):
+        if not PyPDF2:
+            return None, 'PyPDF2 not installed.'
+        try:
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
+            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
+            return full_text, None
+        except Exception as e:
+            return None, f'PDF extraction failed: {e}'
+    else:
+        html = resp.text
+        if BeautifulSoup is None:
+            return html, None
+        soup = BeautifulSoup(html, 'html.parser')
+        texts = soup.stripped_strings
+        visible_text = "\n".join(texts)
+        return visible_text, None
 
 # =======================
 # Features: Recipe Book Routes
@@ -355,42 +384,18 @@ def debug_raw_recipe():
         return f'<pre style="white-space: pre-wrap;">{html}</pre>'
 
 # --- Debug endpoint: Extract all visible text from a recipe URL (no filters) ---
+
+# --- Debug endpoint: Extract all visible text from a recipe URL (no filters) ---
 @app.route('/debug_extract_text', methods=['POST'])
 @require_role('VP')
 def debug_extract_text():
     url = request.form.get('url') or request.form.get('recipe_url')
     if not url:
         return 'No URL provided.', 400
-    global requests, BeautifulSoup
-    if requests is None:
-        return 'Requests library not installed.', 500
-    try:
-        resp = requests.get(url, timeout=10)
-    except Exception as e:
-        return f'Failed to fetch URL: {e}', 400
-    if resp.status_code != 200:
-        return f'URL returned status code {resp.status_code}', 404
-    content_type = resp.headers.get('Content-Type', '')
-    if 'pdf' in content_type or url.lower().endswith('.pdf'):
-        # Extract all text from PDF
-        if not PyPDF2:
-            return 'PyPDF2 not installed.', 500
-        try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
-            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
-            return f'<pre style="white-space: pre-wrap;">{full_text}</pre>'
-        except Exception as e:
-            return f'PDF extraction failed: {e}', 500
-    else:
-        # Extract all visible text from HTML (no filters)
-        html = resp.text
-        if BeautifulSoup is None:
-            return html
-        soup = BeautifulSoup(html, 'html.parser')
-        # Get all visible text (not just from <p>, <li>, etc.)
-        texts = soup.stripped_strings
-        visible_text = "\n".join(texts)
-        return f'<pre style="white-space: pre-wrap;">{visible_text}</pre>'
+    raw_text, error = extract_raw_text_from_url(url)
+    if error:
+        return error, 400
+    return f'<pre style="white-space: pre-wrap;">{raw_text}</pre>'
 
 
 # =======================
@@ -811,7 +816,16 @@ def review_recipe_url_action():
         try:
             import datetime as dt
             source_url = recipe_data.get('source_url') or recipe_data.get('title') or ''
-            raw_data = session.get('raw_data', '')
+            # Use the same extraction logic as debug_extract_text
+            raw_data, error = extract_raw_text_from_url(source_url)
+            if error:
+                error_message = f'Error extracting raw data for parser testing: {error}'
+                return render_template(
+                    "review_recipe_url.html",
+                    recipe_data=recipe_data or {},
+                    extraction_warning=error_message,
+                    show_debug_prompt=False
+                )
             with get_db_connection() as conn:
                 c = conn.cursor()
                 c.execute('''
