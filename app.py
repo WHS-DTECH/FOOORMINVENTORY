@@ -1,13 +1,4 @@
-# --- Delete flagged/test recipe from parser_test_recipes ---
-@app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
-@require_role('VP')
-def delete_parser_test_recipe(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        conn.commit()
-    flash('Flagged/test recipe deleted.', 'success')
-    return redirect(url_for('admin_recipe_book_setup'))
+
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
@@ -226,6 +217,18 @@ def test_recipe_urls():
 # =======================
 # Features: Recipe Book Routes
 # =======================
+
+# --- Delete flagged/test recipe from parser_test_recipes ---
+@app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
+@require_role('VP')
+def delete_parser_test_recipe(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        conn.commit()
+    flash('Flagged/test recipe deleted.', 'success')
+    return redirect(url_for('admin_recipe_book_setup'))
+
 # --- Parser Debug Page for flagged/test recipes ---
 @app.route('/parser_debug/<int:test_recipe_id>')
 @require_role('VP')
