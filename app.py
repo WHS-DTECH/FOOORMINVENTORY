@@ -893,9 +893,21 @@ def load_recipe_url():
                     if line.strip():
                         instructions = [line.strip()]
                         break
+    extraction_warning = None
     if not ingredients:
-        flash('No ingredients found on the page. Not a valid recipe URL.', 'error')
-        return render_template('url_upload.html', url=url, result=None)
+        extraction_warning = 'No ingredients found on the page. Extraction may have failed. You can still flag this URL for parser improvement.'
+    recipe_data = {
+        'title': title,
+        'ingredients': ingredients,
+        'instructions': instructions,
+        'source_url': url,
+        'serving_size': serving_size
+    }
+    return render_template(
+        "review_recipe_url.html",
+        recipe_data=recipe_data,
+        extraction_warning=extraction_warning
+    )
     # Save to database (after extraction logic)
     import json
     from datetime import datetime
