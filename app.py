@@ -295,15 +295,29 @@ import re
 
 def parse_recipe_with_log(url):
     log = []
+    # Define all possible parser steps (in order)
+    all_steps = [
+        "Fetch URL",
+        "Fetch HTML",
+        "Find instructions block with common selectors",
+        "Extract steps from block",
+        "Fallback: Find 'Method' or 'Instructions' in raw text",
+        "Split into numbered steps",
+        "Return full method text as one step"
+    ]
+    steps_applied = []
+
     try:
         log.append(f"Fetching URL: {url}")
+        steps_applied.append(all_steps[0])
         resp = requests.get(url, timeout=10)
+        steps_applied.append(all_steps[1])
         resp.raise_for_status()
         html = resp.text
         log.append("Fetched HTML successfully.")
     except Exception as e:
         log.append(f"Failed to fetch URL: {e}")
-        return {'instructions': [], 'log': log}
+        return {'instructions': [], 'log': log, 'all_steps': all_steps, 'steps_applied': steps_applied}
 
     soup = BeautifulSoup(html, 'html.parser')
     instructions = []
@@ -322,10 +336,14 @@ def parse_recipe_with_log(url):
         block = soup.select_one(sel)
         if block:
             log.append(f"Found instructions block using selector: {sel}")
+            if all_steps[2] not in steps_applied:
+                steps_applied.append(all_steps[2])
             # Try to split into steps
             steps = [s.get_text(strip=True) for s in block.find_all(['li', 'p']) if s.get_text(strip=True)]
             if steps:
                 log.append(f"Extracted {len(steps)} steps from block.")
+                if all_steps[3] not in steps_applied:
+                    steps_applied.append(all_steps[3])
                 instructions = steps
                 found = True
                 break
@@ -333,6 +351,8 @@ def parse_recipe_with_log(url):
                 log.append(f"Block found with selector {sel}, but no steps detected.")
     if not found:
         log.append("No instructions block found with common selectors. Trying fallback extraction.")
+        if all_steps[4] not in steps_applied:
+            steps_applied.append(all_steps[4])
         # Fallback: look for 'Method' or 'Instructions' in text
         text = soup.get_text("\n", strip=True)
         method_match = re.search(r'(Method|Instructions)(:)?(\n|\r|\r\n)(.+)', text, re.IGNORECASE | re.DOTALL)
@@ -344,14 +364,18 @@ def parse_recipe_with_log(url):
             steps = [s.strip() for s in steps if s.strip()]
             if len(steps) > 1:
                 log.append(f"Split into {len(steps)} numbered steps.")
+                if all_steps[5] not in steps_applied:
+                    steps_applied.append(all_steps[5])
                 instructions = steps
             else:
                 log.append("Could not split into numbered steps. Returning full method text as one step.")
+                if all_steps[6] not in steps_applied:
+                    steps_applied.append(all_steps[6])
                 instructions = [method_text.strip()]
         else:
             log.append("No 'Method' or 'Instructions' section found. Returning empty instructions.")
             instructions = []
-    return {'instructions': instructions, 'log': log}
+    return {'instructions': instructions, 'log': log, 'all_steps': all_steps, 'steps_applied': steps_applied}
 
 
 @app.route('/url_upload', methods=['GET', 'POST'])

@@ -12,6 +12,23 @@
 
   {% if result %}
     <div class="card mb-3">
+      <div class="card-header bg-secondary text-white">Parser Steps Checklist</div>
+      <div class="card-body">
+        <ul class="list-group">
+          {% for step in result.all_steps %}
+            <li class="list-group-item d-flex align-items-center">
+              {% if step in result.steps_applied %}
+                <span class="badge bg-success me-2">&#10003;</span>
+              {% else %}
+                <span class="badge bg-light text-dark me-2">&#9633;</span>
+              {% endif %}
+              {{ step }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="card mb-3">
       <div class="card-header bg-info text-white">Parser Steps Log</div>
       <div class="card-body">
         <ol style="font-size: 1em;">
