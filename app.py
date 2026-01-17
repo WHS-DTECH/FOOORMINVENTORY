@@ -851,25 +851,25 @@ def load_recipe_url():
         row = c.fetchone()
         if row and row['raw_text']:
             raw_lines = row['raw_text'].splitlines()
-            # List of common instructional verbs (case-insensitive)
+            # Only use this set of instructional verbs for this round
             verbs = [
-                'crush', 'chop', 'add', 'roll', 'dust'
+                'preheat', 'sift', 'beat', 'spoon', 'pour', 'stir', 'top', 'bake', 'brush'
             ]
             import re
-            verb_pattern = re.compile(r'(^|\b)(' + '|'.join(verbs) + r')\b', re.IGNORECASE)
+            verb_pattern = re.compile(r'^(%s)\b' % '|'.join(verbs), re.IGNORECASE)
             instructions_block = []
             i = 0
             while i < len(raw_lines):
                 line = raw_lines[i]
-                if verb_pattern.search(line):
-                    sentence = line
+                if verb_pattern.match(line.strip()):
+                    sentence = line.strip()
                     # If the line does not end with a period, keep adding lines until a period is found
-                    while not sentence.strip().endswith('.') and i + 1 < len(raw_lines):
+                    while not sentence.endswith('.') and i + 1 < len(raw_lines):
                         i += 1
                         sentence += ' ' + raw_lines[i].strip()
-                        if sentence.strip().endswith('.'):
+                        if sentence.endswith('.'):
                             break
-                    instructions_block.append(sentence.strip())
+                    instructions_block.append(sentence)
                 i += 1
             if instructions_block:
                 c.execute("UPDATE recipes SET instructions = %s WHERE id = %s", ("\n".join(instructions_block), recipe_id))
