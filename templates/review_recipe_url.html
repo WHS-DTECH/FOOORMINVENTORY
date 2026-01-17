@@ -8,21 +8,75 @@
         <div class="alert alert-warning mt-3">{{ extraction_warning }}</div>
         {% endif %}
     </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">{{ recipe_data.title }}</h5>
-            <h6>Ingredients</h6>
-            <ul>
-                {% for ing in recipe_data.ingredients %}
-                <li>{{ ing }}</li>
-                {% endfor %}
-            </ul>
-            <h6>Instructions</h6>
-            <ol>
-                {% for step in recipe_data.instructions %}
-                <li>{{ step }}</li>
-                {% endfor %}
-            </ol>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">Title</div>
+                <div class="card-body">
+                    {% if recipe_data.title %}
+                        <h5 class="card-title">{{ recipe_data.title }}</h5>
+                    {% else %}
+                        <span class="text-danger">No title found.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">Serving Size</div>
+                <div class="card-body">
+                    {% if recipe_data.serving_size %}
+                        <span>{{ recipe_data.serving_size }}</span>
+                    {% else %}
+                        <span class="text-warning">No serving size found.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">Source URL</div>
+                <div class="card-body">
+                    {% if recipe_data.source_url %}
+                        <a href="{{ recipe_data.source_url }}" target="_blank">{{ recipe_data.source_url }}</a>
+                    {% else %}
+                        <span class="text-warning">No source URL found.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">Ingredients</div>
+                <div class="card-body">
+                    {% if recipe_data.ingredients and recipe_data.ingredients|length > 0 %}
+                        <ul>
+                        {% for ing in recipe_data.ingredients %}
+                            <li>{{ ing }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <span class="text-danger">No ingredients found.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">Instructions</div>
+                <div class="card-body">
+                    {% if recipe_data.instructions and recipe_data.instructions|length > 0 %}
+                        <ol>
+                        {% for step in recipe_data.instructions %}
+                            <li>{{ step }}</li>
+                        {% endfor %}
+                        </ol>
+                    {% else %}
+                        <span class="text-danger">No instructions found.</span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
     <form method="post" action="/review_recipe_url_action">
