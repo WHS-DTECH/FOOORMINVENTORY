@@ -617,10 +617,6 @@ def upload_url():
                             instructions = [data['recipeInstructions']]
             except Exception:
                 pass
-    if not ingredients:
-        return jsonify({'error': 'No ingredients found on the page. Not a valid recipe URL.'}), 400
-    # Return extracted data for preview (do not save yet)
-    return jsonify({'success': True, 'title': title, 'ingredients': ingredients, 'instructions': instructions})
 
 # --- Alias for /load_recipe_url to support form submissions from templates ---
 @app.route('/load_recipe_url', methods=['POST'])
