@@ -286,14 +286,34 @@ def extract_raw_text_from_url(url):
 from flask import request
 
 @app.route('/api/save_title_solution/<int:test_recipe_id>', methods=['POST'])
+
 def api_save_title_solution(test_recipe_id):
     data = request.get_json()
     solution = (data or {}).get('solution', '').strip()
+    raw_data = (data or {}).get('raw_data', '').strip()
+    extracted_title = (data or {}).get('extracted_title', '').strip()
+    strategies = data.get('strategies') if data else None
+    user_id = getattr(current_user, 'id', None)
     if not solution:
         return jsonify({'error': 'No solution provided.'}), 400
     # Save to confirmed_parser_fields table
     from debug_parser.parser_confirm_title import confirm_title
     confirm_title(solution, test_recipe_id)
+    # Save debug state to parser_debug table (upsert)
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Try update first
+        c.execute('''
+            UPDATE parser_debug SET raw_data=%s, extracted_title=%s, strategies=%s, solution=%s, user_id=%s, created_at=NOW()
+            WHERE recipe_id=%s
+        ''', (raw_data, extracted_title, json.dumps(strategies) if strategies else None, solution, user_id, test_recipe_id))
+        if c.rowcount == 0:
+            # Insert if not exists
+            c.execute('''
+                INSERT INTO parser_debug (recipe_id, raw_data, extracted_title, strategies, solution, user_id, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            ''', (test_recipe_id, raw_data, extracted_title, json.dumps(strategies) if strategies else None, solution, user_id))
+        conn.commit()
     return jsonify({'success': True, 'title': solution})
 
 
