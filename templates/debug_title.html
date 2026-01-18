@@ -168,7 +168,26 @@
                         // Remove duplicates and put in Solution box
                         if (data.match && Array.isArray(data.found)) {
                           const unique = [...new Set(data.found.map(w => w.trim()).filter(Boolean))];
-                          document.getElementById('solutionInput').value = unique.join(' ');
+                          // Remove generic words like 'recipes'
+                          const filtered = unique.filter(w => w.toLowerCase() !== 'recipes' && w.toLowerCase() !== 'recipe');
+                          // Capitalize first letter of each word
+                          const capitalized = filtered.map(w => w.charAt(0).toUpperCase() + w.slice(1));
+                          let title = '';
+                          if (capitalized.length === 0) {
+                            title = '';
+                          } else if (capitalized.length === 1) {
+                            title = capitalized[0];
+                          } else if (capitalized.length === 2) {
+                            title = capitalized.join(' ');
+                          } else {
+                            // Use 'with' before last two words if more than 2
+                            title = capitalized[0];
+                            if (capitalized.length > 2) {
+                              title += ' ' + capitalized.slice(1, -2).join(' ');
+                              title += ' with ' + capitalized.slice(-2).join(' ');
+                            }
+                          }
+                          document.getElementById('solutionInput').value = title;
                         }
                         current++;
                         runNext();
