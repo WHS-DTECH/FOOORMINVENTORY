@@ -76,7 +76,7 @@
                 <div class="mb-3">
                     <strong>{{ recipe.title }}</strong>
                     <div>Servings: {{ recipe.servings or 'N/A' }}</div>
-                    <a href="{{ url_for('view_recipe', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
+                    <a href="{{ url_for('recipe_details', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
                     <a href="{{ recipe.source_url }}" class="btn btn-success btn-sm" target="_blank">Source</a>
                     <a href="{{ url_for('delete_recipe', recipe_id=recipe.id) }}" class="btn btn-danger btn-sm">Delete</a>
                 </div>
