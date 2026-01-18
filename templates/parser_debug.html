@@ -1,8 +1,96 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
+<style>
+.parser-debug-container {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  margin-top: 2em;
+}
+.parser-debug-col {
+  flex: 1 1 0;
+  min-width: 220px;
+}
+.debug-btn {
+  background: #d32f2f;
+  color: #fff;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin-right: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.confirm-btn {
+  background: #388e3c;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+}
+@media (max-width: 900px) {
+  .parser-debug-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+</style>
+<div class="parser-debug-container">
     <h2>Parser Debug: Flagged/Test Recipe</h2>
-    <div class="card mt-3">
+    <div class="parser-debug-col">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">Title</div>
+            <div class="card-body">{{ test_recipe.upload_source_detail }}</div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-purple text-white">Serving Size</div>
+            <div class="card-body">{{ test_recipe.serving_size or 'N/A' }}</div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">Source URL</div>
+            <div class="card-body"><a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a></div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-success text-white">Ingredients</div>
+            <div class="card-body">{{ test_recipe.ingredients or 'No ingredients found.' }}</div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">Instructions</div>
+            <div class="card-body">{{ test_recipe.instructions or 'No instructions found.' }}</div>
+        </div>
+    </div>
+    <div class="parser-debug-col">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">Actions</div>
+            <div class="card-body">
+                <form method="get" action="/debug_title/{{ test_recipe.id }}" style="display:inline-block;">
+                    <button type="submit" class="debug-btn">DEBUG</button>
+                </form>
+                <form method="post" action="/confirm_field" style="display:inline-block;">
+                    <input type="hidden" name="field" value="title">
+                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
+                    <button type="submit" class="confirm-btn">CONFIRM</button>
+                </form>
+                <hr>
+                <!-- Repeat for other fields -->
+            </div>
+        </div>
+    </div>
+    <div class="parser-debug-col">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">Confirmed Values</div>
+            <div class="card-body">
+                <div><strong>Title:</strong> {{ confirmed.title or '' }}</div>
+                <div><strong>Serving Size:</strong> {{ confirmed.serving_size or '' }}</div>
+                <div><strong>Source URL:</strong> {{ confirmed.source_url or '' }}</div>
+                <div><strong>Ingredients:</strong> {{ confirmed.ingredients or '' }}</div>
+                <div><strong>Instructions:</strong> {{ confirmed.instructions or '' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
         <div class="card-body">
             <h5 class="card-title">{{ test_recipe.upload_source_detail }}</h5>
             <p><strong>Flagged by:</strong> {{ test_recipe.uploaded_by }}</p>
