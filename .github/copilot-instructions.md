@@ -148,6 +148,7 @@ c.execute('INSERT INTO recipes (name, ingredients, instructions, serving_size, e
 - **Period grid**: 5 periods per day, bookings stored with `date_required` + `period` (1-5)
 - **Ingredient scaling**: Recipes have `serving_size`, bookings have `desired_servings`, scale quantities proportionally
 - **Grid structure**: Use dict keys like `"2024-01-15_P3"` to map bookings to calendar cells
+- **Ingredient aggregation**: Normalize ingredient names (lowercase + strip), combine quantities for same unit, keep separate for different units
 
 ### Recipe Suggestions
 - **User-submitted**: Teachers/staff can suggest recipes via form, stored in `recipe_suggestions` table
