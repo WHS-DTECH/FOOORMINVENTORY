@@ -68,22 +68,24 @@
           });
           </script>
           </div>
-          <div style="margin-bottom: 12px; margin-top: 18px;">
-            <strong>Title Extraction Strategies</strong>
-          </div>
-              <div id="title-strategies-box">
-                <!-- Existing strategies/results content will be rendered here -->
-                <div style="margin-bottom: 8px;">
-                  <span style="font-weight: bold;">Strategy</span> <span style="font-weight: bold;">Result</span>
-                </div>
-                <!-- Jinja2 block for strategies/results if present -->
-                {% if strategies %}
-                  {% for strat, result in strategies.items() %}
-                    <div><span>{{ strat }}</span>: <span>{{ result }}</span></div>
-                  {% endfor %}
-                {% endif %}
-                <div style="margin-top: 16px;"><strong>Best Guess:</strong> {{ best_guess }}</div>
-              </div>
+        </div>
+      </div>
+    </div>
+    <!-- Move Title Extraction Strategies below Title and Solution boxes -->
+    <div style="margin-top: 32px;">
+      <div style="margin-bottom: 12px;"><strong>Title Extraction Strategies</strong></div>
+      <div id="title-strategies-box">
+        <div style="margin-bottom: 8px;">
+          <span style="font-weight: bold;">Strategy</span> <span style="font-weight: bold;">Result</span>
+        </div>
+        {% if strategies %}
+          {% for strat, result in strategies.items() %}
+            <div><span>{{ strat }}</span>: <span>{{ result }}</span></div>
+          {% endfor %}
+        {% endif %}
+        <div style="margin-top: 16px;"><strong>Best Guess:</strong> {{ best_guess }}</div>
+      </div>
+    </div>
             </div>
           </div>
         </div>
