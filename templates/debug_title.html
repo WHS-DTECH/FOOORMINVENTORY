@@ -33,15 +33,14 @@
       <textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;">{{ raw_data }}</textarea>
     </div>
     <script>
-    // Restore debug state from backend if present
     document.addEventListener('DOMContentLoaded', function() {
       const debugState = {{ debug_state|tojson|safe if debug_state else 'null' }};
       const solutionInput = document.getElementById('solutionInput');
       const titleBlockText = document.getElementById('titleBlockText');
+      // Restore debug state if present
       if (debugState) {
         if (debugState.solution && solutionInput) solutionInput.value = debugState.solution;
         if (debugState.extracted_title && titleBlockText) titleBlockText.textContent = debugState.extracted_title;
-        // Restore strategies table if present
         if (Array.isArray(debugState.strategies)) {
           const rows = document.querySelectorAll('#strategiesTable tbody tr');
           debugState.strategies.forEach((s, i) => {
@@ -58,20 +57,15 @@
           });
         }
       }
-      // SEND SOLUTION button logic
+      // Always attach SEND SOLUTION event handler
       const sendBtn = document.getElementById('sendSolutionBtn');
-      const titleBlockBox = document.getElementById('titleBlockBox');
-      const titleBlockHeader = document.getElementById('titleBlockHeader');
-      const confirmBtn = document.getElementById('confirmTitleBtn');
-      if (sendBtn && solutionInput && titleBlockBox && titleBlockText && titleBlockHeader && confirmBtn) {
+      if (sendBtn) {
         sendBtn.onclick = function() {
-          const solution = solutionInput.value.trim();
+          const solution = solutionInput ? solutionInput.value.trim() : '';
           if (!solution) return;
-          // Gather debug state
           const testRecipeId = window.location.pathname.match(/\d+$/);
           const rawData = document.querySelector('textarea[readonly]')?.value || '';
-          const extractedTitle = document.getElementById('titleBlockText')?.textContent || '';
-          // Gather strategies state from table (if present)
+          const extractedTitle = titleBlockText ? titleBlockText.textContent : '';
           const strategies = [];
           document.querySelectorAll('#strategiesTable tbody tr').forEach(row => {
             const strat = row.cells[0]?.textContent?.trim();
@@ -95,12 +89,16 @@
           })
           .catch(() => alert('Failed to save solution.'));
         };
+      }
+      // Always attach confirmBtn event handler if present
+      const titleBlockBox = document.getElementById('titleBlockBox');
+      const titleBlockHeader = document.getElementById('titleBlockHeader');
+      const confirmBtn = document.getElementById('confirmTitleBtn');
+      if (confirmBtn) {
         confirmBtn.onclick = function() {
-          // Optionally, trigger AJAX or form submit here to save the confirmed title
-          // For now, just visually mark as confirmed
           confirmBtn.disabled = true;
           confirmBtn.textContent = 'CONFIRMED';
-          titleBlockBox.style.opacity = '0.7';
+          if (titleBlockBox) titleBlockBox.style.opacity = '0.7';
         };
       }
     });
