@@ -37,9 +37,11 @@
   }
 }
 </style>
-<div class="parser-debug-container">
-    <h1 style="width:100%; text-align:center; font-size:2rem; font-weight:bold; margin-bottom:0.5em;">Parser Debug: Flagged/Test Recipe</h1>
-    <div style="width:100%; margin:0 auto 2em auto; max-width:700px; background:#fafafa; border-radius:6px; box-shadow:0 1px 4px #eee; padding:1em 2em; font-size:1rem;">
+<div style="width:100%; text-align:center; margin-top:2em;">
+    <h1 style="font-size:2.2rem; font-weight:bold; margin-bottom:0.5em;">Parser Debug: Flagged/Test Recipe</h1>
+</div>
+<div style="width:100%; display:flex; justify-content:center; margin-bottom:2em;">
+    <div style="max-width:700px; background:#fafafa; border-radius:6px; box-shadow:0 1px 4px #eee; padding:1em 2em; font-size:1rem; text-align:left;">
         <div><a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a></div>
         <div>Flagged by: {{ test_recipe.uploaded_by }}</div>
         <div>Flagged at: {{ test_recipe.upload_date }}</div>
@@ -50,6 +52,8 @@
             <button type="submit" class="btn btn-outline-dark btn-sm">View Raw Data</button>
         </form>
     </div>
+</div>
+<div class="parser-debug-container">
     <div class="parser-debug-col">
         <div class="card mb-3">
             <div class="card-header bg-primary text-white">Title</div>
