@@ -1,4 +1,5 @@
 
+
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -280,7 +281,37 @@ def extract_raw_text_from_url(url):
 # =======================
 # Debug Parser - Title Section
 # =======================
+# --- API: Run first title extraction strategy ---
+from flask import jsonify
 
+@app.route('/api/title_strategy/url_match/<int:test_recipe_id>', methods=['GET'])
+def api_title_strategy_url_match(test_recipe_id):
+    # Fetch test recipe
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return jsonify({'error': 'Test recipe not found.'}), 404
+    url = test_recipe['upload_source_detail'] or ''
+    raw_data = test_recipe.get('raw_data') or ''
+    # Extract words from URL (split by - or /, ignore short/common words)
+    import re
+    url_words = re.split(r'[-/]', url)
+    url_words = [w.lower() for w in url_words if len(w) > 2 and w.isalpha()]
+    # Check if any url words appear in raw_data (case-insensitive)
+    found = []
+    for word in url_words:
+        if word in raw_data.lower():
+            found.append(word)
+    result = {
+        'strategy': 'Is there matching words from the URL in the Raw Data?',
+        'url_words': url_words,
+        'found': found,
+        'match': bool(found),
+        'raw_data_length': len(raw_data)
+    }
+    return jsonify(result)
 
 from debug_parser.parser_confirm_URL import confirm_url
 from debug_parser.parser_confirm_title import confirm_title
