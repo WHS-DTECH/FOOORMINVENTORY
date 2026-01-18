@@ -285,6 +285,7 @@ def extract_raw_text_from_url(url):
 # Import both confirm_url and confirm_title
 from debug_parser.parser_confirm_URL import confirm_url
 from debug_parser.parser_confirm_title import confirm_title
+from debug_parser.parser_confirm_serving import confirm_serving
 # --- Confirm Field (modular, including Source URL) ---
 @app.route('/confirm_field', methods=['POST'])
 @require_role('Admin')
@@ -307,6 +308,9 @@ def confirm_field():
     elif field == 'title':
         raw_title = test_recipe['upload_source_detail']
         confirm_title(raw_title, test_recipe_id)
+    elif field == 'serving_size':
+        raw_serving = test_recipe['serving_size']
+        confirm_serving(raw_serving, test_recipe_id)
     # TODO: Add logic for other fields as needed
     # Fetch all confirmed fields for this test_recipe_id (always)
     with get_db_connection() as conn:
