@@ -95,7 +95,7 @@
                 <form method="post" action="/confirm_field" style="display:inline-block;">
                     <input type="hidden" name="field" value="title">
                     <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="confirm-btn">CONFIRM</button>
+                    <button type="submit" class="confirm-btn" style="background:#1976d2; color:#fff;">CONFIRM</button>
                 </form>
                 <hr>
                 <form method="get" action="/debug_serving_size/{{ test_recipe.id }}" style="display:inline-block;">
@@ -104,7 +104,7 @@
                 <form method="post" action="/confirm_field" style="display:inline-block;">
                     <input type="hidden" name="field" value="serving_size">
                     <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="confirm-btn">CONFIRM</button>
+                    <button type="submit" class="confirm-btn" style="background:#8e24aa; color:#fff;">CONFIRM</button>
                 </form>
                 <hr>
                 <form method="get" action="/debug_source_url/{{ test_recipe.id }}" style="display:inline-block;">
@@ -113,7 +113,7 @@
                 <form method="post" action="/confirm_field" style="display:inline-block;">
                     <input type="hidden" name="field" value="source_url">
                     <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="grey-btn">CONFIRM</button>
+                    <button type="submit" class="grey-btn bg-secondary text-white">CONFIRM</button>
                 </form>
                 <hr>
                 <form method="get" action="/debug_ingredients/{{ test_recipe.id }}" style="display:inline-block;">
@@ -122,7 +122,7 @@
                 <form method="post" action="/confirm_field" style="display:inline-block;">
                     <input type="hidden" name="field" value="ingredients">
                     <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="confirm-btn">CONFIRM</button>
+                    <button type="submit" class="confirm-btn bg-success text-white">CONFIRM</button>
                 </form>
                 <hr>
                 <form method="get" action="/debug_instructions/{{ test_recipe.id }}" style="display:inline-block;">
@@ -131,7 +131,7 @@
                 <form method="post" action="/confirm_field" style="display:inline-block;">
                     <input type="hidden" name="field" value="instructions">
                     <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="confirm-btn">CONFIRM</button>
+                    <button type="submit" class="confirm-btn bg-warning text-dark">CONFIRM</button>
                 </form>
             </div>
         </div>

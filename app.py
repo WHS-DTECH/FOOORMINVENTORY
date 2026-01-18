@@ -282,7 +282,9 @@ def extract_raw_text_from_url(url):
 # =======================
 
 
+# Import both confirm_url and confirm_title
 from debug_parser.parser_confirm_URL import confirm_url
+from debug_parser.parser_confirm_title import confirm_title
 # --- Confirm Field (modular, including Source URL) ---
 @app.route('/confirm_field', methods=['POST'])
 @require_role('Admin')
@@ -301,15 +303,18 @@ def confirm_field():
     # Modular confirmation logic
     if field == 'source_url':
         raw_url = test_recipe['upload_source_detail']
-        confirmed_url = confirm_url(raw_url, test_recipe_id)
-        # Fetch all confirmed fields for this test_recipe_id
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
-            row = c.fetchone()
-            if row:
-                confirmed = dict(row)
+        confirm_url(raw_url, test_recipe_id)
+    elif field == 'title':
+        raw_title = test_recipe['upload_source_detail']
+        confirm_title(raw_title, test_recipe_id)
     # TODO: Add logic for other fields as needed
+    # Fetch all confirmed fields for this test_recipe_id (always)
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if row:
+            confirmed = dict(row)
     return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
 
 # --- Debug Title Extraction Page ---
