@@ -72,7 +72,7 @@
                 Recipe Index
             </div>
             <div class="card-body">
-                {% for recipe in recipes %}
+                {% for recipe in recipe_list %}
                 <div class="mb-3">
                     <strong>{{ recipe.title }}</strong>
                     <div>Servings: {{ recipe.servings or 'N/A' }}</div>
