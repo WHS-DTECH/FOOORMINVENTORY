@@ -1,33 +1,3 @@
-from debug_parser.parser_confirm_URL import confirm_url
-# --- Confirm Field (modular, including Source URL) ---
-@app.route('/confirm_field', methods=['POST'])
-@require_role('Admin')
-def confirm_field():
-    field = request.form.get('field')
-    test_recipe_id = request.form.get('test_recipe_id')
-    if not test_recipe_id or not field:
-        return render_template('error.html', message='Missing field or test_recipe_id.'), 400
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
-    confirmed = {}
-    # Modular confirmation logic
-    if field == 'source_url':
-        raw_url = test_recipe['upload_source_detail']
-        confirmed_url = confirm_url(raw_url, test_recipe_id)
-        # Fetch all confirmed fields for this test_recipe_id
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
-            row = c.fetchone()
-            if row:
-                confirmed = dict(row)
-    # TODO: Add logic for other fields as needed
-    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
-
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
@@ -310,6 +280,37 @@ def extract_raw_text_from_url(url):
 # =======================
 # Debug Parser - Title Section
 # =======================
+
+
+from debug_parser.parser_confirm_URL import confirm_url
+# --- Confirm Field (modular, including Source URL) ---
+@app.route('/confirm_field', methods=['POST'])
+@require_role('Admin')
+def confirm_field():
+    field = request.form.get('field')
+    test_recipe_id = request.form.get('test_recipe_id')
+    if not test_recipe_id or not field:
+        return render_template('error.html', message='Missing field or test_recipe_id.'), 400
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
+    confirmed = {}
+    # Modular confirmation logic
+    if field == 'source_url':
+        raw_url = test_recipe['upload_source_detail']
+        confirmed_url = confirm_url(raw_url, test_recipe_id)
+        # Fetch all confirmed fields for this test_recipe_id
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+            row = c.fetchone()
+            if row:
+                confirmed = dict(row)
+    # TODO: Add logic for other fields as needed
+    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
 
 # --- Debug Title Extraction Page ---
 @app.route('/debug_title/<int:test_recipe_id>')
