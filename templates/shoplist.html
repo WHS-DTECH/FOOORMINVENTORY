@@ -430,6 +430,9 @@ window.addEventListener('DOMContentLoaded', function() {
           if (!masterCategories[cat]) masterCategories[cat] = [];
           masterCategories[cat].push(ing);
         });
+        // Debug output for ingredient aggregation
+        console.log('Master Ingredient Map:', masterIngredientMap);
+        console.log('Master Categories:', masterCategories);
         if (Object.keys(masterCategories).length === 0) {
           masterTarget.textContent = 'Generate the shopping list to see items here.';
         } else {
@@ -444,7 +447,9 @@ window.addEventListener('DOMContentLoaded', function() {
               .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
               .forEach(ing => {
                 const li = document.createElement('li');
-                li.textContent = `${ing.name} — ${formatQtyUnit(ing.qty, ing.unit)}`;
+                // Show name and quantity/unit, even if qty is not a number
+                let qtyDisplay = (ing.qty !== undefined && ing.qty !== null && ing.qty !== '') ? formatQtyUnit(ing.qty, ing.unit) : '';
+                li.textContent = `${ing.name}${qtyDisplay ? ' — ' + qtyDisplay : ''}`;
                 ul.appendChild(li);
               });
             catDiv.appendChild(ul);
@@ -453,35 +458,6 @@ window.addEventListener('DOMContentLoaded', function() {
         }
       const target = document.getElementById('listContent');
       target.innerHTML = '';
-      if (selection.size === 0) {
-        target.textContent = 'Select bookings then generate the shopping list.';
-        return;
-      }
-      // Group bookings by teacher
-      let teacherMap = {};
-      bookings.filter(b => selection.has(b.id)).forEach(b => {
-        const teacher = b.last_name || b.staff_code || 'Unknown';
-        if (!teacherMap[teacher]) teacherMap[teacher] = [];
-        teacherMap[teacher].push(b);
-      });
-      // For each teacher, show their bookings and a categorized ingredient list
-      Object.keys(teacherMap).forEach(teacher => {
-        const teacherDiv = document.createElement('div');
-        teacherDiv.style.marginBottom = '18px';
-        const teacherTitle = document.createElement('h2');
-        teacherTitle.textContent = 'Teacher: ' + teacher;
-        teacherTitle.style.fontSize = '18px';
-        teacherTitle.style.margin = '8px 0 4px 0';
-        teacherDiv.appendChild(teacherTitle);
-        // List bookings for this teacher
-        const bookingsList = document.createElement('ul');
-        teacherMap[teacher].forEach(b => {
-          const li = document.createElement('li');
-          li.textContent = `${b.class_code || ''} | ${b.recipe_name || ''} | P${b.period} | ${b.date_required}`;
-          bookingsList.appendChild(li);
-        });
-        teacherDiv.appendChild(bookingsList);
-        // Aggregate ingredients for this teacher's bookings
         let ingredientMap = {};
         let foundAny = false;
         teacherMap[teacher].forEach(b => {
@@ -516,7 +492,42 @@ window.addEventListener('DOMContentLoaded', function() {
             console.log('No ingredients found for this booking/recipe.');
           }
         });
+        // Debug output for teacher ingredient aggregation
+        console.log('Teacher Ingredient Map:', ingredientMap);
         if (!foundAny) {
+          const none = document.createElement('div');
+          none.textContent = 'No ingredients found for this teacher.';
+          teacherDiv.appendChild(none);
+        } else {
+          // Group by category
+          let categories = {};
+          Object.values(ingredientMap).forEach(ing => {
+            const cat = ing.category || 'Other';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(ing);
+          });
+          // Debug output for teacher categories
+          console.log('Teacher Categories:', categories);
+          Object.keys(categories).sort().forEach(cat => {
+            const catDiv = document.createElement('div');
+            catDiv.style.marginBottom = '10px';
+            const catTitle = document.createElement('strong');
+            catTitle.textContent = cat;
+            catDiv.appendChild(catTitle);
+            const ul = document.createElement('ul');
+            categories[cat]
+              .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+              .forEach(ing => {
+                const li = document.createElement('li');
+                // Show name and quantity/unit, even if qty is not a number
+                let qtyDisplay = (ing.qty !== undefined && ing.qty !== null && ing.qty !== '') ? formatQtyUnit(ing.qty, ing.unit) : '';
+                li.textContent = `${ing.name}${qtyDisplay ? ' — ' + qtyDisplay : ''}`;
+                ul.appendChild(li);
+              });
+            catDiv.appendChild(ul);
+            teacherDiv.appendChild(catDiv);
+          });
+        }
           const none = document.createElement('div');
           none.textContent = 'No ingredients found for this teacher.';
           teacherDiv.appendChild(none);
