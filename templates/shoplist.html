@@ -1,4 +1,9 @@
 <script>
+// Dummy functions to prevent JS errors and allow shopping list logic to run
+function renderShoplistLegend() {}
+function applyTeacherColors() {}
+</script>
+<script>
 function switchShoplistView(view) {
   const weekNav = document.getElementById('weekNav');
   const weekBtn = document.getElementById('weekViewBtn');
@@ -396,7 +401,11 @@ window.addEventListener('DOMContentLoaded', function() {
               recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
             }
           }
+          // Debug output for matching
+          console.log('Booking:', b);
+          console.log('Matched recipe:', recipe);
           if (recipe && recipe.ingredients) {
+            console.log('Ingredients:', recipe.ingredients);
             recipe.ingredients.forEach(ing => {
               const name = ing.ingredient || ing.name || '';
               const unit = ing.unit || '';
@@ -411,6 +420,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 }
               }
             });
+          } else {
+            console.log('No ingredients found for this booking/recipe.');
           }
         });
         let masterCategories = {};
@@ -481,7 +492,11 @@ window.addEventListener('DOMContentLoaded', function() {
               recipe = recipes.find(r => (r.name||'').trim().toLowerCase().includes((b.recipe_name||'').trim().toLowerCase()));
             }
           }
+          // Debug output for matching
+          console.log('Booking:', b);
+          console.log('Matched recipe:', recipe);
           if (recipe && recipe.ingredients) {
+            console.log('Ingredients:', recipe.ingredients);
             recipe.ingredients.forEach(ing => {
               foundAny = true;
               const name = ing.ingredient || ing.name || '';
@@ -497,6 +512,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 }
               }
             });
+          } else {
+            console.log('No ingredients found for this booking/recipe.');
           }
         });
         if (!foundAny) {
