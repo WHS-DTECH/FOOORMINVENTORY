@@ -1,15 +1,4 @@
-/* Fix for admin/recipe_book_setup two-column layout */
-@media (min-width: 992px) {
-  .container > .row > .col-lg-6 {
-    display: block;
-    float: left;
-    width: 50%;
-    box-sizing: border-box;
-  }
-  .container > .row > .col-lg-6.mb-4 {
-    margin-bottom: 0 !important;
-  }
-}
+/* Removed custom float/width for .col-lg-6 to allow Bootstrap grid to work as intended */
 /* Custom purple background for Serving Size card */
 .bg-purple {
   background: #8e24aa !important; /* Deep purple */
