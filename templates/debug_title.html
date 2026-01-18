@@ -3,7 +3,16 @@
 <div style="display: flex; gap: 2em;">
   <div style="flex: 1;">
     <h3>Raw Data (HTML/Text)</h3>
-    <pre style="max-height: 600px; overflow: auto; background: #f8f8f8; border: 1px solid #ccc; padding: 1em;">{{ raw_data|e }}</pre>
+    <div style="display: flex;">
+      <div style="background: #f0f0f0; color: #888; padding: 1em 0.5em 1em 1em; border: 1px solid #ccc; border-right: none; text-align: right; user-select: none; font-family: monospace;">
+        {% set lines = (raw_data or raw_title or '') .split('\n') %}
+        {% for i in range(1, lines|length + 1) %}
+          <div style="min-width: 2.5em;">{{ i }}</div>
+        {% endfor %}
+      </div>
+      <pre style="max-height: 600px; overflow: auto; background: #f8f8f8; border: 1px solid #ccc; border-left: none; padding: 1em; margin: 0; flex: 1;">{% for line in lines %}{{ line|e }}
+{% endfor %}</pre>
+    </div>
   </div>
   <div style="flex: 1;">
     <h3>Title Extraction Strategies</h3>
