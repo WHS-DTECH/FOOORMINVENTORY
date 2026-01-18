@@ -15,7 +15,7 @@
                         <!-- Upload Recipe (PDF) -->
                         <h5>Upload Recipe (PDF)</h5>
                         <p>Extract recipes from a PDF file.</p>
-                        <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_pdf') }}">
+                        <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
                             <label>Select PDF file:</label>
                             <div class="mb-2">
                                 <input type="file" name="pdf_file" class="form-control">
