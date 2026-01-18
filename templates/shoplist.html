@@ -349,7 +349,9 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
 
+
     function toggleBooking(id) {
+      console.log('toggleBooking called with id:', id);
       id = Number(id);
       if (selection.has(id)) {
         selection.delete(id);
@@ -367,6 +369,16 @@ window.addEventListener('DOMContentLoaded', function() {
       updateSelectionDisplay();
     }
     window.toggleBooking = toggleBooking;
+
+    // Ensure autoGenerateWeek is defined and debuggable
+    if (typeof window.autoGenerateWeek !== 'function') {
+      window.autoGenerateWeek = function() {
+        console.log('autoGenerateWeek called');
+        bookings.forEach(b => selection.add(b.id));
+        document.querySelectorAll('[data-booking-id]').forEach(el => el.classList.add('selected'));
+        updateSelectionDisplay();
+      };
+    }
 
     function selectAllWeek() {
       bookings.forEach(b => selection.add(b.id));
