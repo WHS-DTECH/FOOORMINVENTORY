@@ -74,7 +74,7 @@
             <div class="card-body">
                     {% for recipe in recipe_list %}
                     <div class="mb-2 p-2" style="background: #fff; border-radius: 4px; box-shadow: 0 1px 2px #eee;">
-                        <div><strong>{{ recipe.title }}</strong></div>
+                        <div><strong>{{ recipe.title or recipe.upload_source_detail or 'No Title' }}</strong></div>
                         <div>Servings: {{ recipe.serving_size or 'N/A' }}</div>
                         <div class="mt-1">
                             <a href="{{ url_for('recipe_details', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
