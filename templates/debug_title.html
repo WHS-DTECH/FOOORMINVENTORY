@@ -16,9 +16,14 @@
         {% endfor %}
       </div>
         <div style="display: flex; flex-direction: row; align-items: flex-start; gap: 32px;">
-          <textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: horizontal;">{{ raw_data }}</textarea>
-          <div style="flex: 1; min-width: 220px;">
+          <textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;">{{ raw_data }}</textarea>
+          <div style="flex: 1; min-width: 320px;">
             <div style="position: sticky; top: 0;">
+              <!-- Title block styled like Parser Debug -->
+              <div style="background: #1976d2; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Title</div>
+              <div style="border: 1px solid #1976d2; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222;">
+                {{ best_guess or raw_title or '(No title found)' }}
+              </div>
               <div style="margin-bottom: 12px;">
                 <strong>Title Extraction Strategies</strong>
               </div>
