@@ -13,68 +13,6 @@
     };
     </script>
     <script src="{{ url_for('static', filename='class_ingred.js') }}"></script>
-      const iso = d.toISOString().slice(0,10);
-      dateEl.value = iso;
-    }
-  })();
-
-  if(preRecipeId){
-    const recipeSelect = document.getElementById('recipeSelect');
-    if(recipeSelect){
-      recipeSelect.value = preRecipeId;
-    }
-    const rec = findRecipe(preRecipeId);
-    renderOriginalIngredients(rec);
-    setTimeout(calculate, 100);
-  }
-
-  const bookingRows = document.querySelectorAll('.booking-row');
-  bookingRows.forEach(row => {
-    row.addEventListener('click', function() {
-      const bookingId = this.dataset.bookingId;
-      const staff = this.dataset.staff;
-      const classCode = this.dataset.class;
-      const date = this.dataset.date;
-      const period = this.dataset.period;
-      const recipeId = this.dataset.recipe;
-      const servings = this.dataset.servings;
-      document.getElementById('staff').value = staff;
-      document.getElementById('classcode').value = classCode;
-      document.getElementById('date').value = date;
-      document.getElementById('period').value = period;
-      document.getElementById('recipeSelect').value = recipeId;
-      document.getElementById('desiredServings').value = servings;
-      const saveBtn = document.getElementById('saveBtn');
-      if(saveBtn) {
-        saveBtn.dataset.editingBookingId = bookingId;
-        saveBtn.textContent = 'Update booking';
-        saveBtn.classList.add('btn-update');
-      }
-      const rec = findRecipe(parseInt(recipeId));
-      renderOriginalIngredients(rec);
-      calculate();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      bookingRows.forEach(r => r.classList.remove('selected'));
-      this.classList.add('selected');
-    });
-  });
-});
-
-function deleteBooking(bookingId) {
-  if(!confirm('Are you sure you want to delete this booking?')) return;
-  fetch('/class_ingredients/delete/' + bookingId, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'}
-  }).then(r => r.json()).then(j => {
-    if(j.success) {
-      alert('Booking deleted');
-      location.reload();
-    } else {
-      alert('Delete failed');
-    }
-  }).catch(e => alert('Error: ' + e.message));
-}
-</script>
 {% endblock %}
     recipe.ingredients.forEach(it => {
       const li = document.createElement('li');
