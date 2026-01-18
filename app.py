@@ -281,6 +281,35 @@ def extract_raw_text_from_url(url):
 # =======================
 # Debug Parser - Title Section
 # =======================
+
+# --- API: Run second title extraction strategy ---
+@app.route('/api/title_strategy/recipe_word/<int:test_recipe_id>', methods=['GET'])
+def api_title_strategy_recipe_word(test_recipe_id):
+    # Fetch test recipe
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return jsonify({'error': 'Test recipe not found.'}), 404
+    raw_data = test_recipe.get('raw_data') or ''
+    lines = [line.strip() for line in raw_data.split('\n') if line.strip()]
+    matches = []
+    for line in lines:
+        words = line.split()
+        if not words:
+            continue
+        if words[0].lower() == 'recipe' or words[-1].lower() == 'recipe':
+            matches.append(line)
+    result = {
+        'strategy': 'Is there a set of words that start with the word or end with the word "Recipe"?',
+        'matches': matches,
+        'match': bool(matches),
+        'raw_data_length': len(raw_data)
+    }
+    return jsonify(result)
+
+
 # --- API: Run first title extraction strategy ---
 from flask import jsonify
 
