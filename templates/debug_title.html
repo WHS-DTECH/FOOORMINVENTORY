@@ -74,6 +74,34 @@
     <!-- Move Title Extraction Strategies below Title and Solution boxes -->
     <div style="margin-top: 32px;">
       <div style="margin-bottom: 12px;"><strong>Title Extraction Strategies</strong></div>
+      <div style="margin-bottom: 10px; font-size: 0.98em; color: #333;">
+        <table style="border-collapse: collapse; width: 100%;">
+          <thead>
+            <tr style="background: #e3eafc;">
+              <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Strategy</th>
+              <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Applied</th>
+              <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Solved</th>
+              <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Not a section header</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Not all lowercase</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Not too short (≥4 chars)</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Not only digits/symbols</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Prefers larger/bold lines</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>NLP noun phrase/WORK_OF_ART</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Fallback: Uppercase start, not junk word</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Up to 5 lines above first ingredient</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Prefers food words from ingredient block</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Closest non-empty line above ingredient block</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>If none, returns "Unknown Recipe"</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 8px;">
+          These strategies combine heuristics, NLP, and context from the ingredient block to identify likely recipe titles.
+        </div>
+      </div>
       <div id="title-strategies-box">
         <div style="margin-bottom: 8px;">
           <span style="font-weight: bold;">Strategy</span> <span style="font-weight: bold;">Result</span>
