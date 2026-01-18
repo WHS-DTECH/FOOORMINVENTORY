@@ -2,6 +2,7 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='styles_class_ingred.css') }}">
 {% endblock %}
+
 {% block content %}
   <div class="container">
     <h1 class="section-title mb-4">Class Ingredients</h1>
@@ -157,9 +158,10 @@
         {% endif %}
       </div>
     </div>
+  {% endblock %}
 
-{% block scripts %}
-<script>
+  {% block scripts %}
+  <script>
 const recipes = {{ recipes|tojson | safe }};
 const preRecipeId = {{ pre_recipe_id or 'null' }};
 const preServings = {{ pre_servings or 'null' }};
@@ -621,12 +623,20 @@ function deleteBooking(bookingId) {
     }
   }).catch(e => alert('Error: ' + e.message));
 }
+// Delete booking function
+function deleteBooking(bookingId) {
+  if(!confirm('Are you sure you want to delete this booking?')) return;
+  
+  fetch('/class_ingredients/delete/' + bookingId, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'}
+  }).then(r => r.json()).then(j => {
+    if(j.success) {
+      alert('Booking deleted');
+      location.reload();
+    } else {
+      alert('Delete failed');
+    }
+  }).catch(e => alert('Error: ' + e.message));
 
-{% block scripts %}
-<script>
-// ...existing code...
-// (Paste the entire script block here, from <script> to </script>)
-</script>
 {% endblock %}
-</body>
-</html>
