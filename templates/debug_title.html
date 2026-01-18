@@ -175,7 +175,6 @@
                       row.querySelector('.solvedBtn').onclick = () => {
                         row.querySelector('.solvedBtn').style.background = '#388e3c';
                         row.querySelector('.solvedBtn').textContent = '✔️ Solved';
-                        row.querySelector('.nextBtn').disabled = true;
                         row.querySelector('.solvedBtn').disabled = true;
                         // Remove duplicates and put in Solution box
                         if (data.match && Array.isArray(data.found)) {
@@ -201,8 +200,7 @@
                           }
                           document.getElementById('solutionInput').value = title;
                         }
-                        current++;
-                        runNext();
+                        // Do NOT advance to next strategy here
                       };
                       row.querySelector('.nextBtn').onclick = () => {
                         row.querySelector('.solvedBtn').disabled = true;
@@ -228,10 +226,8 @@
                     row.querySelector('.solvedBtn').onclick = () => {
                       row.querySelector('.solvedBtn').style.background = '#388e3c';
                       row.querySelector('.solvedBtn').textContent = '✔️ Solved';
-                      row.querySelector('.nextBtn').disabled = true;
                       row.querySelector('.solvedBtn').disabled = true;
-                      current++;
-                      runNext();
+                      // Do NOT advance to next strategy here
                     };
                     row.querySelector('.nextBtn').onclick = () => {
                       row.querySelector('.solvedBtn').disabled = true;
