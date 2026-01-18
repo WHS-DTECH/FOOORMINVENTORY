@@ -26,6 +26,20 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+  <div id="weekNav" class="week-nav no-print" style="margin: 8px 0 8px 0; font-size: 1.15em; font-weight: bold; display: flex; flex-direction: column; align-items: center;">
+    <div id="weekRangeLabel">{{ week_label | format_nz_week }}</div>
+    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="week" value="{{ prev_week }}">&#8592; Previous</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="week" value="0">Today</button>
+      </form>
+      <form method="get" style="margin: 0;">
+        <button type="submit" name="week" value="{{ next_week }}">Next &#8594;</button>
+      </form>
+    </div>
+  </div>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,37 +104,12 @@ window.addEventListener('DOMContentLoaded', function() {
             <button onclick="clearAllSelections()">Clear</button>
             <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
             <span style="flex: 1 1 auto;"></span>
-            <!-- Removed duplicate Generate Shopping List button from top panel -->
+            <button class="primary" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
             <!-- Removed duplicate Add to Google Calendar button; only one will be in Export Options below -->
             <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
           </div>
 
           <!-- Scheduled Bookings Modal -->
-          <script>
-          // Hide/show selected bookings panel based on view
-          function updateSelectedBookingsPanel() {
-            var panel = document.getElementById('selected-bookings-panel');
-            var weekViewBtn = document.getElementById('weekViewBtn');
-            var weekGrid = document.getElementById('weekPeriodView');
-            var monthGrid = document.getElementById('monthCalendarView');
-            if (!panel) return;
-            // Hide if Month View is active or week grid is hidden
-            if ((weekViewBtn && weekViewBtn.classList.contains('active')) && weekGrid && weekGrid.style.display !== 'none') {
-              panel.style.display = '';
-            } else {
-              panel.style.display = 'none';
-            }
-          }
-          window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(updateSelectedBookingsPanel, 0);
-          });
-          // Patch switchShoplistView to also update panel
-          const origSwitchShoplistView = window.switchShoplistView;
-          window.switchShoplistView = function(view) {
-            origSwitchShoplistView(view);
-            setTimeout(updateSelectedBookingsPanel, 0);
-          };
-          </script>
           <div id="scheduledBookingsModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
             <div class="modal-content" style="background:#f9f9f9; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:900px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
               <span id="closeScheduledBookingsModal" style="position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
@@ -570,25 +559,10 @@ window.addEventListener('DOMContentLoaded', function() {
   </script>
 
   <div class="row g-2 flex-wrap align-items-stretch mb-3" style="display: flex; flex-wrap: wrap; gap: 18px;">
-    <!-- Week View Date Label and Controls (moved below view toggle, above grid) -->
-    <div id="weekNav" class="week-nav no-print" style="margin: 0 0 18px 0; display: flex; flex-direction: column; align-items: center; width: 100%;">
-      <div id="weekRangeLabel" style="text-align: center; font-size: 2.2em; font-weight: 700; margin-bottom: 8px;">{{ week_label | format_nz_week }}</div>
-      <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
-        <form method="get" style="margin: 0;">
-          <button type="submit" name="week" value="{{ prev_week }}">&#8592; Previous</button>
-        </form>
-        <form method="get" style="margin: 0;">
-          <button type="submit" name="week" value="0">Today</button>
-        </form>
-        <form method="get" style="margin: 0;">
-          <button type="submit" name="week" value="{{ next_week }}">Next &#8594;</button>
-        </form>
-      </div>
-    </div>
     <!-- Sidebar Legend (desktop) or collapsible (mobile) -->
     <div class="col-12 col-md-4 mb-2" style="min-width:220px; max-width:320px; flex: 1 1 220px;">
       <div class="legend card p-3 h-100 shadow-sm" id="shoplist-legend" style="background:#f8fafc; border:1px solid #e0e4ea; border-radius:12px; box-shadow:0 4px 16px rgba(66,133,244,0.07);">
-        <div class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-1"></i>Legend</div>
+        <div class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-1" data-bs-toggle="tooltip" title="Each teacher is color-coded in the grid."></i>Legend</div>
         <div id="teacher-legend" class="d-flex flex-wrap align-items-center" style="gap: 10px 18px;"></div>
       </div>
     </div>
@@ -613,33 +587,15 @@ window.addEventListener('DOMContentLoaded', function() {
       return colors[Math.abs(hash) % colors.length];
     }
     function renderTeacherLegend() {
-      // Collect unique teacher names from bookings (always combine last_name and first_name if present)
+      // Collect unique teacher names from bookings
       const teacherSet = new Set();
       (window.bookings || []).forEach(b => {
-        let name = '';
-        if (b.last_name && b.first_name) {
-          name = b.last_name + ', ' + b.first_name;
-        } else if (b.teacher) {
-          name = b.teacher;
-        } else if (b.teacher_display) {
-          name = b.teacher_display;
-        } else if (b.teacher_name) {
-          name = b.teacher_name;
-        } else if (b.last_name) {
-          name = b.last_name;
-        } else if (b.staff_code) {
-          name = b.staff_code;
-        }
-        if (name && name !== ', ') teacherSet.add(name);
+        if (b.last_name) teacherSet.add(b.last_name);
+        else if (b.staff_code) teacherSet.add(b.staff_code);
       });
       const legendDiv = document.getElementById('teacher-legend');
       legendDiv.innerHTML = '';
-      if (teacherSet.size === 0) {
-        legendDiv.innerHTML = '<span class="text-muted">No teachers with bookings this week.</span>';
-        return;
-      }
       teacherSet.forEach(name => {
-        if (!name) return;
         const swatch = document.createElement('span');
         swatch.className = 'legend-color';
         swatch.style.background = getTeacherColor(name);
@@ -658,25 +614,27 @@ window.addEventListener('DOMContentLoaded', function() {
         legendDiv.appendChild(label);
       });
     }
-    function ensureLegendUpdates() {
-      renderTeacherLegend();
-      // Try to re-render after AJAX or view switches
-      if (window.MutationObserver) {
-        const legendDiv = document.getElementById('teacher-legend');
-        const observer = new MutationObserver(renderTeacherLegend);
-        observer.observe(legendDiv, { childList: true, subtree: true });
-      }
-    }
-    document.addEventListener('DOMContentLoaded', ensureLegendUpdates);
+    document.addEventListener('DOMContentLoaded', renderTeacherLegend);
+    // Also re-render legend after AJAX loads or view switches
     window.renderTeacherLegend = renderTeacherLegend;
     </script>
     <!-- View Toggle -->
     <div class="col-12 col-md-8 d-flex align-items-center" style="min-width:200px; flex: 2 1 320px;">
-      <span class="fw-semibold text-secondary me-2">View:</span>
+      <span class="fw-semibold text-secondary me-2" data-bs-toggle="tooltip" title="Switch between Week/Period and Month calendar views.">View:</span>
       <div class="btn-group flex-wrap" role="group" aria-label="View toggle">
-        <button id="weekViewBtn" type="button" class="btn btn-outline-primary active" onclick="switchShoplistView('week')" aria-label="Week/Period View">Week/Period View</button>
-        <button id="monthViewBtn" type="button" class="btn btn-outline-primary" onclick="switchShoplistView('month')" aria-label="Month View">Month View</button>
+        <button id="weekViewBtn" type="button" class="btn btn-outline-primary active" onclick="switchShoplistView('week')" data-bs-toggle="tooltip" title="Show bookings in a week-by-period grid." aria-label="Week/Period View">Week/Period View</button>
+        <button id="monthViewBtn" type="button" class="btn btn-outline-primary" onclick="switchShoplistView('month')" data-bs-toggle="tooltip" title="Show bookings in a monthly calendar." aria-label="Month View">Month View</button>
       </div>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <script>
+        // Enable Bootstrap tooltips globally
+        document.addEventListener('DOMContentLoaded', function () {
+          var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+          });
+        });
+      </script>
     </div>
   </div>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -704,28 +662,14 @@ window.addEventListener('DOMContentLoaded', function() {
               {% set booking = grid.get(key) %}
               <td role="cell">
                 {% if booking %}
-                  {% set teacher_name = booking.last_name and booking.first_name and (booking.last_name + ', ' + booking.first_name) or booking.last_name or booking.staff_code or '' %}
-                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ teacher_name or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}"
-                    style="background: none;">
+                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ booking.last_name or booking.staff_code or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}">
                     <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                     <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
-                    <div class="booking-meta">Teacher: {{ teacher_name or '—' }}</div>
+                    <div class="booking-meta">Teacher: {{ booking.last_name or booking.staff_code or '—' }}{% if booking.first_name %}, {{ booking.first_name }}{% endif %}</div>
                     <div class="booking-meta">Servings: {{ booking.desired_servings or '—' }}</div>
                     <div class="booking-meta">{{ d.nz_date }}</div>
                     <div class="booking-meta">Tap to select</div>
                   </div>
-                  <script>
-                  // Apply teacher color tint to this booking cell
-                  (function() {
-                    var cells = document.querySelectorAll('.booking[data-booking-id="{{ booking.id }}"]');
-                    var color = getTeacherColor({{ teacher_name|tojson|safe }});
-                    var bg = color.replace(')', ', 0.13)').replace('rgb', 'rgba');
-                    cells.forEach(function(cell) {
-                      cell.style.background = bg;
-                      cell.style.border = '1.5px solid ' + color;
-                    });
-                  })();
-                  </script>
                 {% else %}
                   <div class="empty" aria-label="No booking">—</div>
                 {% endif %}
@@ -952,10 +896,14 @@ function shoplistToday() {
   renderShoplistMonthCalendar();
 }
 document.addEventListener('DOMContentLoaded', function() {
-  renderTeacherLegend();
+  renderShoplistLegend();
+  applyTeacherColors();
   renderWeekGridHeadings();
 });
-
+document.addEventListener('click', function() {
+  // Re-apply colors after DOM updates
+  setTimeout(applyTeacherColors, 100);
+});
 </script>
 <script>
 // Jinja filter will handle NZ week label formatting
