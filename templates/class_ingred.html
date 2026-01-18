@@ -13,32 +13,6 @@
     };
     </script>
     <script src="{{ url_for('static', filename='class_ingred.js') }}"></script>
-    const bookingId = saveBtn.dataset.editingBookingId || null;
-    fetch('/class_ingredients/save', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        booking_id: bookingId,
-        staff: staff, 
-        classcode: classcode, 
-        date: date, 
-        period: period, 
-        recipe_id: rid, 
-        desired_servings: desired
-      })
-    }).then(r=>r.json()).then(j=>{
-      if(j.success){ 
-        alert(bookingId ? 'Booking updated!' : 'Booking saved (id: ' + j.booking_id + ')');
-        location.reload();
-      } else { 
-        alert('Save failed'); 
-      }
-    }).catch(e=> alert('Error: ' + e.message));
-  });
-
-  (function(){
-    const dateEl = document.getElementById('date');
-    if(dateEl && !dateEl.value){
-      const d = new Date();
       const iso = d.toISOString().slice(0,10);
       dateEl.value = iso;
     }
