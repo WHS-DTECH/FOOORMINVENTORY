@@ -355,10 +355,12 @@ def parser_debug(test_recipe_id):
         c = conn.cursor()
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
-    # Optionally, fetch more details or run parser debug logic here
-    confirmed = {}
+        if not test_recipe:
+            return render_template('error.html', message='Test recipe not found.'), 404
+        # Always fetch confirmed fields for this test_recipe_id
+        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        confirmed = dict(row) if row else {}
     return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
 
 # --- Handle Yes/No debug prompt after flag ---
