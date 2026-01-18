@@ -2009,6 +2009,7 @@ def shoplist():
             'nz_date': day.strftime('%d/%m/%Y')
         })
 
+
     # Fetch bookings for the week, including teacher name fields
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -2022,6 +2023,20 @@ def shoplist():
             ORDER BY cb.date_required, cb.period
         ''', (dates[0]['date'], dates[-1]['date']))
         bookings = [dict(row) for row in c.fetchall()]
+
+        # Fetch all recipes with ingredients for the JS
+        c.execute('SELECT id, name, ingredients FROM recipes')
+        recipes = []
+        for row in c.fetchall():
+            try:
+                ingredients = json.loads(row['ingredients']) if row['ingredients'] else []
+            except Exception:
+                ingredients = []
+            recipes.append({
+                'id': row['id'],
+                'name': row['name'],
+                'ingredients': ingredients
+            })
 
     # Build grid: {date_P{period}: booking} with date as YYYY-MM-DD string (matches template)
     grid = {}
@@ -2039,7 +2054,7 @@ def shoplist():
         'shoplist.html',
         dates=dates,
         bookings=bookings,
-        recipes=[],
+        recipes=recipes,
         grid=grid,
         prev_week=prev_week,
         next_week=next_week,
