@@ -321,7 +321,8 @@ def parser_debug(test_recipe_id):
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
     # Optionally, fetch more details or run parser debug logic here
-    return render_template('parser_debug.html', test_recipe=test_recipe)
+    confirmed = {}
+    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
 
 # --- Handle Yes/No debug prompt after flag ---
 @app.route('/parser_test_decision', methods=['POST'])
