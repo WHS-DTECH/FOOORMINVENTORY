@@ -158,26 +158,11 @@
       </div>
     </div>
 
-</script>
-{% endblock %}
   const recipes = {{ recipes|tojson | safe }};
   const preRecipeId = {{ pre_recipe_id or 'null' }};
   const preServings = {{ pre_servings or 'null' }};
-
-  function findRecipe(id){
-    if(!recipes) return null;
-    return recipes.find(r=> String(r.id) == String(id));
-  }
-
-  function renderOriginalIngredients(recipe){
-    const ul = document.getElementById('origList');
-    if(!ul) return;
-    ul.innerHTML = '';
-    if(!recipe) return;
-    if(!recipe.ingredients || recipe.ingredients.length === 0){
-      ul.innerHTML = '<li>No structured ingredients available.</li>';
-      return;
-    }
+</script>
+{% endblock %}
     recipe.ingredients.forEach(it => {
       const li = document.createElement('li');
       if(typeof it === 'object'){
