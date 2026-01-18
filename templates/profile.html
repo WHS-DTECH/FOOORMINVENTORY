@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Food Room{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 1.75rem;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+    }
+
+    .profile-email {
+        color: #666;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .profile-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-section h2 {
+        font-size: 1.25rem;
+        color: #333;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .profile-detail {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .profile-detail:last-child {
+        border-bottom: none;
+    }
+
+    .profile-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 140px;
+    }
+
+    .profile-value {
+        color: #333;
+        flex: 1;
+    }
+
+    .role-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .permissions-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .permissions-list li {
+        padding: 0.5rem 0;
+        color: #555;
+        display: flex;
+        align-items: center;
+    }
+
+    .permissions-list li:before {
+        content: "✓";
+        color: #4caf50;
+        font-weight: bold;
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
+
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-detail {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .profile-label {
+            min-width: auto;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.name[0].upper() }}
+            </div>
+            <div class="profile-info">
+                <h1 class="profile-name">{{ user.name }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h2>Account Information</h2>
+            
+            <div class="profile-detail">
+                <span class="profile-label">Full Name:</span>
+                <span class="profile-value">{{ user.name }}</span>
+            </div>
+
+            <div class="profile-detail">
+                <span class="profile-label">Email Address:</span>
+                <span class="profile-value">{{ user.email }}</span>
+            </div>
+
+            <div class="profile-detail">
+                <span class="profile-label">Google ID:</span>
+                <span class="profile-value">{{ user.id }}</span>
+            </div>
+
+            <div class="profile-detail">
+                <span class="profile-label">Staff Code:</span>
+                <span class="profile-value">
+                    {% if user.staff_code %}
+                        {{ user.staff_code }}
+                    {% else %}
+                        Not assigned
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h2>Roles & Permissions</h2>
+            
+            <div class="profile-detail">
+                <span class="profile-label">Active Roles:</span>
+                <span class="profile-value">
+                    <div class="role-badges">
+                        {% for role in all_roles %}
+                            <span class="badge badge-{{ role }}">{{ role }}</span>
+                        {% endfor %}
+                    </div>
+                </span>
+            </div>
+
+            <div class="profile-detail">
+                <span class="profile-label">Access Level:</span>
+                <span class="profile-value">
+                    {% if user.is_admin() %}
+                        Administrator - Full system access
+                    {% elif user.is_teacher() %}
+                        Teacher - Recipes, Calendar, Shopping Lists, Classes
+                    {% elif user.is_staff() %}
+                        Staff - Booking Calendar & Shopping Lists
+                    {% else %}
+                        Public - Recipe Book access only
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="profile-detail">
+                <span class="profile-label">Available Features:</span>
+                <span class="profile-value">
+                    <ul class="permissions-list">
+                        <li>Recipe Book (Public)</li>
+                        {% if user.is_authenticated %}
+                            <li>Recipe Management</li>
+                            <li>Class Ingredients</li>
+                            <li>Booking Calendar</li>
+                            <li>Shopping Lists</li>
+                            {% if user.is_admin() %}
+                                <li>Admin Dashboard</li>
+                                <li>User Management</li>
+                                <li>System Configuration</li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                </span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a href="{{ url_for('recbk') }}" class="btn btn-primary">Back to Recipe Book</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
