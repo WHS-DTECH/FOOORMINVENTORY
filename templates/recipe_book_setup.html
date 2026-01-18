@@ -1,53 +1,48 @@
 <!-- Recipe Book Setup Admin Page -->
 {% extends "base.html" %}
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <!-- Left column: All setup actions -->
-        <div class="col-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
-                    <h2 class="mb-0">Recipe Book Setup</h2>
+            <div class="col-md-6 mb-4">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        Recipe Book Setup
+                    </div>
+                    <div class="card-body">
+                        <!-- Upload Recipe (Form) -->
+                        <h5>Upload Recipe (Form)</h5>
+                        <p>Manually enter recipe details using a form.</p>
+                        <a href="{{ url_for('upload_recipe_form') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
+                        <hr>
+                        <!-- Upload Recipe (PDF) -->
+                        <h5>Upload Recipe (PDF)</h5>
+                        <p>Extract recipes from a PDF file.</p>
+                        <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_pdf') }}">
+                            <label>Select PDF file:</label>
+                            <div class="mb-2">
+                                <input type="file" name="pdf_file" class="form-control">
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="showTitles" name="show_titles">
+                                <label class="form-check-label" for="showTitles">Show only recipe titles (first step)</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block mb-3">Upload PDF</button>
+                        </form>
+                        <hr>
+                        <!-- Load Recipe (URL) -->
+                        <h5>Load Recipe (URL)</h5>
+                        <p>Import recipe from a website URL.</p>
+                        <form method="post" action="{{ url_for('load_recipe_url') }}">
+                            <input type="text" name="recipe_url" class="form-control mb-2" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/...">
+                            <button type="submit" class="btn btn-success btn-block mb-3">Load from URL</button>
+                        </form>
+                        <hr>
+                        <!-- Clean Database -->
+                        <h5>Clean Database</h5>
+                        <p>Remove duplicate recipes, junk entries, and fix recipe names.</p>
+                        <form method="post" action="{{ url_for('clean_recipe_database') }}">
+                            <button type="submit" class="btn btn-warning btn-block">&#x1F9F9; Clean Recipe Database</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <hr>
-                    <h4>Upload Recipe (Form)</h4>
-                    <p>Manually enter recipe details using a form.</p>
-                    <form action="/upload" method="get" class="mb-3">
-                        <button type="submit" class="btn btn-primary w-100">Open Recipe Upload Form</button>
-                    </form>
-                    <hr>
-                    <h4>Upload Recipe (PDF)</h4>
-                    <p>Extract recipes from a PDF file.</p>
-                    <form id="pdfForm" action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
-                        <label for="pdfFile" class="form-label">Select PDF file:</label>
-                        <div class="dropzone mb-2" id="pdfDropzone">
-                            <span>Drag & drop or click to select file</span>
-                            <input type="file" id="pdfFile" name="pdfFile" accept="application/pdf" class="form-control" required>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="titlesOnly" name="titlesOnly" value="true">
-                            <label class="form-check-label" for="titlesOnly">Show only recipe titles (first step)</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Upload PDF</button>
-                        <div class="progress mt-2" id="pdfProgress" style="height: 8px; display: none;">
-                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-                        </div>
-                    </form>
-                    <hr>
-                    <h4>Load Recipe (URL)</h4>
-                    <p>Import recipe from a website URL.</p>
-                    <form action="/load_recipe_url" method="post" class="mb-3">
-                        <label for="url" class="form-label">Recipe URL:</label>
-                        <input type="url" id="url" name="url" class="form-control" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/..." required>
-                        <button type="submit" class="btn btn-success w-100 mt-2">Load from URL</button>
-                    </form>
-                    <hr>
-                    <h4>Clean Database</h4>
-                    <p>Remove duplicate recipes, junk entries, and fix recipe names.</p>
-                    <form action="/admin/clean_recipes" method="post">
-                        <button type="submit" class="btn btn-warning w-100">🧹 Clean Recipe Database</button>
-                    </form>
                 </div>
             </div>
         </div>
