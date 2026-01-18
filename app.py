@@ -2002,13 +2002,15 @@ def shoplist():
             'nz_date': day.strftime('%d/%m/%Y')
         })
 
-    # Fetch bookings for the week
+    # Fetch bookings for the week, including teacher name fields
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''
-            SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+            SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings,
+                   cb.staff_code, t.last_name, t.first_name, t.title
             FROM class_bookings cb
             LEFT JOIN recipes r ON cb.recipe_id = r.id
+            LEFT JOIN teachers t ON cb.staff_code = t.code
             WHERE cb.date_required >= %s AND cb.date_required <= %s
             ORDER BY cb.date_required, cb.period
         ''', (dates[0]['date'], dates[-1]['date']))
