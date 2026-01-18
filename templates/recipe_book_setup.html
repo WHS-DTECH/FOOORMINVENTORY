@@ -72,15 +72,21 @@
                 Recipe Index
             </div>
             <div class="card-body">
-                {% for recipe in recipe_list %}
-                <div class="mb-3">
-                    <strong>{{ recipe.title }}</strong>
-                    <div>Servings: {{ recipe.servings or 'N/A' }}</div>
-                    <a href="{{ url_for('recipe_details', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
-                    <a href="{{ recipe.source_url }}" class="btn btn-success btn-sm" target="_blank">Source</a>
-                    <a href="{{ url_for('delete_recipe', recipe_id=recipe.id) }}" class="btn btn-danger btn-sm">Delete</a>
-                </div>
-                {% endfor %}
+                    {% for recipe in recipe_list %}
+                    <div class="mb-2 p-2" style="background: #fff; border-radius: 4px; box-shadow: 0 1px 2px #eee;">
+                        <div><strong>{{ recipe.title }}</strong></div>
+                        <div>Servings: {{ recipe.serving_size or 'N/A' }}</div>
+                        <div class="mt-1">
+                            <a href="{{ url_for('recipe_details', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
+                            {% if recipe.source_url %}
+                            <a href="{{ recipe.source_url }}" class="btn btn-success btn-sm" target="_blank">Source</a>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('delete_parser_test_recipe', test_recipe_id=recipe.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
             </div>
         </div>
         <div class="card mb-4">
