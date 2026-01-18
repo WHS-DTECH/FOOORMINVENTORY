@@ -38,7 +38,18 @@
 }
 </style>
 <div class="parser-debug-container">
-    <h1 style="width:100%; text-align:center; font-size:2rem; font-weight:bold; margin-bottom:1.5em;">Parser Debug: Flagged/Test Recipe</h1>
+    <h1 style="width:100%; text-align:center; font-size:2rem; font-weight:bold; margin-bottom:0.5em;">Parser Debug: Flagged/Test Recipe</h1>
+    <div style="width:100%; margin:0 auto 2em auto; max-width:700px; background:#fafafa; border-radius:6px; box-shadow:0 1px 4px #eee; padding:1em 2em; font-size:1rem;">
+        <div><a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a></div>
+        <div>Flagged by: {{ test_recipe.uploaded_by }}</div>
+        <div>Flagged at: {{ test_recipe.upload_date }}</div>
+        <div><strong>Notes:</strong> {{ test_recipe.notes }}</div>
+        <div><strong>Source Type:</strong> {{ test_recipe.upload_source_type }}</div>
+        <div><strong>Recipe ID:</strong> {{ test_recipe.recipe_id or 'N/A' }}</div>
+        <form method="get" action="/parser_debug_raw/{{ test_recipe.id }}" style="margin-top:0.5em;">
+            <button type="submit" class="btn btn-outline-dark btn-sm">View Raw Data</button>
+        </form>
+    </div>
     <div class="parser-debug-col">
         <div class="card mb-3">
             <div class="card-header bg-primary text-white">Title</div>
