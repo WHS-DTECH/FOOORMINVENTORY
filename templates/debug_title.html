@@ -106,7 +106,7 @@
         </tbody>
       </table>
             <script>
-            // Frontend-only simulation for progress and user controls
+            // Wire up backend for first strategy, simulate others
             document.addEventListener('DOMContentLoaded', function() {
               const runBtn = document.getElementById('runStrategiesBtn');
               const progressBarContainer = document.getElementById('progressBarContainer');
@@ -121,6 +121,10 @@
                   row.querySelector('.result').textContent = '—';
                   row.querySelector('.solvedBtn').style.display = 'none';
                   row.querySelector('.nextBtn').style.display = 'none';
+                  row.querySelector('.solvedBtn').disabled = false;
+                  row.querySelector('.nextBtn').disabled = false;
+                  row.querySelector('.solvedBtn').style.background = '#43a047';
+                  row.querySelector('.solvedBtn').textContent = '✔️';
                 });
               }
 
@@ -139,28 +143,68 @@
                 }
                 const row = rows[current];
                 row.querySelector('.applied').textContent = '⏳';
-                setTimeout(() => {
-                  row.querySelector('.applied').textContent = '✅';
-                  row.querySelector('.result').textContent = '(demo result)';
-                  row.querySelector('.solvedBtn').style.display = '';
-                  row.querySelector('.nextBtn').style.display = '';
-                  progressBar.style.width = Math.round(((current+1)/rows.length)*100) + '%';
-                  // User must click solved or next to continue
-                  row.querySelector('.solvedBtn').onclick = () => {
-                    row.querySelector('.solvedBtn').style.background = '#388e3c';
-                    row.querySelector('.solvedBtn').textContent = '✔️ Solved';
-                    row.querySelector('.nextBtn').disabled = true;
-                    row.querySelector('.solvedBtn').disabled = true;
-                    current++;
-                    runNext();
-                  };
-                  row.querySelector('.nextBtn').onclick = () => {
-                    row.querySelector('.solvedBtn').disabled = true;
-                    row.querySelector('.nextBtn').disabled = true;
-                    current++;
-                    runNext();
-                  };
-                }, 600);
+                if (current === 0) {
+                  // First strategy: call backend
+                  const testRecipeId = window.location.pathname.match(/\d+$/);
+                  fetch(`/api/title_strategy/url_match/${testRecipeId}`)
+                    .then(resp => resp.json())
+                    .then(data => {
+                      row.querySelector('.applied').textContent = '✅';
+                      if (data.error) {
+                        row.querySelector('.result').textContent = 'Error: ' + data.error;
+                      } else if (data.match) {
+                        row.querySelector('.result').textContent = `Match: ${data.found.join(', ')}`;
+                      } else {
+                        row.querySelector('.result').textContent = 'No match';
+                      }
+                      row.querySelector('.solvedBtn').style.display = '';
+                      row.querySelector('.nextBtn').style.display = '';
+                      progressBar.style.width = Math.round(((current+1)/rows.length)*100) + '%';
+                      row.querySelector('.solvedBtn').onclick = () => {
+                        row.querySelector('.solvedBtn').style.background = '#388e3c';
+                        row.querySelector('.solvedBtn').textContent = '✔️ Solved';
+                        row.querySelector('.nextBtn').disabled = true;
+                        row.querySelector('.solvedBtn').disabled = true;
+                        current++;
+                        runNext();
+                      };
+                      row.querySelector('.nextBtn').onclick = () => {
+                        row.querySelector('.solvedBtn').disabled = true;
+                        row.querySelector('.nextBtn').disabled = true;
+                        current++;
+                        runNext();
+                      };
+                    })
+                    .catch(() => {
+                      row.querySelector('.applied').textContent = '❌';
+                      row.querySelector('.result').textContent = 'API error';
+                      row.querySelector('.solvedBtn').style.display = '';
+                      row.querySelector('.nextBtn').style.display = '';
+                    });
+                } else {
+                  // Simulate other strategies
+                  setTimeout(() => {
+                    row.querySelector('.applied').textContent = '✅';
+                    row.querySelector('.result').textContent = '(demo result)';
+                    row.querySelector('.solvedBtn').style.display = '';
+                    row.querySelector('.nextBtn').style.display = '';
+                    progressBar.style.width = Math.round(((current+1)/rows.length)*100) + '%';
+                    row.querySelector('.solvedBtn').onclick = () => {
+                      row.querySelector('.solvedBtn').style.background = '#388e3c';
+                      row.querySelector('.solvedBtn').textContent = '✔️ Solved';
+                      row.querySelector('.nextBtn').disabled = true;
+                      row.querySelector('.solvedBtn').disabled = true;
+                      current++;
+                      runNext();
+                    };
+                    row.querySelector('.nextBtn').onclick = () => {
+                      row.querySelector('.solvedBtn').disabled = true;
+                      row.querySelector('.nextBtn').disabled = true;
+                      current++;
+                      runNext();
+                    };
+                  }, 600);
+                }
               }
 
               if (runBtn) {
