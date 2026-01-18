@@ -20,7 +20,7 @@
         <div class="topbar-right">
             {% if current_user.is_authenticated %}
                 <span class="user-info">
-                    <a href="/profile" style="text-decoration: none; color: inherit;">
+                    <a href="/profile">
                         {{ current_user.name }}
                         {% if current_user.staff_code %}
                             <span class="badge badge-{{ current_user.role }}">{{ current_user.role }}</span>

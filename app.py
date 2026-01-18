@@ -282,10 +282,6 @@ def logout():
 @require_login
 def profile():
     """Display user profile page."""
-    if 'user' not in session:
-        flash('Please log in to view your profile.', 'warning')
-        return redirect(url_for('login'))
-    
     user_data = session['user']
     user = User(
         user_data['google_id'],
