@@ -282,12 +282,12 @@ def extract_raw_text_from_url(url):
 # =======================
 
 
-# Import both confirm_url and confirm_title
 from debug_parser.parser_confirm_URL import confirm_url
 from debug_parser.parser_confirm_title import confirm_title
 from debug_parser.parser_confirm_serving import confirm_serving
 from debug_parser.parser_confirm_ingredients import confirm_ingredients
 from debug_parser.parser_confirm_instructions import confirm_instructions
+from debug_parser.debug_parser_title import debug_title
 # --- Confirm Field (modular, including Source URL) ---
 @app.route('/confirm_field', methods=['POST'])
 @require_role('Admin')
@@ -329,19 +329,19 @@ def confirm_field():
             confirmed = dict(row)
     return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
 
-# --- Debug Title Extraction Page ---
+# --- Debug Title Page (modular) ---
 @app.route('/debug_title/<int:test_recipe_id>')
 @require_role('Admin')
-def debug_title(test_recipe_id):
+def debug_title_route(test_recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
-    raw_data = test_recipe['raw_data']
-    strategies, best_guess = extract_title_candidates(raw_data)
-    return render_template('debug_title.html', raw_data=raw_data, strategies=strategies, best_guess=best_guess)
+    raw_title = test_recipe['upload_source_detail']
+    debugged_title = debug_title(raw_title, test_recipe_id)
+    return render_template('debug_title.html', raw_title=raw_title, debugged_title=debugged_title)
 
 # Route to render the debug extract text form
 @app.route('/debug_extract_text_form', methods=['GET'])
