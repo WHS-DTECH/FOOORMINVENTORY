@@ -1,17 +1,3 @@
-# --- API: Save solution as confirmed title ---
-from flask import request
-
-@app.route('/api/save_title_solution/<int:test_recipe_id>', methods=['POST'])
-def api_save_title_solution(test_recipe_id):
-    data = request.get_json()
-    solution = (data or {}).get('solution', '').strip()
-    if not solution:
-        return jsonify({'error': 'No solution provided.'}), 400
-    # Save to confirmed_parser_fields table
-    from debug_parser.parser_confirm_title import confirm_title
-    confirm_title(solution, test_recipe_id)
-    return jsonify({'success': True, 'title': solution})
-
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
@@ -294,6 +280,23 @@ def extract_raw_text_from_url(url):
 # =======================
 # Debug Parser - Title Section
 # =======================
+
+
+# --- API: Save solution as confirmed title ---
+from flask import request
+
+@app.route('/api/save_title_solution/<int:test_recipe_id>', methods=['POST'])
+def api_save_title_solution(test_recipe_id):
+    data = request.get_json()
+    solution = (data or {}).get('solution', '').strip()
+    if not solution:
+        return jsonify({'error': 'No solution provided.'}), 400
+    # Save to confirmed_parser_fields table
+    from debug_parser.parser_confirm_title import confirm_title
+    confirm_title(solution, test_recipe_id)
+    return jsonify({'success': True, 'title': solution})
+
+
 
 # --- API: Run second title extraction strategy ---
 @app.route('/api/title_strategy/recipe_word/<int:test_recipe_id>', methods=['GET'])
