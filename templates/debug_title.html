@@ -15,8 +15,30 @@
           <div style="min-width: 2.5em;">{{ i }}</div>
         {% endfor %}
       </div>
-      <pre style="max-height: 600px; overflow: auto; background: #f8f8f8; border: 1px solid #ccc; border-left: none; padding: 1em; margin: 0; flex: 1; width: 20cm; min-width: 20cm;">{% for line in lines %}{{ line|e }}
 {% endfor %}</pre>
+        <div style="display: flex; flex-direction: row; align-items: flex-start; gap: 32px;">
+          <textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: horizontal;">{{ raw_data }}</textarea>
+          <div style="flex: 1; min-width: 220px;">
+            <div style="position: sticky; top: 0;">
+              <div style="margin-bottom: 12px;">
+                <strong>Title Extraction Strategies</strong>
+              </div>
+              <div id="title-strategies-box">
+                <!-- Existing strategies/results content will be rendered here -->
+                <div style="margin-bottom: 8px;">
+                  <span style="font-weight: bold;">Strategy</span> <span style="font-weight: bold;">Result</span>
+                </div>
+                <!-- Jinja2 block for strategies/results if present -->
+                {% if strategies %}
+                  {% for strat, result in strategies.items() %}
+                    <div><span>{{ strat }}</span>: <span>{{ result }}</span></div>
+                  {% endfor %}
+                {% endif %}
+                <div style="margin-top: 16px;"><strong>Best Guess:</strong> {{ best_guess }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
   </div>
   <div style="flex: 1;">
