@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+<div style="width:100%; display:flex; justify-content:flex-end; margin-bottom:1em;">
+  <form method="get" action="/parser_debug_raw/{{ test_recipe_id }}" style="margin:0;">
+    <button type="submit" class="btn btn-outline-secondary" style="font-size:1em;">View Raw Data</button>
+  </form>
+</div>
 <div style="display: flex; gap: 2em;">
   <div style="flex: 1;">
     <h3>Raw Data (HTML/Text)</h3>

@@ -340,8 +340,15 @@ def debug_title_route(test_recipe_id):
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
     raw_title = test_recipe['upload_source_detail']
+    raw_data = test_recipe.get('raw_data') or ''
     debugged_title = debug_title(raw_title, test_recipe_id)
-    return render_template('debug_title.html', raw_title=raw_title, debugged_title=debugged_title)
+    return render_template(
+        'debug_title.html',
+        raw_title=raw_title,
+        raw_data=raw_data,
+        debugged_title=debugged_title,
+        test_recipe_id=test_recipe_id
+    )
 
 # Route to render the debug extract text form
 @app.route('/debug_extract_text_form', methods=['GET'])
