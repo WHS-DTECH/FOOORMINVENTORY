@@ -13,56 +13,6 @@
     };
     </script>
     <script src="{{ url_for('static', filename='class_ingred.js') }}"></script>
-    {% endblock %}
-      if((qty === null || !unit) && name){
-        const parsed = extractFromText(name);
-        if(qty === null && parsed.quantity !== null) qty = parsed.quantity;
-        if((!unit || unit==='') && parsed.unit) unit = parsed.unit;
-        if(parsed.name) name = parsed.name;
-      }
-    } else {
-      const parsed = extractFromText(String(it));
-      name = parsed.name || String(it);
-      qty = parsed.quantity;
-      unit = parsed.unit || '';
-    }
-    let perSingle = null;
-    if(qty !== null && origServ > 0){
-      perSingle = qty / origServ;
-    }
-    const scaled = (perSingle !== null) ? (perSingle * desired) : null;
-    const li = document.createElement('li');
-    if(scaled !== null){
-      let display = Math.round((scaled + Number.EPSILON) * 100) / 100;
-      if(Number.isInteger(display)) display = parseInt(display);
-      li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
-    } else {
-      li.textContent = name;
-    }
-    out.appendChild(li);
-  });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const recipeSelect = document.getElementById('recipeSelect');
-  if(recipeSelect){
-    recipeSelect.addEventListener('change', function(){
-      const rec = findRecipe(parseInt(this.value));
-      renderOriginalIngredients(rec);
-    });
-  }
-  const calcBtn = document.getElementById('calcBtn');
-  if(calcBtn) calcBtn.addEventListener('click', calculate);
-
-  const saveBtn = document.getElementById('saveBtn');
-  if(saveBtn) saveBtn.addEventListener('click', function(){
-    const staff = document.getElementById('staff') ? document.getElementById('staff').value : '';
-    const classcode = document.getElementById('classcode') ? document.getElementById('classcode').value : '';
-    const date = document.getElementById('date') ? document.getElementById('date').value : '';
-    const period = document.getElementById('period') ? document.getElementById('period').value : '';
-    const rid = document.getElementById('recipeSelect') ? document.getElementById('recipeSelect').value : null;
-    const desired = document.getElementById('desiredServings') ? (parseFloat(document.getElementById('desiredServings').value) || 24) : 24;
-    if(!rid) { alert('Select a recipe first'); return; }
     const bookingId = saveBtn.dataset.editingBookingId || null;
     fetch('/class_ingredients/save', {
       method: 'POST', headers: {'Content-Type':'application/json'},
