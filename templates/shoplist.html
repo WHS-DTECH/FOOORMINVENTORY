@@ -343,14 +343,16 @@ window.addEventListener('DOMContentLoaded', function() {
       });
     }
 
+
     function toggleBooking(id) {
+      id = Number(id);
       if (selection.has(id)) {
         selection.delete(id);
       } else {
         selection.add(id);
       }
       document.querySelectorAll(`[data-booking-id]`).forEach(el => {
-        const bid = parseInt(el.dataset.bookingId, 10);
+        const bid = Number(el.dataset.bookingId);
         if (selection.has(bid)) {
           el.classList.add('selected');
         } else {
@@ -705,7 +707,7 @@ window.addEventListener('DOMContentLoaded', function() {
               <td role="cell">
                 {% if booking %}
                   {% set teacher_name = booking.last_name and booking.first_name and (booking.last_name + ', ' + booking.first_name) or booking.last_name or booking.staff_code or '' %}
-                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ teacher_name or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}"
+                  <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking(Number('{{ booking.id }}'))" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ teacher_name or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking(Number('{{ booking.id }}'))}"
                     style="background: none;">
                     <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                     <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
