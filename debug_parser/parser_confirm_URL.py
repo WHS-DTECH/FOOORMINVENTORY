@@ -21,10 +21,7 @@ def confirm_url(raw_url, test_recipe_id):
 
 def confirm_url(raw_url, test_recipe_id):
     from app import get_db_connection  # Local import to avoid circular import
-    """
-    Validate and store the confirmed source URL in the confirmed_parser_fields table.
-    Returns the confirmed value.
-    """
+    # Validate and store the confirmed source URL in the confirmed_parser_fields table. Returns the confirmed value.
     # TODO: Add real URL validation/cleaning logic if needed
     confirmed_url = raw_url
     with get_db_connection() as conn:
