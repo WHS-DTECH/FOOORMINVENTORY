@@ -69,29 +69,105 @@
   <div style="flex: 1; min-width: 340px;">
     <div style="margin-bottom: 12px;"><strong>Title Extraction Strategies</strong></div>
     <div style="margin-bottom: 10px; font-size: 0.98em; color: #333;">
-      <table style="border-collapse: collapse; width: 100%;">
+      <button id="runStrategiesBtn" style="margin-bottom: 10px; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">Run Strategies</button>
+      <div id="progressBarContainer" style="width: 100%; height: 18px; background: #e0e0e0; border-radius: 8px; margin-bottom: 10px; display: none;">
+        <div id="progressBar" style="height: 100%; width: 0%; background: #1976d2; border-radius: 8px;"></div>
+      </div>
+      <table id="strategiesTable" style="border-collapse: collapse; width: 100%;">
         <thead>
           <tr style="background: #e3eafc;">
             <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Strategy</th>
             <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Applied</th>
-            <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Solved</th>
             <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Result</th>
+            <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Solved</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>Not a section header</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Not all lowercase</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Not too short (≥4 chars)</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Not only digits/symbols</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Prefers larger/bold lines</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>NLP noun phrase/WORK_OF_ART</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Fallback: Uppercase start, not junk word</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Up to 5 lines above first ingredient</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Prefers food words from ingredient block</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>Closest non-empty line above ingredient block</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td>If none, returns "Unknown Recipe"</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr>
+            <td>Is there matching words from the URL in the Raw Data?</td>
+            <td class="applied">—</td>
+            <td class="result">—</td>
+            <td class="solved">
+              <button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button>
+              <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button>
+            </td>
+          </tr>
+          <tr><td>Not a section header</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Not all lowercase</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Not too short (≥4 chars)</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Not only digits/symbols</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Prefers larger/bold lines</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>NLP noun phrase/WORK_OF_ART</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Fallback: Uppercase start, not junk word</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Up to 5 lines above first ingredient</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Prefers food words from ingredient block</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>Closest non-empty line above ingredient block</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
+          <tr><td>If none, returns "Unknown Recipe"</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
         </tbody>
       </table>
+            <script>
+            // Frontend-only simulation for progress and user controls
+            document.addEventListener('DOMContentLoaded', function() {
+              const runBtn = document.getElementById('runStrategiesBtn');
+              const progressBarContainer = document.getElementById('progressBarContainer');
+              const progressBar = document.getElementById('progressBar');
+              const table = document.getElementById('strategiesTable');
+              const rows = table.querySelectorAll('tbody tr');
+              let current = 0;
+
+              function resetTable() {
+                rows.forEach(row => {
+                  row.querySelector('.applied').textContent = '—';
+                  row.querySelector('.result').textContent = '—';
+                  row.querySelector('.solvedBtn').style.display = 'none';
+                  row.querySelector('.nextBtn').style.display = 'none';
+                });
+              }
+
+              function runStrategies() {
+                resetTable();
+                progressBarContainer.style.display = '';
+                progressBar.style.width = '0%';
+                current = 0;
+                runNext();
+              }
+
+              function runNext() {
+                if (current >= rows.length) {
+                  progressBar.style.width = '100%';
+                  return;
+                }
+                const row = rows[current];
+                row.querySelector('.applied').textContent = '⏳';
+                setTimeout(() => {
+                  row.querySelector('.applied').textContent = '✅';
+                  row.querySelector('.result').textContent = '(demo result)';
+                  row.querySelector('.solvedBtn').style.display = '';
+                  row.querySelector('.nextBtn').style.display = '';
+                  progressBar.style.width = Math.round(((current+1)/rows.length)*100) + '%';
+                  // User must click solved or next to continue
+                  row.querySelector('.solvedBtn').onclick = () => {
+                    row.querySelector('.solvedBtn').style.background = '#388e3c';
+                    row.querySelector('.solvedBtn').textContent = '✔️ Solved';
+                    row.querySelector('.nextBtn').disabled = true;
+                    row.querySelector('.solvedBtn').disabled = true;
+                    current++;
+                    runNext();
+                  };
+                  row.querySelector('.nextBtn').onclick = () => {
+                    row.querySelector('.solvedBtn').disabled = true;
+                    row.querySelector('.nextBtn').disabled = true;
+                    current++;
+                    runNext();
+                  };
+                }, 600);
+              }
+
+              if (runBtn) {
+                runBtn.onclick = runStrategies;
+              }
+            });
+            </script>
       <div style="margin-top: 8px;">
         These strategies combine heuristics, NLP, and context from the ingredient block to identify likely recipe titles.
       </div>
