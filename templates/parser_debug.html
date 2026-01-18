@@ -63,23 +63,6 @@
     </div>
     <div class="parser-debug-col">
         <div class="card mb-3">
-            <div class="card-header bg-primary text-white">Actions</div>
-            <div class="card-body">
-                <form method="get" action="/debug_title/{{ test_recipe.id }}" style="display:inline-block;">
-                    <button type="submit" class="debug-btn">DEBUG</button>
-                </form>
-                <form method="post" action="/confirm_field" style="display:inline-block;">
-                    <input type="hidden" name="field" value="title">
-                    <input type="hidden" name="test_recipe_id" value="{{ test_recipe.id }}">
-                    <button type="submit" class="confirm-btn">CONFIRM</button>
-                </form>
-                <hr>
-                <!-- Repeat for other fields -->
-            </div>
-        </div>
-    </div>
-    <div class="parser-debug-col">
-        <div class="card mb-3">
             <div class="card-header bg-primary text-white">Confirmed Values</div>
             <div class="card-body">
                 <div><strong>Title:</strong> {{ confirmed.title or '' }}</div>
