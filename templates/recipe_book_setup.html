@@ -4,7 +4,7 @@
 <div class="container-fluid py-4">
     <div class="row">
         <!-- Left column: All setup actions -->
-        <div class="col-6 mb-4" style="border: 2px solid red; background: #ffeaea;">
+        <div class="col-6 mb-4">
             <div class="card shadow">
                 <div class="card-header bg-warning text-dark">
                     <h2 class="mb-0">Recipe Book Setup</h2>
@@ -52,13 +52,13 @@
             </div>
         </div>
         <!-- Right column: Recipe index list and Parser Debug Index -->
-        <div class="col-6" style="border: 2px solid blue; background: #eaffea;">
+        <div class="col-6">
             <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">Recipe Index</h3>
                 </div>
                 <div class="card-body">
-                    {% if recipe_list %}
+                    {% if recipe_list is defined and recipe_list|length > 0 %}
                         <ul class="list-group">
                             {% for recipe in recipe_list %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -87,7 +87,7 @@
                     <h3 class="mb-0">Parser Debug Index</h3>
                 </div>
                 <div class="card-body">
-                    {% if parser_test_list %}
+                    {% if parser_test_list is defined and parser_test_list|length > 0 %}
                         <ul class="list-group">
                             {% for test in parser_test_list %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
