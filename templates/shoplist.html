@@ -952,14 +952,10 @@ function shoplistToday() {
   renderShoplistMonthCalendar();
 }
 document.addEventListener('DOMContentLoaded', function() {
-  renderShoplistLegend();
-  applyTeacherColors();
+  renderTeacherLegend();
   renderWeekGridHeadings();
 });
-document.addEventListener('click', function() {
-  // Re-apply colors after DOM updates
-  setTimeout(applyTeacherColors, 100);
-});
+
 </script>
 <script>
 // Jinja filter will handle NZ week label formatting
