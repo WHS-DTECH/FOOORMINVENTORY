@@ -1,86 +1,92 @@
 <!-- Recipe Book Setup Admin Page -->
 {% extends "base.html" %}
 {% block content %}
-            <div class="col-md-6 mb-4">
-                <div class="card border-warning">
-                    <div class="card-header bg-warning text-dark">
-                        Recipe Book Setup
-                    </div>
-                    <div class="card-body">
-                        <!-- Upload Recipe (Form) -->
-                        <h5>Upload Recipe (Form)</h5>
-                        <p>Manually enter recipe details using a form.</p>
-                        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
-                        <hr>
-                        <!-- Upload Recipe (PDF) -->
-                        <h5>Upload Recipe (PDF)</h5>
-                        <p>Extract recipes from a PDF file.</p>
-                        <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
-                            <label>Select PDF file:</label>
-                            <div class="mb-2">
-                                <input type="file" name="pdf_file" class="form-control">
-                            </div>
-                            <div class="form-check mb-2">
-                                <input type="checkbox" class="form-check-input" id="showTitles" name="show_titles">
-                                <label class="form-check-label" for="showTitles">Show only recipe titles (first step)</label>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block mb-3">Upload PDF</button>
-                        </form>
-                        <hr>
-                        <!-- Load Recipe (URL) -->
-                        <h5>Load Recipe (URL)</h5>
-                        <p>Import recipe from a website URL.</p>
-                        <form method="post" action="{{ url_for('load_recipe_url') }}">
-                            <input type="text" name="recipe_url" class="form-control mb-2" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/...">
-                            <button type="submit" class="btn btn-success btn-block mb-3">Load from URL</button>
-                        </form>
-                        <hr>
-                        <!-- Clean Database -->
-                        <h5>Clean Database</h5>
-                        <p>Remove duplicate recipes, junk entries, and fix recipe names.</p>
-                        <form method="post" action="{{ url_for('clean_recipes_route') }}">
-                            <button type="submit" class="btn btn-warning btn-block">&#x1F9F9; Clean Recipe Database</button>
-                        </form>
-                    </div>
+            <!-- <div class="col-md-6 mb-4"> -->
+                <!-- <div class="card border-warning"> -->
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Column: Recipe Book Setup -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    Recipe Book Setup
                 </div>
+                <div class="card-body">
+                    <!-- Upload Recipe (Form) -->
+                    <h5>Upload Recipe (Form)</h5>
+                    <p>Manually enter recipe details using a form.</p>
+                    <a href="{{ url_for('upload') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
+                    <hr>
+                    <!-- Upload Recipe (PDF) -->
+                    <h5>Upload Recipe (PDF)</h5>
+                    <p>Extract recipes from a PDF file.</p>
+                    <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+                        <label>Select PDF file:</label>
+                        <div class="mb-2">
+                            <input type="file" name="pdf_file" class="form-control">
+                        </div>
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input" id="showTitles" name="show_titles">
+                            <label class="form-check-label" for="showTitles">Show only recipe titles (first step)</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block mb-3">Upload PDF</button>
+                    </form>
+                    <hr>
+                    <!-- Load Recipe (URL) -->
+                    <h5>Load Recipe (URL)</h5>
+                    <p>Import recipe from a website URL.</p>
+                    <form method="post" action="{{ url_for('load_recipe_url') }}">
+                        <input type="text" name="recipe_url" class="form-control mb-2" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/...">
+                        <button type="submit" class="btn btn-success btn-block mb-3">Load from URL</button>
+                    </form>
+                    <hr>
+                    <!-- Clean Database -->
+                    <h5>Clean Database</h5>
+                    <p>Remove duplicate recipes, junk entries, and fix recipe names.</p>
+                    <form method="post" action="{{ url_for('clean_recipes_route') }}">
+                        <button type="submit" class="btn btn-warning btn-block">&#x1F9F9; Clean Recipe Database</button>
+                    </form>
                 </div>
             </div>
         </div>
-        <!-- Right column: Recipe index list and Parser Debug Index -->
-        <div class="col-6">
-            <div class="card shadow mb-4">
+        <!-- Right Column: Recipe Index and Parser Debug Index -->
+        <div class="col-md-6">
+            <!-- Recipe Index Card -->
+            <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Recipe Index</h3>
+                    Recipe Index
                 </div>
                 <div class="card-body">
-                    {% if recipe_list is defined and recipe_list|length > 0 %}
-                        <ul class="list-group">
-                            {% for recipe in recipe_list %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <span class="fw-bold">{{ recipe.name }}</span><br>
-                                        <span class="text-muted">Servings: {{ recipe.serving_size or 'N/A' }}</span>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <a href="/recipe_index/{{ recipe.id }}" class="btn btn-outline-secondary btn-sm">View</a>
-                                        <a href="/recipe/{{ recipe.id }}/source" class="btn btn-{% if recipe.upload_method == 'url' %}success{% else %}info{% endif %} btn-sm ms-2">Source</a>
-                                        <form method="post" action="/recipe/{{ recipe.id }}/delete" style="display:inline;">
-                                            <button type="submit" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this recipe?');">Delete</button>
-                                        </form>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-muted">No recipes loaded yet.</p>
-                    {% endif %}
+                    {% for recipe in recipes %}
+                    <div class="mb-3">
+                        <strong>{{ recipe.title }}</strong>
+                        <div>Servings: {{ recipe.servings or 'N/A' }}</div>
+                        <a href="{{ url_for('view_recipe', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
+                        <a href="{{ recipe.source_url }}" class="btn btn-success btn-sm" target="_blank">Source</a>
+                        <a href="{{ url_for('delete_recipe', recipe_id=recipe.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            <!-- Parser Debug Index -->
-            <div class="card shadow">
+            <!-- Parser Debug Index Card -->
+            <div class="card">
                 <div class="card-header bg-dark text-white">
-                    <h3 class="mb-0">Parser Debug Index</h3>
+                    Parser Debug Index
                 </div>
+                <div class="card-body">
+                    {% for debug in parser_debugs %}
+                    <div class="mb-3">
+                        <a href="{{ debug.url }}" target="_blank">{{ debug.url }}</a>
+                        <a href="{{ url_for('debug_parser', debug_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
+                        <a href="{{ url_for('delete_debug', debug_id=debug.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                        <div class="text-muted small">Flagged by: {{ debug.flagged_by }} | {{ debug.flagged_at }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                 <div class="card-body">
                     {% if parser_test_list is defined and parser_test_list|length > 0 %}
                         <ul class="list-group">
