@@ -141,9 +141,27 @@ c.execute('INSERT INTO recipes (name, ingredients, instructions, serving_size, e
 - Or modify `ROLE_PERMISSIONS` dict in `auth.py` (legacy fallback)
 - Restart app for changes to take effect
 
+## Domain-Specific Patterns
+
+### Booking Calendar & Shopping Lists
+- **Week-based view**: Shopping lists organized Monday-Friday, auto-advances to next week on weekends
+- **Period grid**: 5 periods per day, bookings stored with `date_required` + `period` (1-5)
+- **Ingredient scaling**: Recipes have `serving_size`, bookings have `desired_servings`, scale quantities proportionally
+- **Grid structure**: Use dict keys like `"2024-01-15_P3"` to map bookings to calendar cells
+
+### Recipe Suggestions
+- **User-submitted**: Teachers/staff can suggest recipes via form, stored in `recipe_suggestions` table
+- **Email notification**: VP receives email when recipe suggested (requires SMTP config in .env)
+- **Google Sheets integration**: Suggestions pushed to Google Sheet via webhook (optional)
+
+### Date Formatting
+- **Storage**: ISO format `YYYY-MM-DD` in database
+- **Display**: New Zealand format `dd/mm/yy` for user-facing dates
+- **Timezone**: Pacific/Auckland (configurable via TZ env var)
+
 ## Important Notes
 - **Single database file**: All data in `recipes.db` - back up regularly
 - **No migrations**: Schema changes require manual ALTER TABLE or rebuild
-- **Monolithic structure**: All routes in `app.py` - consider refactoring for large changes
+- **Monolithic structure**: All routes in `app.py` (36 routes, 2000+ lines) - consider refactoring for large changes
 - **Session-based auth**: No JWT, uses Flask session cookies
 - **Manual testing only**: No pytest/unittest infrastructure
