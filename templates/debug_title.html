@@ -55,11 +55,8 @@
           .then(resp => resp.json())
           .then(data => {
             if (data.success) {
-              titleBlockText.textContent = solution;
-              titleBlockBox.style.background = '#003366';
-              titleBlockText.style.color = '#fff';
-              titleBlockHeader.style.background = '#003366';
-              confirmBtn.style.display = '';
+              // Redirect to parser debug page for this test recipe
+              window.location.href = `/parser_debug/${testRecipeId}`;
             } else {
               alert(data.error || 'Failed to save solution.');
             }
