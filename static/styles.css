@@ -256,6 +256,16 @@ nav a:hover, .navbar a:hover {
   gap: 8px;
 }
 
+.user-info a {
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.user-info a:hover {
+  opacity: 0.8;
+}
+
 .badge {
   .sidebar-toggle {
   display: inline-block;

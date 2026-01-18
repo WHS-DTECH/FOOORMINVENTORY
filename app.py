@@ -278,6 +278,24 @@ def logout():
     return redirect(url_for('recbk'))
 
 
+@app.route('/profile')
+@require_login
+def profile():
+    """Display user profile page."""
+    user_data = session['user']
+    user = User(
+        user_data['google_id'],
+        user_data['email'],
+        user_data['name'],
+        user_data.get('staff_code')
+    )
+    
+    # Get all roles for display
+    all_roles = user.get_all_roles()
+    
+    return render_template('profile.html', user=user, all_roles=all_roles)
+
+
 # ============== End Authentication Routes ==============
 
 
