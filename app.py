@@ -2016,11 +2016,11 @@ def shoplist():
         ''', (dates[0]['date'], dates[-1]['date']))
         bookings = [dict(row) for row in c.fetchall()]
 
-    # Build grid: {(date, period): booking} with date as YYYY-MM-DD string
+    # Build grid: {date_P{period}: booking} with date as YYYY-MM-DD string (matches template)
     grid = {}
     for b in bookings:
         date_str = str(b['date_required'])[:10]  # Ensure format YYYY-MM-DD
-        key = (date_str, str(b['period']))
+        key = f"{date_str}_P{b['period']}"
         grid[key] = b
 
     # Calculate previous and next week offsets for navigation buttons
