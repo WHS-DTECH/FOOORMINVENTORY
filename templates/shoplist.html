@@ -1,43 +1,28 @@
 <script>
-// Unified and robust switchShoplistView
 function switchShoplistView(view) {
   const weekNav = document.getElementById('weekNav');
   const weekBtn = document.getElementById('weekViewBtn');
   const monthBtn = document.getElementById('monthViewBtn');
-  const weekPeriodView = document.getElementById('weekPeriodView');
-  const monthCalendarView = document.getElementById('monthCalendarView');
   if (view === 'week') {
-    if (weekNav) weekNav.style.display = '';
-    if (weekBtn) weekBtn.classList.add('active');
-    if (monthBtn) monthBtn.classList.remove('active');
-    if (weekPeriodView) weekPeriodView.style.display = '';
-    if (monthCalendarView) monthCalendarView.style.display = 'none';
+    weekNav.style.display = '';
+    weekBtn.classList.add('active');
+    monthBtn.classList.remove('active');
+    document.getElementById('weekPeriodView').style.display = '';
+    document.getElementById('monthCalendarView').style.display = 'none';
   } else {
-    if (weekNav) weekNav.style.display = 'none';
-    if (weekBtn) weekBtn.classList.remove('active');
-    if (monthBtn) monthBtn.classList.add('active');
-    if (weekPeriodView) weekPeriodView.style.display = 'none';
-    if (monthCalendarView) monthCalendarView.style.display = '';
-    // Always load bookings and render calendar
-    window.loadMonthBookings();
+    weekNav.style.display = 'none';
+    weekBtn.classList.remove('active');
+    monthBtn.classList.add('active');
+    document.getElementById('weekPeriodView').style.display = 'none';
+    document.getElementById('monthCalendarView').style.display = '';
   }
 }
-window.switchShoplistView = switchShoplistView;
-
 // Ensure correct initial state on page load
 window.addEventListener('DOMContentLoaded', function() {
-  const monthBtn = document.getElementById('monthViewBtn');
-  const monthView = document.getElementById('monthCalendarView');
-  // If Month View is active or visible, always show and render it
-  if ((monthBtn && monthBtn.classList.contains('active')) || (monthView && monthView.style.display !== 'none' && monthView.style.display !== '')) {
-    window.switchShoplistView('month');
+  if (document.getElementById('monthViewBtn').classList.contains('active')) {
+    switchShoplistView('month');
   } else {
-    window.switchShoplistView('week');
-  }
-  // Defensive: if Month View is visible, always load bookings and render calendar
-  if (monthView && monthView.style.display !== 'none') {
-    window.loadMonthBookings();
-    monthView.style.display = '';
+    switchShoplistView('week');
   }
 });
 </script>
@@ -87,20 +72,27 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
   <!-- Removed duplicate weekly dates above navigation -->
-  <div style="display: flex; flex-direction: column; align-items: center; margin-top: 32px; margin-bottom: 24px;">
+  <div style="display: flex; flex-direction: column; align-items: center; margin-top: 18px;">
     <h1 class="no-print" style="font-size: 2.3em; margin-bottom: 0;">Book the Shopping</h1>
   </div>
   <!-- Week navigation moved below view toggle and above period grid as per user request -->
     <!-- Selected Bookings panel moved up under the title -->
-    <div id="selected-bookings-panel" class="popout-panel card shadow-sm" style="margin-top: 0; margin-bottom: 28px; padding: 18px 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); display:none;">
+    <div id="selected-bookings-panel" class="popout-panel" style="margin-top: 18px; margin-bottom: 16px;">
       <div style="font-weight: bold; margin-bottom: 4px;">Selected Bookings</div>
       <div style="font-size: 0.95em; color: #444; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list. Click Generate Shopping List.</div>
-      <div id="selected-bookings-buttons" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
-        <button onclick="selectAllWeek()" aria-label="Select all bookings" tabindex="0">Select All</button>
-        <button onclick="clearAllSelections()" aria-label="Clear all selections" tabindex="0">Clear</button>
-        <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()" aria-label="Auto generate shopping list" tabindex="0">Auto Generate</button>
-        <span style="flex: 1 1 auto;"></span>
-        <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()" aria-label="Show scheduled bookings" tabindex="0">Scheduled Bookings</button>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+            <button onclick="saveShoppingList()" style="display:none;">💾 Save List</button>
+            <button onclick="loadShoppingList()" style="display:none;">📂 Load Saved</button>
+            <button onclick="exportShoppingListCsv()" style="display:none;">📄 Export CSV</button>
+            <button class="primary" onclick="window.print()" style="display:none;">🖨️ Print</button>
+            <!-- Print Shopping List Only button moved below the grid -->
+            <button onclick="selectAllWeek()">Select All</button>
+            <button onclick="clearAllSelections()">Clear</button>
+            <button class="primary" id="autoGenerateBtn" style="background: #ff851b; color: #fff; border: 1px solid #ff851b;" onclick="autoGenerateWeek()">Auto Generate</button>
+            <span style="flex: 1 1 auto;"></span>
+            <!-- Removed duplicate Generate Shopping List button from top panel -->
+            <!-- Removed duplicate Add to Google Calendar button; only one will be in Export Options below -->
+            <button class="primary" id="showScheduledBookingsBtn" style="background: #1976d2; color: #fff; border: 1px solid #1976d2; margin-left: 8px;" onclick="showScheduledBookingsModal()">Scheduled Bookings</button>
           </div>
 
           <!-- Scheduled Bookings Modal -->
@@ -108,18 +100,15 @@ window.addEventListener('DOMContentLoaded', function() {
           // Hide/show selected bookings panel based on view
           function updateSelectedBookingsPanel() {
             var panel = document.getElementById('selected-bookings-panel');
-            var buttons = document.getElementById('selected-bookings-buttons');
             var weekViewBtn = document.getElementById('weekViewBtn');
             var weekGrid = document.getElementById('weekPeriodView');
             var monthGrid = document.getElementById('monthCalendarView');
-            if (!panel || !buttons) return;
-            // Hide panel and buttons if Month View is active or week grid is hidden
+            if (!panel) return;
+            // Hide if Month View is active or week grid is hidden
             if ((weekViewBtn && weekViewBtn.classList.contains('active')) && weekGrid && weekGrid.style.display !== 'none') {
               panel.style.display = '';
-              buttons.style.display = 'flex';
             } else {
               panel.style.display = 'none';
-              buttons.style.display = 'none';
             }
           }
           window.addEventListener('DOMContentLoaded', function() {
@@ -197,7 +186,7 @@ window.addEventListener('DOMContentLoaded', function() {
           }
           </script>
       </div>
-      <div id="selected-bookings-list" style="font-size: 0.97em; margin-bottom: 12px;"></div>
+      <div id="selected-bookings-list" style="font-size: 0.97em;"></div>
     </div>
     <style>
               @media print {
@@ -581,8 +570,28 @@ window.addEventListener('DOMContentLoaded', function() {
   </script>
 
   <div class="row g-2 flex-wrap align-items-stretch mb-3" style="display: flex; flex-wrap: wrap; gap: 18px;">
-    <!-- Removed duplicated Week View Date Label and Controls (only one set remains below) -->
-    <!-- Legend removed: teacher shading now provides context visually -->
+    <!-- Week View Date Label and Controls (moved below view toggle, above grid) -->
+    <div id="weekNav" class="week-nav no-print" style="margin: 0 0 18px 0; display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <div id="weekRangeLabel" style="text-align: center; font-size: 2.2em; font-weight: 700; margin-bottom: 8px;">{{ week_label | format_nz_week }}</div>
+      <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
+        <form method="get" style="margin: 0;">
+          <button type="submit" name="week" value="{{ prev_week }}">&#8592; Previous</button>
+        </form>
+        <form method="get" style="margin: 0;">
+          <button type="submit" name="week" value="0">Today</button>
+        </form>
+        <form method="get" style="margin: 0;">
+          <button type="submit" name="week" value="{{ next_week }}">Next &#8594;</button>
+        </form>
+      </div>
+    </div>
+    <!-- Sidebar Legend (desktop) or collapsible (mobile) -->
+    <div class="col-12 col-md-4 mb-2" style="min-width:220px; max-width:320px; flex: 1 1 220px;">
+      <div class="legend card p-3 h-100 shadow-sm" id="shoplist-legend" style="background:#f8fafc; border:1px solid #e0e4ea; border-radius:12px; box-shadow:0 4px 16px rgba(66,133,244,0.07);">
+        <div class="fw-bold mb-2"><i class="bi bi-info-circle text-primary me-1"></i>Legend</div>
+        <div id="teacher-legend" class="d-flex flex-wrap align-items-center" style="gap: 10px 18px;"></div>
+      </div>
+    </div>
     <script>
     // Teacher color mapping (should match the one used in applyTeacherColors)
     function getTeacherColor(name) {
@@ -672,20 +681,6 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-  <div id="weekNav" class="week-nav no-print" style="margin: 0 0 18px 0; display: flex; flex-direction: column; align-items: center; width: 100%;">
-    <div id="weekRangeLabel" style="text-align: center; font-size: 2.2em; font-weight: 700; margin-bottom: 8px;">{{ week_label | format_nz_week }}</div>
-    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; margin-top: 8px;">
-      <form method="get" style="margin: 0;">
-        <button type="submit" name="week" value="{{ prev_week }}">&#8592; Previous</button>
-      </form>
-      <form method="get" style="margin: 0;">
-        <button type="submit" name="week" value="0">Today</button>
-      </form>
-      <form method="get" style="margin: 0;">
-        <button type="submit" name="week" value="{{ next_week }}">Next &#8594;</button>
-      </form>
-    </div>
-  </div>
   <div id="weekPeriodView">
     <div style="overflow-x:auto; width:100%;">
     <table class="grid no-print" role="table" aria-label="Booking week grid">
@@ -693,9 +688,9 @@ window.addEventListener('DOMContentLoaded', function() {
         <tr>
           <th scope="col"></th>
           {% for d in dates %}
-            <th style="text-align:center;" scope="col">
-              <div style="font-weight:600; font-size:1.08em;">{{ d.day_name[:3] if d.day_name else '' }}</div>
-              <div style="font-size:0.98em; color:#444;">{{ d.nz_date }}</div>
+            <th style="text-align:center;" scope="col"> 
+              {{ d.day_name[:3] if d.day_name else '' }}<br>
+              <span class="small-muted">{{ d.nz_date }}</span>
             </th>
           {% endfor %}
         </tr>
@@ -705,20 +700,32 @@ window.addEventListener('DOMContentLoaded', function() {
           <tr role="row">
             <td><span class="period" aria-label="Period {{ period }}">P{{ period }}</span></td>
             {% for d in dates %}
-              {% set key = (d.date, period|string) %}
+              {% set key = d.date + '_P' + period|string %}
               {% set booking = grid.get(key) %}
               <td role="cell">
                 {% if booking %}
                   {% set teacher_name = booking.last_name and booking.first_name and (booking.last_name + ', ' + booking.first_name) or booking.last_name or booking.staff_code or '' %}
                   <div class="booking" data-booking-id="{{ booking.id }}" onclick="toggleBooking({{ booking.id }})" tabindex="0" role="button" aria-pressed="false" aria-label="Booking for {{ booking.class_code or 'class' }}, {{ booking.recipe_name or 'no recipe' }}, period {{ period }}, teacher {{ teacher_name or 'unknown' }} on {{ d.nz_date }}" onkeydown="if(event.key==='Enter'||event.key===' '){toggleBooking({{ booking.id }})}"
-                    style="background: #4285f4; color: #111; border-radius: 8px; border: 2px solid #4285f4; box-shadow: 0 2px 8px rgba(66,133,244,0.10); padding: 6px 8px 6px 10px; margin-bottom: 2px;">
-                    <div class="booking-title" style="font-weight:bold; color:#111;">{{ booking.recipe_name or '—' }}</div>
+                    style="background: none;">
+                    <div class="booking-title">{{ booking.recipe_name or '—' }}</div>
                     <div class="booking-meta">Class: {{ booking.class_code or '—' }}</div>
-                    <div class="booking-meta">Teacher: {{ booking.last_name and booking.first_name and (booking.last_name + ', ' + booking.first_name) or booking.last_name or booking.staff_code or booking.staff_display or '—' }}</div>
-                    <div class="booking-meta">Servings: {{ booking.desired_servings or booking.servings or '—' }}</div>
+                    <div class="booking-meta">Teacher: {{ teacher_name or '—' }}</div>
+                    <div class="booking-meta">Servings: {{ booking.desired_servings or '—' }}</div>
                     <div class="booking-meta">{{ d.nz_date }}</div>
                     <div class="booking-meta">Tap to select</div>
                   </div>
+                  <script>
+                  // Apply teacher color tint to this booking cell
+                  (function() {
+                    var cells = document.querySelectorAll('.booking[data-booking-id="{{ booking.id }}"]');
+                    var color = getTeacherColor({{ teacher_name|tojson|safe }});
+                    var bg = color.replace(')', ', 0.13)').replace('rgb', 'rgba');
+                    cells.forEach(function(cell) {
+                      cell.style.background = bg;
+                      cell.style.border = '1.5px solid ' + color;
+                    });
+                  })();
+                  </script>
                 {% else %}
                   <div class="empty" aria-label="No booking">—</div>
                 {% endif %}
@@ -730,22 +737,22 @@ window.addEventListener('DOMContentLoaded', function() {
     </table>
     </div>
 
-    <div class="selection-panel no-print row g-2 flex-wrap align-items-stretch shadow-sm shoplist-responsive-panel" style="margin-top: 32px; margin-bottom: 32px; display: flex; gap: 24px; align-items: flex-start; border-radius: 16px; background: #f8fafc; box-shadow: 0 4px 16px rgba(66,133,244,0.07); padding: 24px 0;">
-      <div id="printMasterList" class="col-12 col-md-5 mb-2 shadow-sm card shoplist-responsive-card" style="flex: 1 1 320px; min-width: 260px; max-width: 420px; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); padding: 24px 20px; margin-bottom: 0;">
+    <div class="selection-panel no-print row g-2 flex-wrap align-items-stretch shadow-sm" style="margin-top: 24px; display: flex; gap: 18px; align-items: flex-start; border-radius: 12px; background: #f8fafc; box-shadow: 0 4px 16px rgba(66,133,244,0.07); padding: 12px 0;">
+      <div id="printMasterList" class="col-12 col-md-5 mb-2 shadow-sm" style="flex: 1 1 320px; min-width: 260px; max-width: 420px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); padding: 18px 16px;">
         <h2 style="margin-bottom: 8px;">Selected Bookings</h2>
         <div id="selectionNotice" style="color: #888; font-size: 15px; margin-bottom: 8px;">Tap bookings in the grid to select them for the shopping list.</div>
         <ul id="selectedList" style="margin: 0 0 12px 0; padding-left: 18px;"></ul>
         <!-- Selection grid follows below -->
-        <div class="card shadow-sm shoplist-responsive-actions" style="margin: 24px 0 8px 0; padding: 18px 16px; background: #f5faff; border-radius: 12px; display: flex; gap: 16px; justify-content: flex-start; align-items: center;">
-          <button class="primary no-print" id="generateShoppingListBtn" style="background: linear-gradient(90deg, #0074d9 60%, #00c6ff 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="generateShoppingList()" aria-label="Generate shopping list" tabindex="0">Generate Shopping List</button>
-          <button class="primary no-print" id="printListOnlyBtn" style="background: linear-gradient(90deg, #28a745 60%, #a8e063 100%); color: #fff; border: none; font-size: 1.15em; font-weight: bold; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);" onclick="printShoppingListOnly()" aria-label="Print shopping list only" tabindex="0">🖨️ Print Shopping List Only</button>
+        <div style="margin: 18px 0 8px 0; display: flex; gap: 8px; justify-content: flex-start;">
+          <button class="primary no-print" id="generateShoppingListBtn" style="background: #0074d9; color: #fff; border: 1px solid #0074d9;" onclick="generateShoppingList()">Generate Shopping List</button>
+          <button class="primary no-print" id="printListOnlyBtn" style="background: #28a745;" onclick="printShoppingListOnly()">🖨️ Print Shopping List Only</button>
         </div>
         <div id="masterList" style="margin-top: 24px; background: #f7f7f7; border-radius: 8px; padding: 12px;">
           <h3 style="margin-top: 0;">Master Shopping List</h3>
           <div id="masterListContent">Generate the shopping list to see items here.</div>
         </div>
       </div>
-      <div id="shoppingList" class="print-list-section col-12 col-md-7 mb-2 shadow-sm card shoplist-responsive-card" style="flex: 2 1 480px; min-width: 280px; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); padding: 24px 20px; margin-bottom: 0;">
+      <div id="shoppingList" class="print-list-section col-12 col-md-7 mb-2 shadow-sm" style="flex: 2 1 480px; min-width: 280px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(66,133,244,0.07); padding: 18px 16px;">
         <h2 style="margin-top: 0;">Shopping List</h2>
         <div id="listContent">Generate the shopping list to see items here.</div>
       </div>
@@ -815,14 +822,35 @@ async function loadMonthBookings() {
   try {
     const resp = await fetch('/api/scheduled_bookings');
     const data = await resp.json();
-    window.bookings = (data && data.success && data.bookings) ? data.bookings : [];
-    renderShoplistMonthCalendar();
+    if (data.success) {
+      window.bookings = data.bookings;
+      renderShoplistMonthCalendar();
+    } else {
+      window.bookings = [];
+      renderShoplistMonthCalendar();
+    }
   } catch (e) {
     window.bookings = [];
     renderShoplistMonthCalendar();
   }
 }
-window.loadMonthBookings = loadMonthBookings;
+// On switching to month view, load bookings from API
+function switchShoplistView(view) {
+  document.getElementById('weekViewBtn').classList.remove('active');
+  document.getElementById('monthViewBtn').classList.remove('active');
+  if (view === 'week') {
+    document.getElementById('weekPeriodView').style.display = '';
+    document.getElementById('monthCalendarView').style.display = 'none';
+    document.getElementById('weekViewBtn').classList.add('active');
+    document.getElementById('weekNav').style.display = '';
+  } else {
+    document.getElementById('weekPeriodView').style.display = 'none';
+    document.getElementById('monthCalendarView').style.display = '';
+    document.getElementById('monthViewBtn').classList.add('active');
+    document.getElementById('weekNav').style.display = 'none';
+    loadMonthBookings();
+  }
+}
 function getUserTimezone() {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -890,26 +918,8 @@ function renderShoplistMonthCalendar() {
     const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
     html += `<div class='calendar-day ${isToday ? 'today' : ''}'><div class='day-number'>${day}</div>`;
     dayBookings.forEach(booking => {
-      html += `<div class='booking-item' tabindex='0' aria-label='Booking: ${booking.recipe_name} for ${booking.class_code} period ${booking.period}' onclick='showBookingDetailsModal(${JSON.stringify(booking)})' onkeypress='if(event.key=="Enter")showBookingDetailsModal(${JSON.stringify(booking)})'><strong>${booking.class_code}</strong><br>P${booking.period}: ${booking.recipe_name}</div>`;
+      html += `<div class='booking-item' title='${booking.recipe_name} (P${booking.period})'><strong>${booking.class_code}</strong><br>P${booking.period}: ${booking.recipe_name}</div>`;
     });
-    // Modal for booking details
-    function showBookingDetailsModal(booking) {
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      modal.style = 'display:block; position:fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);';
-      modal.innerHTML = `<div class='modal-content' style='background:#fff; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:500px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;'>
-        <span style='position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;' onclick='this.parentElement.parentElement.remove()'>&times;</span>
-        <h2 style='margin-top:0; color:#1976d2;'>Booking Details</h2>
-        <div><strong>Date:</strong> ${booking.date_required}</div>
-        <div><strong>Period:</strong> ${booking.period}</div>
-        <div><strong>Staff:</strong> ${booking.staff_display}</div>
-        <div><strong>Class:</strong> ${booking.class_code}</div>
-        <div><strong>Recipe:</strong> ${booking.recipe_name}</div>
-        <div><strong>Servings:</strong> ${booking.servings}</div>
-      </div>`;
-      document.body.appendChild(modal);
-    }
-    // ...existing code...
     html += '</div>';
   }
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
@@ -941,26 +951,19 @@ function shoplistToday() {
   shoplistMonthView.month = now.getMonth();
   renderShoplistMonthCalendar();
 }
-<!--//@Grapplinks[#PDF]-->
 document.addEventListener('DOMContentLoaded', function() {
   renderShoplistLegend();
   applyTeacherColors();
   renderWeekGridHeadings();
-  // Defensive: if Month View is visible, always load and render
-  const monthView = document.getElementById('monthCalendarView');
-  if (monthView && monthView.style.display !== 'none') {
-    loadMonthBookings();
-    monthView.style.display = '';
-  }
 });
-<!--//@Grapplinks[#PDF]-->
 document.addEventListener('click', function() {
   // Re-apply colors after DOM updates
   setTimeout(applyTeacherColors, 100);
 });
 </script>
-<!-- Legend container for Month View (moved out of JS) -->
-<div id="shoplist-legend" style="margin: 18px 0 8px 0;"></div>
+<script>
+// Jinja filter will handle NZ week label formatting
+</script>
 </body>
 </html>
 
