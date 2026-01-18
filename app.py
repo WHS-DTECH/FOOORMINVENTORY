@@ -433,17 +433,31 @@ def debug_title_route(test_recipe_id):
         c = conn.cursor()
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
+        # Try to load parser_debug state for this test_recipe_id
+        c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+        debug_row = c.fetchone()
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
     raw_title = test_recipe['upload_source_detail']
     raw_data = test_recipe.get('raw_data') or ''
     debugged_title = debug_title(raw_title, test_recipe_id)
+    # If parser_debug state exists, use it to pre-populate UI
+    debug_state = None
+    if debug_row:
+        debug_state = dict(debug_row)
+        # Parse strategies JSON if present
+        if debug_state.get('strategies'):
+            try:
+                debug_state['strategies'] = json.loads(debug_state['strategies'])
+            except Exception:
+                pass
     return render_template(
         'debug_title.html',
         raw_title=raw_title,
         raw_data=raw_data,
         debugged_title=debugged_title,
-        test_recipe_id=test_recipe_id
+        test_recipe_id=test_recipe_id,
+        debug_state=debug_state
     )
 
 # Route to render the debug extract text form

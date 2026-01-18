@@ -33,29 +33,61 @@
       <textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;">{{ raw_data }}</textarea>
     </div>
     <script>
-    // SEND SOLUTION button logic
+    // Restore debug state from backend if present
     document.addEventListener('DOMContentLoaded', function() {
-      const sendBtn = document.getElementById('sendSolutionBtn');
+      const debugState = {{ debug_state|tojson|safe if debug_state else 'null' }};
       const solutionInput = document.getElementById('solutionInput');
-      const titleBlockBox = document.getElementById('titleBlockBox');
       const titleBlockText = document.getElementById('titleBlockText');
+      if (debugState) {
+        if (debugState.solution && solutionInput) solutionInput.value = debugState.solution;
+        if (debugState.extracted_title && titleBlockText) titleBlockText.textContent = debugState.extracted_title;
+        // Restore strategies table if present
+        if (Array.isArray(debugState.strategies)) {
+          const rows = document.querySelectorAll('#strategiesTable tbody tr');
+          debugState.strategies.forEach((s, i) => {
+            if (rows[i]) {
+              if (s.applied) rows[i].querySelector('.applied').textContent = s.applied;
+              if (s.result) rows[i].querySelector('.result').textContent = s.result;
+              if (s.solved) {
+                rows[i].querySelector('.solvedBtn').style.display = '';
+                rows[i].querySelector('.solvedBtn').style.background = '#388e3c';
+                rows[i].querySelector('.solvedBtn').textContent = '✔️ Solved';
+                rows[i].querySelector('.solvedBtn').disabled = true;
+              }
+            }
+          });
+        }
+      }
+      // SEND SOLUTION button logic
+      const sendBtn = document.getElementById('sendSolutionBtn');
+      const titleBlockBox = document.getElementById('titleBlockBox');
       const titleBlockHeader = document.getElementById('titleBlockHeader');
       const confirmBtn = document.getElementById('confirmTitleBtn');
       if (sendBtn && solutionInput && titleBlockBox && titleBlockText && titleBlockHeader && confirmBtn) {
         sendBtn.onclick = function() {
           const solution = solutionInput.value.trim();
           if (!solution) return;
-          // Save to backend
+          // Gather debug state
           const testRecipeId = window.location.pathname.match(/\d+$/);
+          const rawData = document.querySelector('textarea[readonly]')?.value || '';
+          const extractedTitle = document.getElementById('titleBlockText')?.textContent || '';
+          // Gather strategies state from table (if present)
+          const strategies = [];
+          document.querySelectorAll('#strategiesTable tbody tr').forEach(row => {
+            const strat = row.cells[0]?.textContent?.trim();
+            const applied = row.querySelector('.applied')?.textContent?.trim();
+            const result = row.querySelector('.result')?.textContent?.trim();
+            const solved = row.querySelector('.solvedBtn')?.disabled;
+            strategies.push({ strategy: strat, applied, result, solved });
+          });
           fetch(`/api/save_title_solution/${testRecipeId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ solution })
+            body: JSON.stringify({ solution, raw_data: rawData, extracted_title: extractedTitle, strategies })
           })
           .then(resp => resp.json())
           .then(data => {
             if (data.success) {
-              // Redirect to parser debug page for this test recipe
               window.location.href = `/parser_debug/${testRecipeId}`;
             } else {
               alert(data.error || 'Failed to save solution.');
