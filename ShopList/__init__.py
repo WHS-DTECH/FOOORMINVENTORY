@@ -1,3 +1,8 @@
+
+# ...existing code...
+
+# Place the /get_original_recipes route after the blueprint definition
+
 @shoplist_bp.route('/get_original_recipes', methods=['POST'])
 def get_original_recipes():
     """Return original recipe details for selected bookings as JSON."""
