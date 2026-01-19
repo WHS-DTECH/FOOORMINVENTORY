@@ -148,11 +148,11 @@
             {% endfor %}
             {% if cell_bookings %}
               {% for booking in cell_bookings %}
-                {% set teacher_key = booking.staff|default('')|trim|lower %}
+                {% set teacher_key = booking.staff_display|default('')|trim|lower %}
                 <div style="background: {{ teacher_color_map[teacher_key]|e }}; color: #fff; border-radius: 5px; padding: 4px 7px; margin-bottom: 3px; font-size: 0.98em; font-weight: 500;">
-                  <div style="font-weight:bold;">{{ booking.recipe }}</div>
-                  <div>Class: {{ booking.class }}</div>
-                  <div>Teacher: {{ booking.staff }}</div>
+                  <div style="font-weight:bold;">{{ booking.recipe_name }}</div>
+                  <div>Class: {{ booking.class_code }}</div>
+                  <div>Teacher: {{ booking.staff_display }}</div>
                   <div>Servings: {{ booking.servings }}</div>
                 </div>
               {% endfor %}
