@@ -29,9 +29,13 @@
           <span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key] }};"></span>
           {{ tinfo.teacher }} ({{ tinfo.staff_code }})
         </div>
-        <ul style="margin: 0 0 8px 18px; padding: 0;">
+        <ul style="margin: 0 0 8px 18px; padding: 0; list-style: none;">
           {% for booking in tinfo.bookings %}
-            <li>{{ booking.date }} | {{ booking.class }} | {{ booking.recipe }}</li>
+            <li style="display: flex; align-items: center; margin-bottom: 2px;">
+              <input type="checkbox" class="booking-checkbox" style="margin-right: 8px;" 
+                data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}">
+              <span>{{ booking.date }} | {{ booking.class }} | {{ booking.recipe }}</span>
+            </li>
           {% endfor %}
         </ul>
       {% endfor %}
