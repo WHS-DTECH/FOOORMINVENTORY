@@ -46,7 +46,56 @@
                 </div>
             </div>
         </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">Ingredients</div>
+                <div class="card-body">
+                    {% if recipe_data.ingredients and recipe_data.ingredients|length > 0 %}
+                        <ul>
+                        {% for ing in recipe_data.ingredients %}
+                            <li>{{ ing }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <span class="text-danger">No ingredients found.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">Instructions</div>
+                <div class="card-body">
+                    {% if recipe_data.instructions and recipe_data.instructions|length > 0 %}
+                        <ol>
+                        {% for step in recipe_data.instructions %}
+                            <li>{{ step }}</li>
+                        {% endfor %}
+                        </ol>
+                    {% else %}
+                        <span class="text-danger">No instructions found.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- More content ... -->
+
+    <form method="post" action="/review_recipe_url_action">
+        {# Only include minimal recipe data, excluding raw_data #}
+        <textarea name="recipe_json" style="display:none;">{{ recipe_data | tojson }}</textarea>
+        <button type="submit" name="action" value="confirm" class="btn btn-success">CONFIRM</button>
+        <button type="submit" name="action" value="flag" class="btn btn-warning ms-2">FLAG to TWEAK</button>
+    </form>
+
+    {% if show_debug_prompt and test_recipe_id %}
+    <div class="alert alert-info mt-4">
+        <form method="post" action="/parser_test_decision">
+            <input type="hidden" name="test_recipe_id" value="{{ test_recipe_id }}">
+            <span>Recipe flagged for manual review and stored for parser testing.<br>Do you wish to debug the recipe now?</span><br>
+            <button type="submit" name="debug_now" value="yes" class="btn btn-primary mt-2">Yes, debug now</button>
+            <button type="submit" name="debug_now" value="no" class="btn btn-secondary mt-2">No, just store for future</button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

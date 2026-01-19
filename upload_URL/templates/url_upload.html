@@ -38,6 +38,20 @@
         </ol>
       </div>
     </div>
+    <div class="card">
+      <div class="card-header bg-success text-white">Extracted Instructions</div>
+      <div class="card-body">
+        {% if result.instructions %}
+          <ol>
+            {% for instr in result.instructions %}
+              <li>{{ instr }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="text-danger">No instructions extracted.</p>
+        {% endif %}
+      </div>
+    </div>
   {% endif %}
 </div>
 {% endblock %}
