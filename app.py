@@ -136,11 +136,7 @@ def test_recipe_urls():
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             urls = list(reader)
-        # --- Delete flagged/test recipe from parser_test_recipes ---
-        @app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
-        @require_role('Admin')
     return render_template('test_recipe_urls.html', urls=urls, message=message)
-@require_role('Admin', 'Teacher')
 
 
 
