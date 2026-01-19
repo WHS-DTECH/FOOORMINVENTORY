@@ -1,0 +1,79 @@
+<!-- Recipe Book Setup Admin Page -->
+{% extends "base.html" %}
+{% block content %}
+<style>
+.recipe-setup-container {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    margin-top: 2em;
+}
+.recipe-setup-left,
+.recipe-setup-right {
+    flex: 1 1 0;
+    min-width: 320px;
+}
+@media (max-width: 900px) {
+    .recipe-setup-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+</style>
+<div class="recipe-setup-container">
+    <div class="recipe-setup-left">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                Recipe Book Setup
+            </div>
+            <div class="card-body">
+                <!-- Upload Recipe (Form) -->
+                <h5>Upload Recipe (Form)</h5>
+                <p>Manually enter recipe details using a form.</p>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
+                <hr>
+                <!-- Upload Recipe (PDF) -->
+                <h5>Upload Recipe (PDF)</h5>
+                <p>Extract recipes from a PDF file.</p>
+                <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+                    <label>Select PDF file:</label>
+                    <div class="mb-2">
+                        <input type="file" name="pdf_file" class="form-control">
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="showTitles" name="show_titles">
+                        <label class="form-check-label" for="showTitles">Show only recipe titles (first step)</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block mb-3">Upload PDF</button>
+                </form>
+                <hr>
+                <!-- Load Recipe (URL) -->
+                <h5>Load Recipe (URL)</h5>
+                <p>Import recipe from a website URL.</p>
+                <form method="post" action="{{ url_for('load_recipe_url') }}">
+                    <input type="text" name="recipe_url" class="form-control mb-2" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/...">
+                    <button type="submit" class="btn btn-success btn-block mb-3">Load from URL</button>
+                </form>
+                <hr>
+                <!-- Clean Database -->
+                <!-- ...rest of template... -->
+            </div>
+        </div>
+    </div>
+    <div class="recipe-setup-right">
+        <!-- Right column content (e.g., recipe list, actions) -->
+        {% if recipe_list %}
+        <div class="card">
+            <div class="card-header">Recipe List</div>
+            <div class="card-body">
+                <ul class="list-group">
+                {% for recipe in recipe_list %}
+                    <li class="list-group-item">{{ recipe.name }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
