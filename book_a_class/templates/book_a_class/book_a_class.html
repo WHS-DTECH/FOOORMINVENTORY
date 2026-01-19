@@ -4,30 +4,36 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container">
-    <h1 class="section-title mb-4">Book a Class</h1>
-    <form id="classForm" onsubmit="return false;">
-      <div class="card mb-4">
-        <div class="row g-3 align-items-end">
-          <div class="col-md-3">
-            <label for="staff" class="form-label">Staff</label>
-            <select id="staff" name="staff" class="form-select">
-              <option value="">-- choose staff --</option>
-              {% if most_used_staff_count > 0 %}
-                <optgroup label="Frequently Used">
-                  {% for s in staff[:most_used_staff_count] %}
-                    <option value="{{ s.code }}"{% if s.code == pre_staff_code %} selected{% endif %}>{{ s.code }} - {{ s.last_name }}, {{ s.first_name }}</option>
-                  {% endfor %}
-                </optgroup>
-                <optgroup label="All Staff">
-                  {% for s in staff[most_used_staff_count:] %}
-                    <option value="{{ s.code }}"{% if s.code == pre_staff_code %} selected{% endif %}>{{ s.code }} - {{ s.last_name }}, {{ s.first_name }}</option>
-                  {% endfor %}
-                </optgroup>
-              {% else %}
-                {% for s in staff %}
-                  <option value="{{ s.code }}"{% if s.code == pre_staff_code %} selected{% endif %}>{{ s.code }} - {{ s.last_name }}, {{ s.first_name }}</option>
-                {% endfor %}
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label for="staffSelect">Staff</label>
+        <select id="staffSelect" name="staff" class="form-control">
+          <!-- staff options -->
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="classSelect">Class</label>
+        <select id="classSelect" name="class" class="form-control">
+          <!-- class options -->
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="recipeSelect">Choose recipe</label>
+        <select id="recipeSelect" name="recipe" class="form-control">
+          <!-- recipe options -->
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="dateRequired">Date required</label>
+        <input type="text" id="dateRequired" name="date_required" class="form-control" placeholder="dd/mm/yyyy">
+      </div>
+      <div class="col-md-3">
+        <label for="periodSelect">Class slot (period)</label>
+        <select id="periodSelect" name="period" class="form-control">
+          <!-- period options -->
+        </select>
+      </div>
+    </div>
               {% endif %}
             </select>
           </div>
@@ -76,31 +82,27 @@
 
     <div class="row g-4">
       <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <label for="recipeSelect" class="form-label"><strong>Choose recipe</strong></label>
-            <select id="recipeSelect" class="form-select mb-3">
-              <option value="">-- choose recipe --</option>
-              {% for r in recipes %}
-                <option value="{{ r.id }}"{% if r.id == pre_recipe_id %} selected{% endif %}>{{ r.name }}</option>
-              {% endfor %}
-            </select>
-            <div id="recipeIngredients" class="mt-3">
-              <h5>Original Ingredients</h5>
-              <div class="text-muted small">Select a recipe to show its ingredients here.</div>
-              <ul id="origList" class="mb-0"></ul>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="card mb-3 p-3">
+              <div id="originalIngredientsBox" class="mt-2">
+                <strong>Original Ingredients</strong>
+                <div id="originalIngredients">Select a recipe to show its ingredients here.</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mb-3 p-3">
+              <label for="servingsInput">Enter desired servings</label>
+              <input type="number" id="servingsInput" name="servings" class="form-control" value="24">
+              <button type="button" id="calculateServingsBtn" class="btn btn-primary mt-2">Calculate for Desired Serving Size</button>
+              <div id="calculatedIngredientsBox" class="mt-2">
+                <strong>Calculated Ingredients</strong>
+                <div id="calculatedIngredients">Single serving amounts multiplied by desired servings</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <div class="mb-3">
-              <label for="desiredServings" class="form-label"><strong>Enter desired servings</strong></label>
-              <input type="number" id="desiredServings" class="form-control mb-2" value="{{ pre_servings or 24 }}" min="1" />
-              <div class="d-flex gap-2">
-                <button id="calcBtn" class="btn btn-primary">Calculate for Desired Serving Size</button>
               </div>
             </div>
             <h5>Calculated Ingredients</h5>
