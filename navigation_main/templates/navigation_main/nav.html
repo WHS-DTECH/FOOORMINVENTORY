@@ -9,7 +9,7 @@
       <li class="nav-item dropdown">
         <a href="#" class="dropdown-toggle" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-          <li><a class="dropdown-item" href="{{ url_for('admin') }}">Admin Dashboard</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('admin_task.admin') }}">Admin Dashboard</a></li>
           <li><a class="dropdown-item" href="{{ url_for('admin_recipe_book_setup') }}">Recipe Book Setup</a></li>
           <li><a class="dropdown-item" href="{{ url_for('admin_permissions') }}">Manage Role Permissions</a></li>
           <li><a class="dropdown-item" href="{{ url_for('admin_user_roles') }}">Manage User Roles</a></li>
@@ -17,7 +17,7 @@
         </ul>
       </li>
     {% else %}
-      <li class="nav-item"><a href="{{ url_for('admin') }}">Admin</a></li>
+      <li class="nav-item"><a href="{{ url_for('admin_task.admin') }}">Admin</a></li>
     {% endif %}
     {% if current_user.is_authenticated %}
       <li class="nav-item nav-user">{{ current_user.name or current_user.email }}
