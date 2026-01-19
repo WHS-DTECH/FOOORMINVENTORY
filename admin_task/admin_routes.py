@@ -1,3 +1,20 @@
+# --- Admin Permissions Page ---
+@admin_task_bp.route('/admin/permissions')
+@require_role('Admin')
+def admin_permissions():
+    # Dummy data for now; replace with real DB logic as needed
+    roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
+    permissions = {role: [] for role in roles}
+    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
+    return render_template('admin_task/admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
+
+# --- Admin User Roles Page ---
+@admin_task_bp.route('/admin/user_roles')
+@require_role('Admin')
+def admin_user_roles():
+    # Dummy data for now; replace with real DB logic as needed
+    users = []
+    return render_template('admin_task/admin_user_roles.html', users=users)
 
 # admin_task/routes.py
 from flask import render_template, request, redirect, url_for, flash, jsonify, session
