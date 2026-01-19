@@ -1,3 +1,7 @@
+# --- Redirect old /class_ingredients route to new /book_a_class route ---
+@app.route('/class_ingredients', methods=['GET', 'POST'])
+def redirect_class_ingredients():
+    return redirect(url_for('book_a_class.book_a_class'), code=301)
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
