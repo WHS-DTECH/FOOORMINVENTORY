@@ -78,7 +78,7 @@ def class_ingredients():
         ''')
         bookings = [dict(row) for row in c.fetchall()]
 
-    return render_template('class_ingredients/class_ingred.html', staff=staff, classes=classes, recipes=recipes,
+    return render_template('class_ingred.html', staff=staff, classes=classes, recipes=recipes,
                           bookings=bookings,
                           most_used_staff_count=len(most_used_staff), most_used_classes_count=len(most_used_classes),
                           pre_staff_code=staff_code, pre_class_code=class_code, 
