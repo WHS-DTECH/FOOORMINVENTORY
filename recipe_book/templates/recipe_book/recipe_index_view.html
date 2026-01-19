@@ -1,5 +1,0 @@
-{# ...existing code... #}
-<a href="{{ url_for('recipe_book.recipe_source', recipe_id=recipe.id) }}" class="btn btn-info btn-sm mb-3">Source Page</a>
-<a href="{{ url_for('upload_url.url_upload') }}?url={{ recipe.source_url }}" class="btn btn-warning btn-sm mb-3 ms-2">Parser Debug</a>
-<form method="post" action="{{ url_for('recipe_book.flag_parser_issue', recipe_id=recipe.id) }}">
-{# ...existing code... #}

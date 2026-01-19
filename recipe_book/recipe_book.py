@@ -53,7 +53,7 @@ def recbk():
         except Exception:
             favorites = []
 
-    return render_template('recipe_book/recbk.html', rows=rows, q=q, favorites=favorites)
+    return render_template('recbk.html', rows=rows, q=q, favorites=favorites)
 
 @recipe_book_bp.route('/recipe_index/<int:recipe_id>')
 @require_role('Admin')

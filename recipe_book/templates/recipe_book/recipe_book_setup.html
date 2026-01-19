@@ -1,8 +1,0 @@
-<a href="{{ url_for('upload') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
-<form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
-<form method="post" action="{{ url_for('load_recipe_url') }}">
-<form method="post" action="{{ url_for('clean_recipes_route') }}">
-<a href="{{ url_for('recipe_book.recipe_details', recipe_id=recipe.id) }}" class="btn btn-secondary btn-sm">View</a>
-<form method="post" action="{{ url_for('delete_parser_test_recipe', test_recipe_id=recipe.id) }}" style="display:inline;">
-<a href="{{ url_for('debug_parser', debug_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
-<a href="{{ url_for('delete_debug', debug_id=debug.id) }}" class="btn btn-danger btn-sm">Delete</a>

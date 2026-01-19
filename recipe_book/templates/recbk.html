@@ -1,0 +1,311 @@
+
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+body { background: #f8fafc; font-family: 'Inter', 'Roboto', Arial, sans-serif; }
+.recipe-book-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.recipe-book-title { font-size: 2.2rem; font-weight: 700; margin: 0; color: #222; letter-spacing: -1px; }
+/* Floating action button bottom right */
+.suggest-btn-float {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 100;
+  background: #00b894;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 32px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(0,184,148,0.13);
+  transition: background 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.suggest-btn-float:hover { background: #00997a; box-shadow: 0 8px 32px rgba(0,184,148,0.18); }
+.search-bar { max-width: 600px; margin: 20px 0 20px 0; margin-right: 120px; }
+@media (max-width: 700px) {
+  .recipe-grid { grid-template-columns: 1fr; }
+  .suggest-btn-float { right: 16px; bottom: 16px; padding: 12px 18px; font-size: 1rem; }
+  .search-bar { margin-right: 0; }
+}
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+.recipe-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.5rem 1.3rem 1.2rem 1.3rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+.recipe-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+}
+.recipe-title {
+  font-size: 1.18rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #0074d9;
+  text-decoration: none;
+  transition: color 0.13s;
+}
+.recipe-title:hover { color: #00b894; text-decoration: underline; }
+.recipe-meta {
+  font-size: 0.97rem;
+  color: #555;
+  margin-bottom: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.servings-icon { color: #00b894; margin-right: 6px; }
+.source-link { font-size: 0.97em; color: #888; word-break: break-all; }
+.view-btn {
+  background: #0074d9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  align-self: flex-end;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.view-btn:hover { background: #005fa3; }
+.no-results { text-align: center; padding: 40px; color: #666; }
+.search-bar { max-width: 600px; margin: 20px 0; }
+.search-bar input[type="search"] { width: 100%; max-width: 400px; padding: 10px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px; }
+.search-bar button { margin-left: 8px; }
+@media (max-width: 700px) {
+  .recipe-grid { grid-template-columns: 1fr; }
+  .suggest-btn-float { right: 16px; top: 80px; padding: 12px 18px; font-size: 1rem; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="recipe-book-header">
+  <h1 class="recipe-book-title">Recipe Book</h1>
+  <form class="search-bar" method="get" action="/recbk">
+    <input type="search" name="q" placeholder="Search recipes by name or ingredient..." value="{{ q }}" />
+    <button type="submit">Search</button>
+    {% if q %}<a href="/recbk" style="margin-left:8px;">Clear</a>{% endif %}
+  </form>
+</div>
+<button type="button" id="suggestBtn" class="suggest-btn-float">➕ Suggest a Recipe</button>
+{% if q %}
+  <p style="color:#666;font-size:14px; margin-left:24px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
+{% else %}
+  <p style="color:#666;font-size:14px; margin-left:24px;">Showing all {{ rows|length }} recipe(s)</p>
+{% endif %}
+{% if rows %}
+  <div class="recipe-grid">
+    {% for r in rows %}
+      <div class="recipe-card">
+        <a href="/recipe/{{ r.id }}" class="recipe-title">{{ r.name }}</a>
+        <div class="recipe-meta">
+          <span><span class="servings-icon">🍽️</span> {{ r.serving_size or '—' }} servings</span>
+          <span class="source-link">🔗 <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a></span>
+        </div>
+        <a href="/recipe/{{ r.id }}" class="view-btn">View</a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="no-results">
+    <p style="font-size:18px;">No recipes found.</p>
+    {% if q %}
+      <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
+    {% else %}
+      <p>Start by <a href="/">uploading some recipes</a>!</p>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
+
+  <div id="suggestModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background:#fff; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:420px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
+      <span id="closeModal" style="position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
+      <h2 style="margin-top:0; color:#337ab7;">Suggest a Recipe</h2>
+      <form id="suggestForm" method="POST" action="/suggest_recipe">
+        <label for="recipe_name">Recipe Name:</label>
+        <input type="text" id="recipe_name" name="recipe_name" required style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <label for="recipe_url">Recipe URL (optional):</label>
+        <input type="url" id="recipe_url" name="recipe_url" placeholder="https://..." style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <label for="reason">Why do you suggest this?</label>
+        <textarea id="reason" name="reason" rows="2" style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;"></textarea>
+        <label for="suggested_by_name">Your Name:</label>
+        <input type="text" id="suggested_by_name" name="suggested_by_name" required style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <label for="suggested_by_email">Your Email:</label>
+        <input type="email" id="suggested_by_email" name="suggested_by_email" required style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <button type="submit" style="background:#337ab7; color:white; border:none; border-radius:4px; padding:10px 18px; font-size:15px; cursor:pointer; width:100%;">Submit Suggestion</button>
+      </form>
+      <div id="suggestMsg" style="margin-top:10px; font-size:14px;"></div>
+    </div>
+  </div>
+
+  <!-- View toggle removed: only grid view is shown -->
+
+
+  <form class="search-bar" method="get" action="/recbk">
+    <input type="search" name="q" placeholder="Search recipes by name or ingredient..." value="{{ q }}" />
+    <button type="submit">Search</button>
+    {% if q %}<a href="/recbk" style="margin-left:8px;">Clear</a>{% endif %}
+  </form>
+
+
+
+  {% if q %}
+    <p style="color:#666;font-size:14px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
+  {% else %}
+    <p style="color:#666;font-size:14px;">Showing all {{ rows|length }} recipe(s)</p>
+  {% endif %}
+
+  {% if rows %}
+    <div class="recipe-grid">
+      {% for r in rows %}
+        <div class="recipe-card">
+          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
+          <div class="recipe-meta">
+            <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
+            <strong>Source:</strong> <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a>
+          </div>
+          <div class="mt-2 d-flex justify-content-end">
+            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <!-- TABLE VIEW -->
+    <div id="tableView" class="recipe-table hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Serves</th>
+            <th>Ingredients</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
+            <td>{{ r.serving_size or '—' }}</td>
+            <td>
+              {% if r.ingredients %}
+                {{ r.ingredients|length }} items
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="no-results">
+      <p style="font-size:18px;">No recipes found.</p>
+      {% if q %}
+        <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
+      {% else %}
+        <p>Start by <a href="/">uploading some recipes</a>!</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+// Optional: AJAX submit for better UX
+suggestForm.onsubmit = async function(e) {
+  e.preventDefault();
+  suggestMsg.textContent = 'Submitting...';
+  const formData = new FormData(suggestForm);
+  try {
+    const response = await fetch('/suggest_recipe', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    if (data.success) {
+      suggestMsg.style.color = '#3c763d';
+      suggestMsg.textContent = 'Thank you for your suggestion!';
+      setTimeout(() => { suggestModal.style.display = 'none'; }, 1200);
+    } else {
+      suggestMsg.style.color = '#a94442';
+      suggestMsg.textContent = data.message || 'Submission failed.';
+    }
+  } catch (err) {
+    suggestMsg.style.color = '#a94442';
+    suggestMsg.textContent = 'Error submitting suggestion.';
+  }
+}
+// View switcher with localStorage persistence
+function switchView(view) {
+  const gridView = document.getElementById('gridView');
+  const tableView = document.getElementById('tableView');
+  const gridBtn = document.getElementById('gridViewBtn');
+  const tableBtn = document.getElementById('tableViewBtn');
+  
+  if (view === 'grid') {
+    gridView.classList.remove('hidden');
+    tableView.classList.add('hidden');
+    gridBtn.classList.add('active');
+    tableBtn.classList.remove('active');
+    localStorage.setItem('recipeView', 'grid');
+  } else {
+    gridView.classList.add('hidden');
+    tableView.classList.remove('hidden');
+    gridBtn.classList.remove('active');
+    tableBtn.classList.add('active');
+    localStorage.setItem('recipeView', 'table');
+  }
+}
+
+// Load saved view preference on page load (default to grid)
+window.addEventListener('DOMContentLoaded', function() {
+  const savedView = localStorage.getItem('recipeView') || 'grid';
+  switchView(savedView);
+});
+
+// Toggle favorite
+async function toggleFavorite(recipeId, button) {
+  const isFavorited = button.classList.contains('favorited');
+  const url = isFavorited ? `/recipe/unfavorite/${recipeId}` : `/recipe/favorite/${recipeId}`;
+  
+  try {
+    const response = await fetch(url, { method: 'POST' });
+    const data = await response.json();
+    
+    if (data.success) {
+      if (isFavorited) {
+        button.classList.remove('favorited');
+        button.textContent = '☆';
+        button.title = 'Add to favorites';
+      } else {
+        button.classList.add('favorited');
+        button.textContent = '★';
+        button.title = 'Remove from favorites';
+      }
+    } else {
+      alert('Error: ' + data.message);
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    alert('Failed to update favorite');
+  }
+}
+</script>
+
+</body>
+</html>
