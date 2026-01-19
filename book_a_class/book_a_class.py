@@ -224,41 +224,7 @@ def class_ingredients_delete(booking_id):
         conn.commit()
     return jsonify({'success': True})
 
-    @app.route('/booking/export/ical')
-@require_role('Admin', 'Teacher', 'Technician')
-def export_ical():
-    """Export bookings as iCal format for Google Calendar import."""
-    from datetime import datetime
-    
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('''
-            SELECT 
-                cb.date_required as date,
-                cb.period,
-                cb.staff_code,
-                cb.class_code,
-                r.name as recipe_name,
-                cb.desired_servings as servings,
-                t.first_name || ' ' || t.last_name as staff_name
-            FROM class_bookings cb
-            LEFT JOIN recipes r ON cb.recipe_id = r.id
-            LEFT JOIN teachers t ON cb.staff_code = t.code
-            ORDER BY cb.date_required, cb.period
-        ''')
-        bookings = c.fetchall()
-
-    # Build iCal content
-    ical = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//WHS Food Room//NONSGML v1.0//EN'
-    ]
-    for b in bookings:
-        dt = b['date_required']
-        summary = f"{b['class_code']} - {b['recipe_name']}"
-        description = f"Servings: {b['servings']}"
-        uid = str(uuid.uuid4())
+    # (Removed misplaced export_ical route and function. If needed, define this at the top level, not nested inside another function.)
         ical.append('BEGIN:VEVENT')
         ical.append(f"UID:{uid}")
         ical.append(f"DTSTAMP:{dt.strftime('%Y%m%dT000000Z')}")
