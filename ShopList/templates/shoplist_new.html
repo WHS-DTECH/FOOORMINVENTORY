@@ -23,7 +23,7 @@
       {% endfor %}
       {% for teacher_key, tinfo in teacher_map.items() %}
         <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
-          <span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key]|e }};"></span>
+          <span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key] }};"></span>
           {{ tinfo.teacher }} ({{ tinfo.staff_code }})
         </div>
         <ul style="margin: 0 0 8px 18px; padding: 0;">
