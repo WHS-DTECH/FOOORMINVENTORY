@@ -18,12 +18,19 @@ def book_the_shopping():
     week_label = shoppinglist.get_week_label(week_dates)
     grid = shoppinglist.get_dummy_grid(week_dates)
     # For demo, bookings and recipes are static; replace with real data as needed
-    # Remove scheduled bookings for now
+    # Demo scheduled bookings for popup
+    scheduled_bookings = [
+        {'date': '2026-01-15', 'period': 3, 'staff': 'VP - Pringle, Vanessa', 'class': '100COMP', 'recipe': 'Apple and Sultana Crumble', 'servings': 24},
+        {'date': '2026-01-16', 'period': 1, 'staff': 'Dk - Diplock, Maryke', 'class': 'MEET', 'recipe': 'Chocolate Chip Cookies', 'servings': 12},
+        {'date': '2026-01-19', 'period': 1, 'staff': 'HM - McKee, Holly', 'class': 'WHANAU', 'recipe': 'Apple and Sultana Crumble', 'servings': 24},
+        {'date': '2026-01-20', 'period': 3, 'staff': 'Rs - Reeves, Adrienne', 'class': 'VEHOME', 'recipe': 'Vegetable Couscous', 'servings': 24},
+    ]
     return render_template(
         'shoplist_new.html',
         week_label=week_label,
         week_dates=week_dates,
         grid=grid,
         bookings=[],
-        week_offset=week_offset
+        week_offset=week_offset,
+        scheduled_bookings=scheduled_bookings
     )
