@@ -1,0 +1,225 @@
+# Extracted ShopList/Shopping List related functions from app.py
+
+# --- Google Calendar Export for ShopList ---
+def add_shoplist_to_gcal():
+    try:
+        # Get year and month from query params, default to current month
+        from datetime import datetime
+        year = request.args.get('year', type=int)
+        month = request.args.get('month', type=int)
+        if not year or not month:
+            today = datetime.now()
+            year = today.year
+            month = today.month
+        from calendar import monthrange
+        first_day = datetime(year, month, 1)
+        last_day = datetime(year, month, monthrange(year, month)[1])
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+                         FROM class_bookings cb
+                         LEFT JOIN recipes r ON cb.recipe_id = r.id
+                         WHERE cb.date_required >= %s AND cb.date_required <= %s
+                         ORDER BY cb.date_required, cb.period''', (first_day.date(), last_day.date()))
+            bookings = c.fetchall()
+
+        # Google Calendar API setup
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        # You must have user's credentials in session or DB
+        creds_data = session.get('google_creds')
+        if not creds_data:
+            return jsonify({'error': 'Google authentication required. Please log in with Google.'}), 401
+        creds = Credentials.from_authorized_user_info(creds_data)
+        service = build('calendar', 'v3', credentials=creds)
+
+        calendar_id = 'primary'
+        created = 0
+        for b in bookings:
+            event = {
+                'summary': f"{b['class_code']} - {b['recipe_name']}",
+                'description': f"Servings: {b['servings']}",
+                'start': {
+                    'date': str(b['date_required'])
+                },
+                'end': {
+                    'date': str(b['date_required'])
+                },
+            }
+            service.events().insert(calendarId=calendar_id, body=event).execute()
+            created += 1
+        return jsonify({'success': True, 'created': created})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+# --- API Endpoints for Shopping List ---
+# (toggle, get-status, save, load, export)
+# ...existing code from app.py lines 2195-2660...
+# Copy the full function bodies for:
+#   - toggle_shopping_item
+#   - get_shopping_status
+#   - save_shopping_list
+#   - get_saved_lists
+#   - load_saved_list
+#   - export_shoplist_ical
+
+# (You can copy the full function bodies from app.py for each of these.)
+
+@app.route('/shoplist/export/ical')
+def export_shoplist_ical():
+    """Export shopping list bookings as iCal format for Google Calendar import."""
+    from datetime import datetime, timedelta
+    import uuid
+    # Get year and month from query params, default to current month
+    year = request.args.get('year', type=int)
+    month = request.args.get('month', type=int)
+    if not year or not month:
+        today = datetime.now()
+        year = today.year
+        month = today.month
+    from calendar import monthrange
+    first_day = datetime(year, month, 1)
+    last_day = datetime(year, month, monthrange(year, month)[1])
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+                     FROM class_bookings cb
+                     LEFT JOIN recipes r ON cb.recipe_id = r.id
+                     WHERE cb.date_required >= %s AND cb.date_required <= %s
+                     ORDER BY cb.date_required, cb.period''', (first_day.date(), last_day.date()))
+        bookings = c.fetchall()
+    # Build iCal content
+    ical = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//WHS Food Room//NONSGML v1.0//EN'
+    ]
+    for b in bookings:
+        dt = b['date_required']
+        summary = f"{b['class_code']} - {b['recipe_name']}"
+        description = f"Servings: {b['servings']}"
+        uid = str(uuid.uuid4())
+        ical.append('BEGIN:VEVENT')
+        ical.append(f"UID:{uid}")
+        ical.append(f"DTSTAMP:{dt.strftime('%Y%m%dT000000Z')}")
+        ical.append(f"DTSTART;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"DTEND;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"SUMMARY:{summary}")
+        ical.append(f"DESCRIPTION:{description}")
+        ical.append('END:VEVENT')
+    ical.append('END:VCALENDAR')
+    ical_str = '\r\n'.join(ical)
+    response = app.response_class(
+        ical_str,
+        mimetype='text/calendar',
+        headers={
+            'Content-Disposition': 'attachment; filename=shoplist.ics'
+        }
+    )
+    return response
+
+    
+@app.route('/api/shopping-list/toggle-item', methods=['POST'])
+@require_role('Admin', 'Teacher', 'Technician')
+def toggle_shopping_item():
+    """Toggle 'already have' status for a shopping list item."""
+    data = request.get_json()
+    week_start = data.get('week_start')
+    ingredient_name = data.get('ingredient_name')
+    quantity = data.get('quantity', 0)
+    unit = data.get('unit', '')
+    
+    if not week_start or not ingredient_name:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Check if item exists
+        c.execute('SELECT id, already_have FROM shopping_list_items WHERE week_start = %s AND ingredient_name = %s',
+                  (week_start, ingredient_name))
+        row = c.fetchone()
+        if row:
+            # Toggle status
+            new_status = 0 if row['already_have'] else 1
+            c.execute('UPDATE shopping_list_items SET already_have = %s WHERE id = %s', (new_status, row['id']))
+        else:
+            # Create new item with already_have = 1
+            category = categorize_ingredient(ingredient_name)
+            c.execute('''INSERT INTO shopping_list_items 
+                        (week_start, ingredient_name, quantity, unit, category, already_have)
+                        VALUES (%s, %s, %s, %s, %s, 1)''',
+                      (week_start, ingredient_name, quantity, unit, category))
+            new_status = 1
+        conn.commit()
+    
+    return jsonify({'success': True, 'already_have': new_status})
+
+   @app.route('/api/shopping-list/get-status', methods=['POST'])
+@require_role('Admin', 'Teacher', 'Technician')
+def get_shopping_status():
+    """Get 'already have' status for items in a week."""
+    data = request.get_json()
+    week_start = data.get('week_start')
+    return jsonify({'status': 'not implemented'}), 501
+    if not week_start:
+        return jsonify({'error': 'Missing week_start'}), 400
+    
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT ingredient_name, already_have FROM shopping_list_items WHERE week_start = %s AND already_have = 1',
+                  (week_start,))
+        items = {row['ingredient_name']: row['already_have'] for row in c.fetchall()}
+    
+    return jsonify({'items': items})
+
+
+@app.route('/api/shopping-list/save', methods=['POST'])
+@require_role('Admin', 'Teacher', 'Technician')
+def save_shopping_list():
+    """Save a shopping list for reuse."""
+    data = request.get_json()
+    list_name = data.get('list_name', '').strip()
+    week_label = data.get('week_label', '')
+    items = data.get('items', [])
+    return jsonify({'status': 'not implemented'}), 501
+    if not list_name or not items:
+        return jsonify({'error': 'Missing list name or items'}), 400
+    
+    user_email = current_user.email if current_user.is_authenticated else 'unknown'
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''INSERT INTO saved_shopping_lists (list_name, week_label, items, created_by)
+                        VALUES (%s, %s, %s, %s) RETURNING id''',
+                    (list_name, week_label, json.dumps(items), user_email))
+        list_id = c.fetchone()['id']
+        conn.commit()
+    return jsonify({'success': True, 'list_id': list_id}) 
+
+    @app.route('/api/shopping-list/saved', methods=['GET'])
+@require_role('Admin', 'Teacher', 'Technician')
+def get_saved_lists():
+    """Get all saved shopping lists."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, list_name, week_label, created_at FROM saved_shopping_lists ORDER BY created_at DESC')
+        lists = [dict(row) for row in c.fetchall()]
+    
+    return jsonify({'lists': lists})
+
+
+@app.route('/api/shopping-list/load/<int:list_id>', methods=['GET'])
+@require_role('Admin', 'Teacher', 'Technician')
+def load_saved_list(list_id):
+    """Load a saved shopping list."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM saved_shopping_lists WHERE id = %s', (list_id,))
+        row = c.fetchone()
+        if not row:
+            return jsonify({'error': 'List not found'}), 404
+        list_data = dict(row)
+        list_data['items'] = json.loads(list_data['items'])
+    return jsonify(list_data)
+
