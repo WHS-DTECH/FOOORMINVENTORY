@@ -17,6 +17,32 @@
       <button>Next &#8594;</button>
     </div>
   </div>
+  <div style="display: flex; justify-content: center; margin-top: 40px;">
+    <table style="border-collapse: collapse; background: #f8fafc; box-shadow: 0 2px 8px #e0e4ea; min-width: 700px;">
+      <thead>
+        <tr>
+          <th style="border: 1px solid #cfd8dc; background: #f3f6fa; padding: 8px 12px; font-weight: bold;">Period</th>
+          <th style="border: 1px solid #cfd8dc; background: #e3ecf7; padding: 8px 12px; font-weight: bold;">Monday<br>15/12/25</th>
+          <th style="border: 1px solid #cfd8dc; background: #e3ecf7; padding: 8px 12px; font-weight: bold;">Tuesday<br>16/12/25</th>
+          <th style="border: 1px solid #cfd8dc; background: #e3ecf7; padding: 8px 12px; font-weight: bold;">Wednesday<br>17/12/25</th>
+          <th style="border: 1px solid #cfd8dc; background: #e3ecf7; padding: 8px 12px; font-weight: bold;">Thursday<br>18/12/25</th>
+          <th style="border: 1px solid #cfd8dc; background: #e3ecf7; padding: 8px 12px; font-weight: bold;">Friday<br>19/12/25</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for period in range(1,6) %}
+        <tr>
+          <td style="border: 1px solid #cfd8dc; background: #f3f6fa; text-align: center; font-weight: bold;">P{{ period }}</td>
+          {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+          <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
+            &mdash;
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
   </nav>
