@@ -789,10 +789,9 @@ def uploadclass():
     routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
     return render_template('admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
 
-@app.route('/class_ingredients', methods=['GET', 'POST'])
 @require_role('Admin', 'Teacher')
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['GET', 'POST'], endpoint='main_upload')
 @require_role('Admin')
 def upload():
     # GET request - show the upload form
