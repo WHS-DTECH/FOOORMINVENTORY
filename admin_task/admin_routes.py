@@ -1,3 +1,8 @@
+# --- Recipe Book Setup Page ---
+@admin_task_bp.route('/admin/recipe_book_setup')
+@require_role('Admin')
+def admin_recipe_book_setup():
+    return render_template('admin_task/recipe_book_setup.html')
 # --- Recipe Suggestions Page ---
 @admin_task_bp.route('/admin/recipe_suggestions')
 @require_role('Admin')
