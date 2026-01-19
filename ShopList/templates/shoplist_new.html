@@ -14,6 +14,7 @@
     <div style="max-width: 650px; min-width: 420px; width: 100%; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 14px 16px; text-align: left;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Scheduled Bookings (Sorted by Teacher)</div>
       {% set teacher_map = {} %}
+      {% set teacher_color_map = teacher_color_map if teacher_color_map is defined else {} %}
       {% for b in selected_bookings %}
         {% set teacher_key = b.teacher|trim|lower %}
         {% if teacher_key not in teacher_map %}
