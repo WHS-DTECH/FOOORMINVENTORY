@@ -224,23 +224,5 @@ def class_ingredients_delete(booking_id):
         conn.commit()
     return jsonify({'success': True})
 
-    # (Removed misplaced export_ical route and function. If needed, define this at the top level, not nested inside another function.)
-        ical.append('BEGIN:VEVENT')
-        ical.append(f"UID:{uid}")
-        ical.append(f"DTSTAMP:{dt.strftime('%Y%m%dT000000Z')}")
-        ical.append(f"DTSTART;VALUE=DATE:{dt.strftime('%Y%m%d')}")
-        ical.append(f"DTEND;VALUE=DATE:{dt.strftime('%Y%m%d')}")
-        ical.append(f"SUMMARY:{summary}")
-        ical.append(f"DESCRIPTION:{description}")
-        ical.append('END:VEVENT')
-    ical.append('END:VCALENDAR')
-    ical_str = '\r\n'.join(ical)
-    response = app.response_class(
-        ical_str,
-        mimetype='text/calendar',
-        headers={
-            'Content-Disposition': 'attachment; filename=bookings.ics'
-        }
-    )
-    return response
+
 
