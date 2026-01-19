@@ -13,16 +13,9 @@
     <!-- Selected Bookings Box -->
     <div style="max-width: 420px; width: 100%; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 20px;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Selected Bookings (Sorted by Teacher)</div>
-      {% set teacher_colors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#6d4c41', '#c62828', '#3949ab', '#f57c00'] %}
-      {% set teacher_color_map = {} %}
-      {% set teacher_idx = 0 %}
       {% set teacher_map = {} %}
       {% for b in selected_bookings %}
         {% set teacher_key = b.teacher|trim|lower %}
-        {% if teacher_key not in teacher_color_map %}
-          {% set _ = teacher_color_map.update({teacher_key: teacher_colors[teacher_idx % teacher_colors|length]}) %}
-          {% set teacher_idx = teacher_idx + 1 %}
-        {% endif %}
         {% if teacher_key not in teacher_map %}
           {% set _ = teacher_map.update({teacher_key: {'teacher': b.teacher, 'staff_code': b.staff_code, 'bookings': []}}) %}
         {% endif %}

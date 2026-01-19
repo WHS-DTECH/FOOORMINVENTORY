@@ -72,6 +72,16 @@ def book_the_shopping():
         b['teacher_key'] = b['teacher'].strip().lower()
     selected_bookings = sorted(selected_bookings, key=lambda b: (b['teacher_key'], b['date'], b['class'], b['recipe']))
 
+    # Assign a color to each teacher
+    teacher_colors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#6d4c41', '#c62828', '#3949ab', '#f57c00']
+    teacher_color_map = {}
+    teacher_idx = 0
+    for b in selected_bookings:
+        tkey = b['teacher_key']
+        if tkey not in teacher_color_map:
+            teacher_color_map[tkey] = teacher_colors[teacher_idx % len(teacher_colors)]
+            teacher_idx += 1
+
     # Populate grid with bookings
     for b in scheduled_bookings:
         date_obj = datetime.datetime.strptime(b['date'], '%Y-%m-%d').date()
@@ -87,5 +97,6 @@ def book_the_shopping():
         bookings=scheduled_bookings,
         week_offset=week_offset,
         scheduled_bookings=scheduled_bookings,
-        selected_bookings=selected_bookings
+        selected_bookings=selected_bookings,
+        teacher_color_map=teacher_color_map
     )
