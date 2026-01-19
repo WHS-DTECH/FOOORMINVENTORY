@@ -144,7 +144,7 @@
                 <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
                 <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
                 <div style="font-size: 0.98em;">Servings: {{ booking.servings }}</div>
-                <div style="font-size: 0.98em;">{{ booking.date|date('d/m/Y') }}</div>
+                <div style="font-size: 0.98em;">{{ booking.date.strftime('%d/%m/%Y') }}</div>
                 <div style="font-size: 0.95em; color: #444; margin-top: 2px;">Tap to select</div>
               </div>
             {% else %}
