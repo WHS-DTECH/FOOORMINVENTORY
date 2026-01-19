@@ -276,7 +276,7 @@ def delete_parser_test_recipe(test_recipe_id):
         c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         conn.commit()
     flash('Flagged/test recipe deleted.', 'success')
-    return redirect(url_for('admin_recipe_book_setup'))
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
 
 
 # --- Recipe Index Draft/Test View ---
@@ -686,7 +686,7 @@ def review_recipe_url_action():
     if action == 'confirm':
         # Here you would save the recipe to the database
         flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
-        return redirect(url_for('admin_recipe_book_setup'))
+        return redirect(url_for('admin_task.admin_recipe_book_setup'))
     elif action == 'flag':
         # Insert recipe into parser_test_recipes for URL uploads: always use session['raw_data']
         test_recipe_id = None
@@ -2049,5 +2049,5 @@ def delete_recipe(recipe_id):
         c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
         conn.commit()
     flash('Recipe deleted.', 'success')
-    return redirect(url_for('admin_recipe_book_setup'))
-    return redirect(url_for('admin_recipe_book_setup'))
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
