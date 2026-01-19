@@ -137,7 +137,7 @@ def class_ingredients_download():
 
 
 # --- API endpoint for scheduled bookings (for modal popup) ---
-@app.route('/api/scheduled_bookings')
+@book_a_class_bp.route('/api/scheduled_bookings')
 def api_scheduled_bookings():
     try:
         with get_db_connection() as conn:
