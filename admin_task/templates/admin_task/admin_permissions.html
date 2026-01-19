@@ -59,27 +59,22 @@
                     {% for route in routes %}
                     <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
                         {% set has_permission = permissions.get(role, []) and route in permissions.get(role, []) %}
+                        {% if has_permission %}
+                            {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);" %}
+                            {% set btn_title = "Click to remove access" %}
+                            {% set btn_icon = "✓" %}
+                            {% set action = "remove" %}
+                        {% else %}
+                            {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);" %}
+                            {% set btn_title = "Click to grant access" %}
+                            {% set btn_icon = "✗" %}
+                            {% set action = "add" %}
+                        {% endif %}
                         <form method="post" style="display: inline;">
                             <input type="hidden" name="role" value="{{ role }}">
                             <input type="hidden" name="route" value="{{ route }}">
-                            <input type="hidden" name="action" value="{% if has_permission %}remove{% else %}add{% endif %}">
-                            <button type="submit" style="
-                                background: none;
-                                border: none;
-                                cursor: pointer;
-                                font-size: 28px;
-                                padding: 0;
-                                font-weight: bold;
-                                {% if has_permission %}
-                                color: #00aa00;
-                                text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);
-                                {% else %}
-                                color: #ff0000;
-                                text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);
-                                {% endif %}
-                            " title="{% if has_permission %}Click to remove access{% else %}Click to grant access{% endif %}">
-                                {% if has_permission %}✓{% else %}✗{% endif %}
-                            </button>
+                            <input type="hidden" name="action" value="{{ action }}">
+                            <button type="submit" style="{{ btn_style }}" title="{{ btn_title }}">{{ btn_icon }}</button>
                         </form>
                     </td>
                     {% endfor %}
