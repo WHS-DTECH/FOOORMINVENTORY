@@ -141,44 +141,9 @@ def format_nz_week(label):
         return f"{start} to {end}"
     return label
 
-
-# =======================
-# Utility: Extract all visible text from a URL or PDF
-# =======================
-def extract_raw_text_from_url(url):
-    global requests, BeautifulSoup, PyPDF2
-    if requests is None:
-        return None, 'Requests library not installed.'
-    try:
-        resp = requests.get(url, timeout=10)
-    except Exception as e:
-        return None, f'Failed to fetch URL: {e}'
-    if resp.status_code != 200:
-        return None, f'URL returned status code {resp.status_code}'
-    content_type = resp.headers.get('Content-Type', '')
-    if 'pdf' in content_type or url.lower().endswith('.pdf'):
-        if not PyPDF2:
-            return None, 'PyPDF2 not installed.'
-        try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(resp.content))
-            full_text = "\n".join([page.extract_text() or '' for page in pdf_reader.pages])
-            return full_text, None
-        except Exception as e:
-            return None, f'PDF extraction failed: {e}'
-    else:
-        html = resp.text
-        if BeautifulSoup is None:
-            return html, None
-        soup = BeautifulSoup(html, 'html.parser')
-        texts = soup.stripped_strings
-        visible_text = "\n".join(texts)
-        return visible_text, None
-
 # =======================
 # Features: Recipe Book Routes
 # =======================
-
-
 
 # --- Delete flagged/test recipe from parser_test_recipes ---
 @app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
@@ -218,80 +183,6 @@ def flag_parser_issue(recipe_id):
     steps_applied = []
 
     log.append(f"Fetching URL: {url}")
-
-
-# --- Title Extraction Strategies ---
-def extract_title_candidates(raw_html):
-    candidates = []
-    best_guess = None
-    import re
-    try:
-        from bs4 import BeautifulSoup
-    except ImportError:
-        BeautifulSoup = None
-    # 1. <title> tag
-    title_tag = None
-    if BeautifulSoup:
-        soup = BeautifulSoup(raw_html, 'html.parser')
-        title_tag = soup.title.string.strip() if soup.title and soup.title.string else None
-    else:
-        m = re.search(r'<title>(.*?)</title>', raw_html, re.I|re.S)
-        title_tag = m.group(1).strip() if m else None
-    candidates.append({'name': '<title> tag', 'value': title_tag or '', 'best': False})
-    # 2. og:title meta
-    og_title = None
-    if BeautifulSoup and soup:
-        og = soup.find('meta', property='og:title')
-        og_title = og['content'].strip() if og and og.get('content') else None
-    else:
-        m = re.search(r'<meta[^>]+property=["\"]og:title["\"][^>]+content=["\"](.*?)["\"]', raw_html, re.I|re.S)
-        og_title = m.group(1).strip() if m else None
-    candidates.append({'name': 'og:title meta', 'value': og_title or '', 'best': False})
-    # 3. First <h1>
-    h1 = None
-    if BeautifulSoup and soup:
-        h1tag = soup.find('h1')
-        h1 = h1tag.get_text(strip=True) if h1tag else None
-    else:
-        m = re.search(r'<h1[^>]*>(.*?)</h1>', raw_html, re.I|re.S)
-        h1 = m.group(1).strip() if m else None
-    candidates.append({'name': 'First <h1>', 'value': h1 or '', 'best': False})
-    # 4. JSON-LD schema.org name
-    jsonld_title = None
-    if BeautifulSoup and soup:
-        for script in soup.find_all('script', type='application/ld+json'):
-            try:
-                import json
-                data = json.loads(script.string)
-                if isinstance(data, dict) and 'name' in data:
-                    jsonld_title = data['name']
-                    break
-                elif isinstance(data, list):
-                    for entry in data:
-                        if isinstance(entry, dict) and 'name' in entry:
-                            jsonld_title = entry['name']
-                            break
-            except Exception:
-                continue
-    candidates.append({'name': 'schema.org/JSON-LD name', 'value': jsonld_title or '', 'best': False})
-    # 5. Heuristic: First large/bold text (e.g., <b>, <strong>, <h2>)
-    heuristic = None
-    if BeautifulSoup and soup:
-        for tag in soup.find_all(['h2', 'b', 'strong']):
-            txt = tag.get_text(strip=True)
-            if txt and len(txt) > 5:
-                heuristic = txt
-                break
-    candidates.append({'name': 'Heuristic: first large/bold text', 'value': heuristic or '', 'best': False})
-    # Pick best guess (first non-empty in priority order)
-    for cand in candidates:
-        if cand['value']:
-            cand['best'] = True
-            best_guess = cand['value']
-            break
-    return candidates, best_guess or ''
-
-
 
 # --- Alias for /load_recipe_url to support form submissions from templates ---
 @app.route('/load_recipe_url', methods=['POST'])
