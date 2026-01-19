@@ -92,7 +92,6 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 # Register blueprint for debug source url
 app.register_blueprint(debug_source_url_bp)
 
-
 # Register navigation context processor and blueprint
 app.context_processor(nav_context_processor)
 app.register_blueprint(nav_bp)
@@ -100,8 +99,6 @@ app.register_blueprint(nav_bp)
 # Register admin_task blueprint
 from admin_task.admin_routes import admin_task_bp
 app.register_blueprint(admin_task_bp)
-
-
 
 # Register class_ingredients blueprint
 app.register_blueprint(class_ingredients_bp)
@@ -111,6 +108,10 @@ app.register_blueprint(upload_url_bp)
 
 # Register recipe_book blueprint
 app.register_blueprint(recipe_book_bp)
+
+# Register recipe_suggest blueprint
+from recipe_suggest.recipe_suggest import recipe_suggest_bp
+app.register_blueprint(recipe_suggest_bp)
 
 # Error Handlers
 @app.errorhandler(404)
@@ -210,27 +211,6 @@ def flag_parser_issue(recipe_id):
         c.execute('UPDATE recipes SET parser_issue_flag = NOT COALESCE(parser_issue_flag, FALSE) WHERE id = %s', (recipe_id,))
         conn.commit()
     return redirect(url_for('recipe_index_view', recipe_id=recipe_id))
-
-# --- Recipe detail page for /recipe/<int:recipe_id> ---
-@app.route('/recipe/<int:recipe_id>')
-@require_login
-def recipe_details(recipe_id):
-    """Display details for a single recipe."""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
-        recipe = c.fetchone()
-        if not recipe:
-            flash('Recipe not found.', 'error')
-            return redirect(url_for('recbk'))
-        # Convert ingredients and instructions if stored as JSON/text
-        import json
-        try:
-            if isinstance(recipe['ingredients'], str):
-                recipe['ingredients'] = json.loads(recipe['ingredients'])
-        except Exception:
-            pass
-        return render_template('recipe_details.html', recipe=recipe)
 
 
 # --- Recipe Source Page ---
@@ -779,25 +759,6 @@ def uploadclass():
     return render_template('admin.html', preview_data=rows, suggestions=suggestions)
 
 
-
-    
-    # Only fetch current permissions, do not auto-insert recipe_book_setup for all roles
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
-        c.execute('SELECT role, route FROM role_permissions ORDER BY role, route')
-        permissions = {}
-        for row in c.fetchall():
-            role = row['role']
-            route = row['route']
-            if role not in permissions:
-                permissions[role] = []
-            permissions[role].append(route)
-    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
-    return render_template('admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
-
-@require_role('Admin', 'Teacher')
-
 @app.route('/upload', methods=['GET', 'POST'], endpoint='main_upload')
 @require_role('Admin')
 def upload():
@@ -1117,39 +1078,6 @@ def upload():
 
 
 
-    # Fetch bookings for the week, including teacher name fields
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('''
-            SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings,
-                   cb.staff_code, t.last_name, t.first_name, t.title
-            FROM class_bookings cb
-            LEFT JOIN recipes r ON cb.recipe_id = r.id
-            LEFT JOIN teachers t ON cb.staff_code = t.code
-            WHERE cb.date_required >= %s AND cb.date_required <= %s
-            ORDER BY cb.date_required, cb.period
-        ''', (dates[0]['date'], dates[-1]['date']))
-        bookings = c.fetchall()
-
-        # Fetch all recipes with ingredients for the JS
-        c.execute('SELECT id, name, ingredients FROM recipes')
-        recipes = []
-        for row in c.fetchall():
-            try:
-                ingredients = json.loads(row['ingredients']) if row['ingredients'] else []
-            except Exception:
-                ingredients = []
-            recipes.append({
-                'id': row['id'],
-                'name': row['name'],
-                'ingredients': ingredients
-            })
-
-    # Build grid: {date_P{period}: booking} with date as YYYY-MM-DD string (matches template)
-    grid = {}
-
-
-
 def categorize_ingredient(ingredient_name):
     """Categorize ingredient by store section."""
     name_lower = ingredient_name.lower()
@@ -1202,234 +1130,6 @@ def categorize_ingredient(ingredient_name):
             return 'Beverages'
     
     return 'Other'
-
-
-@app.route('/suggest_recipe', methods=['POST'])
-def suggest_recipe_modal():
-    """Handle AJAX recipe suggestion submissions from modal and return JSON."""
-    try:
-        recipe_name = request.form.get('recipe_name', '').strip()
-        recipe_url = request.form.get('recipe_url', '').strip()
-        reason = request.form.get('reason', '').strip()
-        suggested_by_name = request.form.get('suggested_by_name', '').strip()
-        suggested_by_email = request.form.get('suggested_by_email', '').strip()
-
-        if not recipe_name or not suggested_by_name or not suggested_by_email:
-            return jsonify({'success': False, 'message': 'Recipe name, your name, and email are required.'})
-
-        # Save suggestion to the database
-        try:
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                sql = '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
-                       VALUES (%s, %s, %s, %s, %s, NOW(), %s)'''
-                params = (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, 'pending')
-                c.execute(sql, params)
-                conn.commit()
-        except Exception as db_error:
-            print(f"[ERROR] Failed to save suggestion to DB (modal): {db_error}")
-            import traceback; traceback.print_exc()
-            return jsonify({'success': False, 'message': 'There was an error saving your suggestion. Please try again or contact the VP directly.'})
-
-        # Send email to VP (Vanessa Pringle)
-        email_sent = False
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
-            smtp_port = int(os.getenv('SMTP_PORT', '587'))
-            smtp_username = os.getenv('SMTP_USERNAME')
-            smtp_password = os.getenv('SMTP_PASSWORD')
-            smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
-            vp_email = 'vanessapringle@westlandhigh.school.nz'
-            subject = f"Recipe Suggestion: {recipe_name}"
-            body = f"Recipe Name: {recipe_name}\nURL: {recipe_url}\nReason: {reason}\nSuggested by: {suggested_by_name} ({suggested_by_email})"
-            if smtp_username and smtp_password:
-                msg = MIMEMultipart()
-                msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
-                msg['To'] = vp_email
-                msg['Subject'] = subject
-                msg.attach(MIMEText(body, 'plain'))
-                server = smtplib.SMTP(smtp_server, smtp_port)
-                server.starttls()
-                server.login(smtp_username, smtp_password)
-                server.send_message(msg)
-                server.quit()
-                email_sent = True
-                print(f"Email sent successfully to {vp_email}")
-            else:
-                print("SMTP credentials not configured - email not sent")
-                print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-        except Exception as email_error:
-            print(f"Failed to send email: {email_error}")
-            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-        return jsonify({'success': True, 'email_sent': email_sent})
-    except Exception as e:
-        print(f"Error in suggest_recipe_modal: {e}")
-        import traceback; traceback.print_exc()
-        return jsonify({'success': False, 'message': 'There was an error submitting your suggestion. Please try again or contact the VP directly.'})
-
-# Legacy route for admin/recipes page (kept for compatibility)
-@app.route('/recipes/suggest', methods=['POST'])
-@require_login
-# @Grapplinks[#URL]
-def suggest_recipe():
-    """Handle recipe suggestion submissions and email to VP"""
-    try:
-        recipe_name = request.form.get('recipe_name', '').strip()
-        recipe_url = request.form.get('recipe_url', '').strip()
-        reason = request.form.get('reason', '').strip()
-
-        if not recipe_name:
-            flash('Recipe name is required.', 'error')
-            return redirect(url_for('recipes_page'))
-
-        # Set recipient email directly (Vanessa Pringle)
-        vp_email = 'vanessapringle@westlandhigh.school.nz'
-
-        # Get current user info safely
-        user_name = current_user.name if hasattr(current_user, 'name') else 'Unknown User'
-        user_email = current_user.email if hasattr(current_user, 'email') else 'No email'
-
-        # Define subject and body for the email
-        subject = f"Recipe Suggestion: {recipe_name}"
-        body = f"Recipe Name: {recipe_name}\nURL: {recipe_url}\nReason: {reason}\nSuggested by: {user_name} ({user_email})"
-
-        # Save suggestion to the database (only once)
-        try:
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                sql = '''INSERT INTO recipe_suggestions (recipe_name, recipe_url, reason, suggested_by_name, suggested_by_email, created_at, status)
-                       VALUES (%s, %s, %s, %s, %s, NOW(), %s)'''
-                params = (recipe_name, recipe_url, reason, user_name, user_email, 'pending')
-                print("[DEBUG] About to execute SQL for recipe suggestion:")
-                print("[DEBUG] SQL:", sql)
-                print("[DEBUG] Params:", params)
-                try:
-                    c.execute(sql, params)
-                    conn.commit()
-                    print("[DEBUG] Insert committed successfully.")
-                except Exception as exec_error:
-                    print(f"[ERROR] Exception during SQL execute: {exec_error}")
-                    import traceback; traceback.print_exc()
-                    flash('There was an error saving your suggestion (SQL error). Please try again or contact the VP directly.', 'error')
-                    return redirect(url_for('recipes_page'))
-        except Exception as db_error:
-            print(f"[ERROR] Failed to save suggestion to DB (outer): {db_error}")
-            import traceback; traceback.print_exc()
-            flash('There was an error saving your suggestion (DB error). Please try again or contact the VP directly.', 'error')
-            return redirect(url_for('recipes_page'))
-
-        # Only send email after successful DB insert
-        email_sent = False
-        try:
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
-            smtp_port = int(os.getenv('SMTP_PORT', '587'))
-            smtp_username = os.getenv('SMTP_USERNAME')
-            smtp_password = os.getenv('SMTP_PASSWORD')
-            smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
-            if smtp_username and smtp_password:
-                msg = MIMEMultipart()
-                msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
-                msg['To'] = vp_email
-                msg['Subject'] = subject
-                msg.attach(MIMEText(body, 'plain'))
-                server = smtplib.SMTP(smtp_server, smtp_port)
-                server.starttls()
-                server.login(smtp_username, smtp_password)
-                server.send_message(msg)
-                server.quit()
-                email_sent = True
-                print(f"Email sent successfully to {vp_email}")
-            else:
-                print("SMTP credentials not configured - email not sent")
-                print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-        except Exception as email_error:
-            print(f"Failed to send email: {email_error}")
-            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
-
-        if email_sent:
-            flash(f'Thank you! Your suggestion for "{recipe_name}" has been emailed to the VP and saved to the database.', 'success')
-        else:
-            flash(f'Thank you! Your suggestion for "{recipe_name}" has been saved. The VP will review it in the Admin panel.', 'success')
-
-    except Exception as e:
-        print(f"Error in suggest_recipe: {e}")
-        import traceback
-        traceback.print_exc()
-        flash('There was an error submitting your suggestion. Please try again or contact the VP directly.', 'error')
-
-    return redirect(url_for('recipes_page'))
-
-
-@app.route('/recbk')
-def recbk():
-    q = request.args.get('q', '').strip()
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        if q:
-            term = f"%{q}%"
-            c.execute(
-                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty, source_url FROM recipes "
-                "WHERE name ILIKE %s OR ingredients ILIKE %s "
-                "ORDER BY LOWER(name)",
-                (term, term),
-            )
-        else:
-            c.execute(
-                "SELECT id, name, ingredients, instructions, serving_size, equipment, dietary_tags, cuisine, difficulty, source_url FROM recipes "
-                "ORDER BY LOWER(name)"
-            )
-        rows = [dict(r) for r in c.fetchall()]
-
-    # Decode JSON fields for template
-    for r in rows:
-        try:
-            r['ingredients'] = json.loads(r.get('ingredients') or '[]')
-        except Exception:
-            r['ingredients'] = []
-        try:
-            r['equipment'] = json.loads(r.get('equipment') or '[]')
-        except Exception:
-            r['equipment'] = []
-        try:
-            r['dietary_tags_list'] = json.loads(r.get('dietary_tags') or '[]')
-        except Exception:
-            r['dietary_tags_list'] = []
-
-    # Get user's favorites if logged in
-    favorites = []
-    if current_user.is_authenticated:
-        try:
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                c.execute('SELECT recipe_id FROM recipe_favorites WHERE user_email = %s', (current_user.email,))
-                favorites = [row[0] for row in c.fetchall()]
-        except Exception:
-            # Table doesn't exist yet - run setup_database.py to create it
-            favorites = []
-
-    return render_template('recbk.html', rows=rows, q=q, favorites=favorites)
-
-
-@app.route('/recipe/favorite/<int:recipe_id>', methods=['POST'])
-@require_login
-def add_favorite(recipe_id):
-    """Add a recipe to user's favorites"""
-    try:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Use ON CONFLICT DO NOTHING for PostgreSQL
-            c.execute('INSERT INTO recipe_favorites (user_email, recipe_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
-                     (current_user.email, recipe_id))
-            conn.commit()
-        return jsonify({'success': True, 'message': 'Added to favorites'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @app.route('/api/update-recipe-tags/<int:recipe_id>', methods=['POST'])
@@ -1574,13 +1274,4 @@ def edit_instructions(recipe_id):
             return redirect(url_for('recbk'))
         return render_template('edit_instructions.html', recipe=recipe)
 
-@app.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
-@require_login
-def delete_recipe(recipe_id):
-    """Delete a recipe and redirect to Recipe Book."""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
-        conn.commit()
-    flash('Recipe deleted.', 'success')
-    return redirect(url_for('admin_task.admin_recipe_book_setup'))
+

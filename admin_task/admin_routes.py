@@ -29,11 +29,6 @@ def admin_user_roles():
 @require_role('Admin')
 def admin_recipe_book_setup():
     return render_template('recipe_book/recipe_book_setup.html')
-# --- Recipe Suggestions Page ---
-@admin_task_bp.route('/admin/recipe_suggestions')
-@require_role('Admin')
-def recipe_suggestions():
-    return render_template('admin_task/admin_recipe_suggestions.html')
 
 # --- Admin Utility: Fix Public Roles ---
 @admin_task_bp.route('/admin/fix_public_roles')

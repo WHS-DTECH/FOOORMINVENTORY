@@ -9,6 +9,7 @@ recipe_book_bp = Blueprint(
     template_folder='templates/recipe_book'
 )
 
+
 @recipe_book_bp.route('/recbk')
 def recbk():
     q = request.args.get('q', '').strip()
@@ -109,3 +110,32 @@ def recipe_book_setup():
         return render_template('recipe_book_setup.html', recipe_list=recipe_list)
     except Exception:
         return render_template('recipe_book_setup.html', recipe_list=[])
+
+
+
+# Add to favorites route
+@recipe_book_bp.route('/recipe/favorite/<int:recipe_id>', methods=['POST'])
+@require_login
+def add_favorite(recipe_id):
+    """Add a recipe to user's favorites"""
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('INSERT INTO recipe_favorites (user_email, recipe_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+                     (current_user.email, recipe_id))
+            conn.commit()
+        return jsonify({'success': True, 'message': 'Added to favorites'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# Delete recipe route
+@recipe_book_bp.route('/recipe/<int:recipe_id>/delete', methods=['POST'])
+@require_login
+def delete_recipe(recipe_id):
+    """Delete a recipe and redirect to Recipe Book."""
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM recipes WHERE id = %s', (recipe_id,))
+        conn.commit()
+    flash('Recipe deleted.', 'success')
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
