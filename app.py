@@ -1584,4 +1584,3 @@ def delete_recipe(recipe_id):
         conn.commit()
     flash('Recipe deleted.', 'success')
     return redirect(url_for('admin_task.admin_recipe_book_setup'))
-    return redirect(url_for('admin_task.admin_recipe_book_setup'))
