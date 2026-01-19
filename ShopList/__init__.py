@@ -71,26 +71,35 @@ def book_the_shopping():
         b['teacher_key'] = b['teacher'].strip().lower()
     selected_bookings = sorted(selected_bookings, key=lambda b: (b['teacher_key'], b['date'], b['class'], b['recipe']))
 
-    # Assign a color to each teacher
+
+    # Assign a color and pastel (light) color to each teacher
     teacher_colors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#6d4c41', '#c62828', '#3949ab', '#f57c00']
+    # Pastel (light) versions for grid backgrounds (manually chosen for readability)
+    teacher_pastel_colors = ['#d6e6fa', '#d6f5d6', '#f9d6d6', '#fdf5d6', '#f3d6fa', '#d6f5f9', '#ede2d6', '#fad6d6', '#e0e6fa', '#fbeed6']
     teacher_color_map = {}
+    teacher_pastel_map = {}
     teacher_idx = 0
     for b in selected_bookings:
         tkey = b['teacher_key']
         if tkey not in teacher_color_map:
             teacher_color_map[tkey] = teacher_colors[teacher_idx % len(teacher_colors)]
+            teacher_pastel_map[tkey] = teacher_pastel_colors[teacher_idx % len(teacher_pastel_colors)]
             teacher_idx += 1
         b['color'] = teacher_color_map[tkey]
+        b['light_color'] = teacher_pastel_map[tkey]
 
-    # Attach color to each scheduled booking (for grid)
+    # Attach color and pastel color to each scheduled booking (for grid)
     for b in scheduled_bookings:
         # Try to match teacher name as in selected_bookings
         teacher = b.get('staff', '').split(' - ', 1)[-1].strip().lower()
         color = teacher_color_map.get(teacher)
+        pastel = teacher_pastel_map.get(teacher)
         if not color:
             # fallback: try staff_code
             color = teacher_color_map.get(b.get('staff', '').strip().lower())
+            pastel = teacher_pastel_map.get(b.get('staff', '').strip().lower())
         b['color'] = color or '#888888'  # fallback gray
+        b['light_color'] = pastel or '#f8fafc'  # fallback very light
 
     # Populate grid with bookings
     for b in scheduled_bookings:
