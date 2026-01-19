@@ -1,6 +1,11 @@
-<!-- Template for parser debug raw view -->
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<h2>Parser Debug Raw for Test Recipe {{ test_recipe_id }}</h2>
-<!-- Add raw data display here -->
+<div class="container mt-4">
+    <h2>Raw Data: Flagged/Test Recipe</h2>
+    <div class="card mt-3">
+        <div class="card-body">
+            <pre>{{ test_recipe | pprint }}</pre>
+        </div>
+    </div>
+</div>
 {% endblock %}
