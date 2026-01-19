@@ -25,6 +25,14 @@ def book_the_shopping():
         {'date': '2026-01-19', 'period': 1, 'staff': 'HM - McKee, Holly', 'class': 'WHANAU', 'recipe': 'Apple and Sultana Crumble', 'servings': 24},
         {'date': '2026-01-20', 'period': 3, 'staff': 'Rs - Reeves, Adrienne', 'class': 'VEHOME', 'recipe': 'Vegetable Couscous', 'servings': 24},
     ]
+    # Demo selected bookings with teacher name and staff code
+    selected_bookings = [
+        {'teacher': 'Pringle, Vanessa', 'staff_code': 'VP', 'date': '2025-12-16', 'class': '300HOSP', 'recipe': 'Chocolate Chip Cookies'},
+        {'teacher': 'Diplock, Maryke', 'staff_code': 'DK', 'date': '2025-12-18', 'class': 'SDFOOD', 'recipe': 'Apple and Sultana Crumble'},
+        {'teacher': 'Pringle, Vanessa', 'staff_code': 'VP', 'date': '2025-12-19', 'class': '300HOSP', 'recipe': 'Cauliflower Cheese'},
+    ]
+    # Sort by teacher, date, class, recipe
+    selected_bookings = sorted(selected_bookings, key=lambda b: (b['teacher'], b['date'], b['class'], b['recipe']))
     return render_template(
         'shoplist_new.html',
         week_label=week_label,
@@ -32,5 +40,6 @@ def book_the_shopping():
         grid=grid,
         bookings=[],
         week_offset=week_offset,
-        scheduled_bookings=scheduled_bookings
+        scheduled_bookings=scheduled_bookings,
+        selected_bookings=selected_bookings
     )

@@ -55,9 +55,9 @@
     <div style="max-width: 420px; width: 100%; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 20px;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Selected Bookings</div>
       <ul style="margin: 0 0 12px 18px; padding: 0;">
-        <li>300HOSP | Chocolate Chip Cookies | P3 | 2025-12-16</li>
-        <li>SDFOOD | Apple and Sultana Crumble | P4 | 2025-12-18</li>
-        <li>300HOSP | Cauliflower Cheese | P4 | 2025-12-19</li>
+        {% for b in selected_bookings %}
+          <li>{{ b.teacher }} ({{ b.staff_code }}) | {{ b.class }} | {{ b.recipe }} | {{ b.date }}</li>
+        {% endfor %}
       </ul>
       <div style="margin-bottom: 0;">
         <button style="margin-right: 4px;">Select All</button>
