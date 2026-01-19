@@ -148,12 +148,14 @@
             {% endfor %}
             {% if cell_bookings %}
               {% for booking in cell_bookings %}
-                {% set teacher_key = booking.staff_display|default('')|trim|lower %}
-                <div style="background: {{ teacher_color_map[teacher_key]|e }}; color: #fff; border-radius: 5px; padding: 4px 7px; margin-bottom: 3px; font-size: 0.98em; font-weight: 500;">
-                  <div style="font-weight:bold;">{{ booking.recipe_name }}</div>
-                  <div>Class: {{ booking.class_code }}</div>
-                  <div>Teacher: {{ booking.staff_display }}</div>
-                  <div>Servings: {{ booking.servings }}</div>
+                {% set teacher_key = booking.staff|default('')|trim|lower %}
+                <div style="background: #d6f5d6; color: #222; border: 1px solid #b2e6b2; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
+                  <div style="font-weight: bold; font-size: 1.08em; margin-bottom: 2px;">{{ booking.recipe }}</div>
+                  <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
+                  <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
+                  <div style="font-size: 0.98em;">Servings: {{ booking.servings }}</div>
+                  <div style="font-size: 0.98em;">{{ booking.date|date('d/m/Y') }}</div>
+                  <div style="font-size: 0.95em; color: #444; margin-top: 2px;">Tap to select</div>
                 </div>
               {% endfor %}
             {% else %}
