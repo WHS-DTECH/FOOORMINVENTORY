@@ -22,7 +22,7 @@
         {% if teacher_key not in teacher_map %}
           {% set _ = teacher_map.update({teacher_key: {'teacher': b.teacher, 'staff_code': b.staff_code, 'bookings': []}}) %}
         {% endif %}
-        {% set _ = teacher_map[teacher_key]['bookings'].append({'date': b.date, 'class': b.class, 'recipe': b.recipe}) %}
+        {% set _ = teacher_map[teacher_key]['bookings'].append({'date': b.date, 'class': b.class, 'recipe': b.recipe, 'servings': b.get('servings', '')}) %}
       {% endfor %}
       {% for teacher_key, tinfo in teacher_map.items() %}
         <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
@@ -34,7 +34,7 @@
             <li style="display: flex; align-items: center; margin-bottom: 2px;">
               <input type="checkbox" class="booking-checkbox" style="margin-right: 8px;" 
                 data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}">
-              <span>{{ booking.date }} | {{ booking.class }} | {{ booking.recipe }}</span>
+              <span>{{ booking.date }} | {{ booking.class }} | {{ booking.recipe }}{% if booking.servings %} ({{ booking.servings }} servings){% endif %}</span>
             </li>
           {% endfor %}
         </ul>
