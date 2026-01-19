@@ -2,10 +2,11 @@ from flask import Blueprint, render_template
 
 shoplist_bp = Blueprint('shoplist', __name__, template_folder='templates')
 
-@shoplist_bp.route('/shoplist')
-def shoplist():
-    """Serve the rebuilt Shopping List page (now default)."""
-    # Pass dummy data to prevent template errors
+
+# Route for the new menu item 'Book the Shopping'
+@shoplist_bp.route('/book_the_shopping')
+def book_the_shopping():
+    """Serve the new Shopping List UI for the Book the Shopping menu item."""
     bookings = []
     recipes = []
     dates = []
