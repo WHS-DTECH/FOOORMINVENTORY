@@ -8,7 +8,7 @@ def nav_context_processor():
             {'name': 'Food Room', 'endpoint': 'index'},
             {'name': 'Recipe Book', 'endpoint': 'recbk'},
             {'name': 'Class Ingredients', 'endpoint': 'class_ingredients'},
-            {'name': 'Shopping List', 'endpoint': 'book_the_shopping'},
+            {'name': 'Book the Shopping', 'endpoint': 'shoplist.book_the_shopping'},
             {'name': 'Admin', 'endpoint': 'admin'},
         ]
     }
