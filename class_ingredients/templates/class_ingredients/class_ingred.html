@@ -158,12 +158,11 @@
         {% endif %}
       </div>
   {% endblock %}
-
-  {% block scripts %}
-  <script>
+{% block scripts %}
+<script>
 const recipes = {{ recipes|tojson | safe }};
-const preRecipeId = {{ pre_recipe_id or 'null' }};
-const preServings = {{ pre_servings or 'null' }};
+const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
+const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
 
 function findRecipe(id){
   if(!recipes) return null;
