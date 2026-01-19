@@ -586,37 +586,9 @@ window.addEventListener('DOMContentLoaded', function() {
       for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
       return colors[Math.abs(hash) % colors.length];
     }
-    function renderTeacherLegend() {
-      // Collect unique teacher names from bookings
-      const teacherSet = new Set();
-      (window.bookings || []).forEach(b => {
-        if (b.last_name) teacherSet.add(b.last_name);
-        else if (b.staff_code) teacherSet.add(b.staff_code);
-      });
-      const legendDiv = document.getElementById('teacher-legend');
-      legendDiv.innerHTML = '';
-      teacherSet.forEach(name => {
-        const swatch = document.createElement('span');
-        swatch.className = 'legend-color';
-        swatch.style.background = getTeacherColor(name);
-        swatch.style.display = 'inline-block';
-        swatch.style.width = '20px';
-        swatch.style.height = '20px';
-        swatch.style.marginRight = '6px';
-        swatch.style.borderRadius = '4px';
-        swatch.style.border = '1px solid #bbb';
-        const label = document.createElement('span');
-        label.textContent = name;
-        label.style.marginRight = '12px';
-        label.style.fontWeight = '500';
-        label.style.color = '#222';
-        legendDiv.appendChild(swatch);
-        legendDiv.appendChild(label);
-      });
-    }
-    document.addEventListener('DOMContentLoaded', renderTeacherLegend);
-    // Also re-render legend after AJAX loads or view switches
-    window.renderTeacherLegend = renderTeacherLegend;
+    // Remove duplicate renderTeacherLegend and use renderShoplistLegend everywhere
+    document.addEventListener('DOMContentLoaded', renderShoplistLegend);
+    window.renderTeacherLegend = renderShoplistLegend;
     </script>
     <!-- View Toggle -->
     <div class="col-12 col-md-8 d-flex align-items-center" style="min-width:200px; flex: 2 1 320px;">
