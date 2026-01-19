@@ -1,4 +1,3 @@
-
 from flask import Blueprint, render_template, request
 from . import shoppinglist
 from auth import get_db_connection
@@ -81,6 +80,17 @@ def book_the_shopping():
         if tkey not in teacher_color_map:
             teacher_color_map[tkey] = teacher_colors[teacher_idx % len(teacher_colors)]
             teacher_idx += 1
+        b['color'] = teacher_color_map[tkey]
+
+    # Attach color to each scheduled booking (for grid)
+    for b in scheduled_bookings:
+        # Try to match teacher name as in selected_bookings
+        teacher = b.get('staff', '').split(' - ', 1)[-1].strip().lower()
+        color = teacher_color_map.get(teacher)
+        if not color:
+            # fallback: try staff_code
+            color = teacher_color_map.get(b.get('staff', '').strip().lower())
+        b['color'] = color or '#888888'  # fallback gray
 
     # Populate grid with bookings
     for b in scheduled_bookings:

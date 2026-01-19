@@ -81,9 +81,14 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 # Register blueprint for debug source url
 app.register_blueprint(debug_source_url_bp)
 
+
 # Register navigation context processor and blueprint
 app.context_processor(nav_context_processor)
 app.register_blueprint(nav_bp)
+
+# Register admin_task blueprint
+from admin_task.routes import admin_task_bp
+app.register_blueprint(admin_task_bp)
 
 # Error Handlers
 @app.errorhandler(404)
@@ -97,34 +102,6 @@ def internal_error(error):
     return "An internal error occurred. Please try again later.", 500
 
 
-# =======================
-# Admin Utility Routes
-# =======================
-@app.route('/admin/fix_public_roles')
-@require_role('Admin')
-def fix_public_roles():
-    """Ensure every user in teachers and user_roles has a 'public' role in user_roles if not already present."""
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT DISTINCT email FROM teachers WHERE email IS NOT NULL')
-        teacher_emails = {row['email'].strip().lower() for row in c.fetchall()}
-        c.execute('SELECT DISTINCT email FROM user_roles')
-        user_roles_emails = {row['email'].strip().lower() for row in c.fetchall()}
-        all_emails = teacher_emails | user_roles_emails
-        missing_public = []
-        for email in all_emails:
-            c.execute('SELECT 1 FROM user_roles WHERE email = %s AND role = %s', (email, 'Public Access'))
-            if not c.fetchone():
-                missing_public.append(email)
-        for email in missing_public:
-            c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s)', (email, 'Public Access'))
-        conn.commit()
-    return f"Added 'Public Access' role for {len(missing_public)} users: {', '.join(missing_public)}"
-
-"""
-Inventory app main entrypoint
-Best practice: All imports first, then utility functions, then app creation/config, then routes.
-"""
 
 # =======================
 # Test Routes
@@ -159,6 +136,9 @@ def test_recipe_urls():
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             urls = list(reader)
+        # --- Delete flagged/test recipe from parser_test_recipes ---
+        @app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
+        @require_role('Admin')
     return render_template('test_recipe_urls.html', urls=urls, message=message)
 @require_role('Admin', 'Teacher')
 
@@ -314,6 +294,8 @@ def delete_parser_test_recipe(test_recipe_id):
 def recipe_index_view(recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
+        # --- Flag/Unflag Parser Issue ---
+        @app.route('/flag_parser_issue/<int:recipe_id>', methods=['POST'])
         c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
         recipe = c.fetchone()
     return render_template('recipe_index_view.html', recipe=recipe)
@@ -416,6 +398,8 @@ def extract_title_candidates(raw_html):
     if BeautifulSoup and soup:
         for tag in soup.find_all(['h2', 'b', 'strong']):
             txt = tag.get_text(strip=True)
+                # --- Title Extraction Strategies ---
+                def extract_title_candidates(raw_html):
             if txt and len(txt) > 5:
                 heuristic = txt
                 break
@@ -710,6 +694,8 @@ def load_recipe_url():
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data_no_raw,
+
+            # --- Admin routes and logic have been moved to admin_task/routes.py ---
             extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
         )
 
