@@ -1099,6 +1099,16 @@ print('GOOGLE_CLIENT_ID:', repr(GOOGLE_CLIENT_ID))
 print('GOOGLE_CLIENT_SECRET:', repr(GOOGLE_CLIENT_SECRET))
 print('GOOGLE_REDIRECT_URI:', repr(GOOGLE_REDIRECT_URI))
 
+# =======================
+# New Shopping List (Rebuilt) Route
+# =======================
+
+# Replace the old Shopping List route to serve the new template
+@app.route('/shoplist')
+def shoplist():
+    """Serve the rebuilt Shopping List page (now default)."""
+    return render_template('shoplist.html')
+
 SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.email',
