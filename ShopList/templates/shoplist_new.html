@@ -134,7 +134,10 @@
           <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
             {% set cell_bookings = [] %}
             {% for booking in scheduled_bookings %}
-              {% if booking.period == period and booking.date == date.strftime('%Y-%m-%d') %}
+              {% set booking_period = booking.period|string %}
+              {% set grid_period = period|string %}
+              {% set booking_date = booking.date_required if 'date_required' in booking else booking.date %}
+              {% if booking_period == grid_period and booking_date == date.strftime('%Y-%m-%d') %}
                 {% set _ = cell_bookings.append(booking) %}
               {% endif %}
             {% endfor %}
