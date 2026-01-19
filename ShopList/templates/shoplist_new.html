@@ -1,14 +1,34 @@
-
 <!-- This file has been renamed to shoplist.html -->
-    <h1 style="font-size: 2.5em; font-weight: bold;">Book the Shopping</h1>
-    <div style="font-size: 1.5em; font-weight: bold; margin-top: 8px;">Week of 15/12/25 to 19/12/25</div>
-    <div style="margin-top: 16px;">
-      <button>&#8592; Previous</button>
-      <button>Today</button>
-      <button>Next &#8594;</button>
+<div style="display: flex; flex-direction: column; align-items: center; margin-top: 32px; margin-bottom: 24px;">
+  <h1 style="font-size: 2.5em; font-weight: bold; text-align: center;">Book the Shopping</h1>
+  <div style="font-size: 1.5em; font-weight: bold; margin-top: 8px; text-align: center;">Week of 15/12/25 to 19/12/25</div>
+  <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+    <button>&#8592; Previous</button>
+    <button>Today</button>
+    <button>Next &#8594;</button>
+  </div>
+  <!-- Selected Bookings Panel (centered, single column) -->
+  <div style="display: flex; flex-direction: column; align-items: center; margin-top: 36px; margin-bottom: 24px;">
+    <div style="max-width: 420px; width: 100%; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 20px;">
+      <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Selected Bookings</div>
+      <ul style="margin: 0 0 12px 18px; padding: 0;">
+        <li>2025-12-16 | P3 | 300HOSP | Chocolate Chip Cookies</li>
+        <li>2025-12-18 | P4 | SDFOOD | Apple and Sultana Crumble</li>
+        <li>2025-12-19 | P4 | 300HOSP | Cauliflower Cheese</li>
+      </ul>
+      <div style="margin-bottom: 0;">
+        <button style="margin-right: 4px;">Select All</button>
+        <button style="margin-right: 4px;">Clear</button>
+        <button>Auto Generate</button>
+      </div>
     </div>
   </div>
+</div>
   <div style="display: flex; justify-content: center; margin-top: 40px;">
+    <!-- Large Generate Shopping List Button below the grid -->
+    <div style="display: flex; justify-content: center; margin: 32px 0 32px 0;">
+      <button style="font-size: 1.4em; font-weight: bold; padding: 18px 48px; background: linear-gradient(90deg, #0074d9 0%, #00c3e3 100%); color: #fff; border: none; border-radius: 8px; box-shadow: 0 2px 8px #e0e4ea; cursor: pointer; transition: background 0.2s;">Generate Shopping List</button>
+    </div>
     <table style="border-collapse: collapse; background: #f8fafc; box-shadow: 0 2px 8px #e0e4ea; min-width: 700px;">
       <thead>
         <tr>
