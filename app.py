@@ -387,8 +387,6 @@ def extract_title_candidates(raw_html):
     if BeautifulSoup and soup:
         for tag in soup.find_all(['h2', 'b', 'strong']):
             txt = tag.get_text(strip=True)
-                # --- Title Extraction Strategies ---
-                def extract_title_candidates(raw_html):
             if txt and len(txt) > 5:
                 heuristic = txt
                 break
