@@ -41,7 +41,7 @@
       {% endfor %}
       <div style="margin-bottom: 0;">
         <button id="selectAllBookingsBtn" style="margin-right: 4px;">Select All</button>
-        <button style="margin-right: 4px;">Clear</button>
+        <button id="clearAllBookingsBtn" style="margin-right: 4px;">Clear All</button>
         <button>Week (All) Shopping List</button>
       </div>
 
@@ -52,6 +52,16 @@
       selectAllBtn.onclick = function() {
         document.querySelectorAll('.booking-checkbox').forEach(function(cb) {
           cb.checked = true;
+        });
+      };
+    }
+</script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var clearAllBtn = document.getElementById('clearAllBookingsBtn');
+    if (clearAllBtn) {
+      clearAllBtn.onclick = function() {
+        document.querySelectorAll('.booking-checkbox').forEach(function(cb) {
+          cb.checked = false;
         });
       };
     }
