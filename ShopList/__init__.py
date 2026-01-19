@@ -1,8 +1,15 @@
 
+
+from flask import Blueprint, render_template, request
+from . import shoppinglist
+from auth import get_db_connection
+import datetime
+
+shoplist_bp = Blueprint('shoplist', __name__, template_folder='templates')
+
 # ...existing code...
 
-# Place the /get_original_recipes route after the blueprint definition
-
+# Place the /get_original_recipes route after the blueprint definition and all imports
 @shoplist_bp.route('/get_original_recipes', methods=['POST'])
 def get_original_recipes():
     """Return original recipe details for selected bookings as JSON."""
