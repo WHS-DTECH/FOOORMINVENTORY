@@ -1,7 +1,8 @@
 # admin_task/routes.py
 
 from flask import render_template, request, redirect, url_for, flash, jsonify, session
-from auth import require_role, get_db_connection, current_user
+from auth import require_role, get_db_connection
+from flask_login import current_user
 import os, csv, datetime, json, io
 from . import admin_task_bp
 
