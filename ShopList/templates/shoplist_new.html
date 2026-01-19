@@ -135,7 +135,7 @@
           <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
             {% set booking = grid[(period, date)] %}
             {% if booking %}
-              <div style="background: {{ booking.color }}; color: #222; border: 1px solid {{ booking.color }}; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
+              <div style="background: {{ booking.color }}; filter: brightness(1.7); color: #222; border: 1px solid {{ booking.color }}; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
                 <div style="font-weight: bold; font-size: 1.08em; margin-bottom: 2px;">{{ booking.recipe }}</div>
                 <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
                 <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
