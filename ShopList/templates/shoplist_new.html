@@ -137,27 +137,16 @@
           <td style="border: 1px solid #cfd8dc; background: #f3f6fa; text-align: center; font-weight: bold;">P{{ period }}</td>
           {% for date in week_dates %}
           <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
-            {% set cell_bookings = [] %}
-            {% for booking in scheduled_bookings %}
-              {% set booking_period = booking.period|string %}
-              {% set grid_period = period|string %}
-              {% set booking_date = booking.date_required if 'date_required' in booking else booking.date %}
-              {% if booking_period == grid_period and booking_date == date.strftime('%Y-%m-%d') %}
-                {% set _ = cell_bookings.append(booking) %}
-              {% endif %}
-            {% endfor %}
-            {% if cell_bookings %}
-              {% for booking in cell_bookings %}
-                {% set teacher_key = booking.staff|default('')|trim|lower %}
-                <div style="background: #d6f5d6; color: #222; border: 1px solid #b2e6b2; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
-                  <div style="font-weight: bold; font-size: 1.08em; margin-bottom: 2px;">{{ booking.recipe }}</div>
-                  <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
-                  <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
-                  <div style="font-size: 0.98em;">Servings: {{ booking.servings }}</div>
-                  <div style="font-size: 0.98em;">{{ booking.date|date('d/m/Y') }}</div>
-                  <div style="font-size: 0.95em; color: #444; margin-top: 2px;">Tap to select</div>
-                </div>
-              {% endfor %}
+            {% set booking = grid[(period, date)] %}
+            {% if booking %}
+              <div style="background: #d6f5d6; color: #222; border: 1px solid #b2e6b2; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
+                <div style="font-weight: bold; font-size: 1.08em; margin-bottom: 2px;">{{ booking.recipe }}</div>
+                <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
+                <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
+                <div style="font-size: 0.98em;">Servings: {{ booking.servings }}</div>
+                <div style="font-size: 0.98em;">{{ booking.date|date('d/m/Y') }}</div>
+                <div style="font-size: 0.95em; color: #444; margin-top: 2px;">Tap to select</div>
+              </div>
             {% else %}
               &mdash;
             {% endif %}
