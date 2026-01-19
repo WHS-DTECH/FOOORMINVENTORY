@@ -1282,10 +1282,5 @@ def edit_instructions(recipe_id):
             flash('Recipe not found.', 'error')
             return redirect(url_for('recipe_book.recbk'))
         return render_template('edit_instructions.html', recipe=recipe)
-        recipe = c.fetchone()
-        if not recipe:
-            flash('Recipe not found.', 'error')
-            return redirect(url_for('recipe_book.recbk'))
-        return render_template('edit_instructions.html', recipe=recipe)
 
 
