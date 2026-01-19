@@ -429,27 +429,7 @@ function deleteBooking(bookingId) {
 }
 
 
-    recipe.ingredients.forEach(it => {
-      const li = document.createElement('li');
-      if(typeof it === 'object'){
-        let q = it.quantity || '';
-        let u = it.unit || '';
-        let name = it.ingredient || '';
-        if((!u || u==='') && name){
-          const parsed = extractFromText(name);
-          if(parsed.unit && !u) u = parsed.unit;
-          if((!q || q==='') && parsed.quantity !== null) q = parsed.quantity;
-          if(parsed.name) name = parsed.name;
-        }
-        li.textContent = ((q || u) ? ((q !== '' ? q + ' ' : '') + (u ? u + ' ' : '')) : '') + name;
-      } else {
-        const parsed = extractFromText(String(it));
-        const display = ((parsed.quantity !== null) ? (parsed.quantity + ' ' + (parsed.unit || '')) : '') + (parsed.name ? ' ' + parsed.name : '');
-        li.textContent = display.trim();
-      }
-      ul.appendChild(li);
-    });
-  }
+
 
   function parseNumber(s){
     if(s === null || s === undefined) return null;
