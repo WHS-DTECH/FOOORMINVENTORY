@@ -8,7 +8,7 @@ book_a_class_bp = Blueprint('book_a_class', __name__, template_folder='templates
 @book_a_class_bp.route('/book_a_class', methods=['GET', 'POST'])
 @require_role('Admin', 'Teacher')
 def book_a_class():
-    # ...existing code from class_ingredients.py...
+    # ...existing code from app.py class_ingredients()...
     staff_code = request.form.get('staff_code') if request.method == 'POST' else None
     class_code = request.form.get('class_code') if request.method == 'POST' else None
     date_required = request.form.get('date_required') if request.method == 'POST' else None
@@ -84,3 +84,100 @@ def book_a_class():
                           pre_staff_code=staff_code, pre_class_code=class_code, 
                           pre_date_required=date_required, pre_period=period,
                           pre_recipe_id=booking_recipe_id, pre_servings=booking_servings)
+
+@class_ingredients_bp.route('/class_ingredients/download', methods=['POST'])
+@require_role('VP', 'DK')
+def class_ingredients_download():
+    # ...existing code from app.py class_ingredients_download()...
+    data = request.get_json() or {}
+    recipe_id = data.get('recipe_id')
+    desired = int(data.get('desired_servings') or 24)
+    if not recipe_id:
+        return jsonify({'error':'recipe_id required'}), 400
+
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, name, ingredients, serving_size FROM recipes WHERE id = %s', (recipe_id,))
+        row = c.fetchone()
+        if not row:
+            return jsonify({'error':'recipe not found'}), 404
+        try:
+            ings = json.loads(row['ingredients'] or '[]')
+        except Exception:
+            ings = []
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(['ingredient','quantity','unit','notes'])
+    orig_serv = int(row['serving_size']) if row['serving_size'] else 1
+    for it in ings:
+        name = ''
+        qty = ''
+        unit = ''
+        if isinstance(it, dict):
+            name = it.get('ingredient') or ''
+            qty = it.get('quantity') or ''
+            unit = it.get('unit') or ''
+            try:
+                qn = float(str(qty))
+                per_single = qn / orig_serv
+                scaled = per_single * desired
+                qty = round(scaled,2)
+            except Exception:
+                qty = ''
+        else:
+            name = str(it)
+        writer.writerow([name, qty, unit, ''])
+
+    csv_data = buf.getvalue()
+    return (csv_data, 200, {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': f'attachment; filename="shopping_{recipe_id}.csv"'
+    })
+
+@class_ingredients_bp.route('/class_ingredients/save', methods=['POST'])
+@require_role('VP', 'DK')
+def class_ingredients_save():
+    # ...existing code from app.py class_ingredients_save()...
+    try:
+        data = request.get_json() or {}
+        booking_id = data.get('booking_id')
+        staff_code = data.get('staff')
+        class_code = data.get('classcode')
+        date_required = data.get('date')
+        period = data.get('period')
+        recipe_id = data.get('recipe_id')
+        desired = int(data.get('desired_servings') or 24)
+        missing = []
+        for field, value in [('staff', staff_code), ('classcode', class_code), ('date', date_required), ('period', period), ('recipe_id', recipe_id)]:
+            if value in [None, '']:
+                missing.append(field)
+        if missing:
+            return jsonify({'error': f'Missing required fields: {missing}'}), 400
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            if booking_id:
+                c.execute('''UPDATE class_bookings \
+                            SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s
+                            WHERE id=%s''',
+                         (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
+                conn.commit()
+            else:
+                c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (%s, %s, %s, %s, %s, %s)',
+                          (staff_code, class_code, date_required, period, recipe_id, desired))
+                conn.commit()
+                booking_id = c.lastrowid
+        return jsonify({'success': True, 'booking_id': booking_id})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+@class_ingredients_bp.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
+@require_role('Admin', 'Teacher')
+def class_ingredients_delete(booking_id):
+    # ...existing code from app.py class_ingredients_delete()...
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM class_bookings WHERE id = %s', (booking_id,))
+        conn.commit()
+    return jsonify({'success': True})
