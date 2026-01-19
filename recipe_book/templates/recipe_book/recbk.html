@@ -194,3 +194,178 @@ if (suggestForm) {
 }
 </script>
 {% endblock %}
+
+  <div id="suggestModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; overflow:auto; background:rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background:#fff; margin:60px auto; padding:30px 24px 18px 24px; border-radius:8px; max-width:420px; box-shadow:0 8px 32px rgba(0,0,0,0.18); position:relative;">
+      <span id="closeModal" style="position:absolute; top:12px; right:18px; font-size:28px; color:#888; cursor:pointer;">&times;</span>
+      <h2 style="margin-top:0; color:#337ab7;">Suggest a Recipe</h2>
+      <form id="suggestForm" method="POST" action="/suggest_recipe">
+        <label for="recipe_name">Recipe Name:</label>
+        <input type="text" id="recipe_name" name="recipe_name" required style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <label for="recipe_url">Recipe URL (optional):</label>
+        <input type="url" id="recipe_url" name="recipe_url" placeholder="https://..." style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <label for="reason">Why do you suggest this?</label>
+        <textarea id="reason" name="reason" rows="2" style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;"></textarea>
+        <label for="suggested_by_name">Your Name:</label>
+        <input type="text" id="suggested_by_name" name="suggested_by_name" required style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <label for="suggested_by_email">Your Email:</label>
+        <input type="email" id="suggested_by_email" name="suggested_by_email" required style="width:100%; margin-bottom:10px; padding:7px; border-radius:4px; border:1px solid #ccc;">
+        <button type="submit" style="background:#337ab7; color:white; border:none; border-radius:4px; padding:10px 18px; font-size:15px; cursor:pointer; width:100%;">Submit Suggestion</button>
+      </form>
+      <div id="suggestMsg" style="margin-top:10px; font-size:14px;"></div>
+    </div>
+  </div>
+
+  <!-- View toggle removed: only grid view is shown -->
+
+
+  <form class="search-bar" method="get" action="/recbk">
+    <input type="search" name="q" placeholder="Search recipes by name or ingredient..." value="{{ q }}" />
+    <button type="submit">Search</button>
+    {% if q %}<a href="/recbk" style="margin-left:8px;">Clear</a>{% endif %}
+  </form>
+
+
+
+  {% if q %}
+    <p style="color:#666;font-size:14px;">Found {{ rows|length }} recipe(s) matching "{{ q }}"</p>
+  {% else %}
+    <p style="color:#666;font-size:14px;">Showing all {{ rows|length }} recipe(s)</p>
+  {% endif %}
+
+  {% if rows %}
+    <div class="recipe-grid">
+      {% for r in rows %}
+        <div class="recipe-card">
+          <h3><a href="/recipe/{{ r.id }}">{{ r.name }}</a></h3>
+          <div class="recipe-meta">
+            <strong>Servings:</strong> {{ r.serving_size or '—' }}<br>
+            <strong>Source:</strong> <a href="{{ r.source_url }}" target="_blank">{{ r.source_url }}</a>
+          </div>
+          <div class="mt-2 d-flex justify-content-end">
+            <a href="/recipe/{{ r.id }}" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <!-- TABLE VIEW -->
+    <div id="tableView" class="recipe-table hidden">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Serves</th>
+            <th>Ingredients</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><a href="/recipe/{{ r.id }}">{{ r.name }}</a></td>
+            <td>{{ r.serving_size or '—' }}</td>
+            <td>
+              {% if r.ingredients %}
+                {{ r.ingredients|length }} items
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="no-results">
+      <p style="font-size:18px;">No recipes found.</p>
+      {% if q %}
+        <p>Try adjusting your search or <a href="/recbk">browse all recipes</a>.</p>
+      {% else %}
+        <p>Start by <a href="/">uploading some recipes</a>!</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+// Optional: AJAX submit for better UX
+suggestForm.onsubmit = async function(e) {
+  e.preventDefault();
+  suggestMsg.textContent = 'Submitting...';
+  const formData = new FormData(suggestForm);
+  try {
+    const response = await fetch('/suggest_recipe', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    if (data.success) {
+      suggestMsg.style.color = '#3c763d';
+      suggestMsg.textContent = 'Thank you for your suggestion!';
+      setTimeout(() => { suggestModal.style.display = 'none'; }, 1200);
+    } else {
+      suggestMsg.style.color = '#a94442';
+      suggestMsg.textContent = data.message || 'Submission failed.';
+    }
+  } catch (err) {
+    suggestMsg.style.color = '#a94442';
+    suggestMsg.textContent = 'Error submitting suggestion.';
+  }
+}
+// View switcher with localStorage persistence
+function switchView(view) {
+  const gridView = document.getElementById('gridView');
+  const tableView = document.getElementById('tableView');
+  const gridBtn = document.getElementById('gridViewBtn');
+  const tableBtn = document.getElementById('tableViewBtn');
+  
+  if (view === 'grid') {
+    gridView.classList.remove('hidden');
+    tableView.classList.add('hidden');
+    gridBtn.classList.add('active');
+    tableBtn.classList.remove('active');
+    localStorage.setItem('recipeView', 'grid');
+  } else {
+    gridView.classList.add('hidden');
+    tableView.classList.remove('hidden');
+    gridBtn.classList.remove('active');
+    tableBtn.classList.add('active');
+    localStorage.setItem('recipeView', 'table');
+  }
+}
+
+// Load saved view preference on page load (default to grid)
+window.addEventListener('DOMContentLoaded', function() {
+  const savedView = localStorage.getItem('recipeView') || 'grid';
+  switchView(savedView);
+});
+
+// Toggle favorite
+async function toggleFavorite(recipeId, button) {
+  const isFavorited = button.classList.contains('favorited');
+  const url = isFavorited ? `/recipe/unfavorite/${recipeId}` : `/recipe/favorite/${recipeId}`;
+  
+  try {
+    const response = await fetch(url, { method: 'POST' });
+    const data = await response.json();
+    
+    if (data.success) {
+      if (isFavorited) {
+        button.classList.remove('favorited');
+        button.textContent = '☆';
+        button.title = 'Add to favorites';
+      } else {
+        button.classList.add('favorited');
+        button.textContent = '★';
+        button.title = 'Remove from favorites';
+      }
+    } else {
+      alert('Error: ' + data.message);
+    }
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    alert('Failed to update favorite');
+  }
+}
+</script>
+
+</body>
+</html>

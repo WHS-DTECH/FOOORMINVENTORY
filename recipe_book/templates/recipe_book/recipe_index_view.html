@@ -1,1 +1,26 @@
-// ...existing code...
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Recipe Index (Draft/Test View)</h2>
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ recipe.name }}</h5>
+            <p><strong>Upload Method:</strong> {{ recipe.upload_method or 'N/A' }}</p>
+            <p><strong>Source URL:</strong> <a href="{{ recipe.source_url }}" target="_blank">{{ recipe.source_url }}</a></p>
+            <a href="{{ url_for('recipe_source', recipe_id=recipe.id) }}" class="btn btn-info btn-sm mb-3">Source Page</a>
+            <a href="{{ url_for('url_upload') }}?url={{ recipe.source_url }}" class="btn btn-warning btn-sm mb-3 ms-2">Parser Debug</a>
+            <p><strong>Uploaded By:</strong> {{ recipe.uploaded_by or 'N/A' }}</p>
+            <p><strong>Upload Date:</strong> {{ recipe.upload_date|datetimeformat('%Y-%m-%d %I:%M %p') if recipe.upload_date else 'N/A' }}</p>
+            <hr>
+            <p><strong>Ingredients (Raw):</strong></p>
+            <pre>{{ recipe.ingredients }}</pre>
+            <p><strong>Instructions (Raw):</strong></p>
+            <pre>{{ recipe.instructions }}</pre>
+            <p><strong>Parser Issue Flag:</strong> {{ recipe.parser_issue_flag }}</p>
+            <form method="post" action="{{ url_for('flag_parser_issue', recipe_id=recipe.id) }}">
+                <button type="submit" class="btn btn-danger btn-sm">Flag/Unflag as Parser Issue</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
