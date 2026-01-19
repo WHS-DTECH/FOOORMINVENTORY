@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles_class_ingred.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1 class="section-title mb-4">Book a Class</h1>
+    <!-- ...rest of the form and content copied from class_ingred.html... -->
+{% endblock %}

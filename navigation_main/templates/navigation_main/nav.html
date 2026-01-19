@@ -3,7 +3,7 @@
   <ul class="nav-list">
     <li class="nav-item"><a href="{{ url_for('index') }}">Food Room inventory</a></li>
     <li class="nav-item"><a href="{{ url_for('recipe_book.recbk') }}">Recipe Book</a></li>
-    <li class="nav-item"><a href="{{ url_for('class_ingredients.class_ingredients') }}">Class Ingredients</a></li>
+    <li class="nav-item"><a href="{{ url_for('book_a_class.book_a_class') }}">Book a Class</a></li>
     <li class="nav-item"><a href="{{ url_for('shoplist.book_the_shopping') }}">Book the Shopping</a></li>
     {% if current_user.is_authenticated and current_user.is_admin() %}
       <li class="nav-item dropdown">

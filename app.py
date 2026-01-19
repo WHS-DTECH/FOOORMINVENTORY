@@ -52,7 +52,7 @@ from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 from navigation_main.context_nav import nav_context_processor, nav_bp
 
 
-from class_ingredients.class_ingredients import class_ingredients_bp
+from book_a_class.book_a_class import book_a_class_bp
 from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
 
@@ -100,8 +100,8 @@ app.register_blueprint(nav_bp)
 from admin_task.admin_routes import admin_task_bp
 app.register_blueprint(admin_task_bp)
 
-# Register class_ingredients blueprint
-app.register_blueprint(class_ingredients_bp)
+# Register book_a_class blueprint
+app.register_blueprint(book_a_class_bp)
 
 # Register upload_url blueprint
 app.register_blueprint(upload_url_bp)
