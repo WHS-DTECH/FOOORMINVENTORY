@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raw Extracted Recipe Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .meta { margin-bottom: 1em; color: #555; }
+        pre { background: #f8f8f8; border: 1px solid #ccc; padding: 1em; border-radius: 6px; white-space: pre-wrap; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h2>Raw Extracted Recipe Data</h2>
+    <div class="meta">
+        {% if recipe_name %}<b>Recipe Name:</b> {{ recipe_name }}<br>{% endif %}
+        <b>Source File:</b> {{ upload_source_detail }}<br>
+        <b>Uploaded By:</b> {{ uploaded_by }}<br>
+        <b>Upload Date:</b> {{ created_at }}
+    </div>
+        <pre>{% for line in raw_text.split('\n') %}{{ loop.index0 }}: {{ line }}
+    {% endfor %}</pre>
+        <a href="/upload">Back to Upload</a>
+
+    <a href="/upload">Back to Upload</a>
+</body>
+</html>

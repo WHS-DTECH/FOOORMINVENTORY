@@ -43,7 +43,11 @@ from auth import User, get_staff_code_from_email, require_login, require_role, g
 # Register debug_source_url blueprint
 from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 from navigation_main.context_nav import nav_context_processor, nav_bp
+
+
 from class_ingredients.class_ingredients import class_ingredients_bp
+from upload_URL import upload_url_bp
+from recipe_book import recipe_book_bp
 
 
 # =======================
@@ -90,8 +94,16 @@ app.register_blueprint(nav_bp)
 from admin_task.admin_routes import admin_task_bp
 app.register_blueprint(admin_task_bp)
 
+
+
 # Register class_ingredients blueprint
 app.register_blueprint(class_ingredients_bp)
+
+# Register upload_url blueprint
+app.register_blueprint(upload_url_bp)
+
+# Register recipe_book blueprint
+app.register_blueprint(recipe_book_bp)
 
 # Error Handlers
 @app.errorhandler(404)
@@ -108,116 +120,6 @@ def internal_error(error):
 
 # =======================
 # Test Routes
-# =======================
-
-
-# --- Test Recipe URL Suite ---
-import csv
-from datetime import datetime
-
-@app.route('/test_recipe_urls', methods=['GET', 'POST'])
-@require_role('Admin')
-def test_recipe_urls():
-    csv_path = os.path.join(os.path.dirname(__file__), 'test_recipe_urls.csv')
-    message = None
-    if request.method == 'POST':
-        url = request.form.get('url', '').strip()
-        site = request.form.get('site', '').strip()
-        notes = request.form.get('notes', '').strip()
-        added_by = getattr(current_user, 'email', 'unknown')
-        added_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if url:
-            with open(csv_path, 'a', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
-                writer.writerow([url, site, notes, added_by, added_at])
-            message = 'Recipe URL added.'
-        else:
-            message = 'URL is required.'
-    # Read all URLs
-    urls = []
-    if os.path.exists(csv_path):
-        with open(csv_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            urls = list(reader)
-    return render_template('test_recipe_urls.html', urls=urls, message=message)
-
-
-
-# --- Title Extraction Strategies ---
-def extract_title_candidates(raw_html):
-    candidates = []
-    best_guess = None
-    import re
-    try:
-        from bs4 import BeautifulSoup
-    except ImportError:
-        BeautifulSoup = None
-    # 1. <title> tag
-    title_tag = None
-    if BeautifulSoup:
-        soup = BeautifulSoup(raw_html, 'html.parser')
-        title_tag = soup.title.string.strip() if soup.title and soup.title.string else None
-    else:
-        m = re.search(r'<title>(.*?)</title>', raw_html, re.I|re.S)
-        title_tag = m.group(1).strip() if m else None
-    candidates.append({'name': '<title> tag', 'value': title_tag or '', 'best': False})
-    # 2. og:title meta
-    og_title = None
-    if BeautifulSoup and soup:
-        og = soup.find('meta', property='og:title')
-        og_title = og['content'].strip() if og and og.get('content') else None
-    else:
-        m = re.search(r'<meta[^>]+property=["\"]og:title["\"][^>]+content=["\"](.*?)["\"]', raw_html, re.I|re.S)
-        og_title = m.group(1).strip() if m else None
-    candidates.append({'name': 'og:title meta', 'value': og_title or '', 'best': False})
-    # 3. First <h1>
-    h1 = None
-    if BeautifulSoup and soup:
-        h1tag = soup.find('h1')
-        h1 = h1tag.get_text(strip=True) if h1tag else None
-    else:
-        m = re.search(r'<h1[^>]*>(.*?)</h1>', raw_html, re.I|re.S)
-        h1 = m.group(1).strip() if m else None
-    candidates.append({'name': 'First <h1>', 'value': h1 or '', 'best': False})
-    # 4. JSON-LD schema.org name
-    jsonld_title = None
-    if BeautifulSoup and soup:
-        for script in soup.find_all('script', type='application/ld+json'):
-            try:
-                import json
-                data = json.loads(script.string)
-                if isinstance(data, dict) and 'name' in data:
-                    jsonld_title = data['name']
-                    break
-                elif isinstance(data, list):
-                    for entry in data:
-                        if isinstance(entry, dict) and 'name' in entry:
-                            jsonld_title = entry['name']
-                            break
-            except Exception:
-                continue
-    candidates.append({'name': 'schema.org/JSON-LD name', 'value': jsonld_title or '', 'best': False})
-    # 5. Heuristic: First large/bold text (e.g., <b>, <strong>, <h2>)
-    heuristic = None
-    if BeautifulSoup and soup:
-        for tag in soup.find_all(['h2', 'b', 'strong']):
-            txt = tag.get_text(strip=True)
-            if txt and len(txt) > 5:
-                heuristic = txt
-                break
-    candidates.append({'name': 'Heuristic: first large/bold text', 'value': heuristic or '', 'best': False})
-    # Pick best guess (first non-empty in priority order)
-    for cand in candidates:
-        if cand['value']:
-            cand['best'] = True
-            best_guess = cand['value']
-            break
-    return candidates, best_guess or ''
-
-    
-# =======================
-# Jinja2 Filters
-# =======================
 @app.template_filter('format_nz_week')
 def format_nz_week(label):
     """Format NZ week label from yyyy-mm-dd to dd-mm-yyyy."""
@@ -403,153 +305,6 @@ def extract_title_candidates(raw_html):
     return candidates, best_guess or ''
 
 
-@app.route('/url_upload', methods=['GET', 'POST'])
-def url_upload():
-    result = None
-    url = request.args.get('url', '').strip() if request.method == 'GET' else ''
-    if request.method == 'POST':
-        url = request.form.get('url', '').strip()
-        if url:
-            # TODO: Implement parse_recipe_with_log or use another extraction function
-            result = None
-    elif url:
-        # TODO: Implement parse_recipe_with_log or use another extraction function
-        result = None
-    return render_template('url_upload.html', url=url, result=result)
-
-
-# --- Upload Recipe Using URL Route ---
-@app.route('/upload_url', methods=['POST'])
-@require_role('Admin')
-def upload_url():
-    url = request.form.get('url', '').strip()
-    if not url:
-        return jsonify({'error': 'No URL provided.'}), 400
-    if not (url.startswith('http://') or url.startswith('https://')):
-        return jsonify({'error': 'Invalid URL. Must start with http:// or https://'}), 400
-    if requests is None or BeautifulSoup is None:
-        return jsonify({'error': 'Required libraries (requests, BeautifulSoup) not installed.'}), 500
-    try:
-        resp = requests.get(url, timeout=10)
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f'Failed to fetch URL: {str(e)}'}), 400
-    if resp.status_code != 200:
-        return jsonify({'error': f'URL returned status code {resp.status_code}'}), 404
-    html = resp.text
-    soup = BeautifulSoup(html, 'html.parser')
-    # Extract raw visible text for debug/raw upload
-    visible_text = '\n'.join(soup.stripped_strings)
-    # Example: Try to extract a recipe name and ingredients (customize as needed)
-    title = soup.title.string.strip() if soup.title and soup.title.string else url
-    # Improved: Extract only lines that look like ingredients (e.g., '1 cup sugar')
-    import re as _re
-    # Match number+unit (with or without space), e.g., '300ml', '2 cups', '1½tbsp'
-    ingredient_pattern = _re.compile(r"^\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+(?:\s*[a-zA-Z]+)?\s+.+$")
-    instruction_pattern = _re.compile(r"^\s*\d+[\.\-\)]\s+.+$")
-    # List of common cooking verbs for instructional language
-    cooking_verbs = [
-        'preheat', 'heat', 'bake', 'roast', 'grill', 'boil', 'simmer', 'fry', 'saute', 'steam', 'poach',
-        'mix', 'combine', 'stir', 'whisk', 'beat', 'fold', 'blend', 'chop', 'slice', 'dice', 'mince',
-        'add', 'pour', 'drain', 'spread', 'layer', 'arrange', 'place', 'put', 'remove', 'transfer',
-        'serve', 'garnish', 'season', 'cool', 'let', 'allow', 'cover', 'uncover', 'grease', 'line',
-        'melt', 'microwave', 'refrigerate', 'freeze', 'marinate', 'soak', 'press', 'squeeze', 'peel',
-        'cut', 'roll', 'shape', 'form', 'knead', 'proof', 'rest', 'rise', 'sprinkle', 'dust', 'coat',
-        'brush', 'glaze', 'fill', 'pipe', 'decorate', 'frost', 'ice', 'dip', 'toss', 'turn', 'flip',
-        'cook', 'reduce', 'increase', 'check', 'test', 'taste', 'adjust', 'divide', 'portion', 'weigh',
-        'measure', 'set', 'remove', 'discard', 'reserve', 'keep', 'store', 'wrap', 'unwrap', 'break',
-        'crack', 'separate', 'whip', 'pour', 'drizzle', 'spoon', 'scrape', 'baste', 'skewer', 'thread',
-        'insert', 'poke', 'prick', 'score', 'carve', 'shred', 'grate', 'zest', 'seed', 'core', 'hull',
-        'devein', 'shell', 'shuck', 'trim', 'clean', 'wash', 'rinse', 'dry', 'pat', 'blanch', 'parboil',
-        'refresh', 'shock', 'strain', 'sift', 'dust', 'coat', 'toss', 'fold', 'layer', 'arrange', 'stack',
-        'assemble', 'build', 'mount', 'gather', 'prepare', 'preheat', 'finish', 'garnish', 'serve', 'enjoy'
-    ]
-    verb_pattern = _re.compile(r"^(%s)\b" % '|'.join(cooking_verbs), _re.IGNORECASE)
-
-    # --- Robust block-based extraction for ingredients and instructions ---
-    ingredients = []
-    instructions = []
-
-
-    in_ingredients = False
-    in_instructions = False
-    ingredient_headers = ['ingredient', 'ingredients']
-    instruction_headers = ['method', 'instructions', 'steps', 'directions']
-
-    # --- Extract 12 lines after 'Method' from raw visible text ---
-    raw_lines = visible_text.splitlines()
-    method_idx = None
-    for idx, line in enumerate(raw_lines):
-        if line.strip().lower() == 'method':
-            method_idx = idx
-            break
-    instructions = []
-    if method_idx is not None:
-        # Get the next 12 lines after 'Method'
-        for i in range(1, 13):
-            if method_idx + i < len(raw_lines):
-                instructions.append(raw_lines[method_idx + i])
-            else:
-                instructions.append("")
-    # Fallback: if 'Method' not found, use previous logic (empty or whatever was found)
-    if not instructions:
-        instructions = []
-
-    # Fallback: If nothing found, use old pattern-based extraction
-    if not ingredients or not instructions:
-        ingredients_fallback = []
-        instructions_fallback = []
-        current_step = None
-        for tag in soup.find_all(['li', 'span', 'p']):
-            text = tag.get_text(strip=True)
-            if not text:
-                continue
-            if ingredient_pattern.match(text):
-                ingredients_fallback.append(text)
-                continue
-            is_new_step = instruction_pattern.match(text) or verb_pattern.match(text)
-            if is_new_step:
-                if current_step:
-                    instructions_fallback.append(current_step.strip())
-                current_step = text
-            else:
-                if current_step:
-                    current_step += ' ' + text
-                else:
-                    current_step = text
-        if current_step:
-            instructions_fallback.append(current_step.strip())
-        if not ingredients:
-            ingredients = ingredients_fallback
-        if not instructions:
-            instructions = instructions_fallback
-
-    # Format: Add a space between number+unit and ingredient name
-    import re as _re2
-    formatted_ingredients = []
-    for ing in ingredients:
-        formatted = _re2.sub(r'^(\s*[\d¼½¾⅓⅔⅛⅜⅝⅞/\.]+[a-zA-Z]+)([A-Z])', r'\1 \2', ing)
-        formatted_ingredients.append(formatted)
-    ingredients = formatted_ingredients
-
-    if not ingredients:
-        # Try schema.org/Recipe
-        recipe_schema = soup.find('script', type='application/ld+json')
-        if recipe_schema:
-            import json as _json
-            try:
-                data = _json.loads(recipe_schema.string)
-                if isinstance(data, dict) and data.get('@type') == 'Recipe':
-                    ingredients = data.get('recipeIngredient', [])
-                    title = data.get('name', title)
-                    # Try to extract instructions from schema.org as well
-                    if 'recipeInstructions' in data:
-                        if isinstance(data['recipeInstructions'], list):
-                            instructions = [i['text'] if isinstance(i, dict) and 'text' in i else str(i) for i in data['recipeInstructions']]
-                        elif isinstance(data['recipeInstructions'], str):
-                            instructions = [data['recipeInstructions']]
-            except Exception:
-                pass
-            
 
 # --- Alias for /load_recipe_url to support form submissions from templates ---
 @app.route('/load_recipe_url', methods=['POST'])
@@ -1792,26 +1547,6 @@ def api_scheduled_bookings():
         return jsonify({'success': False, 'error': str(e)})
 
 # --- View Raw Upload Route ---
-@app.route('/view_raw_upload')
-@require_role('Admin')
-def view_raw_upload():
-    source_url = request.args.get('source')
-    if not source_url:
-        return 'No source URL provided.', 400
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute("SELECT r.id, r.name, ru.raw_text, ru.uploaded_by, ru.upload_source_type, ru.upload_source_detail, ru.created_at FROM recipe_upload ru JOIN recipes r ON ru.recipe_id = r.id WHERE ru.upload_source_detail = %s ORDER BY ru.created_at DESC LIMIT 1", (source_url,))
-        row = c.fetchone()
-        if not row:
-            return 'No raw upload found for this source URL.', 404
-        # Render a simple template to show the raw text and metadata
-        return render_template('view_raw_upload.html',
-                              recipe_name=row['name'],
-                              raw_text=row['raw_text'],
-                              uploaded_by=row['uploaded_by'],
-                              upload_source_type=row['upload_source_type'],
-                              upload_source_detail=row['upload_source_detail'],
-                              created_at=row.get('created_at'))
 
 
 # --- Manual Instruction Editing Route ---

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Recipe by URL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+    <h2>Upload Recipe by URL</h2>
+    <form action="/upload_url" method="POST">
+        <label for="url">Recipe URL:</label>
+        <input type="url" id="url" name="url" placeholder="https://example.com/recipe" required style="width:400px;">
+        <button type="submit">Upload Recipe</button>
+    </form>
+    <br>
+    <a href="/recbk">Back to Recipe Book</a>
+</body>
+</html>
