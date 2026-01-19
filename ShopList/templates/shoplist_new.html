@@ -19,7 +19,7 @@
       {% set last_teacher_key = None %}
       {% set teacher_keys = [] %}
       {% for b in selected_bookings %}
-        {% set teacher_key = (b.teacher|trim|lower, b.staff_code|trim|lower) %}
+        {% set teacher_key = b.teacher|trim|lower %}
         {% if teacher_key not in teacher_keys %}
           {% set _ = teacher_keys.append(teacher_key) %}
         {% endif %}
@@ -28,7 +28,7 @@
         {% set _ = teacher_color_map.update({tk: teacher_colors[loop.index0 % teacher_colors|length]}) %}
       {% endfor %}
       {% for b in selected_bookings %}
-        {% set teacher_key = (b.teacher|trim|lower, b.staff_code|trim|lower) %}
+        {% set teacher_key = b.teacher|trim|lower %}
         {% if loop.first or teacher_key != last_teacher_key %}
           {% if not loop.first %}</ul>{% endif %}
           <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
