@@ -1107,7 +1107,11 @@ print('GOOGLE_REDIRECT_URI:', repr(GOOGLE_REDIRECT_URI))
 @app.route('/shoplist')
 def shoplist():
     """Serve the rebuilt Shopping List page (now default)."""
-    return render_template('shoplist.html')
+    # Pass dummy data to prevent template errors
+    bookings = []
+    recipes = []
+    dates = []
+    return render_template('shoplist.html', bookings=bookings, recipes=recipes, dates=dates)
 
 SCOPES = [
     'openid',
