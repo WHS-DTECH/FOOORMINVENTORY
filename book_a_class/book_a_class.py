@@ -85,7 +85,7 @@ def book_a_class():
                           pre_date_required=date_required, pre_period=period,
                           pre_recipe_id=booking_recipe_id, pre_servings=booking_servings)
 
-@class_ingredients_bp.route('/class_ingredients/download', methods=['POST'])
+@book_a_class_bp.route('/class_ingredients/download', methods=['POST'])
 @require_role('VP', 'DK')
 def class_ingredients_download():
     # ...existing code from app.py class_ingredients_download()...
@@ -135,7 +135,7 @@ def class_ingredients_download():
         'Content-Disposition': f'attachment; filename="shopping_{recipe_id}.csv"'
     })
 
-@class_ingredients_bp.route('/class_ingredients/save', methods=['POST'])
+@book_a_class_bp.route('/class_ingredients/save', methods=['POST'])
 @require_role('VP', 'DK')
 def class_ingredients_save():
     # ...existing code from app.py class_ingredients_save()...
@@ -172,7 +172,7 @@ def class_ingredients_save():
         import traceback; traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
-@class_ingredients_bp.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
+@book_a_class_bp.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
 @require_role('Admin', 'Teacher')
 def class_ingredients_delete(booking_id):
     # ...existing code from app.py class_ingredients_delete()...
