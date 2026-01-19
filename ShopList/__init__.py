@@ -10,4 +10,4 @@ def book_the_shopping():
     bookings = []
     recipes = []
     dates = []
-    return render_template('shoplist.html', bookings=bookings, recipes=recipes, dates=dates)
+    return render_template('shoplist_new.html', bookings=bookings, recipes=recipes, dates=dates)
