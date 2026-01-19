@@ -21,9 +21,9 @@ def book_the_shopping():
     # Demo scheduled bookings for popup
     scheduled_bookings = [
         {'date': '2026-01-15', 'period': 3, 'staff': 'VP - Pringle, Vanessa', 'class': '100COMP', 'recipe': 'Apple and Sultana Crumble', 'servings': 24},
-        {'date': '2026-01-16', 'period': 1, 'staff': 'Dk - Diplock, Maryke', 'class': 'MEET', 'recipe': 'Chocolate Chip Cookies', 'servings': 12},
+        {'date': '2026-01-16', 'period': 1, 'staff': 'DK - Diplock, Maryke', 'class': 'MEET', 'recipe': 'Chocolate Chip Cookies', 'servings': 12},
         {'date': '2026-01-19', 'period': 1, 'staff': 'HM - McKee, Holly', 'class': 'WHANAU', 'recipe': 'Apple and Sultana Crumble', 'servings': 24},
-        {'date': '2026-01-20', 'period': 3, 'staff': 'Rs - Reeves, Adrienne', 'class': 'VEHOME', 'recipe': 'Vegetable Couscous', 'servings': 24},
+        {'date': '2026-01-20', 'period': 3, 'staff': 'RS - Reeves, Adrienne', 'class': 'VEHOME', 'recipe': 'Vegetable Couscous', 'servings': 24},
     ]
     # Demo selected bookings with teacher name and staff code
     selected_bookings = [

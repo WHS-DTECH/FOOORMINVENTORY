@@ -15,31 +15,29 @@
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Selected Bookings (Sorted by Teacher)</div>
       {% set teacher_colors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#6d4c41', '#c62828', '#3949ab', '#f57c00'] %}
       {% set teacher_color_map = {} %}
-      {% set color_idx = 0 %}
-      {% set last_teacher_key = None %}
-      {% set teacher_keys = [] %}
+      {% set teacher_idx = 0 %}
+      {% set teacher_map = {} %}
       {% for b in selected_bookings %}
         {% set teacher_key = b.teacher|trim|lower %}
-        {% if teacher_key not in teacher_keys %}
-          {% set _ = teacher_keys.append(teacher_key) %}
+        {% if teacher_key not in teacher_color_map %}
+          {% set _ = teacher_color_map.update({teacher_key: teacher_colors[teacher_idx % teacher_colors|length]}) %}
+          {% set teacher_idx = teacher_idx + 1 %}
         {% endif %}
-      {% endfor %}
-      {% for tk in teacher_keys %}
-        {% set _ = teacher_color_map.update({tk: teacher_colors[loop.index0 % teacher_colors|length]}) %}
-      {% endfor %}
-      {% for b in selected_bookings %}
-        {% set teacher_key = b.teacher|trim|lower %}
-        {% if loop.first or teacher_key != last_teacher_key %}
-          {% if not loop.first %}</ul>{% endif %}
-          <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
-            <span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key] }};"></span>
-            {{ b.teacher }} ({{ b.staff_code }})
-          </div>
-          <ul style="margin: 0 0 8px 18px; padding: 0;">
+        {% if teacher_key not in teacher_map %}
+          {% set _ = teacher_map.update({teacher_key: {'teacher': b.teacher, 'staff_code': b.staff_code, 'bookings': []}}) %}
         {% endif %}
-        <li>{{ b.date }} | {{ b.class }} | {{ b.recipe }}</li>
-        {% set last_teacher_key = teacher_key %}
-        {% if loop.last %}</ul>{% endif %}
+        {% set _ = teacher_map[teacher_key]['bookings'].append({'date': b.date, 'class': b.class, 'recipe': b.recipe}) %}
+      {% endfor %}
+      {% for teacher_key, tinfo in teacher_map.items() %}
+        <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
+          <span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key]|e }};"></span>
+          {{ tinfo.teacher }} ({{ tinfo.staff_code }})
+        </div>
+        <ul style="margin: 0 0 8px 18px; padding: 0;">
+          {% for booking in tinfo.bookings %}
+            <li>{{ booking.date }} | {{ booking.class }} | {{ booking.recipe }}</li>
+          {% endfor %}
+        </ul>
       {% endfor %}
       <div style="margin-bottom: 0;">
         <button style="margin-right: 4px;">Select All</button>
@@ -118,19 +116,41 @@
         </tr>
       </thead>
       <tbody>
+        {% set teacher_colors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#6d4c41', '#c62828', '#3949ab', '#f57c00'] %}
+        {% set teacher_color_map = {} %}
+        {% set teacher_idx = 0 %}
+        {# Build teacher_color_map from scheduled_bookings #}
+        {% for b in scheduled_bookings %}
+          {% set teacher_key = b.staff|default('')|trim|lower %}
+          {% if teacher_key and teacher_key not in teacher_color_map %}
+            {% set _ = teacher_color_map.update({teacher_key: teacher_colors[teacher_idx % teacher_colors|length]}) %}
+            {% set teacher_idx = teacher_idx + 1 %}
+          {% endif %}
+        {% endfor %}
         {% for period in range(1,6) %}
         <tr>
           <td style="border: 1px solid #cfd8dc; background: #f3f6fa; text-align: center; font-weight: bold;">P{{ period }}</td>
           {% for date in week_dates %}
           <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
-            {% set found = false %}
-            {% for booking in bookings %}
-              {% if booking.period == period and booking.date == date %}
-                {{ booking.class }} | {{ booking.recipe }}
-                {% set found = true %}
+            {% set cell_bookings = [] %}
+            {% for booking in scheduled_bookings %}
+              {% if booking.period == period and booking.date == date.strftime('%Y-%m-%d') %}
+                {% set _ = cell_bookings.append(booking) %}
               {% endif %}
             {% endfor %}
-            {% if not found %}&mdash;{% endif %}
+            {% if cell_bookings %}
+              {% for booking in cell_bookings %}
+                {% set teacher_key = booking.staff|default('')|trim|lower %}
+                <div style="background: {{ teacher_color_map[teacher_key]|e }}; color: #fff; border-radius: 5px; padding: 4px 7px; margin-bottom: 3px; font-size: 0.98em; font-weight: 500;">
+                  <div style="font-weight:bold;">{{ booking.recipe }}</div>
+                  <div>Class: {{ booking.class }}</div>
+                  <div>Teacher: {{ booking.staff }}</div>
+                  <div>Servings: {{ booking.servings }}</div>
+                </div>
+              {% endfor %}
+            {% else %}
+              &mdash;
+            {% endif %}
           </td>
           {% endfor %}
         </tr>
