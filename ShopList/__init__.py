@@ -75,6 +75,7 @@ def book_the_shopping():
     # Populate grid with bookings
     for b in scheduled_bookings:
         date_obj = datetime.datetime.strptime(b['date'], '%Y-%m-%d').date()
+        b['date_display'] = date_obj.strftime('%d/%m/%Y')
         key = (b['period'], date_obj)
         grid[key] = b
 
