@@ -546,7 +546,7 @@ def init_db():
 @app.route('/')
 def index():
     """Main page shows recipe book for everyone."""
-    return redirect(url_for('recbk'))
+    return redirect(url_for('recipe_book.recbk'))
 
 
 # ============== Authentication Routes ==============
@@ -659,7 +659,7 @@ def auth_callback():
         }
         login_user(user, remember=True)
         flash(f'Welcome, {name}!', 'success')
-        return redirect(url_for('recbk'))
+        return redirect(url_for('recipe_book.recbk'))
     
     except Exception as e:
         flash(f'Authentication error: {str(e)}')
@@ -672,7 +672,7 @@ def logout():
     logout_user()
     session.clear()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('recbk'))
+    return redirect(url_for('recipe_book.recbk'))
 
 
 # ============== End Authentication Routes ==============
@@ -1271,7 +1271,7 @@ def edit_instructions(recipe_id):
         recipe = c.fetchone()
         if not recipe:
             flash('Recipe not found.', 'error')
-            return redirect(url_for('recbk'))
+            return redirect(url_for('recipe_book.recbk'))
         return render_template('edit_instructions.html', recipe=recipe)
 
 

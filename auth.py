@@ -204,7 +204,7 @@ def require_role(*allowed_roles):
             user_roles = set(user.get_all_roles())
             if not user_roles & allowed:
                 flash(f'You do not have permission to access this page. Required role: {", ".join(allowed_roles)}')
-                return redirect(url_for('recbk'))
+                return redirect(url_for('recipe_book.recbk'))
 
             return f(*args, **kwargs)
         return decorated_function
