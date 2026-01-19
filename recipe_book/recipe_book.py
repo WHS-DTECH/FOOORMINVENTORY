@@ -112,7 +112,7 @@ def recipe_book_setup():
         return render_template('recipe_book_setup.html', recipe_list=[])
 
 # --- Manual Instruction Editing Route ---
-@app.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
+@recipe_book_bp.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
 @require_role(['Admin', 'Recipe Editor'])
 def edit_instructions(recipe_id):
     with get_db_connection() as conn:
