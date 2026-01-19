@@ -87,7 +87,7 @@ app.context_processor(nav_context_processor)
 app.register_blueprint(nav_bp)
 
 # Register admin_task blueprint
-from admin_task.routes import admin_task_bp
+from admin_task.admin_routes import admin_task_bp
 app.register_blueprint(admin_task_bp)
 
 # Error Handlers
