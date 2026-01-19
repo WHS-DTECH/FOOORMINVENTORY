@@ -157,7 +157,6 @@
           <p class="text-muted small">No bookings found. Create a booking using the form above.</p>
         {% endif %}
       </div>
-    </div>
   {% endblock %}
 
   {% block scripts %}
@@ -390,8 +389,8 @@ function deleteBooking(bookingId) {
     }
   }).catch(e => alert('Error: ' + e.message));
 }
-</script>
-{% endblock %}
+
+
     recipe.ingredients.forEach(it => {
       const li = document.createElement('li');
       if(typeof it === 'object'){
