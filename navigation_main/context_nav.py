@@ -14,4 +14,4 @@ def nav_context_processor():
     }
 
 # Optionally, you can create a blueprint for navigation if you want to add nav-specific routes later
-nav_bp = Blueprint('navigation_main', __name__)
+nav_bp = Blueprint('navigation_main', __name__, template_folder='templates')
