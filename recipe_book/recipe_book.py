@@ -62,7 +62,7 @@ def recipe_index_view(recipe_id):
         c = conn.cursor()
         c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
         recipe = c.fetchone()
-    return render_template('recipe_book/recipe_index_view.html', recipe=recipe)
+    return render_template('recipe_index_view.html', recipe=recipe)
 
 @recipe_book_bp.route('/recipe/<int:recipe_id>')
 @require_login
@@ -79,7 +79,7 @@ def recipe_details(recipe_id):
                 recipe['ingredients'] = json.loads(recipe['ingredients'])
         except Exception:
             pass
-        return render_template('recipe_book/recipe_details.html', recipe=recipe)
+        return render_template('recipe_details.html', recipe=recipe)
 
 @recipe_book_bp.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
 @require_role(['Admin', 'Recipe Editor'])
@@ -97,7 +97,7 @@ def edit_instructions(recipe_id):
         if not recipe:
             flash('Recipe not found.', 'error')
             return redirect(url_for('recipe_book.recbk'))
-        return render_template('recipe_book/edit_instructions.html', recipe=recipe)
+        return render_template('edit_instructions.html', recipe=recipe)
 
 @recipe_book_bp.route('/recipe_book_setup')
 def recipe_book_setup():
@@ -106,6 +106,6 @@ def recipe_book_setup():
             c = conn.cursor()
             c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes ORDER BY name')
             recipe_list = [dict(row) for row in c.fetchall()]
-        return render_template('recipe_book/recipe_book_setup.html', recipe_list=recipe_list)
+        return render_template('recipe_book_setup.html', recipe_list=recipe_list)
     except Exception:
-        return render_template('recipe_book/recipe_book_setup.html', recipe_list=[])
+        return render_template('recipe_book_setup.html', recipe_list=[])
