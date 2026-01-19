@@ -34,10 +34,18 @@ def get_original_recipes():
                         ingredients = json.loads(ingredients)
                 except Exception:
                     ingredients = []
+                # Convert ingredient dicts to readable strings if needed
+                if ingredients and isinstance(ingredients, list) and isinstance(ingredients[0], dict):
+                    def format_ingredient(i):
+                        parts = [i.get('quantity', '').strip(), i.get('unit', '').strip(), i.get('ingredient', '').strip()]
+                        return ' '.join([p for p in parts if p])
+                    ingredients_strs = [format_ingredient(i) for i in ingredients]
+                else:
+                    ingredients_strs = ingredients if isinstance(ingredients, list) else []
                 recipes.append({
                     'name': row['name'],
                     'serving_size': row['serving_size'],
-                    'ingredients': ingredients
+                    'ingredients': ingredients_strs
                 })
     return {"success": True, "recipes": recipes}
 from flask import Blueprint, render_template, request
