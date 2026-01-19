@@ -135,6 +135,48 @@ def class_ingredients_download():
         'Content-Disposition': f'attachment; filename="shopping_{recipe_id}.csv"'
     })
 
+
+# --- API endpoint for scheduled bookings (for modal popup) ---
+@app.route('/api/scheduled_bookings')
+def api_scheduled_bookings():
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                SELECT cb.date_required, cb.period, cb.class_code, r.name as recipe_name, cb.desired_servings AS servings,
+                       t.last_name, t.first_name, t.title, t.code as staff_code
+                FROM class_bookings cb
+                LEFT JOIN recipes r ON cb.recipe_id = r.id
+                LEFT JOIN teachers t ON cb.staff_code = t.code
+                ORDER BY cb.date_required, cb.period
+            ''')
+            bookings = []
+            for row in c.fetchall():
+                # Robust date handling
+                date_val = row['date_required']
+                if hasattr(date_val, 'strftime'):
+                    date_str = date_val.strftime('%Y-%m-%d')
+                elif isinstance(date_val, str):
+                    date_str = date_val
+                elif date_val is not None:
+                    date_str = str(date_val)
+                else:
+                    date_str = ''
+                staff_display = f"{row['staff_code']} - {row['last_name']}, {row['first_name']}"
+                bookings.append({
+                    'date_required': date_str,
+                    'period': row['period'],
+                    'class_code': row['class_code'],
+                    'recipe_name': row['recipe_name'],
+                    'servings': row['servings'],
+                    'staff_display': staff_display
+                })
+        return jsonify({'success': True, 'bookings': bookings})
+    except Exception as e:
+        print('[ERROR] Failed to fetch scheduled bookings:', e)
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
+
 @book_a_class_bp.route('/class_ingredients/save', methods=['POST'])
 @require_role('VP', 'DK')
 def class_ingredients_save():
@@ -181,3 +223,58 @@ def class_ingredients_delete(booking_id):
         c.execute('DELETE FROM class_bookings WHERE id = %s', (booking_id,))
         conn.commit()
     return jsonify({'success': True})
+
+    @app.route('/booking/export/ical')
+@require_role('Admin', 'Teacher', 'Technician')
+def export_ical():
+    """Export bookings as iCal format for Google Calendar import."""
+    from datetime import datetime
+    
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''
+            SELECT 
+                cb.date_required as date,
+                cb.period,
+                cb.staff_code,
+                cb.class_code,
+                r.name as recipe_name,
+                cb.desired_servings as servings,
+                t.first_name || ' ' || t.last_name as staff_name
+            FROM class_bookings cb
+            LEFT JOIN recipes r ON cb.recipe_id = r.id
+            LEFT JOIN teachers t ON cb.staff_code = t.code
+            ORDER BY cb.date_required, cb.period
+        ''')
+        bookings = c.fetchall()
+
+    # Build iCal content
+    ical = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//WHS Food Room//NONSGML v1.0//EN'
+    ]
+    for b in bookings:
+        dt = b['date_required']
+        summary = f"{b['class_code']} - {b['recipe_name']}"
+        description = f"Servings: {b['servings']}"
+        uid = str(uuid.uuid4())
+        ical.append('BEGIN:VEVENT')
+        ical.append(f"UID:{uid}")
+        ical.append(f"DTSTAMP:{dt.strftime('%Y%m%dT000000Z')}")
+        ical.append(f"DTSTART;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"DTEND;VALUE=DATE:{dt.strftime('%Y%m%d')}")
+        ical.append(f"SUMMARY:{summary}")
+        ical.append(f"DESCRIPTION:{description}")
+        ical.append('END:VEVENT')
+    ical.append('END:VCALENDAR')
+    ical_str = '\r\n'.join(ical)
+    response = app.response_class(
+        ical_str,
+        mimetype='text/calendar',
+        headers={
+            'Content-Disposition': 'attachment; filename=bookings.ics'
+        }
+    )
+    return response
+

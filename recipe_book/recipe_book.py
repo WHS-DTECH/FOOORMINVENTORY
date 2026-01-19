@@ -111,7 +111,29 @@ def recipe_book_setup():
     except Exception:
         return render_template('recipe_book_setup.html', recipe_list=[])
 
-
+# --- Manual Instruction Editing Route ---
+@app.route('/edit_instructions/<int:recipe_id>', methods=['GET', 'POST'])
+@require_role(['Admin', 'Recipe Editor'])
+def edit_instructions(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        if request.method == 'POST':
+            new_instructions = request.form.get('instructions', '').strip()
+            c.execute('UPDATE recipes SET instructions = %s WHERE id = %s', (new_instructions, recipe_id))
+            conn.commit()
+            flash('Instructions updated.', 'success')
+            return redirect(url_for('recipe_details', recipe_id=recipe_id))
+        # Robust recipe lookup: fallback to ILIKE if not found by id
+        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+        if not recipe:
+            # Try partial/case-insensitive match by name if id lookup fails
+            c.execute('SELECT * FROM recipes WHERE name ILIKE %s LIMIT 1', (f'%{recipe_id}%',))
+            recipe = c.fetchone()
+        if not recipe:
+            flash('Recipe not found.', 'error')
+            return redirect(url_for('recipe_book.recbk'))
+        return render_template('edit_instructions.html', recipe=recipe)
 
 # Add to favorites route
 @recipe_book_bp.route('/recipe/favorite/<int:recipe_id>', methods=['POST'])
