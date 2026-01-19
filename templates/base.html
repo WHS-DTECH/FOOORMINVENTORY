@@ -10,40 +10,8 @@
 </head>
 <body>
 
-    <!-- Bootstrap 5 Navbar (from class_ingred.html) -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">🍳 Food Room</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="/recbk">Recipe Book</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/class_ingredients">Class Ingredients</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/shoplist">Shopping List</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/book_the_shopping">Book the Shopping</a></li>
-                    {% if current_user.is_admin() %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
-                            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                                <li><a class="dropdown-item" href="/admin">Admin Dashboard</a></li>
-                                <li><a class="dropdown-item" href="/admin/recipe_book_setup">Recipe Book Setup</a></li>
-                                <li><a class="dropdown-item" href="/admin#suggestions">Suggestions List</a></li>
-                                <li><a class="dropdown-item" href="/admin/permissions">Manage Role Permissions</a></li>
-                                <li><a class="dropdown-item" href="/admin/user_roles">Manage User Roles</a></li>
-                            </ul>
-                        </li>
-                    {% endif %}
-                </ul>
-                <div class="d-flex">
-                    {% if current_user.is_authenticated %}
-                        <span class="me-2">{{ current_user.name }} <span class="badge bg-secondary">{{ current_user.role }}</span></span>
-                        <a href="/logout" class="btn btn-outline-danger btn-sm">Logout</a>
-                    {% else %}
-                        <a href="/login" class="btn btn-outline-primary btn-sm">Login</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
+    {# Main navigation bar include #}
+    {% include 'navigation_main/nav.html' %}
 
     <!-- Main Content Wrapper -->
     <div class="main-content" id="mainContent">

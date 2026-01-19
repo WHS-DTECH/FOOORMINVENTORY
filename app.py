@@ -1,4 +1,3 @@
-
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -43,6 +42,7 @@ from recipe_parser_pdf import parse_recipes_from_text
 from auth import User, get_staff_code_from_email, require_login, require_role, get_db_connection
 # Register debug_source_url blueprint
 from debug_parser.debug_source_url_route import bp as debug_source_url_bp
+from navigation_main.context_nav import nav_context_processor, nav_bp
 
 
 # =======================
@@ -79,6 +79,10 @@ app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 # Register blueprint for debug source url
 app.register_blueprint(debug_source_url_bp)
+
+# Register navigation context processor and blueprint
+app.context_processor(nav_context_processor)
+app.register_blueprint(nav_bp)
 
 # Error Handlers
 @app.errorhandler(404)
@@ -2106,7 +2110,7 @@ def upload():
             WHERE cb.date_required >= %s AND cb.date_required <= %s
             ORDER BY cb.date_required, cb.period
         ''', (dates[0]['date'], dates[-1]['date']))
-        bookings = [dict(row) for row in c.fetchall()]
+        bookings = c.fetchall()
 
         # Fetch all recipes with ingredients for the JS
         c.execute('SELECT id, name, ingredients FROM recipes')
