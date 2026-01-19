@@ -623,20 +623,5 @@ function deleteBooking(bookingId) {
     }
   }).catch(e => alert('Error: ' + e.message));
 }
-// Delete booking function
-function deleteBooking(bookingId) {
-  if(!confirm('Are you sure you want to delete this booking?')) return;
-  
-  fetch('/class_ingredients/delete/' + bookingId, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'}
-  }).then(r => r.json()).then(j => {
-    if(j.success) {
-      alert('Booking deleted');
-      location.reload();
-    } else {
-      alert('Delete failed');
-    }
-  }).catch(e => alert('Error: ' + e.message));
-
+</script>
 {% endblock %}
