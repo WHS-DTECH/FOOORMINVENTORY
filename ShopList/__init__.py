@@ -1,3 +1,33 @@
+@shoplist_bp.route('/get_original_recipes', methods=['POST'])
+def get_original_recipes():
+    """Return original recipe details for selected bookings as JSON."""
+    data = request.get_json()
+    # Expecting a list of dicts: [{"recipe": "Perfect Pavlova Recipe"}, ...]
+    recipe_names = [b.get('recipe') for b in data.get('bookings', []) if b.get('recipe')]
+    if not recipe_names:
+        return {"success": False, "recipes": []}
+    # Remove duplicates
+    recipe_names = list(set(recipe_names))
+    recipes = []
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        for name in recipe_names:
+            c.execute('SELECT name, serving_size, ingredients FROM recipes WHERE name = %s LIMIT 1', (name,))
+            row = c.fetchone()
+            if row:
+                try:
+                    ingredients = row['ingredients']
+                    if isinstance(ingredients, str):
+                        import json
+                        ingredients = json.loads(ingredients)
+                except Exception:
+                    ingredients = []
+                recipes.append({
+                    'name': row['name'],
+                    'serving_size': row['serving_size'],
+                    'ingredients': ingredients
+                })
+    return {"success": True, "recipes": recipes}
 from flask import Blueprint, render_template, request
 from . import shoppinglist
 from auth import get_db_connection
