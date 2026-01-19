@@ -127,7 +127,11 @@
             {% set teacher_idx = teacher_idx + 1 %}
           {% endif %}
         {% endfor %}
-        {% set week_dates_str = week_dates | map(attribute='strftime', args=['%Y-%m-%d']) | list %}
+        {# Build week_dates_str as a list of date strings #}
+        {% set week_dates_str = [] %}
+        {% for d in week_dates %}
+          {% set _ = week_dates_str.append(d.strftime('%Y-%m-%d')) %}
+        {% endfor %}
         {% for period in range(1,6) %}
         <tr>
           <td style="border: 1px solid #cfd8dc; background: #f3f6fa; text-align: center; font-weight: bold;">P{{ period }}</td>
