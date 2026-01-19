@@ -31,8 +31,11 @@ def book_the_shopping():
         {'teacher': 'Diplock, Maryke', 'staff_code': 'DK', 'date': '2025-12-18', 'class': 'SDFOOD', 'recipe': 'Apple and Sultana Crumble'},
         {'teacher': 'Pringle, Vanessa', 'staff_code': 'VP', 'date': '2025-12-19', 'class': '300HOSP', 'recipe': 'Cauliflower Cheese'},
     ]
-    # Sort by teacher, date, class, recipe
-    selected_bookings = sorted(selected_bookings, key=lambda b: (b['teacher'], b['date'], b['class'], b['recipe']))
+    # Normalize teacher+staff_code for grouping (case-insensitive, strip whitespace)
+    for b in selected_bookings:
+        b['teacher_key'] = (b['teacher'].strip().lower(), b['staff_code'].strip().lower())
+    # Sort by normalized teacher, date, class, recipe
+    selected_bookings = sorted(selected_bookings, key=lambda b: (b['teacher_key'], b['date'], b['class'], b['recipe']))
     return render_template(
         'shoplist_new.html',
         week_label=week_label,
