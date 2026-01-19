@@ -21,6 +21,9 @@ except ImportError:
     Image = None
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+
+# Import the ShopList blueprint
+from ShopList import shoplist_bp
 from flask_login import LoginManager, login_user, logout_user, current_user
 from google_auth_oauthlib.flow import Flow
 import psycopg2
@@ -1103,15 +1106,9 @@ print('GOOGLE_REDIRECT_URI:', repr(GOOGLE_REDIRECT_URI))
 # New Shopping List (Rebuilt) Route
 # =======================
 
-# Replace the old Shopping List route to serve the new template
-@app.route('/shoplist')
-def shoplist():
-    """Serve the rebuilt Shopping List page (now default)."""
-    # Pass dummy data to prevent template errors
-    bookings = []
-    recipes = []
-    dates = []
-    return render_template('shoplist.html', bookings=bookings, recipes=recipes, dates=dates)
+
+# Register the ShopList blueprint after app is created
+app.register_blueprint(shoplist_bp)
 
 SCOPES = [
     'openid',
@@ -2127,26 +2124,7 @@ def upload():
 
     # Build grid: {date_P{period}: booking} with date as YYYY-MM-DD string (matches template)
     grid = {}
-    for b in bookings:
-        date_str = str(b['date_required'])[:10]  # Ensure format YYYY-MM-DD
-        key = f"{date_str}_P{b['period']}"
-        grid[key] = b
 
-    # Calculate previous and next week offsets for navigation buttons
-    prev_week = week_offset - 1
-    next_week = week_offset + 1
-    # Optionally, build a week label for display (e.g., '19/01/2026 - 23/01/2026')
-    week_label = f"{dates[0]['nz_date']} - {dates[-1]['nz_date']}"
-    return render_template(
-        'shoplist.html',
-        dates=dates,
-        bookings=bookings,
-        recipes=recipes,
-        grid=grid,
-        prev_week=prev_week,
-        next_week=next_week,
-        week_label=week_label
-    )
 
 
 def categorize_ingredient(ingredient_name):
