@@ -1,4 +1,3 @@
-
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -44,6 +43,7 @@ from auth import User, get_staff_code_from_email, require_login, require_role, g
 # Register debug_source_url blueprint
 from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 from navigation_main.context_nav import nav_context_processor, nav_bp
+from class_ingredients.class_ingredients import class_ingredients_bp
 
 
 # =======================
@@ -89,6 +89,9 @@ app.register_blueprint(nav_bp)
 # Register admin_task blueprint
 from admin_task.admin_routes import admin_task_bp
 app.register_blueprint(admin_task_bp)
+
+# Register class_ingredients blueprint
+app.register_blueprint(class_ingredients_bp)
 
 # Error Handlers
 @app.errorhandler(404)
@@ -1033,216 +1036,6 @@ def uploadclass():
 
 @app.route('/class_ingredients', methods=['GET', 'POST'])
 @require_role('Admin', 'Teacher')
-def class_ingredients():
-    # Provide staff codes, class codes, and recipes for selection on the page
-    # Can be called via GET (blank form) or POST (from booking calendar with pre-populated data)
-    
-    # Extract booking data from POST request if present
-    staff_code = request.form.get('staff_code') if request.method == 'POST' else None
-    class_code = request.form.get('class_code') if request.method == 'POST' else None
-    date_required = request.form.get('date_required') if request.method == 'POST' else None
-    period = request.form.get('period') if request.method == 'POST' else None
-    
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        
-        # Get most used staff (top 5 by booking count)
-        c.execute('''SELECT staff_code, COUNT(*) as booking_count FROM class_bookings 
-                    GROUP BY staff_code ORDER BY booking_count DESC LIMIT 5''')
-        most_used_staff_codes = [r['staff_code'] for r in c.fetchall()]
-        
-        # Get all staff
-        c.execute('SELECT code, last_name, first_name, title FROM teachers ORDER BY last_name, first_name')
-        all_staff = [dict(r) for r in c.fetchall()]
-        
-        # Sort staff: most used first, then rest alphabetically
-        most_used_staff = [s for s in all_staff if s['code'] in most_used_staff_codes]
-        other_staff = [s for s in all_staff if s['code'] not in most_used_staff_codes]
-        most_used_staff.sort(key=lambda x: most_used_staff_codes.index(x['code']))
-        staff = most_used_staff + other_staff
-        
-        # If no pre-selected staff from booking, try to match current user's name to a staff member
-        if not staff_code and current_user.is_authenticated:
-            user_name_parts = current_user.name.split()
-            if len(user_name_parts) >= 2:
-                # Try to match first name and last name
-                user_first = user_name_parts[0]
-                user_last = user_name_parts[-1]
-                for s in staff:
-                    if (s['first_name'].lower() == user_first.lower() and 
-                        s['last_name'].lower() == user_last.lower()):
-                        staff_code = s['code']
-                        break
-        
-        # Get most used classes (top 5 by booking count)
-        c.execute('''SELECT class_code, COUNT(*) as booking_count FROM class_bookings 
-                    GROUP BY class_code ORDER BY booking_count DESC LIMIT 5''')
-        most_used_class_codes = [r['class_code'] for r in c.fetchall()]
-        
-        # Get all classes
-        c.execute('SELECT DISTINCT ClassCode FROM classes ORDER BY ClassCode')
-        all_classes = [r['classcode'] for r in c.fetchall() if r['classcode']]
-        
-        # Sort classes: most used first, then rest alphabetically
-        most_used_classes = [c for c in all_classes if c in most_used_class_codes]
-        other_classes = [c for c in all_classes if c not in most_used_class_codes]
-        most_used_classes.sort(key=lambda x: most_used_class_codes.index(x))
-        classes = most_used_classes + other_classes
-        
-        # Get recipes
-        c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY LOWER(name)')
-        rows = c.fetchall()
-        
-        # If called from booking, get the booking's recipe and servings
-        booking_recipe_id = None
-        booking_servings = None
-        if request.method == 'POST' and staff_code and class_code and date_required and period:
-            c.execute('''SELECT recipe_id, desired_servings FROM class_bookings 
-                        WHERE staff_code = %s AND class_code = %s AND date_required = %s AND period = %s''',
-                     (staff_code, class_code, date_required, period))
-            booking = c.fetchone()
-            if booking:
-                booking_recipe_id = booking['recipe_id']
-                booking_servings = booking['desired_servings']
-
-    recipes = []
-    for r in rows:
-        try:
-            ings = json.loads(r['ingredients'] or '[]')
-        except Exception:
-            ings = []
-        recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
-
-    # Get existing bookings for display (ordered by date descending, most recent first)
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('''
-            SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, 
-                   cb.recipe_id, cb.desired_servings, r.name as recipe_name,
-                   t.first_name, t.last_name
-            FROM class_bookings cb
-            LEFT JOIN recipes r ON cb.recipe_id = r.id
-            LEFT JOIN teachers t ON cb.staff_code = t.code
-            ORDER BY cb.date_required DESC, cb.period ASC
-        ''')
-        bookings = [dict(row) for row in c.fetchall()]
-
-    return render_template('class_ingred.html', staff=staff, classes=classes, recipes=recipes,
-                          bookings=bookings,
-                          most_used_staff_count=len(most_used_staff), most_used_classes_count=len(most_used_classes),
-                          pre_staff_code=staff_code, pre_class_code=class_code, 
-                          pre_date_required=date_required, pre_period=period,
-                          pre_recipe_id=booking_recipe_id, pre_servings=booking_servings)
-
-
-@app.route('/class_ingredients/download', methods=['POST'])
-@require_role('VP', 'DK')
-def class_ingredients_download():
-    # Expects JSON: {recipe_id, desired_servings}
-    data = request.get_json() or {}
-    recipe_id = data.get('recipe_id')
-    desired = int(data.get('desired_servings') or 24)
-    if not recipe_id:
-        return jsonify({'error':'recipe_id required'}), 400
-
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id, name, ingredients, serving_size FROM recipes WHERE id = %s', (recipe_id,))
-        row = c.fetchone()
-        if not row:
-            return jsonify({'error':'recipe not found'}), 404
-        try:
-            ings = json.loads(row['ingredients'] or '[]')
-        except Exception:
-            ings = []
-
-    # Build CSV
-    import io, csv
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow(['ingredient','quantity','unit','notes'])
-    orig_serv = int(row['serving_size']) if row['serving_size'] else 1
-    for it in ings:
-        name = ''
-        qty = ''
-        unit = ''
-        if isinstance(it, dict):
-            name = it.get('ingredient') or ''
-            qty = it.get('quantity') or ''
-            unit = it.get('unit') or ''
-            # calculate scaled
-            try:
-                qn = float(str(qty))
-                per_single = qn / orig_serv
-                scaled = per_single * desired
-                qty = round(scaled,2)
-            except Exception:
-                qty = ''
-        else:
-            name = str(it)
-        writer.writerow([name, qty, unit, ''])
-
-    csv_data = buf.getvalue()
-    return (csv_data, 200, {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': f'attachment; filename="shopping_{recipe_id}.csv"'
-    })
-
-
-@app.route('/class_ingredients/save', methods=['POST'])
-@require_role('VP', 'DK')
-def class_ingredients_save():
-    # Save a booking to `class_bookings` (INSERT or UPDATE)
-    try:
-        data = request.get_json() or {}
-        print("[DEBUG] /class_ingredients/save data:", data)
-        booking_id = data.get('booking_id')  # If provided, update existing booking
-        staff_code = data.get('staff')
-        class_code = data.get('classcode')
-        date_required = data.get('date')
-        period = data.get('period')
-        recipe_id = data.get('recipe_id')
-        desired = int(data.get('desired_servings') or 24)
-
-        # Validation
-        missing = []
-        for field, value in [('staff', staff_code), ('classcode', class_code), ('date', date_required), ('period', period), ('recipe_id', recipe_id)]:
-            if value in [None, '']:
-                missing.append(field)
-        if missing:
-            print(f"[ERROR] Missing required fields: {missing}")
-            return jsonify({'error': f'Missing required fields: {missing}'}), 400
-
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            if booking_id:
-                # Update existing booking
-                c.execute('''UPDATE class_bookings 
-                            SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s
-                            WHERE id=%s''',
-                         (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
-                conn.commit()
-            else:
-                # Insert new booking
-                c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (%s, %s, %s, %s, %s, %s)',
-                          (staff_code, class_code, date_required, period, recipe_id, desired))
-                conn.commit()
-                booking_id = c.lastrowid
-        return jsonify({'success': True, 'booking_id': booking_id})
-    except Exception as e:
-        print(f"[ERROR] Exception in /class_ingredients/save: {e}")
-        import traceback; traceback.print_exc()
-        return jsonify({'error': str(e)}), 400
-
-@app.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
-@require_role('Admin', 'Teacher')
-def class_ingredients_delete(booking_id):
-    # Delete a booking
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM class_bookings WHERE id = %s', (booking_id,))
-        conn.commit()
-    return jsonify({'success': True})
 
 @app.route('/upload', methods=['GET', 'POST'])
 @require_role('Admin')
