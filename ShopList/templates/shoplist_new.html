@@ -142,7 +142,7 @@
               {% set booking_period = booking.period|string %}
               {% set grid_period = period|string %}
               {% set booking_date = booking.date_required if 'date_required' in booking else booking.date %}
-              {% if booking_period == grid_period and booking_date == date.strftime('%Y-%m-%d') and booking_date in week_dates_str %}
+              {% if booking_period == grid_period and booking_date == date.strftime('%Y-%m-%d') %}
                 {% set _ = cell_bookings.append(booking) %}
               {% endif %}
             {% endfor %}
