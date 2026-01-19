@@ -211,7 +211,7 @@ def admin_user_roles():
 def clean_recipes_route():
     """Clean recipe database - remove junk and duplicates."""
     try:
-        from clean_recipes import remove_junk_recipes, remove_duplicate_recipes, fix_recipe_names
+        from admin_task.clean_recipes import remove_junk_recipes, remove_duplicate_recipes, fix_recipe_names
         with get_db_connection() as conn:
             junk_deleted = remove_junk_recipes(conn)
             dupes_deleted = remove_duplicate_recipes(conn)

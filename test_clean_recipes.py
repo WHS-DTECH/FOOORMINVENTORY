@@ -1,6 +1,6 @@
 import unittest
 import sqlite3
-from clean_recipes import remove_junk_recipes, remove_duplicate_recipes, fix_recipe_names
+from admin_task.clean_recipes import remove_junk_recipes, remove_duplicate_recipes, fix_recipe_names
 
 class TestCleanRecipes(unittest.TestCase):
     def test_remove_junk_recipes_with_missing_table(self):

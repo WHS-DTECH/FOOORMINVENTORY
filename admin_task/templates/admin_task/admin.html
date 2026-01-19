@@ -1,2 +1,601 @@
 {% extends "base.html" %}
-{# Placeholder: Move content from templates/admin.html here #}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<!-- admin.html main content starts here -->
+
+<div class="container mt-4">
+    <h1>Admin Dashboard</h1>
+    <!-- Add admin dashboard content here -->
+</div>
+{% endblock %}
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    {% if current_user.is_authenticated %}
+                        <span class="me-2">{{ current_user.name }} <span class="badge bg-secondary">{{ current_user.role }}</span></span>
+                        <a href="/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+                    {% else %}
+                        <a href="/login" class="btn btn-outline-primary btn-sm">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    .admin-column {
+        padding: 25px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .admin-column h1 {
+        margin-top: 0;
+        font-size: 28px;
+        color: #333;
+        border-bottom: 3px solid #337ab7;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .admin-column h2 {
+        font-size: 20px;
+        color: #555;
+        margin-top: 25px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 6px;
+    }
+    .admin-column form {
+        margin: 15px 0;
+    }
+    .admin-column label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    .admin-column input[type="file"],
+    .admin-column input[type="url"] {
+        margin: 8px 0;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .admin-column input[type="url"] {
+        width: 100%;
+        max-width: 400px;
+    }
+    .admin-column button,
+    .admin-column input[type="submit"] {
+        padding: 10px 20px;
+        background-color: #337ab7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    .admin-column button:hover,
+    .admin-column input[type="submit"]:hover {
+        background-color: #286090;
+    }
+    .admin-column table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 13px;
+    }
+    .admin-column table th,
+    .admin-column table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .admin-column table th {
+        background-color: #337ab7;
+        color: white;
+        font-weight: 600;
+    }
+    .admin-column h3 {
+        font-size: 16px;
+        color: #666;
+        margin-top: 15px;
+    }
+    .recipe-method-desc {
+        margin: 10px 0;
+        color: #666;
+        font-size: 14px;
+    }
+    @media (max-width: 968px) {
+        .admin-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="flash">
+  {% for message in messages %}
+  <p>{{ message }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="admin-container">
+    <div class="admin-grid">
+        
+        <!-- LEFT COLUMN: Class Setup -->
+        <div class="admin-column">
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-primary">Role Setup</h1>
+            <div class="mb-4">
+                <h2 class="mb-3 mt-2">Manage Permissions</h2>
+                <p class="recipe-method-desc">Control which pages each role can access.</p>
+                <a href="/admin/permissions" class="btn btn-info mb-2 w-100">🔐 Manage Role Permissions</a>
+                <a href="/admin/user_roles" class="btn btn-success w-100">👥 Manage User Roles</a>
+            </div>
+            <hr class="my-4">
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-secondary">Class & Staff Setup</h1>
+            <div class="mb-4">
+                <h2 class="mb-3 mt-2">Staff CSV Upload</h2>
+                <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with staff details to add or update staff records.">
+                    <i class="bi bi-info-circle text-info"></i>
+                </span>
+                <form id="staffCsvForm" method="POST" enctype="multipart/form-data" class="mb-3">
+                    <label for="staff_csv" class="form-label">Select Staff CSV file:</label>
+                    <div class="dropzone mb-2" id="staffDropzone" onclick="document.getElementById('staff_csv').click();">
+                        <span>Drag & drop or click to select file</span>
+                        <input type="file" id="staff_csv" name="staff_csv" accept=".csv" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'staffDropzone')">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Staff CSV</button>
+                    <div class="progress mt-2" id="staffCsvProgress" style="height: 8px; display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </form>
+                {% if preview_data %}
+                <h3>Preview of Uploaded Staff Data</h3>
+                <table class="table table-striped table-bordered table-hover align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                        {% for key in preview_data[0].keys() %}
+                            <th>{{ key }}</th>
+                        {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in preview_data %}
+                        <tr>
+                        {% for value in row.values() %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+            <div class="mb-4">
+                <h2 class="mb-3 mt-2">Class CSV Upload</h2>
+                <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Upload a CSV file with class details to add or update classes.">
+                    <i class="bi bi-info-circle text-info"></i>
+                </span>
+                <form id="classCsvForm" action="/uploadclass" method="post" enctype="multipart/form-data" class="mb-3">
+                    <label for="csvfile" class="form-label">Select Class CSV file:</label>
+                    <div class="dropzone mb-2" id="classDropzone" onclick="document.getElementById('csvfile').click();">
+                        <span>Drag & drop or click to select file</span>
+                        <input type="file" id="csvfile" name="csvfile" accept=".csv" class="form-control d-none" required onchange="updateDropzoneLabel(this, 'classDropzone')">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Upload Class CSV</button>
+                    <div class="progress mt-2" id="classCsvProgress" style="height: 8px; display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </form>
+                {% if class_preview_data %}
+                <h3>Preview of Uploaded Class Data</h3>
+                <table class="table table-striped table-bordered table-hover align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                        {% for key in class_preview_data[0].keys() %}
+                            <th>{{ key }}</th>
+                        {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in class_preview_data %}
+                        <tr>
+                        {% for value in row.values() %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+            
+            <hr class="my-4">
+            <h1 class="mb-4 pb-2 border-bottom border-3 border-success">Suggestions List</h1>
+            <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="View and review recipe suggestions submitted by users.">
+                <i class="bi bi-info-circle text-info"></i>
+            </span>
+            {% if suggestions %}
+            <form id="suggestionsBulkForm" method="post" action="/admin/suggestions_bulk_action">
+            <div class="d-flex justify-content-between mb-2">
+                <div>
+                    <input type="checkbox" id="selectAllSuggestions" onclick="toggleAllSuggestions(this)"> <label for="selectAllSuggestions" class="mb-0">Select All</label>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="exportSuggestionsCSV()">Export to CSV</button>
+                    <button type="submit" name="action" value="delete" class="btn btn-danger btn-sm">Delete Selected</button>
+                </div>
+            </div>
+            <table id="suggestionsTable" class="table table-striped table-bordered table-hover align-middle" style="margin: 20px 0;">
+                <thead class="table-primary">
+                    <tr>
+                        <th></th>
+                        <th>Date</th>
+                        <th>Recipe Name</th>
+                        <th>Suggested By</th>
+                        <th>URL</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in suggestions %}
+                    <tr>
+                        <td><input type="checkbox" name="suggestion_ids" value="{{ s.id }}"></td>
+                        <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '—' }}</td>
+                        <td class="fw-bold">{{ s.recipe_name }}</td>
+                        <td>{{ s.suggested_by_name }}<br><small class="text-muted">{{ s.suggested_by_email }}</small></td>
+                        <td>
+                            {% if s.recipe_url %}
+                                <a href="{{ s.recipe_url }}" target="_blank" class="link-primary">🔗 View</a>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ s.reason or '—' }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </form>
+            <script>
+            function toggleAllSuggestions(cb) {
+                var boxes = document.querySelectorAll('#suggestionsTable input[type="checkbox"][name="suggestion_ids"]');
+                boxes.forEach(b => b.checked = cb.checked);
+            }
+            </script>
+            <script>
+            function exportSuggestionsCSV() {
+                var table = document.getElementById('suggestionsTable');
+                var rows = Array.from(table.querySelectorAll('tr'));
+                var csv = rows.map(row =>
+                    Array.from(row.querySelectorAll('th,td')).map(cell => '"' + cell.innerText.replace(/"/g, '""') + '"').join(',')
+                ).join('\n');
+                var blob = new Blob([csv], { type: 'text/csv' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'suggestions.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            </script>
+            {% else %}
+            <p style="color: #666; font-style: italic;">No recipe suggestions yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT COLUMN: Recipe Book Setup -->
+        <!-- Recipe Book Setup moved to its own page: recipe_book_setup.html -->
+        <!-- Removed Clean Recipe Database button and related section from admin.html -->
+</body>
+<style>
+.dropzone {
+    border: 2px dashed #337ab7;
+    border-radius: 8px;
+    background: #f4f8fc;
+    padding: 18px 12px;
+    text-align: center;
+    color: #337ab7;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.dropzone.dragover {
+    background: #eaf4ff;
+    border-color: #286090;
+}
+</style>
+<script>
+// Drag-and-drop support for file uploads
+['staffDropzone','classDropzone','pdfDropzone'].forEach(function(id) {
+    var dz = document.getElementById(id);
+    if (!dz) return;
+    dz.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dz.classList.add('dragover');
+    });
+    dz.addEventListener('dragleave', function(e) {
+        dz.classList.remove('dragover');
+    });
+    dz.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dz.classList.remove('dragover');
+        var input = dz.querySelector('input[type="file"]');
+        if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            updateDropzoneLabel(input, id);
+        }
+    });
+});
+function updateDropzoneLabel(input, dzId) {
+    var dz = document.getElementById(dzId);
+    if (input.files && input.files.length > 0) {
+        dz.querySelector('span').textContent = input.files[0].name;
+        dz.style.color = '#286090';
+    } else {
+        dz.querySelector('span').textContent = 'Drag & drop or click to select file';
+        dz.style.color = '#337ab7';
+    }
+}
+</script>
+
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Load Recipe (URL)</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Import a recipe directly from a website URL.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
+            <p class="recipe-method-desc">Import recipe from a website URL.</p>
+            <div id="urlStatus" style="margin: 10px 0; padding: 10px; display: none; border-radius: 4px;"></div>
+            <form id="urlForm" class="mb-3">
+                <label for="url" class="form-label">Recipe URL:</label>
+                <input type="url" id="url" name="url" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/..." class="form-control mb-2" required>
+                <button type="submit" id="urlSubmitBtn" class="btn btn-danger w-100">Load from URL</button>
+            </form>
+
+            <hr class="my-4">
+            <h2 class="mb-3 mt-4">Clean Database</h2>
+                                    <span class="ms-1" data-bs-toggle="tooltip" data-bs-placement="right" title="Remove duplicate or junk recipes and fix recipe names.">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                    </span>
+            <p class="recipe-method-desc">Remove duplicate recipes, junk entries, and fix recipe names.</p>
+            <form action="/admin/clean_recipes" method="post" class="mb-3" onsubmit="return confirm('This will clean the recipe database. Continue?') && showLoadingSpinner(this, '🧹 Clean Recipe Database')">
+                <button type="submit" class="btn btn-warning w-100"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> 🧹 Clean Recipe Database</button>
+            </form>
+</body>
+<script>
+// Show loading spinner and disable button on form submit
+function showLoadingSpinner(form, label) {
+    var btn = form.querySelector('button[type="submit"]');
+    var spinner = btn.querySelector('.spinner-border');
+    if (btn && spinner) {
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        btn.childNodes[btn.childNodes.length-1].textContent = ' ' + label + '...';
+    }
+    return true;
+}
+</script>
+
+            <!-- Removed duplicate Manage Permissions section from right column -->
+        </div>
+        
+    </div>
+</div>
+
+<script>
+// URL form handler
+document.getElementById('urlForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const url = document.getElementById('recipeUrl').value;
+    const statusDiv = document.getElementById('urlStatus');
+    const submitBtn = document.getElementById('urlSubmitBtn');
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Loading...';
+    statusDiv.style.display = 'block';
+    statusDiv.style.backgroundColor = '#d9edf7';
+    statusDiv.style.color = '#31708f';
+    statusDiv.innerHTML = '🔄 Fetching recipe from URL...';
+    
+    try {
+        const formData = new FormData();
+        formData.append('url', url);
+        
+        const response = await fetch('/upload_url', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            statusDiv.style.backgroundColor = '#f2dede';
+            statusDiv.style.color = '#a94442';
+            statusDiv.innerHTML = '❌ Error: ' + data.error;
+        } else if (data.success) {
+            statusDiv.style.backgroundColor = '#dff0d8';
+            statusDiv.style.color = '#3c763d';
+            statusDiv.innerHTML = '✅ Recipe extracted successfully! Opening form...';
+            
+            // Redirect to upload form with recipe data
+            // Create a form to submit the recipe data
+            const redirectForm = document.createElement('form');
+            redirectForm.method = 'POST';
+            redirectForm.action = '/load_recipe_from_url';
+            
+            const recipeInput = document.createElement('input');
+            recipeInput.type = 'hidden';
+            recipeInput.name = 'recipe_data';
+            recipeInput.value = JSON.stringify(data);
+            
+            redirectForm.appendChild(recipeInput);
+            document.body.appendChild(redirectForm);
+            redirectForm.submit();
+        }
+    } catch (error) {
+        statusDiv.style.backgroundColor = '#f2dede';
+        statusDiv.style.color = '#a94442';
+        statusDiv.innerHTML = '❌ Error: ' + error.message;
+    <script>
+    // Drag-and-drop support for file uploads
+    ['staffDropzone','classDropzone','pdfDropzone'].forEach(function(id) {
+        var dz = document.getElementById(id);
+        if (!dz) return;
+        dz.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dz.classList.add('dragover');
+        });
+        dz.addEventListener('dragleave', function(e) {
+            dz.classList.remove('dragover');
+        });
+        dz.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            var input = dz.querySelector('input[type="file"]');
+            if (e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                updateDropzoneLabel(input, id);
+            }
+        });
+    });
+    function updateDropzoneLabel(input, dzId) {
+        var dz = document.getElementById(dzId);
+        if (input.files && input.files.length > 0) {
+            dz.querySelector('span').textContent = input.files[0].name;
+            dz.style.color = '#286090';
+        } else {
+            dz.querySelector('span').textContent = 'Drag & drop or click to select file';
+            dz.style.color = '#337ab7';
+        }
+    }
+
+    // AJAX file upload with progress bar for Staff CSV
+    document.getElementById('staffCsvForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var fileInput = form.querySelector('input[type="file"]');
+        var progress = document.getElementById('staffCsvProgress');
+        var bar = progress.querySelector('.progress-bar');
+        var btn = form.querySelector('button[type="submit"]');
+        var spinner = btn.querySelector('.spinner-border');
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        var data = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action || window.location.pathname, true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = (e.loaded / e.total) * 100;
+                bar.style.width = percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            bar.style.width = '100%';
+            setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            form.submit(); // fallback: submit to reload/preview
+        };
+        xhr.onerror = function() {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            alert('Upload failed. Please try again.');
+        };
+        xhr.send(data);
+    });
+    // AJAX file upload with progress bar for Class CSV
+    document.getElementById('classCsvForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var fileInput = form.querySelector('input[type="file"]');
+        var progress = document.getElementById('classCsvProgress');
+        var bar = progress.querySelector('.progress-bar');
+        var btn = form.querySelector('button[type="submit"]');
+        var spinner = btn.querySelector('.spinner-border');
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        var data = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = (e.loaded / e.total) * 100;
+                bar.style.width = percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            bar.style.width = '100%';
+            setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            form.submit();
+        };
+        xhr.onerror = function() {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            alert('Upload failed. Please try again.');
+        };
+        xhr.send(data);
+    });
+    // AJAX file upload with progress bar for PDF
+    document.getElementById('pdfForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = this;
+        var fileInput = form.querySelector('input[type="file"]');
+        var progress = document.getElementById('pdfProgress');
+        var bar = progress.querySelector('.progress-bar');
+        var btn = form.querySelector('button[type="submit"]');
+        var spinner = btn.querySelector('.spinner-border');
+        progress.style.display = 'block';
+        bar.style.width = '0%';
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        var data = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action, true);
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percent = (e.loaded / e.total) * 100;
+                bar.style.width = percent + '%';
+            }
+        };
+        xhr.onload = function() {
+            bar.style.width = '100%';
+            setTimeout(function() { progress.style.display = 'none'; bar.style.width = '0%'; }, 1200);
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            form.submit();
+        };
+        xhr.onerror = function() {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+            alert('Upload failed. Please try again.');
+        };
+        xhr.send(data);
+    });

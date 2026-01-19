@@ -285,8 +285,6 @@ def delete_parser_test_recipe(test_recipe_id):
 def recipe_index_view(recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
-        # --- Flag/Unflag Parser Issue ---
-        @app.route('/flag_parser_issue/<int:recipe_id>', methods=['POST'])
         c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
         recipe = c.fetchone()
     return render_template('recipe_index_view.html', recipe=recipe)
