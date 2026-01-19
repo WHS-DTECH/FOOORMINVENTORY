@@ -1,7 +1,7 @@
 {# navigation_main/nav.html #}
 <nav class="main-navbar">
   <ul class="nav-list">
-    <li class="nav-item"><a href="{{ url_for('index') }}">Food Room</a></li>
+    <li class="nav-item"><a href="{{ url_for('index') }}">Food Room inventory</a></li>
     <li class="nav-item"><a href="{{ url_for('recbk') }}">Recipe Book</a></li>
     <li class="nav-item"><a href="{{ url_for('class_ingredients') }}">Class Ingredients</a></li>
     <li class="nav-item"><a href="{{ url_for('shoplist.book_the_shopping') }}">Book the Shopping</a></li>
@@ -10,7 +10,7 @@
         <a href="#" class="dropdown-toggle" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
         <ul class="dropdown-menu" aria-labelledby="adminDropdown">
           <li><a class="dropdown-item" href="{{ url_for('admin') }}">Admin Dashboard</a></li>
-          <li><a class="dropdown-item" href="{{ url_for('recipe_book_setup') }}">Recipe Book Setup</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('admin_recipe_book_setup') }}">Recipe Book Setup</a></li>
           <li><a class="dropdown-item" href="{{ url_for('admin_permissions') }}">Manage Role Permissions</a></li>
           <li><a class="dropdown-item" href="{{ url_for('admin_user_roles') }}">Manage User Roles</a></li>
           <li><a class="dropdown-item" href="{{ url_for('recipe_suggestions') }}">Recipe Suggestions</a></li>
