@@ -24,7 +24,8 @@ def get_original_recipes():
     with get_db_connection() as conn:
         c = conn.cursor()
         for name in recipe_names:
-            c.execute('SELECT name, serving_size, ingredients FROM recipes WHERE name = %s LIMIT 1', (name,))
+            # Use ILIKE for case-insensitive and partial match
+            c.execute('SELECT name, serving_size, ingredients FROM recipes WHERE name ILIKE %s LIMIT 1', (f'%{name.strip()}%',))
             row = c.fetchone()
             if row:
                 try:
