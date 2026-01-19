@@ -1,3 +1,11 @@
+
+# admin_task/routes.py
+from flask import render_template, request, redirect, url_for, flash, jsonify, session
+from auth import require_role, get_db_connection
+from flask_login import current_user
+import os, csv, datetime, json, io
+from . import admin_task_bp
+
 # --- Recipe Book Setup Page ---
 @admin_task_bp.route('/admin/recipe_book_setup')
 @require_role('Admin')
@@ -8,13 +16,6 @@ def admin_recipe_book_setup():
 @require_role('Admin')
 def recipe_suggestions():
     return render_template('admin_task/admin_recipe_suggestions.html')
-# admin_task/routes.py
-
-from flask import render_template, request, redirect, url_for, flash, jsonify, session
-from auth import require_role, get_db_connection
-from flask_login import current_user
-import os, csv, datetime, json, io
-from . import admin_task_bp
 
 # --- Admin Utility: Fix Public Roles ---
 @admin_task_bp.route('/admin/fix_public_roles')
