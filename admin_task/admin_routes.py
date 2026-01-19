@@ -28,7 +28,7 @@ def admin_user_roles():
 @admin_task_bp.route('/admin/recipe_book_setup')
 @require_role('Admin')
 def admin_recipe_book_setup():
-    return render_template('admin_task/recipe_book_setup.html')
+    return render_template('recipe_book/recipe_book_setup.html')
 # --- Recipe Suggestions Page ---
 @admin_task_bp.route('/admin/recipe_suggestions')
 @require_role('Admin')
@@ -134,7 +134,7 @@ def uploadclass():
             c = conn.cursor()
             c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date FROM recipes ORDER BY name')
             recipe_list = [dict(row) for row in c.fetchall()]
-        return render_template('admin_task/recipe_book_setup.html', recipe_list=recipe_list)
+        return render_template('recipe_book/recipe_book_setup.html', recipe_list=recipe_list)
     except Exception:
         suggestions = []
     return render_template('admin_task/admin.html', preview_data=rows, suggestions=suggestions)

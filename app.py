@@ -5,6 +5,7 @@
 # =======================
 # Imports (Standard, Third-party, Local)
 # =======================
+
 import os
 import re
 import datetime
@@ -20,6 +21,12 @@ except ImportError:
     Image = None
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+
+# Import and register admin_task blueprint early
+from admin_task import admin_task_bp
+
+app = Flask(__name__)
+app.register_blueprint(admin_task_bp)
 
 # Import the ShopList blueprint
 from ShopList import shoplist_bp
