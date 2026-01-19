@@ -1267,7 +1267,17 @@ def edit_instructions(recipe_id):
             conn.commit()
             flash('Instructions updated.', 'success')
             return redirect(url_for('recipe_details', recipe_id=recipe_id))
+        # Robust recipe lookup: fallback to ILIKE if not found by id
         c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+        if not recipe:
+            # Try partial/case-insensitive match by name if id lookup fails
+            c.execute('SELECT * FROM recipes WHERE name ILIKE %s LIMIT 1', (f'%{recipe_id}%',))
+            recipe = c.fetchone()
+        if not recipe:
+            flash('Recipe not found.', 'error')
+            return redirect(url_for('recipe_book.recbk'))
+        return render_template('edit_instructions.html', recipe=recipe)
         recipe = c.fetchone()
         if not recipe:
             flash('Recipe not found.', 'error')
