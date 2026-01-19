@@ -57,15 +57,18 @@
           <label for="date">Date required</label>
           <input type="date" id="date" name="date" value="{{ pre_date_required or '' }}" />
         </div>
-        <div class="col">
-          <label for="period">Class slot (period)</label>
-          <select id="period" name="period">
-            <option value="1"{% if pre_period == '1' %} selected{% endif %}>Period 1</option>
-            <option value="2"{% if pre_period == '2' %} selected{% endif %}>Period 2</option>
-            <option value="3"{% if pre_period == '3' %} selected{% endif %}>Period 3</option>
-            <option value="4"{% if pre_period == '4' %} selected{% endif %}>Period 4</option>
-            <option value="5"{% if pre_period == '5' %} selected{% endif %}>Period 5</option>
-          </select>
+        <div class="col d-flex align-items-end gap-2">
+          <div>
+            <label for="period">Class slot (period)</label>
+            <select id="period" name="period">
+              <option value="1"{% if pre_period == '1' %} selected{% endif %}>Period 1</option>
+              <option value="2"{% if pre_period == '2' %} selected{% endif %}>Period 2</option>
+              <option value="3"{% if pre_period == '3' %} selected{% endif %}>Period 3</option>
+              <option value="4"{% if pre_period == '4' %} selected{% endif %}>Period 4</option>
+              <option value="5"{% if pre_period == '5' %} selected{% endif %}>Period 5</option>
+            </select>
+          </div>
+          <button id="saveBtn" class="btn btn-success mb-1">Save booking</button>
         </div>
       </div>
     </div>
@@ -98,7 +101,6 @@
               <input type="number" id="desiredServings" class="form-control mb-2" value="{{ pre_servings or 24 }}" min="1" />
               <div class="d-flex gap-2">
                 <button id="calcBtn" class="btn btn-primary">Calculate for Desired Serving Size</button>
-                <button id="saveBtn" class="btn btn-success">Save booking</button>
               </div>
             </div>
             <h5>Calculated Ingredients</h5>
