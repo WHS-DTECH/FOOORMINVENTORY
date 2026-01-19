@@ -1,3 +1,11 @@
+
+# admin_task/routes.py
+from flask import render_template, request, redirect, url_for, flash, jsonify, session
+from auth import require_role, get_db_connection
+from flask_login import current_user
+import os, csv, datetime, json, io
+from . import admin_task_bp
+
 # --- Admin Permissions Page ---
 @admin_task_bp.route('/admin/permissions')
 @require_role('Admin')
@@ -15,13 +23,6 @@ def admin_user_roles():
     # Dummy data for now; replace with real DB logic as needed
     users = []
     return render_template('admin_task/admin_user_roles.html', users=users)
-
-# admin_task/routes.py
-from flask import render_template, request, redirect, url_for, flash, jsonify, session
-from auth import require_role, get_db_connection
-from flask_login import current_user
-import os, csv, datetime, json, io
-from . import admin_task_bp
 
 # --- Recipe Book Setup Page ---
 @admin_task_bp.route('/admin/recipe_book_setup')
