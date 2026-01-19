@@ -1,3 +1,8 @@
+# --- Recipe Suggestions Page ---
+@admin_task_bp.route('/admin/recipe_suggestions')
+@require_role('Admin')
+def recipe_suggestions():
+    return render_template('admin_task/admin_recipe_suggestions.html')
 # admin_task/routes.py
 
 from flask import render_template, request, redirect, url_for, flash, jsonify, session
