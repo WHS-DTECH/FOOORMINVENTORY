@@ -55,7 +55,30 @@
       </div>
       <div style="flex: 1 1 100px; text-align: right;">
         <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-right: 8px;">Save booking</button>
-        <button type="reset" class="btn btn-secondary" onclick="window.location.reload()">Clear</button>
+        <button type="button" class="btn btn-secondary" id="clear-btn">Clear</button>
+          <script>
+          // Clear button functionality for Book a Class form
+          document.addEventListener('DOMContentLoaded', function() {
+            const clearBtn = document.getElementById('clear-btn');
+            if (clearBtn) {
+              clearBtn.addEventListener('click', function() {
+                // Find the form
+                const form = clearBtn.closest('form');
+                if (form) {
+                  // Reset all form fields
+                  form.reset();
+                  // If using select2 or custom dropdowns, reset them as well
+                  // Optionally, trigger change events if needed
+                  const selects = form.querySelectorAll('select');
+                  selects.forEach(sel => {
+                    sel.selectedIndex = 0;
+                    sel.dispatchEvent(new Event('change'));
+                  });
+                }
+              });
+            }
+          });
+          </script>
       </div>
     </div>
     <div style="display: flex; gap: 32px; margin-top: 18px;">
