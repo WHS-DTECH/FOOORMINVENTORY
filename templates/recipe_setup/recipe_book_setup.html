@@ -97,4 +97,7 @@
                                     <span class="text-muted">Flagged by: {{ test.uploaded_by or 'Unknown' }} | {{ test.upload_date.strftime('%Y-%m-%d %H:%M') if test.upload_date else '' }}</span>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                        <a href="{{ url_for('debug_parser.debug_title_route', test_recipe_id=test.id) }}" class="btn btn-outline-primary btn-sm">Debug</a>
+                                    <a href="{{ url_for('debug_parser.debug_title_route', test_recipe_id=test.id) }}" class="btn btn-outline-primary btn-sm">Debug</a>
+                                </div>
+                            </li>
+                        {% endfor %}
