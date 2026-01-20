@@ -234,15 +234,62 @@
               <td style="padding:6px 10px;">${b.class_code}</td>
               <td style="padding:6px 10px;">${b.recipe_name || ''}</td>
               <td style="padding:6px 10px;">${b.servings}</td>
+              <td style="padding:6px 4px;">
+                <button class="btn btn-primary btn-sm btn-edit-booking" type="button">Edit</button>
+                <button class="btn btn-danger btn-sm btn-delete-booking" type="button">Delete</button>
+              </td>
             `;
+            // Store booking data as dataset for easy access
+            tr.dataset.booking = JSON.stringify(b);
+            // Add event listeners for Edit and Delete
+            tr.querySelector('.btn-edit-booking').addEventListener('click', function(e) {
+              e.stopPropagation();
+              editBookingFromModal(b);
+            });
+            tr.querySelector('.btn-delete-booking').addEventListener('click', function(e) {
+              e.stopPropagation();
+              deleteBookingFromModal(b);
+            });
             tbody.appendChild(tr);
           });
         } else {
           const tr = document.createElement('tr');
-          tr.innerHTML = '<td colspan="6" style="padding:8px; text-align:center; color:#888;">No bookings found.</td>';
+          tr.innerHTML = '<td colspan="7" style="padding:8px; text-align:center; color:#888;">No bookings found.</td>';
           tbody.appendChild(tr);
         }
       });
+    };
+
+    // Edit booking handler (to be implemented: populate a form for editing)
+    function editBookingFromModal(booking) {
+      alert('Edit booking not yet implemented.\nBooking details: ' + JSON.stringify(booking, null, 2));
+      // TODO: Populate a form for editing and allow update
+    }
+
+    // Delete booking handler
+    function deleteBookingFromModal(booking) {
+      if (!confirm('Are you sure you want to delete this booking?')) return;
+      // TODO: Use the correct booking id field if available
+      if (!booking.id && !booking.booking_id) {
+        alert('Booking ID not found.');
+        return;
+      }
+      const bookingId = booking.id || booking.booking_id;
+      fetch(`/class_ingredients/delete/${bookingId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(r => r.json())
+      .then(j => {
+        if (j.success) {
+          alert('Booking deleted');
+          document.getElementById('showScheduledBtn').click(); // Refresh modal
+        } else {
+          alert('Delete failed');
+        }
+      })
+      .catch(e => alert('Error: ' + e.message));
+    }
     };
   </script>
 
