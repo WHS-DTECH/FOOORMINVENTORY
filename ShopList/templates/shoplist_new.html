@@ -183,17 +183,14 @@
       let unit = '';
       if (typeof it === 'object') {
         name = it.ingredient || '';
-        qty = parseFloat(it.quantity);
+        qty = it.quantity !== undefined && it.quantity !== null && it.quantity !== '' ? parseFloat(it.quantity) : null;
         unit = it.unit || '';
       } else {
         name = it;
       }
-      let perSingle = null;
-      if (qty !== null && !isNaN(qty) && origServ > 0) {
-        perSingle = qty / origServ;
-      }
       const li = document.createElement('li');
-      if (perSingle !== null && !isNaN(perSingle)) {
+      if (qty !== null && !isNaN(qty) && origServ > 0) {
+        let perSingle = qty / origServ;
         let display = Math.round((perSingle + Number.EPSILON) * 100) / 100;
         if (Number.isInteger(display)) display = parseInt(display);
         li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
