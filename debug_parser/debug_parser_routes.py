@@ -59,8 +59,23 @@ def confirm_field():
 @bp.route('/debug_title/<int:test_recipe_id>')
 @require_role('Admin')
 def debug_title_route(test_recipe_id):
-    # ...existing code from app.py...
-    pass
+    # Minimal implementation: fetch raw title from parser_test_recipes and debug it
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        flash('Test recipe not found.', 'danger')
+        return redirect(url_for('admin_task.admin_recipe_book_setup'))
+    raw_title = test_recipe.get('raw_data', '')
+    debugged_title = debug_title(raw_title, test_recipe_id)
+    # Render a simple debug page (replace with your actual template if needed)
+    return render_template(
+        'debug_title.html',
+        test_recipe_id=test_recipe_id,
+        raw_title=raw_title,
+        debugged_title=debugged_title
+    )
 
 # Route to render the debug extract text form
 @bp.route('/debug_extract_text_form', methods=['GET'])
