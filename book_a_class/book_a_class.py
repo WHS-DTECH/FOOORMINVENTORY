@@ -29,7 +29,7 @@ def book_a_class():
                 staff_code = booking['staff_code']
                 class_code = booking['class_code']
                 date_required = booking['date_required']
-                period = booking['period']
+                period = str(booking['period']) if booking['period'] is not None else ''
                 recipe_id = booking['recipe_id']
                 class_size = booking['desired_servings']
 
