@@ -104,11 +104,15 @@
         <ul id="originalIngredientsListShopping" class="mb-2"></ul>
       </div>
     </div>
-    <!-- Right Column: Calculated Ingredients -->
+    <!-- Right Column: Calculated Ingredients (duplicated) -->
     <div style="flex: 1 1 300px; min-width: 220px; max-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
       <div>
         <strong>Calculated Ingredients</strong>
         <ul id="calculatedIngredientsShopping" class="mb-0"></ul>
+      </div>
+      <div style="margin-top: 18px;">
+        <strong>Calculated Ingredients (Copy)</strong>
+        <ul id="calculatedIngredientsShoppingCopy" class="mb-0"></ul>
       </div>
     </div>
   </div>
@@ -162,10 +166,13 @@
     const desired = desiredEl ? (parseFloat(desiredEl.value) || 24) : 24;
     const rec = recipesShopping.find(r => String(r.id) === String(rid));
     const out = document.getElementById('calculatedIngredientsShopping');
+    const outCopy = document.getElementById('calculatedIngredientsShoppingCopy');
     if (!out) return;
     out.innerHTML = '';
+    if (outCopy) outCopy.innerHTML = '';
     if (!rec) {
       out.innerHTML = '<li>Select a recipe first.</li>';
+      if (outCopy) outCopy.innerHTML = '<li>Select a recipe first.</li>';
       return;
     }
     const origServ = parseInt(rec.serving_size) || 1;
@@ -194,6 +201,7 @@
         li.textContent = name;
       }
       out.appendChild(li);
+      if (outCopy) outCopy.appendChild(li.cloneNode(true));
     });
   }
 
