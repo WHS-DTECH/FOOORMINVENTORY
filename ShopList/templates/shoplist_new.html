@@ -32,9 +32,9 @@
         </div>
         <ul style="margin: 0 0 8px 18px; padding: 0; list-style: none;">
           {% for booking in tinfo.bookings %}
-            <li style="display: flex; align-items: center; margin-bottom: 2px;">
+            <li style="display: flex; align-items: center; margin-bottom: 2px; cursor:pointer;" class="booking-class-item" data-recipe-id="{{ booking.recipe_id }}">
               <input type="checkbox" class="booking-checkbox" style="margin-right: 8px;" 
-                data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}">
+                data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}" data-recipe-id="{{ booking.recipe_id }}">
               <span>{{ booking.date }} | {{ booking.class }} | 
                 {% if booking.recipe_id %}
                   <a href="/recipe/{{ booking.recipe_id }}" target="_blank">{{ booking.recipe }}</a>
@@ -187,6 +187,32 @@
     document.getElementById('calculateServingsBtnShopping').addEventListener('click', calculateIngredientsShopping);
     // Initial render
     renderOriginalIngredientsShopping(null);
+
+    // Prepopulate Choose Recipe when a class is clicked
+    document.querySelectorAll('.booking-class-item').forEach(function(item) {
+      item.addEventListener('click', function(e) {
+        const recipeId = this.getAttribute('data-recipe-id');
+        const recipeName = this.querySelector('span').innerText.split('|').pop().trim();
+        const recipeSelect = document.getElementById('recipeSelectShopping');
+        let found = false;
+        if (recipeId && recipeSelect.querySelector(`option[value="${recipeId}"]`)) {
+          recipeSelect.value = recipeId;
+          const rec = recipesShopping.find(r => String(r.id) === String(recipeId));
+          renderOriginalIngredientsShopping(rec);
+          calculateIngredientsShopping();
+          found = true;
+        }
+        // Fallback: try to match by recipe name if ID is missing or not found
+        if (!found && recipeName) {
+          const rec = recipesShopping.find(r => r.name && r.name.trim() === recipeName);
+          if (rec) {
+            recipeSelect.value = rec.id;
+            renderOriginalIngredientsShopping(rec);
+            calculateIngredientsShopping();
+          }
+        }
+      });
+    });
   });
   </script>
 
