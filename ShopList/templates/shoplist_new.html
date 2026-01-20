@@ -171,12 +171,14 @@
           document.querySelectorAll('.booking-checkbox').forEach(function(other) {
             if (other !== cb) other.checked = false;
           });
-          // Set recipe dropdown and trigger change
+          // Set recipe dropdown and trigger change, ensuring dropdown is ready
           const recipeId = this.getAttribute('data-recipe-id');
           if (recipeId && recipeSelect) {
             renderRecipeOptionsShopping();
-            recipeSelect.value = recipeId;
-            recipeSelect.dispatchEvent(new Event('change'));
+            setTimeout(function() {
+              recipeSelect.value = recipeId;
+              recipeSelect.dispatchEvent(new Event('change'));
+            }, 0);
           }
         } else {
           // If unchecked, reset recipe dropdown and ingredient panels
