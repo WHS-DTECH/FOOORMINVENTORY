@@ -107,7 +107,7 @@
     <!-- Right Column: Calculated Ingredients (duplicated) -->
     <div style="flex: 1 1 300px; min-width: 220px; max-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
       <div>
-        <strong>Calculated Ingredients</strong>
+        <strong>Ingredients (Single Serve)</strong>
         <ul id="calculatedIngredientsShopping" class="mb-0"></ul>
       </div>
       <div style="margin-top: 18px;">
@@ -176,6 +176,7 @@
       return;
     }
     const origServ = parseInt(rec.serving_size) || 1;
+    // Top box: per single serve
     rec.ingredients.forEach(it => {
       let name = '';
       let qty = null;
@@ -191,18 +192,45 @@
       if (qty !== null && !isNaN(qty) && origServ > 0) {
         perSingle = qty / origServ;
       }
-      const scaled = (perSingle !== null) ? (perSingle * desired) : null;
       const li = document.createElement('li');
-      if (scaled !== null && !isNaN(scaled)) {
-        let display = Math.round((scaled + Number.EPSILON) * 100) / 100;
+      if (perSingle !== null && !isNaN(perSingle)) {
+        let display = Math.round((perSingle + Number.EPSILON) * 100) / 100;
         if (Number.isInteger(display)) display = parseInt(display);
         li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
       } else {
         li.textContent = name;
       }
       out.appendChild(li);
-      if (outCopy) outCopy.appendChild(li.cloneNode(true));
     });
+    // Second box: calculated for desired servings
+    if (outCopy) {
+      rec.ingredients.forEach(it => {
+        let name = '';
+        let qty = null;
+        let unit = '';
+        if (typeof it === 'object') {
+          name = it.ingredient || '';
+          qty = parseFloat(it.quantity);
+          unit = it.unit || '';
+        } else {
+          name = it;
+        }
+        let perSingle = null;
+        if (qty !== null && !isNaN(qty) && origServ > 0) {
+          perSingle = qty / origServ;
+        }
+        const scaled = (perSingle !== null) ? (perSingle * desired) : null;
+        const li = document.createElement('li');
+        if (scaled !== null && !isNaN(scaled)) {
+          let display = Math.round((scaled + Number.EPSILON) * 100) / 100;
+          if (Number.isInteger(display)) display = parseInt(display);
+          li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
+        } else {
+          li.textContent = name;
+        }
+        outCopy.appendChild(li);
+      });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function() {
