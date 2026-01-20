@@ -159,6 +159,20 @@ def book_the_shopping():
         key = (b['period'], date_obj)
         grid[key] = b
 
+    # Fetch recipes for dropdown/JS
+    import json
+    recipes = []
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY LOWER(name)')
+        rows = c.fetchall()
+        for r in rows:
+            try:
+                ings = json.loads(r['ingredients'] or '[]')
+            except Exception:
+                ings = []
+            recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
+
     return render_template(
         'shoplist_new.html',
         week_label=week_label,
@@ -168,5 +182,6 @@ def book_the_shopping():
         week_offset=week_offset,
         scheduled_bookings=scheduled_bookings,
         selected_bookings=selected_bookings,
-        teacher_color_map=teacher_color_map
+        teacher_color_map=teacher_color_map,
+        recipes=recipes
     )
