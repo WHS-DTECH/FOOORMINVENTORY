@@ -518,7 +518,7 @@
           renderRecipeDetails([]);
           return;
         }
-        fetch('/get_original_recipes', {
+        fetch('{{ url_for('shoplist.get_original_recipes') }}', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bookings })
