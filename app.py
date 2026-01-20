@@ -195,12 +195,16 @@ def flag_parser_issue(recipe_id):
 @app.route('/load_recipe_url', methods=['POST'])
 @require_role('Admin')
 def load_recipe_url():
+    print("[DEBUG] /load_recipe_url called")
     url = request.form.get('url') or request.form.get('recipe_url')
+    print(f"[DEBUG] URL received: {url}")
     ingredients = []
     instructions = []
     if not url:
+        print("[DEBUG] No URL provided, aborting.")
         return jsonify({'error': 'No URL provided.'}), 400
     url = request.form.get('url') or request.form.get('recipe_url')
+    print(f"[DEBUG] URL after re-fetch: {url}")
     ingredients = []
     instructions = []
     extraction_warning = None
@@ -208,6 +212,7 @@ def load_recipe_url():
     serving_size = None
     # Defensive: always try to render the review page, never return JSON
     if not url or not (url.startswith('http://') or url.startswith('https://')):
+        print("[DEBUG] Invalid or missing URL format.")
         extraction_warning = 'No or invalid URL provided. Please check the URL and try again.'
         recipe_data = {
             'title': title,
@@ -224,6 +229,7 @@ def load_recipe_url():
         )
     global requests, BeautifulSoup
     if requests is None or BeautifulSoup is None:
+        print("[DEBUG] Required libraries not installed.")
         extraction_warning = 'Required libraries (requests, BeautifulSoup) not installed.'
         recipe_data = {
             'title': title,
@@ -239,7 +245,9 @@ def load_recipe_url():
             extraction_warning=extraction_warning
         )
     try:
+        print(f"[DEBUG] About to fetch URL: {url}")
         resp = requests.get(url, timeout=10)
+        print(f"[DEBUG] Fetched URL, status: {resp.status_code}")
         if resp.status_code != 200:
             extraction_warning = f'URL returned status code {resp.status_code}. Could not fetch recipe.'
             recipe_data = {
@@ -256,7 +264,9 @@ def load_recipe_url():
                 extraction_warning=extraction_warning
             )
         html = resp.text
+        print(f"[DEBUG] Successfully fetched HTML, length: {len(html)}")
     except Exception as e:
+        print(f"[DEBUG] Exception fetching URL: {e}")
         extraction_warning = f'Failed to fetch URL: {str(e)}'
         recipe_data = {
             'title': title,
