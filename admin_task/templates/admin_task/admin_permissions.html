@@ -4,11 +4,42 @@
 
 {% block content %}
 <style>
+.flash-success {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    color: #155724;
+}
+.admin-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-right: 8px;
+}
 #permissions-table thead th {
     background-color: #1a1a1a !important;
     color: #ffffff !important;
     font-size: 16px !important;
     font-weight: bold !important;
+}
+.panel-info {
+    margin: 30px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    border-radius: 4px;
+}
+.panel-warning {
+    margin: 30px 0;
+    padding: 20px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
 }
 </style>
 
@@ -18,7 +49,7 @@
     
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div style="margin: 20px 0; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
+            <div class="flash-success">
                 {% for message in messages %}
                     {{ message }}<br>
                 {% endfor %}
@@ -27,7 +58,7 @@
     {% endwith %}
 
     <div style="margin: 20px 0;">
-        <a href="/admin" style="display: inline-block; padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">← Back to Admin</a>
+        <a href="/admin" class="admin-btn">← Back to Admin</a>
     </div>
 
     <div style="overflow-x: auto;">
@@ -35,56 +66,60 @@
             <thead>
                 <tr>
                     <th style="padding: 14px; text-align: left; border: 1px solid #000;">Role</th>
-                    {% for route in routes %}
-                    <th style="padding: 14px; text-align: center; border: 1px solid #000;">{{ route|title }}</th>
-                    {% endfor %}
+                    {% if routes is defined %}
+                        {% for route in routes %}
+                        <th style="padding: 14px; text-align: center; border: 1px solid #000;">{{ route|title }}</th>
+                        {% endfor %}
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
-                {% for role in roles %}
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 12px; font-weight: bold; background-color: #f8f9fa; border: 1px solid #ddd;">
-                        {% if role == 'VP' %}
-                        Admin
-                        {% elif role == 'DK' %}
-                        Teacher
-                        {% elif role == 'MU' %}
-                        Technician
-                        {% elif role == 'public' %}
-                        Public Access
-                        {% else %}
-                        {{ role }}
-                        {% endif %}
-                    </td>
-                    {% for route in routes %}
-                    <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
-                        {% set has_permission = permissions.get(role, []) and route in permissions.get(role, []) %}
-                        {% if has_permission %}
-                            {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);" %}
-                            {% set btn_title = "Click to remove access" %}
-                            {% set btn_icon = "✓" %}
-                            {% set action = "remove" %}
-                        {% else %}
-                            {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);" %}
-                            {% set btn_title = "Click to grant access" %}
-                            {% set btn_icon = "✗" %}
-                            {% set action = "add" %}
-                        {% endif %}
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="role" value="{{ role }}">
-                            <input type="hidden" name="route" value="{{ route }}">
-                            <input type="hidden" name="action" value="{{ action }}">
-                            <button type="submit" style="{{ btn_style }}" title="{{ btn_title }}">{{ btn_icon }}</button>
-                        </form>
-                    </td>
+                {% if roles is defined and routes is defined and permissions is defined %}
+                    {% for role in roles %}
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 12px; font-weight: bold; background-color: #f8f9fa; border: 1px solid #ddd;">
+                            {% if role == 'VP' %}
+                            Admin
+                            {% elif role == 'DK' %}
+                            Teacher
+                            {% elif role == 'MU' %}
+                            Technician
+                            {% elif role == 'public' %}
+                            Public Access
+                            {% else %}
+                            {{ role }}
+                            {% endif %}
+                        </td>
+                        {% for route in routes %}
+                        <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
+                            {% set has_permission = permissions.get(role, []) and route in permissions.get(role, []) %}
+                            {% if has_permission %}
+                                {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);" %}
+                                {% set btn_title = "Click to remove access" %}
+                                {% set btn_icon = "✓" %}
+                                {% set action = "remove" %}
+                            {% else %}
+                                {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);" %}
+                                {% set btn_title = "Click to grant access" %}
+                                {% set btn_icon = "✗" %}
+                                {% set action = "add" %}
+                            {% endif %}
+                            <form method="post" style="display: inline;">
+                                <input type="hidden" name="role" value="{{ role }}">
+                                <input type="hidden" name="route" value="{{ route }}">
+                                <input type="hidden" name="action" value="{{ action }}">
+                                <button type="submit" style="{{ btn_style }}" title="{{ btn_title }}">{{ btn_icon }}</button>
+                            </form>
+                        </td>
+                        {% endfor %}
+                    </tr>
                     {% endfor %}
-                </tr>
-                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
 
-    <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
+    <div class="panel-info">
         <h3 style="margin-top: 0;">Route Descriptions</h3>
         <ul style="line-height: 1.8;">
             <li><strong>recipes:</strong> View and manage all recipes (full recipe management page)</li>
@@ -96,7 +131,7 @@
         </ul>
     </div>
 
-    <div style="margin: 30px 0; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+    <div class="panel-warning">
         <h3 style="margin-top: 0;">⚠️ Important Notes</h3>
         <ul style="line-height: 1.8;">
             <li><strong>VP role</strong> should always have access to all pages including admin</li>

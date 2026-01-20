@@ -1,74 +1,57 @@
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-
-<!-- admin.html-->
-
-<meta charset="UTF-8" />
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<title>Admin - Upload Staff CSV</title>
-
-<link rel="stylesheet" href="static\styles.css" />
-
-</head>
-
-<body>
-
-<nav> 
-  <ul> 
+{% extends "base.html" %}
+{% block content %}
+<nav>
+  <ul>
     <li><a href="/dashboard">Dashboard</a></li>
-    <li><a href="/admin">Admin</a></li> 
-    <li><a href="/upload">Upload Recipe</a></li> 
-    <li><a href="/inventory">Inventory</a></li> 
-  </ul> 
+    <li><a href="/admin">Admin</a></li>
+    <li><a href="/upload">Upload Recipe</a></li>
+    <li><a href="/inventory">Inventory</a></li>
+  </ul>
 </nav>
 
 <h2>Admin: Upload Staff CSV</h2>
-
-{% with messages = get_flashed_messages() %} 
-{% if messages %} 
-<div class="flash"> 
-  {% for message in messages %} 
-  <p>{{ message }}</p> 
-  {% endfor %} 
-</div> 
-{% endif %} 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endwith %}
 
-<form method="POST" enctype="multipart/form-data"> <label for="staff_csv">Select CSV file:</label><br> <input type="file" id="staff_csv" name="staff_csv" accept=".csv" required><br><br> <button type="submit">Upload</button> </form>
-
-{% if preview_data %} <h3>Preview of Uploaded Data</h3> <table> <thead> <tr> {% for key in preview_data[0].keys() %} <th>{{ key }}</th> {% endfor %} </tr> </thead> <tbody> {% for row in preview_data %} <tr> {% for value in row.values() %} <td>{{ value }}</td> {% endfor %} </tr> {% endfor %} </tbody> </table> {% endif %}
+<form method="POST" enctype="multipart/form-data">
+  <label for="staff_csv">Select CSV file:</label><br>
+  <input type="file" id="staff_csv" name="staff_csv" accept=".csv" required><br><br>
+  <button type="submit">Upload</button>
+</form>
 
 <h2>Admin: Upload Class CSV</h2>
+<form action="/uploadclass" method="post" enctype="multipart/form-data">
+  <label for="csvfile">Choose CSV file to upload:</label>
+  <input type="file" id="csvfile" name="csvfile" accept=".csv">
+  <input type="submit" value="Upload">
+</form>
 
-{% with messages = get_flashed_messages() %} {% if messages %} 
-<div class="flash"> {% for message in messages %} 
-  <p>{{ message }}</p> {% endfor %} </div> {% endif %} {% endwith %}
-
-<form action="/uploadclass" method="post" enctype="multipart/form-data"> 
-  <label for="csvfile">Choose CSV file to upload:</label> 
-  <input type="file" id="csvfile" name="csvfile" accept=".csv"> 
-  <input type="submit" value="Upload"> </form>
-
-{% if preview_data %} <h3>Preview of Uploaded Data</h3> 
-<table> 
-  <thead> 
-    <tr> {% for key in preview_data[0].keys() %} 
-      <th>{{ key }}</th> 
-      {% endfor %} 
-    </tr> 
-  </thead> 
-  <tbody> {% for row in preview_data %} 
-    <tr> {% for value in row.values() %} 
-      <td>{{ value }}</td> 
-      {% endfor %} </tr> 
-      {% endfor %} </tbody> 
-    </table> {% endif %}
-
-</body>
-
-</html>
+{% if preview_data %}
+  <h3>Preview of Uploaded Data</h3>
+  <table>
+    <thead>
+      <tr>
+        {% for key in preview_data[0].keys() %}
+          <th>{{ key }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in preview_data %}
+        <tr>
+          {% for value in row.values() %}
+            <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}

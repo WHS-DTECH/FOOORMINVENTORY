@@ -6,10 +6,46 @@
 <div class="container">
     <h1>User Role Management</h1>
     <p class="recipe-method-desc">Assign additional roles to users beyond their primary staff code role.</p>
+    <style>
+    .user-role-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-right: 8px;
+    }
+    .user-role-btn.permissions {
+        background-color: #17a2b8;
+    }
+    .panel {
+        margin: 20px 0;
+        padding: 20px;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .flash-success {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+        color: #155724;
+    }
+    .role-badge {
+        background-color: #e7f3ff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-right: 4px;
+    }
+    </style>
     
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div style="margin: 20px 0; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724;">
+            <div class="flash-success">
                 {% for message in messages %}
                     {{ message }}<br>
                 {% endfor %}
@@ -18,41 +54,43 @@
     {% endwith %}
 
     <div style="margin: 20px 0;">
-        <a href="/admin" style="display: inline-block; padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">← Back to Admin</a>
-        <a href="/admin/permissions" style="display: inline-block; padding: 10px 20px; background-color: #17a2b8; color: white; text-decoration: none; border-radius: 4px; margin-left: 8px;">Manage Route Permissions</a>
+        <a href="/admin" class="user-role-btn">← Back to Admin</a>
+        <a href="/admin/permissions" class="user-role-btn permissions">Manage Route Permissions</a>
     </div>
 
     <!-- Add Role to User Form -->
-    <div class="panel" style="margin: 20px 0; padding: 20px; background: white; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div class="panel">
         <h3>Add Role to User</h3>
         <form method="post" style="display: grid; gap: 12px; max-width: 600px;">
             <div>
                 <label for="email" style="display: block; margin-bottom: 4px; font-weight: bold;">User Email:</label>
                 <select id="email" name="email" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <option value="">-- Select a user --</option>
-                    {% for teacher in teachers %}
-                        <option value="{{ teacher.email }}">{{ teacher.email }} ({{ teacher.code }} - {{ teacher.last_name }}, {{ teacher.first_name }})</option>
-                    {% endfor %}
+                    {% if teachers is defined %}
+                        {% for teacher in teachers %}
+                            <option value="{{ teacher.email }}">{{ teacher.email }} ({{ teacher.code }} - {{ teacher.last_name }}, {{ teacher.first_name }})</option>
+                        {% endfor %}
+                    {% endif %}
                 </select>
-                <small style="color: #666;">Or type any email address:</small>
-                <input type="email" id="custom_email" placeholder="user@example.com" style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ddd; border-radius: 4px;">
             </div>
             
             <div>
                 <label for="role" style="display: block; margin-bottom: 4px; font-weight: bold;">Role to Add:</label>
                 <select id="role" name="role" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <option value="">-- Select a role --</option>
-                    {% for role in roles %}
-                        <option value="{{ role }}">
-                            {% if role == 'VP' %}Admin
-                            {% elif role == 'DK' %}Teacher
-                            {% elif role == 'MU' %}Technician
-                            {% elif role == 'public' %}Public Access
-                            {% elif role == 'Recipe Editor' %}Recipe Editor
-                            {% else %}{{ role }}
-                            {% endif %}
-                        </option>
-                    {% endfor %}
+                    {% if roles is defined %}
+                        {% for role in roles %}
+                            <option value="{{ role }}">
+                                {% if role == 'VP' %}Admin
+                                {% elif role == 'DK' %}Teacher
+                                {% elif role == 'MU' %}Technician
+                                {% elif role == 'public' %}Public Access
+                                {% elif role == 'Recipe Editor' %}Recipe Editor
+                                {% else %}{{ role }}
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
                     <option value="Recipe Editor">Recipe Editor</option>
                 </select>
             </div>
@@ -71,7 +109,7 @@
     </div>
 
     <!-- Current User Roles -->
-    <div class="panel" style="margin: 20px 0; padding: 20px; background: white; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div class="panel">
         <h3>Users with Additional Roles</h3>
         
         <table id="userRolesTable" style="width: 100%; border-collapse: collapse; margin-top: 12px;">
@@ -84,20 +122,22 @@
             </thead>
             <tbody>
                 {% set role_map = {'VP': 'Admin', 'DK': 'Teacher', 'MU': 'Technician', 'public': 'Public Access'} %}
-                {% for user in all_users %}
-                <tr style="border-bottom: 1px solid #dee2e6;" data-roles="{{ user.all_roles }}">
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">{{ user.email }}</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">
-                        {% set display_roles = user.all_roles.split(', ') %}
-                        {% for r in display_roles %}
-                            <span style="background-color: #e7f3ff; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin-right: 4px;">{{ role_map.get(r, r) }}</span>
-                        {% endfor %}
-                    </td>
-                    <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                        <button onclick="showRemoveForm('{{ user.email }}', '{{ user.all_roles }}')" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Roles</button>
-                    </td>
-                </tr>
-                {% endfor %}
+                {% if all_users is defined %}
+                    {% for user in all_users %}
+                    <tr style="border-bottom: 1px solid #dee2e6;" data-roles="{{ user.all_roles }}">
+                        <td style="padding: 12px; border: 1px solid #dee2e6;">{{ user.email }}</td>
+                        <td style="padding: 12px; border: 1px solid #dee2e6;">
+                            {% set display_roles = user.all_roles.split(', ') %}
+                            {% for r in display_roles %}
+                                <span class="role-badge">{{ role_map.get(r, r) }}</span>
+                            {% endfor %}
+                        </td>
+                        <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
+                            <button onclick="showRemoveForm('{{ user.email }}', '{{ user.all_roles }}')" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Roles</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
