@@ -54,7 +54,7 @@ from . import shoppinglist
 from auth import get_db_connection
 import datetime
 
-shoplist_bp = Blueprint('shoplist', __name__, template_folder='templates')
+
 
 # Route for the new menu item 'Book the Shopping'
 
