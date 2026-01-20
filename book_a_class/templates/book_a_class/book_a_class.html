@@ -65,170 +65,195 @@
     </div>
     <!-- Right Column: Scheduled Bookings Table -->
     <div class="col-md-7">
-      <div class="card p-3">
-        <h3 class="mb-3">Scheduled Bookings</h3>
-        <div class="text-muted small mb-3">Click any booking to edit its details</div>
-        {% if bookings and bookings|length > 0 %}
-          <div class="table-responsive">
-            <table class="table table-striped align-middle">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Period</th>
-                  <th>Staff</th>
-                  <th>Class</th>
-                  <th>Recipe</th>
-                  <th>Servings</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for booking in bookings %}
-                <tr class="booking-row" data-booking-id="{{ booking.id }}" 
-                    data-staff="{{ booking.staff_code }}" 
-                    data-class="{{ booking.class_code }}" 
-                    data-date="{{ booking.date_required }}" 
-                    data-period="{{ booking.period }}" 
-                    data-recipe="{{ booking.recipe_id }}" 
-                    data-servings="{{ booking.desired_servings }}">
-                  <td>{{ booking.date_required }}</td>
-                  <td>{{ booking.period }}</td>
-                  <td>{{ booking.staff_code }}{% if booking.first_name %} - {{ booking.last_name }}, {{ booking.first_name }}{% endif %}</td>
-                  <td>{{ booking.class_code }}</td>
-                  <td>{{ booking.recipe_name or 'N/A' }}</td>
-                  <td>{{ booking.desired_servings }}</td>
-                  <td>
-                    <button class="btn btn-primary btn-sm btn-edit-booking" type="button" onclick="editBooking(this); event.stopPropagation();">Edit</button>
-                    <button class="btn btn-danger btn-sm btn-delete-booking" data-booking-id="{{ booking.id }}" onclick="deleteBooking({{ booking.id }}); event.stopPropagation();">Delete</button>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="text-muted small">No bookings found. Create a booking using the form above.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  {% endblock %}
-{% block scripts %}
-<script>
-const recipes = {{ recipes|tojson | safe }};
-const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
-const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
+      <script>
+      // Data for dropdowns
+      const staffList = {{ staff|tojson | safe }};
+      const classList = {{ classes|tojson | safe }};
+      const recipes = {{ recipes|tojson | safe }};
+      const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
+      const preStaffCode = {{ pre_staff_code|tojson if pre_staff_code is defined else 'null' }};
+      const preClassCode = {{ pre_class_code|tojson if pre_class_code is defined else 'null' }};
+      const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
 
-function editBooking(btn) {
-  // Find the row
-  const row = btn.closest('tr');
-  if (!row) return;
-  // Extract data attributes
-  const staff = row.getAttribute('data-staff');
-  const classcode = row.getAttribute('data-class');
-  const date = row.getAttribute('data-date');
-  const period = row.getAttribute('data-period');
-  const recipeId = row.getAttribute('data-recipe');
-  const servings = row.getAttribute('data-servings');
-  // Populate form fields
-  document.getElementById('staff').value = staff;
-  document.getElementById('classcode').value = classcode;
-  document.getElementById('date').value = date;
-  document.getElementById('period').value = period;
-  document.getElementById('recipeSelect').value = recipeId;
-  document.getElementById('desiredServings').value = servings;
-  // Set editing mode for Save button
-  <script>
-  // Data for dropdowns
-  const staffList = {{ staff|tojson | safe }};
-  const classList = {{ classes|tojson | safe }};
-  const recipes = {{ recipes|tojson | safe }};
-  const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
-  const preStaffCode = {{ pre_staff_code|tojson if pre_staff_code is defined else 'null' }};
-  const preClassCode = {{ pre_class_code|tojson if pre_class_code is defined else 'null' }};
-  const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
-
-  function populateDropdowns() {
-    // Staff
-    const staffSel = document.getElementById('staff');
-    if (staffSel && staffList && staffList.length > 0) {
-      staffSel.innerHTML = '<option value="">-- Choose staff --</option>' +
-        staffList.map(s => `<option value="${s.code}"${preStaffCode && s.code == preStaffCode ? ' selected' : ''}>${s.last_name}, ${s.first_name}</option>`).join('');
-    }
-    // Class
-    const classSel = document.getElementById('classcode');
-    if (classSel && classList && classList.length > 0) {
-      classSel.innerHTML = '<option value="">-- Choose class --</option>' +
-        classList.map(c => `<option value="${c}"${preClassCode && c == preClassCode ? ' selected' : ''}>${c}</option>`).join('');
-    }
-    // Recipe
-    const recipeSel = document.getElementById('recipeSelect');
-    if (recipeSel && recipes && recipes.length > 0) {
-      recipeSel.innerHTML = '<option value="">-- Choose recipe --</option>' +
-        recipes.map(r => `<option value="${r.id}"${preRecipeId && r.id == preRecipeId ? ' selected' : ''}>${r.name}</option>`).join('');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    populateDropdowns();
-    // ...existing code...
-  });
-  // ...existing code...
-  </script>
-    return null;
-  }
-
-  // Try to extract quantity, unit and name from free-text like '40g oats' or '40 g oats'
-  function extractFromText(text){
-    if(!text) return {quantity:null, unit:'', name:text};
-    const unitsList = ['kg','g','grams','gram','ml','l','tbsp','tablespoon','tablespoons','tsp','teaspoon','teaspoons','cup','cups','oz','lb','gms','gm'];
-    const m = String(text).trim().match(/^(\d+[\.,]?\d*)\s*([a-zA-Z]+)?\s*(.*)$/);
-    if(m){
-      let q = parseNumber(m[1]);
-      let u = (m[2] || '').toLowerCase();
-      let rest = (m[3] || '').trim();
-      if(u === 'grams') u = 'g';
-      if(u === 'gram') u = 'g';
-      if(u === 'gms') u = 'g';
-      if(u === 'gm') u = 'g';
-      if(u === 'tablespoon' || u === 'tablespoons') u = 'tbsp';
-      if(u === 'teaspoon' || u === 'teaspoons') u = 'tsp';
-      return {quantity: q, unit: u, name: rest};
-    }
-    return {quantity:null, unit:'', name:text};
-  }
-
-  function calculate(){
-    const sel = document.getElementById('recipeSelect');
-    const rid = sel ? sel.value : null;
-    const desiredEl = document.getElementById('desiredServings');
-    const desired = desiredEl ? (parseFloat(desiredEl.value) || 24) : 24;
-    const rec = findRecipe(parseInt(rid));
-    const out = document.getElementById('calcList');
-    if(!out) return;
-    out.innerHTML = '';
-    if(!rec){
-      out.innerHTML = '<li>Select a recipe first.</li>';
-      return;
-    }
-    const origServ = parseInt(rec.serving_size) || 1;
-    rec.ingredients.forEach(it => {
-      let name = '';
-      let qty = null;
-      let unit = '';
-      if(typeof it === 'object'){
-        name = it.ingredient || '';
-        qty = parseNumber(it.quantity);
-        unit = it.unit || '';
-        // try to extract missing info from name
-        if((qty === null || !unit) && name){
-          const parsed = extractFromText(name);
-          if(qty === null && parsed.quantity !== null) qty = parsed.quantity;
-          if((!unit || unit==='') && parsed.unit) unit = parsed.unit;
-          if(parsed.name) name = parsed.name;
+      function populateDropdowns() {
+        // Staff
+        const staffSel = document.getElementById('staff');
+        if (staffSel && staffList && staffList.length > 0) {
+          staffSel.innerHTML = '<option value="">-- Choose staff --</option>' +
+            staffList.map(s => `<option value="${s.code}"${preStaffCode && s.code == preStaffCode ? ' selected' : ''}>${s.last_name}, ${s.first_name}</option>`).join('');
         }
-      } else {
-        const parsed = extractFromText(String(it));
+        // Class
+        const classSel = document.getElementById('classcode');
+        if (classSel && classList && classList.length > 0) {
+          classSel.innerHTML = '<option value="">-- Choose class --</option>' +
+            classList.map(c => `<option value="${c}"${preClassCode && c == preClassCode ? ' selected' : ''}>${c}</option>`).join('');
+        }
+        // Recipe
+        const recipeSel = document.getElementById('recipeSelect');
+        if (recipeSel && recipes && recipes.length > 0) {
+          recipeSel.innerHTML = '<option value="">-- Choose recipe --</option>' +
+            recipes.map(r => `<option value="${r.id}"${preRecipeId && r.id == preRecipeId ? ' selected' : ''}>${r.name}</option>`).join('');
+        }
+      }
+
+      function editBooking(btn) {
+        // Find the row
+        const row = btn.closest('tr');
+        if (!row) return;
+        // Extract data attributes
+        const staff = row.getAttribute('data-staff');
+        const classcode = row.getAttribute('data-class');
+        const date = row.getAttribute('data-date');
+        const period = row.getAttribute('data-period');
+        const recipeId = row.getAttribute('data-recipe');
+        const servings = row.getAttribute('data-servings');
+        // Populate form fields
+        document.getElementById('staff').value = staff;
+        document.getElementById('classcode').value = classcode;
+        document.getElementById('date').value = date;
+        document.getElementById('period').value = period;
+        document.getElementById('recipeSelect').value = recipeId;
+        document.getElementById('desiredServings').value = servings;
+        // Set editing mode for Save button
+        const saveBtn = document.getElementById('saveBtn');
+        if(saveBtn) {
+          saveBtn.dataset.editingBookingId = row.getAttribute('data-booking-id');
+          saveBtn.textContent = 'Update booking';
+          saveBtn.classList.add('btn-update');
+        }
+        // Render ingredients and calculated list
+        const rec = findRecipe(parseInt(recipeId));
+        renderOriginalIngredients(rec);
+        calculate();
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Highlight the row
+        document.querySelectorAll('.booking-row').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+      }
+
+      function findRecipe(id){
+        if(!recipes) return null;
+        return recipes.find(r=> String(r.id) == String(id));
+      }
+
+      function renderOriginalIngredients(recipe){
+        const ul = document.getElementById('origList');
+        if(!ul) return;
+        ul.innerHTML = '';
+        if(!recipe) return;
+        if(!recipe.ingredients || recipe.ingredients.length === 0){
+          ul.innerHTML = '<li>No structured ingredients available.</li>';
+          return;
+        }
+        recipe.ingredients.forEach(it => {
+          const li = document.createElement('li');
+          if(typeof it === 'object'){
+            let q = it.quantity || '';
+            let u = it.unit || '';
+            let name = it.ingredient || '';
+            if((!u || u==='') && name){
+              const parsed = extractFromText(name);
+              if(parsed.unit && !u) u = parsed.unit;
+              if((!q || q==='') && parsed.quantity !== null) q = parsed.quantity;
+              if(parsed.name) name = parsed.name;
+            }
+            li.textContent = ((q || u) ? ((q !== '' ? q + ' ' : '') + (u ? u + ' ' : '')) : '') + name;
+          } else {
+            const parsed = extractFromText(String(it));
+            const display = ((parsed.quantity !== null) ? (parsed.quantity + ' ' + (parsed.unit || '')) : '') + (parsed.name ? ' ' + parsed.name : '');
+            li.textContent = display.trim();
+          }
+          ul.appendChild(li);
+        });
+      }
+
+      function parseNumber(s){
+        if(s === null || s === undefined) return null;
+        s = String(s).trim();
+        if(!s) return null;
+        const n = parseFloat(s.replace(',', '.'));
+        if(!isNaN(n)) return n;
+        const m = s.match(/(\d+[\.,]?\d*)/);
+        if(m) return parseFloat(m[1].replace(',', '.'));
+        return null;
+      }
+
+      function extractFromText(text){
+        if(!text) return {quantity:null, unit:'', name:text};
+        const unitsList = ['kg','g','grams','gram','ml','l','tbsp','tablespoon','tablespoons','tsp','teaspoon','teaspoons','cup','cups','oz','lb','gms','gm'];
+        const m = String(text).trim().match(/^(\d+[\.,]?\d*)\s*([a-zA-Z]+)?\s*(.*)$/);
+        if(m){
+          let q = parseNumber(m[1]);
+          let u = (m[2] || '').toLowerCase();
+          let rest = (m[3] || '').trim();
+          if(u === 'grams') u = 'g';
+          if(u === 'gram') u = 'g';
+          if(u === 'gms') u = 'g';
+          if(u === 'gm') u = 'g';
+          if(u === 'tablespoon' || u === 'tablespoons') u = 'tbsp';
+          if(u === 'teaspoon' || u === 'teaspoons') u = 'tsp';
+          return {quantity: q, unit: u, name: rest};
+        }
+        return {quantity:null, unit:'', name:text};
+      }
+
+      function calculate(){
+        const sel = document.getElementById('recipeSelect');
+        const rid = sel ? sel.value : null;
+        const desiredEl = document.getElementById('desiredServings');
+        const desired = desiredEl ? (parseFloat(desiredEl.value) || 24) : 24;
+        const rec = findRecipe(parseInt(rid));
+        const out = document.getElementById('calcList');
+        if(!out) return;
+        out.innerHTML = '';
+        if(!rec){
+          out.innerHTML = '<li>Select a recipe first.</li>';
+          return;
+        }
+        const origServ = parseInt(rec.serving_size) || 1;
+        rec.ingredients.forEach(it => {
+          let name = '';
+          let qty = null;
+          let unit = '';
+          if(typeof it === 'object'){
+            name = it.ingredient || '';
+            qty = parseNumber(it.quantity);
+            unit = it.unit || '';
+            if((qty === null || !unit) && name){
+              const parsed = extractFromText(name);
+              if(qty === null && parsed.quantity !== null) qty = parsed.quantity;
+              if((!unit || unit==='') && parsed.unit) unit = parsed.unit;
+              if(parsed.name) name = parsed.name;
+            }
+          } else {
+            const parsed = extractFromText(String(it));
+            name = parsed.name || String(it);
+            qty = parsed.quantity;
+            unit = parsed.unit || '';
+          }
+          let perSingle = null;
+          if(qty !== null && origServ > 0){
+            perSingle = qty / origServ;
+          }
+          const scaled = (perSingle !== null) ? (perSingle * desired) : null;
+          const li = document.createElement('li');
+          if(scaled !== null){
+            let display = Math.round((scaled + Number.EPSILON) * 100) / 100;
+            if(Number.isInteger(display)) display = parseInt(display);
+            li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
+          } else {
+            li.textContent = name;
+          }
+          out.appendChild(li);
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        populateDropdowns();
+        // ...existing code...
+      });
+      </script>
         name = parsed.name || String(it);
         qty = parsed.quantity;
         unit = parsed.unit || '';
