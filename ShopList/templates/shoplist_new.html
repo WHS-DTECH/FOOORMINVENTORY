@@ -17,7 +17,19 @@
     <div style="flex: 1 1 400px; max-width: 500px; min-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Scheduled Bookings (Sorted by Teacher)</div>
       {% set teacher_map = {} %}
-      {% set teacher_color_map = teacher_color_map if teacher_color_map is defined else {} %}
+      {# teacher_color_map is built below for the grid, so we need to build it here too if not defined #}
+      {% if teacher_color_map is not defined or not teacher_color_map %}
+        {% set teacher_colors = ['#1976d2', '#43a047', '#e53935', '#fbc02d', '#8e24aa', '#00838f', '#6d4c41', '#c62828', '#3949ab', '#f57c00'] %}
+        {% set teacher_color_map = {} %}
+        {% set teacher_idx = 0 %}
+        {% for b in selected_bookings %}
+          {% set teacher_key = b.teacher|trim|lower %}
+          {% if teacher_key and teacher_key not in teacher_color_map %}
+            {% set _ = teacher_color_map.update({teacher_key: teacher_colors[teacher_idx % teacher_colors|length]}) %}
+            {% set teacher_idx = teacher_idx + 1 %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
       {% for b in selected_bookings %}
         {% set teacher_key = b.teacher|trim|lower %}
         {% if teacher_key not in teacher_map %}
@@ -27,7 +39,7 @@
       {% endfor %}
       {% for teacher_key, tinfo in teacher_map.items() %}
         <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
-          <span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key] }};"></span>
+          {% if teacher_color_map[teacher_key] %}<span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: '{{ teacher_color_map[teacher_key]|default('#ccc') }}';"></span>{% endif %}
           {{ tinfo.teacher }} ({{ tinfo.staff_code }})
         </div>
         <ul style="margin: 0 0 8px 18px; padding: 0; list-style: none;">
@@ -103,7 +115,7 @@
 
   <script>
   // Restore recipe dropdown and calculation logic for Calculate Servings
-  const recipesShopping = {{ recipes|tojson | safe }};
+  const recipesShopping = {{ recipes|default([])|tojson|safe }};
 
   function renderRecipeOptionsShopping() {
     const select = document.getElementById('recipeSelectShopping');
@@ -371,7 +383,7 @@
           <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
             {% set booking = grid[(period, date)] %}
             {% if booking %}
-              <div style="background: {{ booking.light_color }}; color: #222; border: 1px solid {{ booking.color }}; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
+              <div style="background: '{{ booking.light_color|default('#fff') }}'; color: #222; border: 1px solid '{{ booking.color|default('#1976d2') }}'; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
                 <div style="font-weight: bold; font-size: 1.08em; margin-bottom: 2px;">{{ booking.recipe }}</div>
                 <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
                 <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
@@ -390,7 +402,7 @@
     </table>
     <!-- Generate Shopping List Button moved above -->
   </div>
-  </div
+  <!-- Removed stray unclosed div tag here -->
 
   <!-- Removed duplicate Selected Bookings block below the grid -->
 
