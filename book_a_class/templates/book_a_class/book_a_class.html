@@ -21,7 +21,7 @@
         <select id="classcode" name="classcode" required style="min-width: 120px;">
           <option value="">-- Choose class --</option>
           {% for c in classes %}
-            <option value="{{ c }}" {% if pre_class_code == c %}selected{% endif %}>{{ c }}</option>
+            <option value="{{ c.classcode }}" {% if pre_class_code == c.classcode %}selected{% endif %}>{{ c.classcode }}</option>
           {% endfor %}
         </select>
       </div>
