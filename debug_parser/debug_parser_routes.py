@@ -1,21 +1,6 @@
 # This file contains all debug_parser-related routes and logic extracted from app.py for modularization.
 # To be used as the Flask blueprint/module for debug_parser.
 
-# --- snip ---
-
-bp = Blueprint('debug_parser', __name__, template_folder='templates/debug_parser')
-
-# --- Delete parser_debug entry ---
-@bp.route('/delete_debug/<int:debug_id>', methods=['POST'])
-@require_role('Admin')
-def delete_debug(debug_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM parser_debug WHERE id = %s', (debug_id,))
-        conn.commit()
-    flash('Parser debug entry deleted.', 'success')
-    return redirect(url_for('admin_task.admin_recipe_book_setup'))
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import current_user
 from auth import require_role, get_db_connection
@@ -30,6 +15,20 @@ from debug_parser.parser_confirm_instructions import confirm_instructions
 from debug_parser.debug_parser_title import debug_title
 
 bp = Blueprint('debug_parser', __name__, template_folder='templates/debug_parser')
+
+
+# --- Delete parser_debug entry ---
+@bp.route('/delete_debug/<int:debug_id>', methods=['POST'])
+@require_role('Admin')
+def delete_debug(debug_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM parser_debug WHERE id = %s', (debug_id,))
+        conn.commit()
+    flash('Parser debug entry deleted.', 'success')
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
+
+
 
 # --- API: Save solution as confirmed title ---
 @bp.route('/api/save_title_solution/<int:test_recipe_id>', methods=['POST'])
