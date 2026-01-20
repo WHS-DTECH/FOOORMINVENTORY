@@ -105,16 +105,53 @@
       </thead>
       <tbody>
         {% for booking in bookings %}
-        <tr>
+        <tr class="booking-row"
+            data-booking-id="{{ booking.id }}"
+            data-staff="{{ booking.staff_code }}"
+            data-class="{{ booking.class_code }}"
+            data-date="{{ booking.date_required }}"
+            data-period="{{ booking.period }}"
+            data-recipe="{{ booking.recipe_id }}"
+            data-servings="{{ booking.servings }}">
           <td>{{ booking.date_required }}</td>
           <td>{{ booking.period }}</td>
           <td>{{ booking.first_name }} {{ booking.last_name }}</td>
           <td>{{ booking.class_code }}</td>
           <td>{{ booking.recipe_name }}</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline-primary edit-booking-btn" onclick="editBooking(this)">Edit</button>
+            <button type="button" class="btn btn-sm btn-outline-danger delete-booking-btn" onclick="deleteBooking(this)">Delete</button>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
   {% endblock %}
+<script>
+function deleteBooking(btn) {
+  const row = btn.closest('tr');
+  if (!row) return;
+  const bookingId = row.getAttribute('data-booking-id');
+  if (!bookingId) return;
+  if (!confirm('Are you sure you want to delete this booking?')) return;
+  fetch(`/book_a_class/delete_booking/${bookingId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    credentials: 'same-origin'
+  })
+  .then(resp => {
+    if (resp.ok) {
+      // Remove row from table
+      row.remove();
+    } else {
+      alert('Failed to delete booking.');
+    }
+  })
+  .catch(() => alert('Failed to delete booking.'));
+}
+</script>
 
 
 function editBooking(btn) {
