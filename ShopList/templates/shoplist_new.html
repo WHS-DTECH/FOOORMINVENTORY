@@ -235,14 +235,16 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     renderRecipeOptionsShopping();
-    document.getElementById('recipeSelectShopping').addEventListener('change', function() {
-      const rec = recipesShopping.find(r => String(r.id) === String(this.value));
+    function updateAllIngredientBlocks() {
+      const select = document.getElementById('recipeSelectShopping');
+      const rec = recipesShopping.find(r => String(r.id) === String(select.value));
       renderOriginalIngredientsShopping(rec);
       calculateIngredientsShopping();
-    });
+    }
+    document.getElementById('recipeSelectShopping').addEventListener('change', updateAllIngredientBlocks);
     document.getElementById('calculateServingsBtnShopping').addEventListener('click', calculateIngredientsShopping);
-    // Initial render
-    renderOriginalIngredientsShopping(null);
+    // Initial render: show per-serve if a recipe is preselected
+    updateAllIngredientBlocks();
 
     // Prepopulate Choose Recipe when a class is clicked
     document.querySelectorAll('.booking-class-item').forEach(function(item) {
