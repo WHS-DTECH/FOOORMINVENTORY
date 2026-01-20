@@ -36,8 +36,8 @@ def admin_recipe_book_setup():
             # Fetch recipes for Recipe Index
             c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date, serving_size FROM recipes ORDER BY name')
             recipe_list = [dict(row) for row in c.fetchall()]
-            # Fetch parser debug/index data (adjust table/fields as needed)
-            c.execute('SELECT id, raw_data, extracted_title, strategies, source_url, flagged_by, flagged_at FROM parser_debug ORDER BY flagged_at DESC')
+            # Fetch parser debug/index data (match actual columns)
+            c.execute('SELECT id, recipe_id, raw_data, extracted_title, strategies, solution FROM parser_debug ORDER BY id DESC')
             parser_debugs = [dict(row) for row in c.fetchall()]
     except Exception as e:
         print(f"Error fetching data for recipe_book_setup: {e}")

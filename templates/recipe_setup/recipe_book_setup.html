@@ -95,7 +95,7 @@
                 {% endif %}
             </div>
         </div>
-        <!-- Parser Debug Index Card as Table -->
+        <!-- Parser Debug Index Card as Table (actual columns) -->
         <div class="card mb-4">
             <div class="card-header bg-dark text-white">Parser Debug Index</div>
             <div class="card-body p-0">
@@ -103,24 +103,20 @@
                 <table class="table mb-0">
                     <thead>
                         <tr>
-                            <th>Title</th>
-                            <th>Source URL</th>
-                            <th>Flagged By</th>
-                            <th>Flagged At</th>
+                            <th>ID</th>
+                            <th>Recipe ID</th>
+                            <th>Extracted Title</th>
+                            <th>Solution</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for debug in parser_debugs %}
                         <tr>
+                            <td>{{ debug.id }}</td>
+                            <td>{{ debug.recipe_id }}</td>
                             <td>{{ debug.extracted_title or 'N/A' }}</td>
-                            <td>
-                                {% if debug.source_url %}
-                                <a href="{{ debug.source_url }}" target="_blank">{{ debug.source_url }}</a>
-                                {% else %}N/A{% endif %}
-                            </td>
-                            <td>{{ debug.flagged_by or 'Unknown' }}</td>
-                            <td>{{ debug.flagged_at or 'N/A' }}</td>
+                            <td>{{ debug.solution or 'N/A' }}</td>
                             <td>
                                 <a href="{{ url_for('debug_parser.debug_title_route', test_recipe_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
                                 <a href="{{ url_for('debug_parser.delete_debug', debug_id=debug.id) }}" class="btn btn-danger btn-sm">Delete</a>
