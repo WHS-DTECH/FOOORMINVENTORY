@@ -45,11 +45,9 @@
     </div>
     <div style="display: flex; gap: 32px; margin-top: 18px;">
       <div style="flex: 1 1 220px;">
-        <strong>Original Ingredients</strong>
         <ul id="origList" style="margin-bottom: 0;"></ul>
       </div>
       <div style="flex: 1 1 220px;">
-        <strong>Calculated Ingredients</strong>
         <ul id="calcList" style="margin-bottom: 0;"></ul>
       </div>
     </div>
@@ -65,44 +63,43 @@
           <th>Staff</th>
           <th>Class</th>
           <th>Recipe</th>
-          <th>Servings</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="bookingsTableBody">
-        {% for b in bookings %}
-        <tr class="booking-row" data-booking-id="{{ b.id }}" data-staff="{{ b.staff_code }}" data-class="{{ b.class_code }}" data-date="{{ b.date_required }}" data-period="{{ b.period }}" data-recipe="{{ b.recipe_id }}" data-servings="{{ b.desired_servings }}">
-          <td>{{ b.date_required }}</td>
-          <td>{{ b.period }}</td>
-          <td>{{ b.staff_name }}</td>
-          <td>{{ b.class_code }}</td>
-          <td>{{ b.recipe_name }}</td>
-          <td>{{ b.desired_servings }}</td>
-          <td>
-            <button type="button" class="btn btn-sm btn-info" onclick="editBooking(this)">Edit</button>
-            <button type="button" class="btn btn-sm btn-danger" onclick="deleteBooking({{ b.id }})">Delete</button>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="7" style="text-align:center; color:#888;">No bookings found for this week.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endblock %}
-<script>
-// Data for dropdowns
-const staffList = {{ staff|tojson | safe }};
-const classList = {{ classes|tojson | safe }};
-const recipes = {{ recipes|tojson | safe }};
-const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
-const preStaffCode = {{ pre_staff_code|tojson if pre_staff_code is defined else 'null' }};
-const preClassCode = {{ pre_class_code|tojson if pre_class_code is defined else 'null' }};
-const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
+          <script>
+          // Data for dropdowns
+          const staffList = {{ staff|default([])|tojson|safe }};
+          const classList = {{ classes|default([])|tojson|safe }};
+          const recipes = {{ recipes|default([])|tojson|safe }};
+          const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
+          const preStaffCode = {{ pre_staff_code|tojson if pre_staff_code is defined else 'null' }};
+          const preClassCode = {{ pre_class_code|tojson if pre_class_code is defined else 'null' }};
+          const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
 
-function populateDropdowns() {
-  // Staff
+          function populateDropdowns() {
+            // Staff
+            const staffSel = document.getElementById('staff');
+            if (staffSel && Array.isArray(staffList) && staffList.length > 0) {
+              staffSel.innerHTML = '<option value="">-- Choose staff --</option>' +
+                staffList.map(s => `<option value="${s.code}"${preStaffCode && s.code == preStaffCode ? ' selected' : ''}>${s.last_name}, ${s.first_name}</option>`).join('');
+            }
+            // Class
+            const classSel = document.getElementById('classcode');
+            if (classSel && Array.isArray(classList) && classList.length > 0) {
+              classSel.innerHTML = '<option value="">-- Choose class --</option>' +
+                classList.map(c => `<option value="${c}"${preClassCode && c == preClassCode ? ' selected' : ''}>${c}</option>`).join('');
+            }
+            // Recipe
+            const recipeSel = document.getElementById('recipeSelect');
+            if (recipeSel && Array.isArray(recipes) && recipes.length > 0) {
+              recipeSel.innerHTML = '<option value="">-- Choose recipe --</option>' +
+                recipes.map(r => `<option value="${r.id}"${preRecipeId && r.id == preRecipeId ? ' selected' : ''}>${r.name}</option>`).join('');
+            }
+          }
+
+          // Ensure dropdowns are always populated on DOMContentLoaded and after editing
+          document.addEventListener('DOMContentLoaded', function() {
+            populateDropdowns();
+            // ...existing code...
+          });
+          </script>
   const staffSel = document.getElementById('staff');
   if (staffSel && staffList && staffList.length > 0) {
     staffSel.innerHTML = '<option value="">-- Choose staff --</option>' +
