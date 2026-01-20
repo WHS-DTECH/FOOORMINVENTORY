@@ -33,15 +33,24 @@ def book_a_class():
                 recipe_id = booking['recipe_id']
                 class_size = booking['desired_servings']
 
-    # Standard form POST handling: insert booking if all fields present
+    # Standard form POST handling: insert or update booking
     if request.method == 'POST' and staff_code and class_code and date_required and period and recipe_id:
+        edit_booking_id = request.form.get('edit_booking_id')
         with get_db_connection() as conn:
             c = conn.cursor()
-            # Use class_size from form, fallback to 24
-            c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings)
-                         VALUES (%s, %s, %s, %s, %s, %s)''',
-                      (staff_code, class_code, date_required, period, recipe_id, class_size or 24))
-            conn.commit()
+            if edit_booking_id:
+                # Update existing booking
+                c.execute('''UPDATE class_bookings SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s WHERE id=%s''',
+                          (staff_code, class_code, date_required, period, recipe_id, class_size or 24, edit_booking_id))
+                conn.commit()
+                flash('Booking updated successfully.', 'success')
+                return redirect(url_for('book_a_class.book_a_class'))
+            else:
+                # Insert new booking
+                c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings)
+                             VALUES (%s, %s, %s, %s, %s, %s)''',
+                          (staff_code, class_code, date_required, period, recipe_id, class_size or 24))
+                conn.commit()
 
     with get_db_connection() as conn:
         c = conn.cursor()
