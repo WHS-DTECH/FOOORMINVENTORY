@@ -194,12 +194,12 @@
         const recipeId = this.getAttribute('data-recipe-id');
         const recipeName = this.querySelector('span').innerText.split('|').pop().trim();
         const recipeSelect = document.getElementById('recipeSelectShopping');
+        // Always re-render dropdown before setting value
+        renderRecipeOptionsShopping();
         let found = false;
         if (recipeId && recipeSelect.querySelector(`option[value="${recipeId}"]`)) {
           recipeSelect.value = recipeId;
-          const rec = recipesShopping.find(r => String(r.id) === String(recipeId));
-          renderOriginalIngredientsShopping(rec);
-          calculateIngredientsShopping();
+          recipeSelect.dispatchEvent(new Event('change'));
           found = true;
         }
         // Fallback: try to match by recipe name if ID is missing or not found
@@ -207,8 +207,7 @@
           const rec = recipesShopping.find(r => r.name && r.name.trim() === recipeName);
           if (rec) {
             recipeSelect.value = rec.id;
-            renderOriginalIngredientsShopping(rec);
-            calculateIngredientsShopping();
+            recipeSelect.dispatchEvent(new Event('change'));
           }
         }
       });
