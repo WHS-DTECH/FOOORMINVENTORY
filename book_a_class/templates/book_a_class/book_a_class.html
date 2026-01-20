@@ -3,7 +3,93 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles_class_ingred.css') }}">
 {% endblock %}
 {% block content %}
-<!-- ...existing HTML content for the page... -->
+<div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px 0;">
+  <h1 style="font-size: 2.2em; font-weight: bold; margin-bottom: 18px;">Book a Class</h1>
+  <form id="bookingForm" method="post" style="background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 24px 12px 24px; margin-bottom: 28px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: flex-end;">
+      <div>
+        <label for="staff">Staff</label><br>
+        <select id="staff" name="staff" required style="min-width: 160px;"></select>
+      </div>
+      <div>
+        <label for="classcode">Class</label><br>
+        <select id="classcode" name="classcode" required style="min-width: 120px;"></select>
+      </div>
+      <div>
+        <label for="date">Date</label><br>
+        <input type="date" id="date" name="date" required style="min-width: 130px;">
+      </div>
+      <div>
+        <label for="period">Period</label><br>
+        <select id="period" name="period" required style="min-width: 80px;">
+          <option value="">--</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+      <div>
+        <label for="recipeSelect">Recipe</label><br>
+        <select id="recipeSelect" name="recipe" required style="min-width: 180px;"></select>
+      </div>
+      <div>
+        <label for="desiredServings">Servings</label><br>
+        <input type="number" id="desiredServings" name="servings" min="1" value="24" style="min-width: 80px;">
+      </div>
+      <div style="flex: 1 1 100px; text-align: right;">
+        <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-right: 8px;">Save booking</button>
+        <button type="reset" class="btn btn-secondary" onclick="window.location.reload()">Clear</button>
+      </div>
+    </div>
+    <div style="display: flex; gap: 32px; margin-top: 18px;">
+      <div style="flex: 1 1 220px;">
+        <strong>Original Ingredients</strong>
+        <ul id="origList" style="margin-bottom: 0;"></ul>
+      </div>
+      <div style="flex: 1 1 220px;">
+        <strong>Calculated Ingredients</strong>
+        <ul id="calcList" style="margin-bottom: 0;"></ul>
+      </div>
+    </div>
+  </form>
+
+  <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 10px;">Scheduled Bookings</h2>
+  <div style="overflow-x: auto;">
+    <table class="table table-striped" style="min-width: 700px; background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #e0e4ea;">
+      <thead>
+        <tr style="background: #f3f6fa;">
+          <th>Date</th>
+          <th>Period</th>
+          <th>Staff</th>
+          <th>Class</th>
+          <th>Recipe</th>
+          <th>Servings</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="bookingsTableBody">
+        {% for b in bookings %}
+        <tr class="booking-row" data-booking-id="{{ b.id }}" data-staff="{{ b.staff_code }}" data-class="{{ b.class_code }}" data-date="{{ b.date_required }}" data-period="{{ b.period }}" data-recipe="{{ b.recipe_id }}" data-servings="{{ b.desired_servings }}">
+          <td>{{ b.date_required }}</td>
+          <td>{{ b.period }}</td>
+          <td>{{ b.staff_name }}</td>
+          <td>{{ b.class_code }}</td>
+          <td>{{ b.recipe_name }}</td>
+          <td>{{ b.desired_servings }}</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-info" onclick="editBooking(this)">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="deleteBooking({{ b.id }})">Delete</button>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center; color:#888;">No bookings found for this week.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
 <script>
 // Data for dropdowns
