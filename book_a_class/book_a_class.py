@@ -9,10 +9,21 @@ book_a_class_bp = Blueprint('book_a_class', __name__, template_folder='templates
 @require_role('Admin', 'Teacher')
 def book_a_class():
     # ...existing code from app.py class_ingredients()...
-    staff_code = request.form.get('staff_code') if request.method == 'POST' else None
-    class_code = request.form.get('class_code') if request.method == 'POST' else None
-    date_required = request.form.get('date_required') if request.method == 'POST' else None
+    staff_code = request.form.get('staff') if request.method == 'POST' else None
+    class_code = request.form.get('classcode') if request.method == 'POST' else None
+    date_required = request.form.get('date') if request.method == 'POST' else None
     period = request.form.get('period') if request.method == 'POST' else None
+    recipe_id = request.form.get('recipe') if request.method == 'POST' else None
+    desired_servings = request.form.get('servings') if request.method == 'POST' else None
+
+    # Standard form POST handling: insert booking if all fields present
+    if request.method == 'POST' and staff_code and class_code and date_required and period and recipe_id:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings)
+                         VALUES (%s, %s, %s, %s, %s, %s)''',
+                      (staff_code, class_code, date_required, period, recipe_id, desired_servings or 24))
+            conn.commit()
 
     with get_db_connection() as conn:
         c = conn.cursor()
