@@ -95,21 +95,42 @@
                 {% endif %}
             </div>
         </div>
-        <!-- Parser Debug Index Card -->
+        <!-- Parser Debug Index Card as Table -->
         <div class="card mb-4">
             <div class="card-header bg-dark text-white">Parser Debug Index</div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if parser_debugs %}
-                    {% for debug in parser_debugs %}
-                    <div class="mb-3">
-                        <a href="{{ debug.extracted_title or debug.source_url or '#' }}" target="_blank">{{ debug.extracted_title or debug.source_url }}</a>
-                        <a href="{{ url_for('debug_parser.debug_title_route', test_recipe_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
-                        <a href="{{ url_for('debug_parser.delete_debug', debug_id=debug.id) }}" class="btn btn-danger btn-sm">Delete</a>
-                        <div class="text-muted small">Flagged by: {{ debug.flagged_by or 'Unknown' }} | {{ debug.flagged_at }}</div>
-                    </div>
-                    {% endfor %}
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Source URL</th>
+                            <th>Flagged By</th>
+                            <th>Flagged At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for debug in parser_debugs %}
+                        <tr>
+                            <td>{{ debug.extracted_title or 'N/A' }}</td>
+                            <td>
+                                {% if debug.source_url %}
+                                <a href="{{ debug.source_url }}" target="_blank">{{ debug.source_url }}</a>
+                                {% else %}N/A{% endif %}
+                            </td>
+                            <td>{{ debug.flagged_by or 'Unknown' }}</td>
+                            <td>{{ debug.flagged_at or 'N/A' }}</td>
+                            <td>
+                                <a href="{{ url_for('debug_parser.debug_title_route', test_recipe_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
+                                <a href="{{ url_for('debug_parser.delete_debug', debug_id=debug.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
                 {% else %}
-                    <div class="p-3 text-muted">No parser debug entries found.</div>
+                <div class="p-3 text-muted">No parser debug entries found.</div>
                 {% endif %}
             </div>
         </div>
