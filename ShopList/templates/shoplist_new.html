@@ -35,7 +35,14 @@
             <li style="display: flex; align-items: center; margin-bottom: 2px;">
               <input type="checkbox" class="booking-checkbox" style="margin-right: 8px;" 
                 data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}">
-              <span>{{ booking.date }} | {{ booking.class }} | <a href="/recipe/{{ booking.recipe_id }}" target="_blank">{{ booking.recipe }}</a>{% if booking.servings %} ({{ booking.servings }} servings){% endif %}</span>
+              <span>{{ booking.date }} | {{ booking.class }} | 
+                {% if booking.recipe_id %}
+                  <a href="/recipe/{{ booking.recipe_id }}" target="_blank">{{ booking.recipe }}</a>
+                {% else %}
+                  {{ booking.recipe }}
+                {% endif %}
+                {% if booking.servings %} ({{ booking.servings }} servings){% endif %}
+              </span>
             </li>
           {% endfor %}
         </ul>
