@@ -115,6 +115,10 @@ app.register_blueprint(recipe_book_bp)
 from recipe_suggest.recipe_suggest import recipe_suggest_bp
 app.register_blueprint(recipe_suggest_bp)
 
+# Register debug_parser blueprint
+from debug_parser import debug_parser_bp
+app.register_blueprint(debug_parser_bp)
+
 # Error Handlers
 @app.errorhandler(404)
 def not_found_error(error):
