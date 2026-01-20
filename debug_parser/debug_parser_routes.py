@@ -1,3 +1,13 @@
+# --- Delete parser_debug entry ---
+@bp.route('/delete_debug/<int:debug_id>', methods=['POST'])
+@require_role('Admin')
+def delete_debug(debug_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('DELETE FROM parser_debug WHERE id = %s', (debug_id,))
+        conn.commit()
+    flash('Parser debug entry deleted.', 'success')
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
 # This file contains all debug_parser-related routes and logic extracted from app.py for modularization.
 # To be used as the Flask blueprint/module for debug_parser.
 
