@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import current_user
 from auth import require_role, get_db_connection
 import json
@@ -228,13 +228,14 @@ def class_ingredients_save():
 
 @book_a_class_bp.route('/class_ingredients/delete/<int:booking_id>', methods=['POST'])
 @require_role('Admin', 'Teacher')
+
 def class_ingredients_delete(booking_id):
-    # ...existing code from app.py class_ingredients_delete()...
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('DELETE FROM class_bookings WHERE id = %s', (booking_id,))
         conn.commit()
-    return jsonify({'success': True})
+    flash('Booking deleted successfully.', 'success')
+    return redirect(url_for('book_a_class.book_a_class'))
 
 
 

@@ -3,6 +3,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles_class_ingred.css') }}">
 {% endblock %}
 {% block content %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="margin-bottom: 18px;">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" style="padding: 10px 18px; border-radius: 6px; background: #e6f7ea; color: #256029; border: 1px solid #b7e4c7; margin-bottom: 6px;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px 0;">
   <h1 style="font-size: 2.2em; font-weight: bold; margin-bottom: 18px;">Book a Class</h1>
   <form id="bookingForm" method="post" style="background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 24px 12px 24px; margin-bottom: 28px;">
