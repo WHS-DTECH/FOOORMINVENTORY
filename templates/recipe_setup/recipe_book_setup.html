@@ -50,7 +50,7 @@
                 <!-- Load Recipe (URL) -->
                 <h5>Load Recipe (URL)</h5>
                 <p>Import recipe from a website URL.</p>
-                <form method="post" action="{{ url_for('load_recipe_url') }}">
+                <form method="post" action="{{ url_for('load_recipe_url') }}" target="_blank">
                     <input type="text" name="recipe_url" class="form-control mb-2" placeholder="e.g., https://www.chelsea.co.nz/browse-recipes/...">
                     <button type="submit" class="btn btn-success btn-block mb-3">Load from URL</button>
                 </form>
