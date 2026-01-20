@@ -69,7 +69,15 @@
     <!-- Right: Calculate Servings -->
     <div style="flex: 1 1 300px; min-width: 220px; max-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 12px;">Calculate servings</div>
-      <!-- Placeholder for future content -->
+      <div class="card mb-3 p-3" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #eee;">
+        <label for="servingsInput">Enter desired servings</label>
+        <input type="number" id="servingsInput" name="servings" class="form-control" value="24">
+        <button type="button" id="calculateServingsBtn" class="btn btn-primary mt-2">Calculate for Desired Serving Size</button>
+        <div id="calculatedIngredientsBox" class="mt-2">
+          <strong>Calculated Ingredients</strong>
+          <div id="calculatedIngredients">Single serving amounts multiplied by desired servings</div>
+        </div>
+      </div>
     </div>
   </div>
 
