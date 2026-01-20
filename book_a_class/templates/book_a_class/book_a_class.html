@@ -134,7 +134,7 @@ function deleteBooking(btn) {
   const bookingId = row.getAttribute('data-booking-id');
   if (!bookingId) return;
   if (!confirm('Are you sure you want to delete this booking?')) return;
-  fetch(`/book_a_class/delete_booking/${bookingId}`, {
+  fetch(`/class_ingredients/delete/${bookingId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
