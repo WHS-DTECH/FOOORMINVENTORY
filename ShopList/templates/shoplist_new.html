@@ -159,18 +159,26 @@
     });
   }
 
-  // Prepopulate Choose Recipe when a class is clicked
+
+  // Link class selector with recipe dropdown and auto-calculate
   document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.booking-class-item').forEach(function(item) {
-      item.addEventListener('click', function(e) {
-        const recipeId = this.getAttribute('data-recipe-id');
-        const recipeSelect = document.getElementById('recipeSelectShopping');
-        if (recipeId && recipeSelect) {
-          renderRecipeOptionsShopping();
-          recipeSelect.value = recipeId;
-          recipeSelect.dispatchEvent(new Event('change'));
+    // When a booking checkbox is checked, update the recipe dropdown and trigger calculation
+    document.querySelectorAll('.booking-checkbox').forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        if (this.checked) {
+          const recipeId = this.getAttribute('data-recipe-id');
+          const recipeSelect = document.getElementById('recipeSelectShopping');
+          if (recipeId && recipeSelect) {
+            renderRecipeOptionsShopping();
+            recipeSelect.value = recipeId;
+            recipeSelect.dispatchEvent(new Event('change'));
+          }
         }
       });
+    });
+    // Also trigger calculation when recipe is changed
+    document.getElementById('recipeSelectShopping').addEventListener('change', function() {
+      calculateIngredientsShopping();
     });
   });
 
