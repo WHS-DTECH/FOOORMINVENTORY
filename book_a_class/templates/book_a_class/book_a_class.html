@@ -50,8 +50,8 @@
         </select>
       </div>
       <div>
-        <label for="desiredServings">Servings</label><br>
-        <input type="number" id="desiredServings" name="servings" min="1" value="24" style="min-width: 80px;">
+        <label for="classSize">Class Size</label><br>
+        <input type="number" id="classSize" name="class_size" min="1" value="24" style="min-width: 80px;">
       </div>
       <div style="flex: 1 1 100px; text-align: right;">
         <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-right: 8px;">Save booking</button>
@@ -152,6 +152,42 @@ function deleteBooking(btn) {
     }
   })
   .catch(() => alert('Failed to delete booking.'));
+}
+
+function editBooking(btn) {
+  // Find the row
+  const row = btn.closest('tr');
+  if (!row) return;
+  // Extract data attributes
+  const staff = row.getAttribute('data-staff');
+  const classcode = row.getAttribute('data-class');
+  const date = row.getAttribute('data-date');
+  const period = row.getAttribute('data-period');
+  const recipeId = row.getAttribute('data-recipe');
+  const classSize = row.getAttribute('data-class-size');
+  // Populate form fields
+  document.getElementById('staff').value = staff;
+  document.getElementById('classcode').value = classcode;
+  document.getElementById('date').value = date;
+  document.getElementById('period').value = period;
+  document.getElementById('recipeSelect').value = recipeId;
+  document.getElementById('classSize').value = classSize;
+  // Set editing mode for Save button
+  const saveBtn = document.getElementById('saveBtn');
+  if(saveBtn) {
+    saveBtn.dataset.editingBookingId = row.getAttribute('data-booking-id');
+    saveBtn.textContent = 'Update booking';
+    saveBtn.classList.add('btn-update');
+  }
+  // Render ingredients and calculated list
+  const rec = findRecipe(parseInt(recipeId));
+  renderOriginalIngredients(rec);
+  calculate();
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Highlight the row
+  document.querySelectorAll('.booking-row').forEach(r => r.classList.remove('selected'));
+  row.classList.add('selected');
 }
 </script>
 
