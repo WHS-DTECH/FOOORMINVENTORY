@@ -78,17 +78,113 @@
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 12px;">Calculate servings</div>
       <div class="card mb-3 p-3" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #eee;">
         <strong>Original Ingredients</strong>
-        <div id="originalIngredients">Select a recipe to show its ingredients here.</div>
-      </div>
-      <div class="card mb-3 p-3" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #eee;">
-        <label for="servingsInput">Enter desired servings</label>
-        <input type="number" id="servingsInput" name="servings" class="form-control" value="24">
-        <button type="button" id="calculateServingsBtn" class="btn btn-primary mt-2">Calculate for Desired Serving Size</button>
-        <div id="calculatedIngredientsBox" class="mt-2">
+        <div class="mb-2">
+          <label for="recipeSelectShopping" style="font-weight: normal;">Choose recipe</label>
+          <select id="recipeSelectShopping" class="form-control"></select>
+        </div>
+        <div class="mb-2">
+          <label for="servingsInputShopping" style="font-weight: normal;">Enter desired servings</label>
+          <input type="number" id="servingsInputShopping" class="form-control" value="24" min="1">
+        </div>
+        <button type="button" id="calculateServingsBtnShopping" class="btn btn-primary mt-2 mb-2">Calculate for Desired Serving Size</button>
+        <div>
           <strong>Calculated Ingredients</strong>
-          <div id="calculatedIngredients">Single serving amounts multiplied by desired servings</div>
+          <ul id="calculatedIngredientsShopping" class="mb-2"></ul>
+        </div>
+        <div>
+          <strong>Original Ingredients</strong>
+          <ul id="originalIngredientsListShopping" class="mb-0"></ul>
         </div>
       </div>
+
+    <script>
+    // Example: recipes data should be provided by backend as JSON
+    const recipesShopping = {{ recipes|tojson | safe }};
+
+    function renderRecipeOptionsShopping() {
+      const select = document.getElementById('recipeSelectShopping');
+      if (!select || !recipesShopping) return;
+      select.innerHTML = '<option value="">-- Choose a recipe --</option>' +
+        recipesShopping.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+    }
+
+    function renderOriginalIngredientsShopping(recipe) {
+      const ul = document.getElementById('originalIngredientsListShopping');
+      if (!ul) return;
+      ul.innerHTML = '';
+      if (!recipe) return;
+      if (!recipe.ingredients || recipe.ingredients.length === 0) {
+        ul.innerHTML = '<li>No structured ingredients available.</li>';
+        return;
+      }
+      recipe.ingredients.forEach(it => {
+        const li = document.createElement('li');
+        if (typeof it === 'object') {
+          let q = it.quantity || '';
+          let u = it.unit || '';
+          let name = it.ingredient || '';
+          li.textContent = ((q || u) ? ((q !== '' ? q + ' ' : '') + (u ? u + ' ' : '')) : '') + name;
+        } else {
+          li.textContent = it;
+        }
+        ul.appendChild(li);
+      });
+    }
+
+    function calculateIngredientsShopping() {
+      const select = document.getElementById('recipeSelectShopping');
+      const rid = select ? select.value : null;
+      const desiredEl = document.getElementById('servingsInputShopping');
+      const desired = desiredEl ? (parseFloat(desiredEl.value) || 24) : 24;
+      const rec = recipesShopping.find(r => String(r.id) === String(rid));
+      const out = document.getElementById('calculatedIngredientsShopping');
+      if (!out) return;
+      out.innerHTML = '';
+      if (!rec) {
+        out.innerHTML = '<li>Select a recipe first.</li>';
+        return;
+      }
+      const origServ = parseInt(rec.serving_size) || 1;
+      rec.ingredients.forEach(it => {
+        let name = '';
+        let qty = null;
+        let unit = '';
+        if (typeof it === 'object') {
+          name = it.ingredient || '';
+          qty = parseFloat(it.quantity);
+          unit = it.unit || '';
+        } else {
+          name = it;
+        }
+        let perSingle = null;
+        if (qty !== null && !isNaN(qty) && origServ > 0) {
+          perSingle = qty / origServ;
+        }
+        const scaled = (perSingle !== null) ? (perSingle * desired) : null;
+        const li = document.createElement('li');
+        if (scaled !== null && !isNaN(scaled)) {
+          let display = Math.round((scaled + Number.EPSILON) * 100) / 100;
+          if (Number.isInteger(display)) display = parseInt(display);
+          li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
+        } else {
+          li.textContent = name;
+        }
+        out.appendChild(li);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderRecipeOptionsShopping();
+      document.getElementById('recipeSelectShopping').addEventListener('change', function() {
+        const rec = recipesShopping.find(r => String(r.id) === String(this.value));
+        renderOriginalIngredientsShopping(rec);
+        calculateIngredientsShopping();
+      });
+      document.getElementById('calculateServingsBtnShopping').addEventListener('click', calculateIngredientsShopping);
+      // Initial render
+      renderOriginalIngredientsShopping(null);
+    });
+    </script>
     </div>
     <!-- Right Column: Future Content -->
     <div style="flex: 1 1 300px; min-width: 220px; max-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
