@@ -28,7 +28,20 @@ def admin_user_roles():
 @admin_task_bp.route('/admin/recipe_book_setup')
 @require_role('Admin')
 def admin_recipe_book_setup():
-    return render_template('recipe_setup/recipe_book_setup.html')
+    recipe_list = []
+    parser_debugs = []
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            # Fetch recipes for Recipe Index
+            c.execute('SELECT id, name, source, source_url, upload_method, uploaded_by, upload_date, serving_size FROM recipes ORDER BY name')
+            recipe_list = [dict(row) for row in c.fetchall()]
+            # Fetch parser debug/index data (adjust table/fields as needed)
+            c.execute('SELECT id, raw_data, extracted_title, strategies, source_url, flagged_by, flagged_at FROM parser_debugs ORDER BY flagged_at DESC')
+            parser_debugs = [dict(row) for row in c.fetchall()]
+    except Exception as e:
+        print(f"Error fetching data for recipe_book_setup: {e}")
+    return render_template('recipe_setup/recipe_book_setup.html', recipe_list=recipe_list, parser_debugs=parser_debugs)
 
 # --- Admin Utility: Fix Public Roles ---
 @admin_task_bp.route('/admin/fix_public_roles')
