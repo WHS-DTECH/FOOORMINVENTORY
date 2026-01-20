@@ -63,43 +63,19 @@
           <th>Staff</th>
           <th>Class</th>
           <th>Recipe</th>
-          <script>
-          // Data for dropdowns
-          const staffList = {{ staff|default([])|tojson|safe }};
-          const classList = {{ classes|default([])|tojson|safe }};
-          const recipes = {{ recipes|default([])|tojson|safe }};
-          const preRecipeId = {{ pre_recipe_id|tojson if pre_recipe_id is defined else 'null' }};
-          const preStaffCode = {{ pre_staff_code|tojson if pre_staff_code is defined else 'null' }};
-          const preClassCode = {{ pre_class_code|tojson if pre_class_code is defined else 'null' }};
-          const preServings = {{ pre_servings|tojson if pre_servings is defined else 'null' }};
-
-          function populateDropdowns() {
-            // Staff
-            const staffSel = document.getElementById('staff');
-            if (staffSel && Array.isArray(staffList) && staffList.length > 0) {
-              staffSel.innerHTML = '<option value="">-- Choose staff --</option>' +
-                staffList.map(s => `<option value="${s.code}"${preStaffCode && s.code == preStaffCode ? ' selected' : ''}>${s.last_name}, ${s.first_name}</option>`).join('');
-            }
-            // Class
-            const classSel = document.getElementById('classcode');
-            if (classSel && Array.isArray(classList) && classList.length > 0) {
-              classSel.innerHTML = '<option value="">-- Choose class --</option>' +
-                classList.map(c => `<option value="${c}"${preClassCode && c == preClassCode ? ' selected' : ''}>${c}</option>`).join('');
-            }
-            // Recipe
-            const recipeSel = document.getElementById('recipeSelect');
-            if (recipeSel && Array.isArray(recipes) && recipes.length > 0) {
-              recipeSel.innerHTML = '<option value="">-- Choose recipe --</option>' +
-                recipes.map(r => `<option value="${r.id}"${preRecipeId && r.id == preRecipeId ? ' selected' : ''}>${r.name}</option>`).join('');
-            }
-          }
-
-          // Ensure dropdowns are always populated on DOMContentLoaded and after editing
-          document.addEventListener('DOMContentLoaded', function() {
-            populateDropdowns();
-            // ...existing code...
-          });
-          </script>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.date_required }}</td>
+          <td>{{ booking.period }}</td>
+          <td>{{ booking.first_name }} {{ booking.last_name }}</td>
+          <td>{{ booking.class_code }}</td>
+          <td>{{ booking.recipe_name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
   {% endblock %}
   const staffSel = document.getElementById('staff');
   if (staffSel && staffList && staffList.length > 0) {
