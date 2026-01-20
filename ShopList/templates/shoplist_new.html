@@ -173,10 +173,32 @@
           });
           // Set recipe dropdown and trigger change, ensuring dropdown is ready
           const recipeId = this.getAttribute('data-recipe-id');
-          if (recipeId && recipeSelect) {
+          if (recipeSelect) {
             renderRecipeOptionsShopping();
-            setTimeout(function() {
-              recipeSelect.value = recipeId;
+            setTimeout(() => {
+              let found = false;
+              if (recipeId && recipeSelect.querySelector(`option[value="${recipeId}"]`)) {
+                recipeSelect.value = recipeId;
+                found = true;
+              }
+              // Fallback: try to match by recipe name if ID is missing or not found
+              if (!found) {
+                // Try to get recipe name from the parent li span
+                let recipeName = '';
+                const li = cb.closest('li');
+                if (li) {
+                  const span = li.querySelector('span');
+                  if (span) {
+                    recipeName = span.innerText.split('|').pop().trim();
+                  }
+                }
+                if (recipeName) {
+                  const rec = recipesShopping.find(r => r.name && r.name.trim() === recipeName);
+                  if (rec) {
+                    recipeSelect.value = rec.id;
+                  }
+                }
+              }
               recipeSelect.dispatchEvent(new Event('change'));
             }, 0);
           }
