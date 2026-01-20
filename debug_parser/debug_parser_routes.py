@@ -95,8 +95,21 @@ def parser_debug_raw(test_recipe_id):
 @bp.route('/parser_debug/<int:test_recipe_id>')
 @require_role('Admin')
 def parser_debug(test_recipe_id):
-    # ...existing code from app.py...
-    pass
+    # Fetch the flagged/test recipe and confirmed fields
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+        confirmed = c.fetchone() or {}
+    if not test_recipe:
+        flash('Test recipe not found.', 'danger')
+        return redirect(url_for('admin_task.admin_recipe_book_setup'))
+    return render_template(
+        'parser_debug.html',
+        test_recipe=test_recipe,
+        confirmed=confirmed
+    )
 
 # --- Handle Yes/No debug prompt after flag ---
 @bp.route('/parser_test_decision', methods=['POST'])
