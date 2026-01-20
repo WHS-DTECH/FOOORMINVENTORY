@@ -57,7 +57,7 @@ from navigation_main.context_nav import nav_context_processor, nav_bp
 from book_a_class.book_a_class import book_a_class_bp
 from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
-from debug_parser.debug_parser import extract_raw_text_from_url
+from debug_parser.utils import extract_raw_text_from_url
 
 
 # =======================
