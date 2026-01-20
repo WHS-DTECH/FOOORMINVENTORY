@@ -177,6 +177,10 @@
     }
     const origServ = parseInt(rec.serving_size) || 1;
     // Top box: per single serve
+    // Use a table for math column and ingredient
+    out.innerHTML = '';
+    const tbl = document.createElement('table');
+    tbl.style.width = '100%';
     rec.ingredients.forEach(it => {
       let name = '';
       let qty = null;
@@ -188,17 +192,27 @@
       } else {
         name = it;
       }
-      const li = document.createElement('li');
+      const tr = document.createElement('tr');
+      const tdMath = document.createElement('td');
+      const tdIng = document.createElement('td');
       if (qty !== null && !isNaN(qty) && origServ > 0) {
         let perSingle = qty / origServ;
         let display = Math.round((perSingle + Number.EPSILON) * 100) / 100;
         if (Number.isInteger(display)) display = parseInt(display);
-        li.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
+        tdMath.style.color = '#888';
+        tdMath.style.fontSize = '0.98em';
+        tdMath.style.paddingRight = '10px';
+        tdMath.textContent = `${qty} ÷ ${origServ} =`;
+        tdIng.textContent = display + (unit ? (' ' + unit) : '') + ' ' + name;
       } else {
-        li.textContent = name;
+        tdMath.textContent = '';
+        tdIng.textContent = name;
       }
-      out.appendChild(li);
+      tr.appendChild(tdMath);
+      tr.appendChild(tdIng);
+      tbl.appendChild(tr);
     });
+    out.appendChild(tbl);
     // Second box: calculated for desired servings
     if (outCopy) {
       rec.ingredients.forEach(it => {
