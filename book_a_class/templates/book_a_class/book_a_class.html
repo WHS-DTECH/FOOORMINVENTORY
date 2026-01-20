@@ -84,13 +84,14 @@
       <tbody>
         {% for booking in bookings %}
         <tr class="booking-row"
-            data-booking-id="{{ booking.id }}"
-            data-staff="{{ booking.staff_code }}"
-            data-class="{{ booking.class_code }}"
-            data-date="{{ booking.date_required }}"
-            data-period="{{ booking.period }}"
-            data-recipe="{{ booking.recipe_id }}"
-            data-servings="{{ booking.servings }}">
+          data-booking-id="{{ booking.id }}"
+          data-staff="{{ booking.staff_code }}"
+          data-class="{{ booking.class_code }}"
+          data-date="{{ booking.date_required }}"
+          data-period="{{ booking.period }}"
+          data-recipe="{{ booking.recipe_id }}"
+          data-servings="{{ booking.servings }}"
+          data-class-size="{{ booking.class_size or 24 }}">
           <td>{{ booking.date_required }}</td>
           <td>{{ booking.period }}</td>
           <td>{{ booking.first_name }} {{ booking.last_name }}</td>
