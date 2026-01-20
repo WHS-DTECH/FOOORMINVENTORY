@@ -14,15 +14,16 @@ def book_a_class():
     date_required = request.form.get('date') if request.method == 'POST' else None
     period = request.form.get('period') if request.method == 'POST' else None
     recipe_id = request.form.get('recipe') if request.method == 'POST' else None
-    desired_servings = request.form.get('servings') if request.method == 'POST' else None
+    class_size = request.form.get('class_size') if request.method == 'POST' else None
 
     # Standard form POST handling: insert booking if all fields present
     if request.method == 'POST' and staff_code and class_code and date_required and period and recipe_id:
         with get_db_connection() as conn:
             c = conn.cursor()
+            # Use class_size from form, fallback to 24
             c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings)
                          VALUES (%s, %s, %s, %s, %s, %s)''',
-                      (staff_code, class_code, date_required, period, recipe_id, desired_servings or 24))
+                      (staff_code, class_code, date_required, period, recipe_id, class_size or 24))
             conn.commit()
 
     with get_db_connection() as conn:
@@ -49,11 +50,11 @@ def book_a_class():
         c.execute('''SELECT class_code, COUNT(*) as booking_count FROM class_bookings \
                     GROUP BY class_code ORDER BY booking_count DESC LIMIT 5''')
         most_used_class_codes = [r['class_code'] for r in c.fetchall()]
-        c.execute('SELECT DISTINCT ClassCode FROM classes ORDER BY ClassCode')
-        all_classes = [r['classcode'] for r in c.fetchall() if r['classcode']]
-        most_used_classes = [c for c in all_classes if c in most_used_class_codes]
-        other_classes = [c for c in all_classes if c not in most_used_class_codes]
-        most_used_classes.sort(key=lambda x: most_used_class_codes.index(x))
+        c.execute('SELECT ClassCode, COALESCE(class_size, 24) as class_size FROM classes ORDER BY ClassCode')
+        all_classes = [{'classcode': r['classcode'], 'class_size': r['class_size']} for r in c.fetchall() if r['classcode']]
+        most_used_classes = [c for c in all_classes if c['classcode'] in most_used_class_codes]
+        other_classes = [c for c in all_classes if c['classcode'] not in most_used_class_codes]
+        most_used_classes.sort(key=lambda x: most_used_class_codes.index(x['classcode']))
         classes = most_used_classes + other_classes
         c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY LOWER(name)')
         rows = c.fetchall()
@@ -94,7 +95,7 @@ def book_a_class():
                           most_used_staff_count=len(most_used_staff), most_used_classes_count=len(most_used_classes),
                           pre_staff_code=staff_code, pre_class_code=class_code, 
                           pre_date_required=date_required, pre_period=period,
-                          pre_recipe_id=booking_recipe_id, pre_servings=booking_servings)
+                          pre_recipe_id=booking_recipe_id, pre_class_size=class_size or 24)
 
 @book_a_class_bp.route('/class_ingredients/download', methods=['POST'])
 @require_role('VP', 'DK')

@@ -64,8 +64,8 @@
               clearBtn.addEventListener('click', function() {
                 // Find the form
                 const form = clearBtn.closest('form');
-                if (form) {
-                  // Reset all form fields
+                  <label for="classSize">Class Size</label><br>
+                  <input type="number" id="classSize" name="class_size" min="1" value="24" style="min-width: 80px;">
                   form.reset();
                   // If using select2 or custom dropdowns, reset them as well
                   // Optionally, trigger change events if needed
@@ -100,6 +100,7 @@
           <th>Period</th>
           <th>Staff</th>
           <th>Class</th>
+          <th>Class Size</th>
           <th>Recipe</th>
         </tr>
       </thead>
@@ -117,6 +118,7 @@
           <td>{{ booking.period }}</td>
           <td>{{ booking.first_name }} {{ booking.last_name }}</td>
           <td>{{ booking.class_code }}</td>
+          <td>{{ booking.class_size or 24 }}</td>
           <td>{{ booking.recipe_name }}</td>
           <td>
             <button type="button" class="btn btn-sm btn-outline-primary edit-booking-btn" onclick="editBooking(this)">Edit</button>
@@ -126,7 +128,7 @@
         {% endfor %}
       </tbody>
   {% endblock %}
-<script>
+                      data-class-size="{{ booking.class_size }}">
 function deleteBooking(btn) {
   const row = btn.closest('tr');
   if (!row) return;
@@ -177,14 +179,14 @@ function editBooking(btn) {
   if(saveBtn) {
     saveBtn.dataset.editingBookingId = row.getAttribute('data-booking-id');
     saveBtn.textContent = 'Update booking';
-    saveBtn.classList.add('btn-update');
+            const classSize = row.getAttribute('data-class-size');
   }
   // Render ingredients and calculated list
   const rec = findRecipe(parseInt(recipeId));
   renderOriginalIngredients(rec);
   calculate();
   // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('classSize').value = classSize;
   // Highlight the row
   document.querySelectorAll('.booking-row').forEach(r => r.classList.remove('selected'));
   row.classList.add('selected');
