@@ -336,6 +336,17 @@ def review_recipe_url_action():
         try:
             import datetime as dt
             source_url = recipe_data.get('source_url') or recipe_data.get('title') or ''
+            # Sanitize the URL: remove duplicate protocols, strip whitespace
+            source_url = source_url.strip()
+            # Remove duplicate protocol if present (e.g., https://https://...)
+            if source_url.startswith('http://http://'):
+                source_url = source_url.replace('http://http://', 'http://', 1)
+            elif source_url.startswith('https://https://'):
+                source_url = source_url.replace('https://https://', 'https://', 1)
+            elif source_url.startswith('http://https://'):
+                source_url = source_url.replace('http://https://', 'https://', 1)
+            elif source_url.startswith('https://http://'):
+                source_url = source_url.replace('https://http://', 'http://', 1)
             # Use the same extraction logic as debug_extract_text
             raw_data, error = extract_raw_text_from_url(source_url)
             if error:
