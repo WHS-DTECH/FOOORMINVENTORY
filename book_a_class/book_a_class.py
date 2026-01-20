@@ -75,16 +75,6 @@ def book_a_class():
         classes = most_used_classes + other_classes
         c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY LOWER(name)')
         rows = c.fetchall()
-        booking_recipe_id = None
-        booking_servings = None
-        if request.method == 'POST' and staff_code and class_code and date_required and period:
-            c.execute('''SELECT recipe_id, desired_servings FROM class_bookings \
-                        WHERE staff_code = %s AND class_code = %s AND date_required = %s AND period = %s''',
-                     (staff_code, class_code, date_required, period))
-            booking = c.fetchone()
-            if booking:
-                booking_recipe_id = booking['recipe_id']
-                booking_servings = booking['desired_servings']
 
     recipes = []
     for r in rows:
@@ -112,7 +102,7 @@ def book_a_class():
                           most_used_staff_count=len(most_used_staff), most_used_classes_count=len(most_used_classes),
                           pre_staff_code=staff_code, pre_class_code=class_code, 
                           pre_date_required=date_required, pre_period=period,
-                          pre_recipe_id=booking_recipe_id, pre_class_size=class_size or 24)
+                          pre_recipe_id=recipe_id, pre_class_size=class_size or 24)
 
 @book_a_class_bp.route('/class_ingredients/download', methods=['POST'])
 @require_role('VP', 'DK')
