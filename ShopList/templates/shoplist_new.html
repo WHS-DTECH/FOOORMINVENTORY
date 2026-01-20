@@ -165,12 +165,23 @@
     // When a booking checkbox is checked, update the recipe dropdown and trigger calculation
     document.querySelectorAll('.booking-checkbox').forEach(function(cb) {
       cb.addEventListener('change', function() {
+        const recipeSelect = document.getElementById('recipeSelectShopping');
         if (this.checked) {
+          // Uncheck all other checkboxes
+          document.querySelectorAll('.booking-checkbox').forEach(function(other) {
+            if (other !== cb) other.checked = false;
+          });
+          // Set recipe dropdown and trigger change
           const recipeId = this.getAttribute('data-recipe-id');
-          const recipeSelect = document.getElementById('recipeSelectShopping');
           if (recipeId && recipeSelect) {
             renderRecipeOptionsShopping();
             recipeSelect.value = recipeId;
+            recipeSelect.dispatchEvent(new Event('change'));
+          }
+        } else {
+          // If unchecked, reset recipe dropdown and ingredient panels
+          if (recipeSelect) {
+            recipeSelect.value = '';
             recipeSelect.dispatchEvent(new Event('change'));
           }
         }
