@@ -30,12 +30,12 @@
                 <!-- Upload Recipe (Form) -->
                 <h5>Upload Recipe (Form)</h5>
                 <p>Manually enter recipe details using a form.</p>
-                <a href="{{ url_for('upload') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
+                <a href="{{ url_for('admin_task.uploadclass') }}" class="btn btn-primary btn-block mb-3">Open Recipe Upload Form</a>
                 <hr>
                 <!-- Upload Recipe (PDF) -->
                 <h5>Upload Recipe (PDF)</h5>
                 <p>Extract recipes from a PDF file.</p>
-                <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
+                <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_task.uploadclass') }}">
                     <label>Select PDF file:</label>
                     <div class="mb-2">
                         <input type="file" name="pdf_file" class="form-control">
