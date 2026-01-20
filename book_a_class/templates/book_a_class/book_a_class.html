@@ -9,11 +9,21 @@
     <div style="display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: flex-end;">
       <div>
         <label for="staff">Staff</label><br>
-        <select id="staff" name="staff" required style="min-width: 160px;"></select>
+        <select id="staff" name="staff" required style="min-width: 160px;">
+          <option value="">-- Choose staff --</option>
+          {% for s in staff %}
+            <option value="{{ s.code }}" {% if pre_staff_code == s.code %}selected{% endif %}>{{ s.last_name }}, {{ s.first_name }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div>
         <label for="classcode">Class</label><br>
-        <select id="classcode" name="classcode" required style="min-width: 120px;"></select>
+        <select id="classcode" name="classcode" required style="min-width: 120px;">
+          <option value="">-- Choose class --</option>
+          {% for c in classes %}
+            <option value="{{ c }}" {% if pre_class_code == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div>
         <label for="date">Date</label><br>
@@ -32,7 +42,12 @@
       </div>
       <div>
         <label for="recipeSelect">Recipe</label><br>
-        <select id="recipeSelect" name="recipe" required style="min-width: 180px;"></select>
+        <select id="recipeSelect" name="recipe" required style="min-width: 180px;">
+          <option value="">-- Choose recipe --</option>
+          {% for r in recipes %}
+            <option value="{{ r.id }}" {% if pre_recipe_id == r.id %}selected{% endif %}>{{ r.name }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div>
         <label for="desiredServings">Servings</label><br>
@@ -77,24 +92,7 @@
         {% endfor %}
       </tbody>
   {% endblock %}
-  const staffSel = document.getElementById('staff');
-  if (staffSel && staffList && staffList.length > 0) {
-    staffSel.innerHTML = '<option value="">-- Choose staff --</option>' +
-      staffList.map(s => `<option value="${s.code}"${preStaffCode && s.code == preStaffCode ? ' selected' : ''}>${s.last_name}, ${s.first_name}</option>`).join('');
-  }
-  // Class
-  const classSel = document.getElementById('classcode');
-  if (classSel && classList && classList.length > 0) {
-    classSel.innerHTML = '<option value="">-- Choose class --</option>' +
-      classList.map(c => `<option value="${c}"${preClassCode && c == preClassCode ? ' selected' : ''}>${c}</option>`).join('');
-  }
-  // Recipe
-  const recipeSel = document.getElementById('recipeSelect');
-  if (recipeSel && recipes && recipes.length > 0) {
-    recipeSel.innerHTML = '<option value="">-- Choose recipe --</option>' +
-      recipes.map(r => `<option value="${r.id}"${preRecipeId && r.id == preRecipeId ? ' selected' : ''}>${r.name}</option>`).join('');
-  }
-}
+
 
 function editBooking(btn) {
   // Find the row
