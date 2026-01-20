@@ -11,9 +11,9 @@
   </div>
 </div>
 
-  <!-- 2-column layout for Scheduled Bookings and Calculate Servings -->
+  <!-- 3-column layout for Scheduled Bookings, Calculate Servings, and future content -->
   <div style="display: flex; flex-direction: row; align-items: flex-start; justify-content: center; margin-top: 36px; margin-bottom: 24px; gap: 32px;">
-    <!-- Left: Scheduled Bookings (Sorted by Teacher) -->
+    <!-- Left Column: Scheduled Bookings (Sorted by Teacher) -->
     <div style="flex: 1 1 400px; max-width: 500px; min-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 8px;">Scheduled Bookings (Sorted by Teacher)</div>
       {% set teacher_map = {} %}
@@ -23,7 +23,7 @@
         {% if teacher_key not in teacher_map %}
           {% set _ = teacher_map.update({teacher_key: {'teacher': b.teacher, 'staff_code': b.staff_code, 'bookings': []}}) %}
         {% endif %}
-        {% set _ = teacher_map[teacher_key]['bookings'].append({'date': b.date, 'class': b.class, 'recipe': b.recipe, 'servings': b.get('servings', '')}) %}
+        {% set _ = teacher_map[teacher_key]['bookings'].append({'date': b.date, 'class': b.class, 'recipe': b.recipe, 'recipe_id': b.recipe_id, 'servings': b.get('servings', '')}) %}
       {% endfor %}
       {% for teacher_key, tinfo in teacher_map.items() %}
         <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
@@ -35,7 +35,7 @@
             <li style="display: flex; align-items: center; margin-bottom: 2px;">
               <input type="checkbox" class="booking-checkbox" style="margin-right: 8px;" 
                 data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}">
-              <span>{{ booking.date }} | {{ booking.class }} | {{ booking.recipe }}{% if booking.servings %} ({{ booking.servings }} servings){% endif %}</span>
+              <span>{{ booking.date }} | {{ booking.class }} | <a href="/recipe/{{ booking.recipe_id }}" target="_blank">{{ booking.recipe }}</a>{% if booking.servings %} ({{ booking.servings }} servings){% endif %}</span>
             </li>
           {% endfor %}
         </ul>
@@ -66,7 +66,7 @@
         });
       </script>
     </div>
-    <!-- Right: Calculate Servings -->
+    <!-- Middle Column: Calculate Servings -->
     <div style="flex: 1 1 300px; min-width: 220px; max-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
       <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 12px;">Calculate servings</div>
       <div class="card mb-3 p-3" style="background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #eee;">
@@ -82,6 +82,10 @@
         <strong>Original Ingredients</strong>
         <div id="originalIngredients">Select a recipe to show its ingredients here.</div>
       </div>
+    </div>
+    <!-- Right Column: Future Content -->
+    <div style="flex: 1 1 300px; min-width: 220px; max-width: 340px; background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 18px 14px 18px; text-align: left;">
+      <!-- No heading yet; reserved for future content -->
     </div>
   </div>
 
