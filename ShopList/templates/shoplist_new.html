@@ -39,7 +39,7 @@
       {% endfor %}
       {% for teacher_key, tinfo in teacher_map.items() %}
         <div style="font-weight: bold; margin-top: 8px; display: flex; align-items: center;">
-          {% if teacher_color_map[teacher_key] %}<span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: '{{ teacher_color_map[teacher_key]|default('#ccc') }}';"></span>{% endif %}
+          {% if teacher_color_map[teacher_key] %}<span style="display:inline-block; width:16px; height:16px; border-radius:4px; margin-right:8px; background: {{ teacher_color_map[teacher_key]|default('#ccc') }};"></span>{% endif %}
           {{ tinfo.teacher }} ({{ tinfo.staff_code }})
         </div>
         <ul style="margin: 0 0 8px 18px; padding: 0; list-style: none;">
@@ -383,7 +383,7 @@
           <td style="border: 1px solid #cfd8dc; background: #fff; min-width: 120px; height: 70px; text-align: left; vertical-align: top; color: #222;">
             {% set booking = grid[(period, date)] %}
             {% if booking %}
-              <div style="background: '{{ booking.light_color|default('#fff') }}'; color: #222; border: 1px solid '{{ booking.color|default('#1976d2') }}'; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
+              <div style="background: {{ booking.light_color|default('#fff') }}; color: #222; border: 1px solid {{ booking.color|default('#1976d2') }}; border-radius: 7px; padding: 7px 10px 7px 10px; margin-bottom: 5px; font-size: 1em; font-family: inherit; min-width: 160px; box-shadow: 0 1px 2px #e0e4ea;">
                 <div style="font-weight: bold; font-size: 1.08em; margin-bottom: 2px;">{{ booking.recipe }}</div>
                 <div style="font-size: 0.98em;">Class: {{ booking.class }}</div>
                 <div style="font-size: 0.98em;">Teacher: {{ booking.staff.split(' - ')[1] if ' - ' in booking.staff else booking.staff }}</div>
