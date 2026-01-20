@@ -9,12 +9,29 @@ book_a_class_bp = Blueprint('book_a_class', __name__, template_folder='templates
 @require_role('Admin', 'Teacher')
 def book_a_class():
     # ...existing code from app.py class_ingredients()...
+
+    # Support editBooking via GET param
+    edit_booking_id = request.args.get('edit_booking_id')
     staff_code = request.form.get('staff') if request.method == 'POST' else None
     class_code = request.form.get('classcode') if request.method == 'POST' else None
     date_required = request.form.get('date') if request.method == 'POST' else None
     period = request.form.get('period') if request.method == 'POST' else None
     recipe_id = request.form.get('recipe') if request.method == 'POST' else None
     class_size = request.form.get('class_size') if request.method == 'POST' else None
+
+    # If editing, pre-fill form fields from booking
+    if edit_booking_id:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT * FROM class_bookings WHERE id = %s', (edit_booking_id,))
+            booking = c.fetchone()
+            if booking:
+                staff_code = booking['staff_code']
+                class_code = booking['class_code']
+                date_required = booking['date_required']
+                period = booking['period']
+                recipe_id = booking['recipe_id']
+                class_size = booking['desired_servings']
 
     # Standard form POST handling: insert booking if all fields present
     if request.method == 'POST' and staff_code and class_code and date_required and period and recipe_id:
