@@ -1,20 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Recipe Source Details</h2>
+    <h2>Recipe Source</h2>
     {% if recipe %}
-        <table class="table table-bordered mt-3">
-            <tr><th>Name</th><td>{{ recipe.name }}</td></tr>
-            <tr><th>Source URL</th><td>{{ recipe.source_url or 'N/A' }}</td></tr>
-            <tr><th>Ingredients</th><td><pre>{{ recipe.ingredients }}</pre></td></tr>
-            <tr><th>Instructions</th><td><pre>{{ recipe.instructions }}</pre></td></tr>
-            <tr><th>Serving Size</th><td>{{ recipe.servings_size or 'N/A' }}</td></tr>
-            <tr><th>Equipment</th><td>{{ recipe.equipment or 'N/A' }}</td></tr>
-            <tr><th>Dietary Tags</th><td>{{ recipe.dietary_tags or 'N/A' }}</td></tr>
-            <tr><th>Cuisine</th><td>{{ recipe.cuisine or 'N/A' }}</td></tr>
-            <tr><th>Difficulty</th><td>{{ recipe.difficulty or 'N/A' }}</td></tr>
-        </table>
-        <a href="{{ url_for('recipe_book.recbk') }}" class="btn btn-secondary">Back to Recipe Book</a>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="card-title">{{ recipe.name }}</h4>
+                <div><strong>Upload Method:</strong> {{ upload.upload_source_type or 'N/A' }}</div>
+                <div><strong>Source URL:</strong> <a href="{{ upload.upload_source_detail }}" target="_blank">{{ upload.upload_source_detail }}</a></div>
+                <div class="mt-2">
+                    <a class="btn btn-dark btn-sm mb-2" data-bs-toggle="collapse" href="#rawDataCollapse" role="button" aria-expanded="false" aria-controls="rawDataCollapse">View Raw Extracted Data</a>
+                    <div class="collapse" id="rawDataCollapse">
+                        <pre class="bg-light p-2 border">{{ upload.raw_text or '' }}</pre>
+                    </div>
+                </div>
+                <div><strong>Uploaded By:</strong> {{ upload.uploaded_by or 'N/A' }}</div>
+                <div><strong>Upload Date:</strong> {{ upload.upload_date or 'N/A' }}</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Source Details</h5>
+                <div>{{ upload.upload_source_detail or 'N/A' }}</div>
+                <div class="mt-2">
+                    <a class="btn btn-dark btn-sm mb-2" data-bs-toggle="collapse" href="#rawDataCollapse2" role="button" aria-expanded="false" aria-controls="rawDataCollapse2">View Raw Extracted Data</a>
+                    <div class="collapse" id="rawDataCollapse2">
+                        <pre class="bg-light p-2 border">{{ upload.raw_text or '' }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a href="{{ url_for('recipe_book.recbk') }}" class="btn btn-secondary mt-3">Back to Recipe Book</a>
     {% else %}
         <div class="alert alert-danger">Recipe not found.</div>
     {% endif %}

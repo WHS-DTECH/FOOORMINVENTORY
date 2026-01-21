@@ -12,17 +12,22 @@ recipe_book_bp = Blueprint(
 )
 
 # --- Recipe Source Details Page ---
+
 @recipe_book_bp.route('/recipe_source/<int:recipe_id>')
 @require_login
 def recipe_source(recipe_id):
     with get_db_connection() as conn:
         c = conn.cursor()
+        # Fetch recipe upload/source details
+        c.execute('SELECT * FROM recipe_upload WHERE recipe_id = %s ORDER BY upload_date DESC LIMIT 1', (recipe_id,))
+        upload = c.fetchone()
+        # Optionally fetch recipe basic info for display
         c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
         recipe = c.fetchone()
-    if not recipe:
-        flash('Recipe not found.', 'error')
+    if not upload:
+        flash('No upload/source details found for this recipe.', 'error')
         return redirect(url_for('recipe_book.recbk'))
-    return render_template('recipe_source.html', recipe=recipe)
+    return render_template('recipe_source.html', upload=upload, recipe=recipe)
 
 
 @recipe_book_bp.route('/recbk')
