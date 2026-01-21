@@ -7,6 +7,7 @@
     <li class="nav-item"><a href="{{ url_for('shoplist.book_the_shopping') }}">Book the Shopping</a></li>
     <li class="nav-item"><a href="{{ url_for('catering.catering') }}">Catering</a></li>
     <li class="nav-item"><a href="{{ url_for('ingredients.ingredients_page') }}">Ingredients</a></li>
+    <li class="nav-item"><a href="{{ url_for('program_help.help_home') }}">Program Help</a></li>
     {% if current_user.is_authenticated and current_user.is_admin() %}
       <li class="nav-item dropdown">
         <a href="#" class="dropdown-toggle" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
