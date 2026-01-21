@@ -112,5 +112,15 @@ def parser_debug(test_recipe_id):
 @bp.route('/parser_test_decision', methods=['POST'])
 @require_role('Admin')
 def parser_test_decision():
-    # ...existing code from app.py...
-    pass
+    test_recipe_id = request.form.get('test_recipe_id')
+    debug_now = request.form.get('debug_now')
+    # Optionally fetch recipe_data for display
+    if debug_now == 'yes' and test_recipe_id:
+        # Redirect to parser debug page for this test recipe (use correct blueprint endpoint)
+        return redirect(url_for('debug_parser.parser_debug', test_recipe_id=test_recipe_id))
+    else:
+        # Show confirmation message on the draft page
+        return render_template(
+            "review_recipe_url.html",
+            extraction_warning='Recipe stored in parser testing table as a test sample for future improvements.',
+            show_debug_prompt=False)
