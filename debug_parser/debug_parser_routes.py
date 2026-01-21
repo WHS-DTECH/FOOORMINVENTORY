@@ -14,7 +14,7 @@ from debug_parser.parser_confirm_ingredients import confirm_ingredients
 from debug_parser.parser_confirm_instructions import confirm_instructions
 from debug_parser.debug_parser_title import debug_title
 
-bp = Blueprint('debug_parser', __name__, template_folder='templates/debug_parser')
+bp = Blueprint('debug_parser', __name__, template_folder='templates')
 
 
 # --- Delete parser_debug entry ---
