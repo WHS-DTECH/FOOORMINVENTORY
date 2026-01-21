@@ -45,10 +45,11 @@
     
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="flash-success">
+            <div class="flash-success" id="flashMessage" onclick="this.style.display='none';" style="cursor:pointer;">
                 {% for message in messages %}
                     {{ message }}<br>
                 {% endfor %}
+                <span style="float:right; font-weight:bold; color:#155724; cursor:pointer;">[Click to dismiss]</span>
             </div>
         {% endif %}
     {% endwith %}
