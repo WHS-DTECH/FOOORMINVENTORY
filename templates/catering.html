@@ -93,6 +93,10 @@ function setupBookingClicks() {
       document.getElementById('recipeDetailId').textContent = recipe ? `(ID: ${recipe.id})` : '';
       const ingredList = document.getElementById('recipeDetailIngredients');
       ingredList.innerHTML = '';
+      // Debug: log the ingredients array for the selected recipe
+      if (recipe) {
+        console.log('Recipe ingredients for ID', recipeId, ':', recipe.ingredients, 'Type:', typeof recipe.ingredients, 'IsArray:', Array.isArray(recipe.ingredients));
+      }
       if (!recipe) {
         const li = document.createElement('li');
         li.textContent = 'No recipe found for recipeId ' + recipeId + ' (check booking and recipe table IDs).';
