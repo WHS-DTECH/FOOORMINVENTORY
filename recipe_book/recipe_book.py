@@ -1,15 +1,4 @@
-# --- Recipe Source Details Page ---
-@recipe_book_bp.route('/recipe_source/<int:recipe_id>')
-@require_login
-def recipe_source(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
-        recipe = c.fetchone()
-    if not recipe:
-        flash('Recipe not found.', 'error')
-        return redirect(url_for('recipe_book.recbk'))
-    return render_template('recipe_source.html', recipe=recipe)
+# --- Imports and Blueprint ---
 import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_required, current_user
@@ -18,6 +7,18 @@ from auth import require_login, require_role, get_db_connection
 recipe_book_bp = Blueprint(
     'recipe_book',
     __name__,
+    # --- Recipe Source Details Page ---
+    @recipe_book_bp.route('/recipe_source/<int:recipe_id>')
+    @require_login
+    def recipe_source(recipe_id):
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+            recipe = c.fetchone()
+        if not recipe:
+            flash('Recipe not found.', 'error')
+            return redirect(url_for('recipe_book.recbk'))
+        return render_template('recipe_source.html', recipe=recipe)
     template_folder='templates/recipe_book'
 )
 

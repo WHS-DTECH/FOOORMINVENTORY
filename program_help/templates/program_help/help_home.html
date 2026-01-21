@@ -22,3 +22,63 @@
   </ul>
 </div>
 {% endblock %}
+
+Book a Class
+
+The page extends a base template and includes a custom CSS file.
+It displays flash messages for user feedback.
+The booking form allows users to select staff, class, date, period, recipe, class size, and desired servings.
+There are dropdowns for staff, class, period, and recipe, all dynamically populated.
+The form supports editing existing bookings (with hidden fields for edit mode).
+There’s a RESET button to clear the form to default values.
+Two lists display original and calculated ingredients for the selected recipe.
+Below the form, a table lists all scheduled bookings with options to edit or delete each booking.
+JavaScript handles form reset, editing bookings, ingredient parsing, and scaling ingredients based on servings.
+
+Usability & User Experience
+The form is clear and logically grouped, with required fields and sensible defaults.
+Dropdowns for staff, class, period, and recipe make selection easy.
+The RESET button is helpful for quickly clearing the form.
+Editing and deleting bookings is straightforward, with confirmation for deletions.
+Ingredient lists update dynamically, aiding planning.
+Suggestions:
+
+Consider adding tooltips or help icons for fields like “Desired Servings.”
+Inline validation (e.g., for date or class size) could improve error feedback.
+If there are many bookings, add pagination or search/filter to the bookings table.
+Code Quality & Maintainability
+The template uses Jinja2 best practices for loops and conditionals.
+JavaScript is modular, with functions for parsing, rendering, and scaling.
+Data attributes on table rows make editing logic clean.
+Suggestions:
+
+Move inline JavaScript to a separate .js file for better maintainability.
+Use consistent naming (e.g., “desiredServing” vs. “desiredServings”).
+Consider using Flask-WTF or similar for form handling and CSRF protection.
+Accessibility
+Labels are present for all form fields, improving screen reader support.
+Button text is descriptive.
+Table headers are used correctly.
+Suggestions:
+
+Ensure color contrast meets WCAG standards (e.g., alert backgrounds).
+Add aria-live regions for flash messages.
+Use role="button" and tabindex for custom interactive elements if any.
+Visual Design
+The design is clean, with good use of spacing, borders, and background colors.
+The form and table are visually distinct and easy to scan.
+Suggestions:
+
+Consider responsive tweaks for mobile (e.g., stacking form fields vertically).
+Use consistent button styles for all actions.
+Bug/Issue Detection
+No obvious bugs in the template or JavaScript.
+Ensure that the recipes and bookings data passed to the template always include required fields (e.g., ingredients, serving_size).
+If the ingredient structure changes, update the parsing logic accordingly.
+Summary of Improvements:
+
+Move scripts to external files.
+Add inline validation and tooltips.
+Enhance accessibility with ARIA and color contrast.
+Add pagination/filtering for large booking lists.
+Ensure consistent naming and data structure.
