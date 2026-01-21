@@ -131,6 +131,10 @@ app.register_blueprint(google_auth_bp)
 # Register the ingredients blueprint
 app.register_blueprint(ingredients_bp)
 
+# Register the program_help blueprint
+from program_help.program_help import program_help_bp
+app.register_blueprint(program_help_bp)
+
 # Error Handlers
 @app.errorhandler(404)
 def not_found_error(error):
