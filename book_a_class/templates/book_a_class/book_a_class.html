@@ -393,3 +393,91 @@ document.addEventListener('DOMContentLoaded', function() {
   // ...existing code...
 });
 </script>
+ 
+<!-- Move search and sort JS to end of template for reliability -->
+<script>
+try {
+  console.log('Book a Class: search and sort JS loaded');
+  // Combined DOMContentLoaded for search and reset
+  document.addEventListener('DOMContentLoaded', function() {
+    // Search/filter for Scheduled Bookings table
+    var searchInput = document.getElementById('bookingSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        var filter = searchInput.value.toLowerCase().replace(/\s+/g, ' ').trim();
+        var table = document.getElementById('bookingsTable');
+        var rows = table.tBodies[0].rows;
+        for (var i = 0; i < rows.length; i++) {
+          var rowText = rows[i].innerText.toLowerCase().replace(/\s+/g, ' ').trim();
+          rows[i].style.display = rowText.indexOf(filter) > -1 ? '' : 'none';
+        }
+      });
+    }
+    // RESET button functionality for Book a Class form
+    setTimeout(function() {
+      const resetBtn = document.getElementById('reset-btn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          const form = resetBtn.closest('form');
+          if (form) {
+            // Set staff to pre_staff_code
+            const staffSelect = document.getElementById('staff');
+            if (staffSelect) {
+              const preStaff = '{{ pre_staff_code|escapejs }}';
+              staffSelect.value = preStaff;
+            }
+            // Reset class, date, period, recipe, class size
+            document.getElementById('classcode').selectedIndex = 0;
+            document.getElementById('date').value = '';
+            document.getElementById('period').selectedIndex = 0;
+            document.getElementById('recipeSelect').selectedIndex = 0;
+            document.getElementById('classSize').value = 24;
+          }
+        });
+      }
+    }, 0);
+  });
+
+  // Simple table sorting for Scheduled Bookings (global scope)
+  var sortDirections = {};
+  // Track the last sorted column for highlighting
+  var lastSortedCol = null;
+  window.sortTable = function(col, type) {
+    var table = document.getElementById('bookingsTable');
+    var tbody = table.tBodies[0];
+    var rows = Array.from(tbody.rows);
+    sortDirections[col] = !sortDirections[col]; // toggle direction
+    var dir = sortDirections[col] ? 1 : -1;
+    rows.sort(function(a, b) {
+      var aText = a.cells[col].innerText.trim();
+      var bText = b.cells[col].innerText.trim();
+      if(type === 'num') {
+        aText = parseFloat(aText) || 0;
+        bText = parseFloat(bText) || 0;
+      } else if(type === 'date') {
+        aText = Date.parse(aText) || 0;
+        bText = Date.parse(bText) || 0;
+      } else {
+        aText = aText.toLowerCase();
+        bText = bText.toLowerCase();
+      }
+      if(aText < bText) return -1 * dir;
+      if(aText > bText) return 1 * dir;
+      return 0;
+    });
+    rows.forEach(function(row) { tbody.appendChild(row); });
+
+    // Highlight the active column header
+    var ths = table.tHead.rows[0].cells;
+    for (var i = 0; i < ths.length; i++) {
+      ths[i].classList.remove('sort-active');
+    }
+    if (ths[col]) {
+      ths[col].classList.add('sort-active');
+    }
+    lastSortedCol = col;
+  }
+} catch (e) {
+  console.error('Book a Class: search/sort JS error', e);
+}
+</script>
