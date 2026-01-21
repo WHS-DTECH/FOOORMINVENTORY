@@ -27,7 +27,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 # Import and register admin_task blueprint early
 from admin_task import admin_task_bp
 
+
 app = Flask(__name__)
+# Ensure secret key is set from environment for session persistence
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
 app.register_blueprint(admin_task_bp)
 
 # Import the ShopList blueprint

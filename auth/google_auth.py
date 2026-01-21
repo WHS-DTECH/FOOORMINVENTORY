@@ -48,8 +48,16 @@ def callback():
     user_info = userinfo_resp.json()
     print(f"[DEBUG] Google user info: {user_info}")
 
-    # Save user info in session
+
+    # Save user info in session for both keys (compatibility)
     session['google_user'] = user_info
+    session['user'] = {
+        'google_id': user_info.get('id'),
+        'email': user_info.get('email'),
+        'name': user_info.get('name'),
+        'picture': user_info.get('picture'),
+        'hd': user_info.get('hd'),
+    }
 
     email = user_info.get('email')
     name = user_info.get('name')
