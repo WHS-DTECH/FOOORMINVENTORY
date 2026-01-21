@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Catering (Grid View){% endblock %}
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 2em auto;">
+  <h1 style="font-size: 2.2em; font-weight: bold; text-align: center;">Catering (Calendar Grid)</h1>
+  <div style="margin: 1.5em 0;">
+    <table id="calendarGrid" border="1" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>Period / Day</th>
+          {% for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] %}
+            <th>{{ day }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for period in range(1, 7) %}
+        <tr>
+          <td style="font-weight:bold;">Period {{ period }}</td>
+          {% for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] %}
+            <td id="cell-{{ day }}-{{ period }}" style="min-width:120px; min-height:60px;"></td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div id="bookingDetails" style="margin-top:2em; display:none;">
+    <h3>Selected Booking</h3>
+    <div><b>Class:</b> <span id="selectedClass"></span></div>
+    <div><b>Recipe:</b> <span id="selectedRecipe"></span></div>
+    <div><b>Default Servings:</b> <span id="selectedServings"></span></div>
+    <form id="servingCalcForm" style="margin-top:1em;">
+      <label>Desired Servings: <input type="number" id="desiredServings" min="1" value="" style="width:60px;"></label>
+      <button type="submit">Calculate</button>
+      <button type="button" id="singleServeBtn">Single Serve</button>
+    </form>
+    <div id="calcResult" style="margin-top:1em;"></div>
+  </div>
+</div>
+<script>
+// Example bookings data (replace with server data)
+const bookings = {{ bookings|tojson|safe }};
+const recipes = {{ recipes|tojson|safe }};
+
+// Fill grid
+function fillGrid() {
+  bookings.forEach(b => {
+    const cell = document.getElementById(`cell-${b.day}-${b.period}`);
+    if (cell) {
+      cell.innerHTML = `<div class='booking-cell' data-id='${b.id}' data-class='${b.class}' data-recipe='${b.recipe}' data-recipeid='${b.recipe_id}' data-servings='${b.servings}'>${b.class}<br><b>${b.recipe}</b></div>`;
+    }
+  });
+}
+
+// Booking click handler
+function setupBookingClicks() {
+  document.querySelectorAll('.booking-cell').forEach(el => {
+    el.onclick = function() {
+      document.getElementById('bookingDetails').style.display = 'block';
+      document.getElementById('selectedClass').textContent = this.dataset.class;
+      document.getElementById('selectedRecipe').textContent = this.dataset.recipe;
+      document.getElementById('selectedServings').textContent = this.dataset.servings || 'N/A';
+      document.getElementById('desiredServings').value = this.dataset.servings || '';
+      document.getElementById('calcResult').innerHTML = '';
+      document.getElementById('servingCalcForm').onsubmit = function(e) {
+        e.preventDefault();
+        const desired = parseInt(document.getElementById('desiredServings').value) || 1;
+        document.getElementById('calcResult').innerHTML = `Calculated for <b>${desired}</b> servings.`;
+      };
+      document.getElementById('singleServeBtn').onclick = function() {
+        document.getElementById('desiredServings').value = 1;
+        document.getElementById('calcResult').innerHTML = 'Calculated for <b>1</b> serving.';
+      };
+    };
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  fillGrid();
+  setupBookingClicks();
+});
+</script>
+{% endblock %}
