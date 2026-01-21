@@ -31,7 +31,7 @@ def book_a_class():
                 date_required = booking['date_required']
                 period = str(booking['period']) if booking['period'] is not None else ''
                 recipe_id = booking['recipe_id']
-                class_size = booking['desired_servings']
+                class_size = booking['class_size']
 
     # Standard form POST handling: insert or update booking
     if request.method == 'POST' and staff_code and class_code and date_required and period and recipe_id:
@@ -40,7 +40,7 @@ def book_a_class():
             c = conn.cursor()
             if edit_booking_id:
                 # Update existing booking
-                c.execute('''UPDATE class_bookings SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s WHERE id=%s''',
+                c.execute('''UPDATE class_bookings SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, class_size=%s WHERE id=%s''',
                           (staff_code, class_code, date_required, period, recipe_id, class_size or 24, edit_booking_id))
                 conn.commit()
                 flash('Booking updated successfully.', 'success')
@@ -48,7 +48,7 @@ def book_a_class():
                 return redirect(url_for('book_a_class.book_a_class', edit_booking_id=edit_booking_id))
             else:
                 # Insert new booking
-                c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings)
+                c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, class_size)
                              VALUES (%s, %s, %s, %s, %s, %s)''',
                           (staff_code, class_code, date_required, period, recipe_id, class_size or 24))
                 conn.commit()
@@ -98,14 +98,18 @@ def book_a_class():
         c = conn.cursor()
         c.execute('''
             SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, \
-                   cb.recipe_id, cb.desired_servings, r.name as recipe_name,
+                   cb.recipe_id, cb.class_size, r.name as recipe_name,
                    t.first_name, t.last_name
             FROM class_bookings cb
             LEFT JOIN recipes r ON cb.recipe_id = r.id
             LEFT JOIN teachers t ON cb.staff_code = t.code
             ORDER BY cb.date_required DESC, cb.period ASC
         ''')
-        bookings = [dict(row) for row in c.fetchall()]
+        bookings = []
+        for row in c.fetchall():
+            booking = dict(row)
+            booking['class_size'] = row['class_size']
+            bookings.append(booking)
 
     return render_template('book_a_class.html', staff=staff, classes=classes, recipes=recipes,
                           bookings=bookings,
@@ -121,7 +125,7 @@ def class_ingredients_download():
     # ...existing code from app.py class_ingredients_download()...
     data = request.get_json() or {}
     recipe_id = data.get('recipe_id')
-    desired = int(data.get('desired_servings') or 24)
+    class_size = int(data.get('class_size') or 24)
     if not recipe_id:
         return jsonify({'error':'recipe_id required'}), 400
 
@@ -151,7 +155,7 @@ def class_ingredients_download():
             try:
                 qn = float(str(qty))
                 per_single = qn / orig_serv
-                scaled = per_single * desired
+                scaled = per_single * class_size
                 qty = round(scaled,2)
             except Exception:
                 qty = ''
@@ -219,7 +223,7 @@ def class_ingredients_save():
         date_required = data.get('date')
         period = data.get('period')
         recipe_id = data.get('recipe_id')
-        desired = int(data.get('desired_servings') or 24)
+        class_size = int(data.get('class_size') or 24)
         missing = []
         for field, value in [('staff', staff_code), ('classcode', class_code), ('date', date_required), ('period', period), ('recipe_id', recipe_id)]:
             if value in [None, '']:
@@ -230,13 +234,13 @@ def class_ingredients_save():
             c = conn.cursor()
             if booking_id:
                 c.execute('''UPDATE class_bookings \
-                            SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, desired_servings=%s
+                            SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, class_size=%s
                             WHERE id=%s''',
-                         (staff_code, class_code, date_required, period, recipe_id, desired, booking_id))
+                         (staff_code, class_code, date_required, period, recipe_id, class_size, booking_id))
                 conn.commit()
             else:
-                c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings) VALUES (%s, %s, %s, %s, %s, %s)',
-                          (staff_code, class_code, date_required, period, recipe_id, desired))
+                c.execute('INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, class_size) VALUES (%s, %s, %s, %s, %s, %s)',
+                          (staff_code, class_code, date_required, period, recipe_id, class_size))
                 conn.commit()
                 booking_id = c.lastrowid
         return jsonify({'success': True, 'booking_id': booking_id})
