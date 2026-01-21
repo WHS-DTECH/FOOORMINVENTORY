@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2em auto;">
+  <h1>Program Help</h1>
+  <p>Welcome to the help section. Here you will find guides and documentation for using the Food Room Inventory system.</p>
+
+  <h2>Site Map</h2>
+  <ul>
+    <li><a href="{{ url_for('index') }}">Home (Food Room Inventory)</a></li>
+    <li><a href="{{ url_for('recipe_book.recbk') }}">Recipe Book</a></li>
+    <li><a href="{{ url_for('book_a_class.book_a_class') }}">Book a Class</a></li>
+    <li><a href="{{ url_for('shoplist.book_the_shopping') }}">Book the Shopping</a></li>
+    <li><a href="{{ url_for('catering.catering') }}">Catering</a></li>
+    <li><a href="{{ url_for('ingredients.ingredients_page') }}">Ingredients</a></li>
+    <li><a href="{{ url_for('upload_url.get_url_upload') }}">Upload Recipe (URL)</a></li>
+    <li><a href="{{ url_for('admin_task.admin') }}">Admin Dashboard</a></li>
+    <li><a href="{{ url_for('admin_task.admin_recipe_book_setup') }}">Recipe Book Setup</a></li>
+    <li><a href="{{ url_for('admin_task.admin_permissions') }}">Manage Role Permissions</a></li>
+    <li><a href="{{ url_for('admin_task.admin_user_roles') }}">Manage User Roles</a></li>
+    <li><a href="{{ url_for('recipe_suggest.recipe_suggestions') }}">Recipe Suggestions</a></li>
+    <li><a href="{{ url_for('login') }}">Login</a> / <a href="{{ url_for('logout') }}">Logout</a></li>
+  </ul>
+</div>
+{% endblock %}
