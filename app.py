@@ -366,6 +366,7 @@ def load_recipe_url():
     try:
         with get_db_connection() as conn:
             c = conn.cursor()
+            # Insert into parser_test_recipes (existing behavior)
             c.execute('''
                 INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id, raw_data)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -378,9 +379,22 @@ def load_recipe_url():
                 None,
                 html
             ))
+            # Also insert into parser_debug for debug index
+            c.execute('''
+                INSERT INTO parser_debug (recipe_id, raw_data, extracted_title, strategies, solution, created_at, user_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', (
+                None,  # recipe_id unknown at this stage
+                html,
+                url,  # Use URL as extracted_title placeholder
+                '[{"result": "Loaded from URL"}]',
+                '',
+                dt.datetime.utcnow(),
+                getattr(current_user, 'id', None)
+            ))
             conn.commit()
     except Exception as e:
-        print(f"[DEBUG] Could not insert into parser_test_recipes: {e}")
+        print(f"[DEBUG] Could not insert into parser_test_recipes or parser_debug: {e}")
 
     # Remove raw_data if present before passing to template
     recipe_data_no_raw = dict(recipe_data)
