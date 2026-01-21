@@ -88,6 +88,9 @@
   </form>
 
   <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 10px;">Scheduled Bookings</h2>
+    <div style="margin-bottom: 12px;">
+      <input type="text" id="bookingSearch" class="form-control" style="max-width: 320px; display: inline-block;" placeholder="Search bookings...">
+    </div>
   <div style="overflow-x: auto;">
     <table class="table table-striped" id="bookingsTable" style="min-width: 700px; background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #e0e4ea;">
       <thead>
@@ -138,6 +141,21 @@
   {% endblock %}
 
 <script>
+// Search/filter for Scheduled Bookings table
+document.addEventListener('DOMContentLoaded', function() {
+  var searchInput = document.getElementById('bookingSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      var filter = searchInput.value.toLowerCase();
+      var table = document.getElementById('bookingsTable');
+      var rows = table.tBodies[0].rows;
+      for (var i = 0; i < rows.length; i++) {
+        var rowText = rows[i].innerText.toLowerCase();
+        rows[i].style.display = rowText.indexOf(filter) > -1 ? '' : 'none';
+      }
+    });
+  }
+});
 // RESET button functionality for Book a Class form
 window.addEventListener('DOMContentLoaded', function() {
   setTimeout(function() {
