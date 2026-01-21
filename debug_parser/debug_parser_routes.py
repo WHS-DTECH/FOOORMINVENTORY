@@ -163,4 +163,5 @@ def parser_test_decision():
         return render_template(
             "review_recipe_url.html",
             extraction_warning='Recipe stored in parser testing table as a test sample for future improvements.',
-            show_debug_prompt=False)
+            show_debug_prompt=False,
+            recipe_data={})
