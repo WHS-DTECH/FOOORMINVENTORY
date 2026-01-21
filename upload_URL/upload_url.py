@@ -1,5 +1,8 @@
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
+from auth import get_db_connection
+import datetime
 
 upload_url_bp = Blueprint(
     'upload_url',
@@ -35,9 +38,25 @@ upload_url_bp.add_url_rule('/view_raw_upload', view_func=view_raw_upload, method
 
 # Route: Review extracted recipe from URL
 def review_recipe_url():
-    # Logic for reviewing extracted recipe
-    # ...
-    return render_template('upload_URL/review_recipe_url.html')
+    # Simulate extraction (replace with real extraction logic)
+    url = request.args.get('url')
+    extracted_title = url or ''
+    raw_data = f"Extracted from: {url}"
+    solution = ''
+    strategies = '[{"result": "Match: recipe title from URL"}]'
+    created_at = datetime.datetime.utcnow()
+    user_id = current_user.get_id() if current_user.is_authenticated else None
+
+    # Insert into parser_debug table
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''
+            INSERT INTO parser_debug (recipe_id, raw_data, extracted_title, strategies, solution, created_at, user_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ''', (None, raw_data, extracted_title, strategies, solution, created_at, user_id))
+        conn.commit()
+
+    return render_template('upload_URL/review_recipe_url.html', extracted_title=extracted_title)
 
 upload_url_bp.add_url_rule('/review_recipe_url', view_func=review_recipe_url, methods=['GET', 'POST'])
 
