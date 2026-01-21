@@ -7,18 +7,50 @@ def login():
 from flask import Blueprint
 google_auth_bp = Blueprint('google_auth', __name__)
 
+
+import requests
+from flask import current_app, request, session, redirect, url_for
+import os
+import psycopg2
+
 @google_auth_bp.route('/auth/callback')
 def callback():
     print("[DEBUG] /auth/callback route hit!")
-    import os
-    import psycopg2
-    from flask import request, session, redirect, url_for
-    print("[DEBUG] Google OAuth callback triggered.")
-    user_info = session.get('google_user')
-    print(f"[DEBUG] session['google_user']: {user_info}")
-    if not user_info:
-        print("[DEBUG] No user_info found in session. Redirecting to login.")
+    code = request.args.get('code')
+    if not code:
+        print("[DEBUG] No code in request.args. Redirecting to login.")
         return redirect(url_for('login'))
+
+    # Exchange code for tokens
+    token_url = "https://oauth2.googleapis.com/token"
+    data = {
+        "code": code,
+        "client_id": os.getenv('GOOGLE_CLIENT_ID', current_app.config.get('GOOGLE_CLIENT_ID')),
+        "client_secret": os.getenv('GOOGLE_CLIENT_SECRET', current_app.config.get('GOOGLE_CLIENT_SECRET')),
+        "redirect_uri": os.getenv('GOOGLE_REDIRECT_URI', current_app.config.get('GOOGLE_REDIRECT_URI')),
+        "grant_type": "authorization_code"
+    }
+    token_resp = requests.post(token_url, data=data)
+    if not token_resp.ok:
+        print(f"[DEBUG] Token exchange failed: {token_resp.text}")
+        return redirect(url_for('login'))
+    tokens = token_resp.json()
+    access_token = tokens.get("access_token")
+
+    # Fetch user info
+    userinfo_resp = requests.get(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+    if not userinfo_resp.ok:
+        print(f"[DEBUG] Userinfo fetch failed: {userinfo_resp.text}")
+        return redirect(url_for('login'))
+    user_info = userinfo_resp.json()
+    print(f"[DEBUG] Google user info: {user_info}")
+
+    # Save user info in session
+    session['google_user'] = user_info
+
     email = user_info.get('email')
     name = user_info.get('name')
     google_id = user_info.get('id')
