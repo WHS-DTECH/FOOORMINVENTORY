@@ -145,8 +145,9 @@
   {% endblock %}
 
 <script>
-// Search/filter for Scheduled Bookings table
+// Combined DOMContentLoaded for search and reset
 document.addEventListener('DOMContentLoaded', function() {
+  // Search/filter for Scheduled Bookings table
   var searchInput = document.getElementById('bookingSearch');
   if (searchInput) {
     searchInput.addEventListener('input', function() {
@@ -159,9 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-});
-// RESET button functionality for Book a Class form
-window.addEventListener('DOMContentLoaded', function() {
+  // RESET button functionality for Book a Class form
   setTimeout(function() {
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
