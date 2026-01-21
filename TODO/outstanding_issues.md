@@ -3,7 +3,7 @@
 ## Parser Debug
 - General improvements, error handling, and workflow consistency for all debug/confirm actions. Ensure all debug routes and index actions work reliably and display clear errors or results.
 
-## Parser Debug / URL Upload Review
+## Parser Debug / URL Upload Review - FIXED
 - Need to get to the Flag window from the Parser Debug Index (see screenshot for current state). Ensure that clicking 'Debug' on a URL entry leads to the review/flagging workflow as intended.
 
 ## Book a Class - FIXED

@@ -1,6 +1,38 @@
-<!-- Template for debug title page -->
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block content %}
-<h2>Debug Title for Test Recipe {{ test_recipe_id }}</h2>
-<!-- Add debug info and controls here -->
+<div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
+	<div style="flex: 1; min-width: 400px;">
+		<div style="display: flex; justify-content: flex-end; margin-bottom: 1em; gap: 18px;">
+			<form method="get" action="/parser_debug_raw/{{ test_recipe_id }}" style="margin:0;">
+				<button type="submit" class="btn btn-outline-secondary" style="font-size:1em;">View Raw Data</button>
+			</form>
+			<div style="display: flex; gap: 12px;">
+				<div style="min-width: 180px;">
+					<div id="titleBlockHeader" style="background: #1976d2; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Title</div>
+					<div id="titleBlockBox" style="border: 1px solid #1976d2; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222; min-height: 48px; display: flex; align-items: center;">
+						<span id="titleBlockText">{{ best_guess or raw_title or '(No title found)' }}</span>
+					</div>
+				</div>
+				<div style="min-width: 180px;">
+					<div style="background: #1976d2; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Solution</div>
+					<div id="solutionBox" style="border: 1px solid #1976d2; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222; min-height: 48px;">
+						<textarea id="solutionInput" style="width: 100%; min-height: 40px; resize: vertical; font-size: 1em;"></textarea>
+						<button id="sendSolutionBtn" style="margin-top: 10px; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">SEND SOLUTION</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<h3>Raw Data (HTML/Text)</h3>
+		<div style="display: flex;">
+			<div style="background: #f0f0f0; color: #888; padding: 1em 0.5em 1em 1em; border: 1px solid #ccc; border-right: none; text-align: right; user-select: none; font-family: monospace;">
+				{% set lines = (raw_data or raw_title or '') .split('\n') %}
+				{% for i in range(1, lines|length + 1) %}
+					<div style="min-width: 2.5em;">{{ i }}</div>
+				{% endfor %}
+			</div>
+			<textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;">{{ raw_data }}</textarea>
+		</div>
+		<!-- JS for strategies and solution omitted for brevity, can be copied from recipe_setup/templates/debug_title.html if needed -->
+	</div>
+</div>
 {% endblock %}

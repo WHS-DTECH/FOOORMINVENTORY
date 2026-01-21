@@ -63,23 +63,23 @@ def confirm_field():
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
     confirmed = {}
-    # Modular confirmation logic
+    # Modular confirmation logic for all fields
     if field == 'source_url':
-        raw_url = test_recipe['upload_source_detail']
-        confirm_url(raw_url, test_recipe_id)
+        value = test_recipe.get('upload_source_detail')
+        confirm_url(value, test_recipe_id)
     elif field == 'title':
-        raw_title = test_recipe['upload_source_detail']
-        confirm_title(raw_title, test_recipe_id)
+        value = test_recipe.get('upload_source_detail')
+        confirm_title(value, test_recipe_id)
     elif field == 'serving_size':
-        raw_serving = test_recipe['serving_size']
-        confirm_serving(raw_serving, test_recipe_id)
+        value = test_recipe.get('serving_size')
+        confirm_serving(value, test_recipe_id)
     elif field == 'ingredients':
-        raw_ingredients = test_recipe['ingredients']
-        confirm_ingredients(raw_ingredients, test_recipe_id)
+        value = test_recipe.get('ingredients')
+        confirm_ingredients(value, test_recipe_id)
     elif field == 'instructions':
-        raw_instructions = test_recipe['instructions']
-        confirm_instructions(raw_instructions, test_recipe_id)
-    # TODO: Add logic for other fields as needed
+        value = test_recipe.get('instructions')
+        confirm_instructions(value, test_recipe_id)
+    # Add more fields as needed
     # Fetch all confirmed fields for this test_recipe_id (always)
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -101,14 +101,14 @@ def debug_title_route(test_recipe_id):
     if not test_recipe:
         flash('Test recipe not found.', 'danger')
         return redirect(url_for('admin_task.admin_recipe_book_setup'))
-    raw_title = test_recipe.get('raw_data', '')
-    debugged_title = debug_title(raw_title, test_recipe_id)
-    # Render a simple debug page (replace with your actual template if needed)
+    raw_data = test_recipe.get('raw_data', '')
+    # For now, use the first non-empty line as a best guess (placeholder for real strategy logic)
+    best_guess = next((line for line in raw_data.split('\n') if line.strip()), '(No title found)')
     return render_template(
         'debug_title.html',
         test_recipe_id=test_recipe_id,
-        raw_title=raw_title,
-        debugged_title=debugged_title
+        raw_data=raw_data,
+        best_guess=best_guess
     )
 
 # Route to render the debug extract text form
