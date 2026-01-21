@@ -104,7 +104,12 @@ function setupBookingClicks() {
       } else if (Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
         recipe.ingredients.forEach(ing => {
           const li = document.createElement('li');
-          li.textContent = ing;
+          // If ingredient is an object (dict), join its values, else show as string
+          if (typeof ing === 'object' && ing !== null) {
+            li.textContent = Object.values(ing).filter(Boolean).join(' ');
+          } else {
+            li.textContent = ing;
+          }
           ingredList.appendChild(li);
         });
       } else {
