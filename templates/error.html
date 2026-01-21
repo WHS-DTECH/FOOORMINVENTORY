@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  <div style="max-width: 600px; margin: 60px auto; padding: 32px; background: #fffbe6; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; border: 1px solid #ffe58f;">
+    <h2 style="color: #d4380d; font-weight: bold;">Error</h2>
+    <p style="font-size: 1.2em; color: #333; margin-top: 18px;">
+      {{ message|default('An unexpected error occurred.') }}
+    </p>
+    <a href="/" class="btn btn-primary" style="margin-top: 24px;">Return Home</a>
+  </div>
+{% endblock %}
