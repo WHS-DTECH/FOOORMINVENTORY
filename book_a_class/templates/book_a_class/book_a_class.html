@@ -164,17 +164,17 @@ window.addEventListener('DOMContentLoaded', function() {
   }, 0);
 });
 
-// Simple table sorting for Scheduled Bookings
-let sortDirections = {};
+// Simple table sorting for Scheduled Bookings (global scope)
+var sortDirections = {};
 function sortTable(col, type) {
-  const table = document.getElementById('bookingsTable');
-  const tbody = table.tBodies[0];
-  const rows = Array.from(tbody.rows);
+  var table = document.getElementById('bookingsTable');
+  var tbody = table.tBodies[0];
+  var rows = Array.from(tbody.rows);
   sortDirections[col] = !sortDirections[col]; // toggle direction
-  const dir = sortDirections[col] ? 1 : -1;
-  rows.sort((a, b) => {
-    let aText = a.cells[col].innerText.trim();
-    let bText = b.cells[col].innerText.trim();
+  var dir = sortDirections[col] ? 1 : -1;
+  rows.sort(function(a, b) {
+    var aText = a.cells[col].innerText.trim();
+    var bText = b.cells[col].innerText.trim();
     if(type === 'num') {
       aText = parseFloat(aText) || 0;
       bText = parseFloat(bText) || 0;
@@ -189,7 +189,7 @@ function sortTable(col, type) {
     if(aText > bText) return 1 * dir;
     return 0;
   });
-  rows.forEach(row => tbody.appendChild(row));
+  rows.forEach(function(row) { tbody.appendChild(row); });
 }
 
 
