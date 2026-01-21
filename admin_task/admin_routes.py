@@ -7,7 +7,7 @@ import os, csv, datetime, json, io
 from . import admin_task_bp
 
 # --- Admin Permissions Page ---
-@admin_task_bp.route('/admin/permissions')
+@admin_task_bp.route('/admin/permissions', methods=['GET', 'POST'])
 @require_role('Admin')
 def admin_permissions():
     roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
