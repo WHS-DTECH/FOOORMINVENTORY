@@ -41,9 +41,9 @@ def suggest_recipe_modal():
         except Exception as db_error:
             print(f"[ERROR] Failed to save suggestion to DB (modal): {db_error}")
             import traceback; traceback.print_exc()
-            return jsonify({'success': False, 'message': 'There was an error saving your suggestion. Please try again or contact the VP directly.'})
+            return jsonify({'success': False, 'message': 'There was an error saving your suggestion. Please try again or contact the Admin directly.'})
 
-        # Send email to VP (Vanessa Pringle)
+        # Send email to Admin (Vanessa Pringle)
         email_sent = False
         try:
             import smtplib
@@ -54,13 +54,13 @@ def suggest_recipe_modal():
             smtp_username = os.getenv('SMTP_USERNAME')
             smtp_password = os.getenv('SMTP_PASSWORD')
             smtp_from_email = os.getenv('SMTP_FROM_EMAIL', smtp_username)
-            vp_email = 'vanessapringle@westlandhigh.school.nz'
+            Admin_email = 'vanessapringle@westlandhigh.school.nz'
             subject = f"Recipe Suggestion: {recipe_name}"
             body = f"Recipe Name: {recipe_name}\nURL: {recipe_url}\nReason: {reason}\nSuggested by: {suggested_by_name} ({suggested_by_email})"
             if smtp_username and smtp_password:
                 msg = MIMEMultipart()
                 msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
-                msg['To'] = vp_email
+                msg['To'] = Admin_email
                 msg['Subject'] = subject
                 msg.attach(MIMEText(body, 'plain'))
                 server = smtplib.SMTP(smtp_server, smtp_port)
@@ -69,24 +69,24 @@ def suggest_recipe_modal():
                 server.send_message(msg)
                 server.quit()
                 email_sent = True
-                print(f"Email sent successfully to {vp_email}")
+                print(f"Email sent successfully to {Admin_email}")
             else:
                 print("SMTP credentials not configured - email not sent")
-                print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+                print(f"RECIPE SUGGESTION EMAIL:\nTo: {Admin_email}\nSubject: {subject}\n\n{body}")
         except Exception as email_error:
             print(f"Failed to send email: {email_error}")
-            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {Admin_email}\nSubject: {subject}\n\n{body}")
         return jsonify({'success': True, 'email_sent': email_sent})
     except Exception as e:
         print(f"Error in suggest_recipe_modal: {e}")
         import traceback; traceback.print_exc()
-        return jsonify({'success': False, 'message': 'There was an error submitting your suggestion. Please try again or contact the VP directly.'})
+        return jsonify({'success': False, 'message': 'There was an error submitting your suggestion. Please try again or contact the Admin directly.'})
 
 
 @recipe_suggest_bp.route('/recipes/suggest', methods=['POST'])
 @require_login
 def suggest_recipe():
-    """Handle recipe suggestion submissions and email to VP"""
+    """Handle recipe suggestion submissions and email to Admin"""
     try:
         recipe_name = request.form.get('recipe_name', '').strip()
         recipe_url = request.form.get('recipe_url', '').strip()
@@ -97,7 +97,7 @@ def suggest_recipe():
             return redirect(url_for('recipes_page'))
 
         # Set recipient email directly (Vanessa Pringle)
-        vp_email = 'vanessapringle@westlandhigh.school.nz'
+        Admin_email = 'vanessapringle@westlandhigh.school.nz'
 
         # Get current user info safely
         user_name = current_user.name if hasattr(current_user, 'name') else 'Unknown User'
@@ -124,12 +124,12 @@ def suggest_recipe():
                 except Exception as exec_error:
                     print(f"[ERROR] Exception during SQL execute: {exec_error}")
                     import traceback; traceback.print_exc()
-                    flash('There was an error saving your suggestion (SQL error). Please try again or contact the VP directly.', 'error')
+                    flash('There was an error saving your suggestion (SQL error). Please try again or contact the Admin directly.', 'error')
                     return redirect(url_for('recipes_page'))
         except Exception as db_error:
             print(f"[ERROR] Failed to save suggestion to DB (outer): {db_error}")
             import traceback; traceback.print_exc()
-            flash('There was an error saving your suggestion (DB error). Please try again or contact the VP directly.', 'error')
+            flash('There was an error saving your suggestion (DB error). Please try again or contact the Admin directly.', 'error')
             return redirect(url_for('recipes_page'))
 
         # Only send email after successful DB insert
@@ -146,7 +146,7 @@ def suggest_recipe():
             if smtp_username and smtp_password:
                 msg = MIMEMultipart()
                 msg['From'] = smtp_from_email or 'Food Room System <noreply@whsdtech.com>'
-                msg['To'] = vp_email
+                msg['To'] = Admin_email
                 msg['Subject'] = subject
                 msg.attach(MIMEText(body, 'plain'))
                 server = smtplib.SMTP(smtp_server, smtp_port)
@@ -155,23 +155,23 @@ def suggest_recipe():
                 server.send_message(msg)
                 server.quit()
                 email_sent = True
-                print(f"Email sent successfully to {vp_email}")
+                print(f"Email sent successfully to {Admin_email}")
             else:
                 print("SMTP credentials not configured - email not sent")
-                print(f"RECIPE SUGGESTION EMAIL:\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+                print(f"RECIPE SUGGESTION EMAIL:\nTo: {Admin_email}\nSubject: {subject}\n\n{body}")
         except Exception as email_error:
             print(f"Failed to send email: {email_error}")
-            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {vp_email}\nSubject: {subject}\n\n{body}")
+            print(f"RECIPE SUGGESTION EMAIL (not sent):\nTo: {Admin_email}\nSubject: {subject}\n\n{body}")
 
         if email_sent:
-            flash(f'Thank you! Your suggestion for "{recipe_name}" has been emailed to the VP and saved to the database.', 'success')
+            flash(f'Thank you! Your suggestion for "{recipe_name}" has been emailed to the Admin and saved to the database.', 'success')
         else:
-            flash(f'Thank you! Your suggestion for "{recipe_name}" has been saved. The VP will review it in the Admin panel.', 'success')
+            flash(f'Thank you! Your suggestion for "{recipe_name}" has been saved. The Admin will review it in the Admin panel.', 'success')
 
     except Exception as e:
         print(f"Error in suggest_recipe: {e}")
         import traceback
         traceback.print_exc()
-        flash('There was an error submitting your suggestion. Please try again or contact the VP directly.', 'error')
+        flash('There was an error submitting your suggestion. Please try again or contact the Admin directly.', 'error')
 
     return redirect(url_for('recipes_page'))

@@ -99,10 +99,10 @@ def setup_database():
 
         # Insert default permissions
         default_permissions = [
-            ('VP', 'recipes'), ('VP', 'recbk'), ('VP', 'class_ingredients'), 
-            ('VP', 'booking'), ('VP', 'shoplist'), ('VP', 'admin'),
-            ('DK', 'recipes'), ('DK', 'recbk'), ('DK', 'class_ingredients'), 
-            ('DK', 'booking'), ('DK', 'shoplist'),
+            ('Admin', 'recipes'), ('Admin', 'recbk'), ('Admin', 'class_ingredients'), 
+            ('Admin', 'booking'), ('Admin', 'shoplist'), ('Admin', 'admin'),
+            ('Teacher', 'recipes'), ('Teacher', 'recbk'), ('Teacher', 'class_ingredients'), 
+            ('Teacher', 'booking'), ('Teacher', 'shoplist'),
             ('MU', 'recipes'), ('MU', 'recbk'), ('MU', 'booking'), ('MU', 'shoplist'),
             ('public', 'recbk')
         ]
@@ -114,7 +114,7 @@ def setup_database():
 
         # Insert example teachers (optional) using INSERT OR IGNORE to avoid duplicates
         example_teachers = [
-            ('VP', 'Pringle', 'Vanessa', 'Ms', 'vanessa.pringle@school.edu'),
+            ('Admin', 'Pringle', 'Vanessa', 'Ms', 'vanessa.pringle@school.edu'),
             ('JD', 'Doe', 'John', 'Mr', 'john.doe@school.edu'),
             ('AS', 'Smith', 'Alice', 'Mrs', 'alice.smith@school.edu')
         ]

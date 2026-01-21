@@ -1,7 +1,7 @@
 # Email Configuration for Recipe Suggestions
 
 ## Overview
-The recipe suggestion feature can send emails to the VP when new recipes are suggested. This requires SMTP configuration.
+The recipe suggestion feature can send emails to the Admin when new recipes are suggested. This requires SMTP configuration.
 
 ## Setup on PythonAnywhere
 
@@ -58,7 +58,7 @@ SMTP_FROM_EMAIL = foodroom@yourschool.edu
 
 1. After setting up environment variables and reloading your web app
 2. Go to the Recipes page and submit a test suggestion
-3. Check your VP email inbox for the notification
+3. Check your Admin email inbox for the notification
 4. If no email arrives, check the PythonAnywhere error log for debugging info
 
 ## Fallback Behavior
@@ -67,7 +67,7 @@ If SMTP is not configured:
 - Suggestions are still saved to the database
 - They appear in the Admin > Suggestions List
 - No email is sent, but the system logs the email content
-- User sees: "Your suggestion has been saved. The VP will review it in the Admin panel."
+- User sees: "Your suggestion has been saved. The Admin will review it in the Admin panel."
 
 ## Security Notes
 

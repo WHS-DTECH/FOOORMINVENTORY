@@ -23,7 +23,7 @@ FLASK_SECRET_KEY=generate-random-string
 2. Go to http://localhost:5000/login
 3. Will say "not configured" → go to `/admin`
 4. Upload CSV with: Code, Last Name, First Name, Email
-5. Use codes: **VP** (admin), **DK** (teacher), **MU** (booking staff)
+5. Use codes: **Admin** (admin), **Teacher** (teacher), **MU** (booking staff)
 
 ### Step 4: Test Login
 1. Go to http://localhost:5000/login
@@ -35,8 +35,8 @@ FLASK_SECRET_KEY=generate-random-string
 
 ```csv
 Code,Last Name,First Name,Email
-VP,Admin,TestUser,admin@school.edu
-DK,Teacher,JohnSmith,jsmith@school.edu
+Admin,Admin,TestUser,admin@school.edu
+Teacher,Teacher,JohnSmith,jsmith@school.edu
 MU,Staff,MaryJones,mjones@school.edu
 ```
 
@@ -44,8 +44,8 @@ MU,Staff,MaryJones,mjones@school.edu
 
 | Role | Can Access |
 |------|-----------|
-| **VP** | Everything + Admin |
-| **DK** | Recipes, Booking, Shopping, Class |
+| **Admin** | Everything + Admin |
+| **Teacher** | Recipes, Booking, Shopping, Class |
 | **MU** | Booking, Shopping |
 | **No Code** | Recipe Book only (public) |
 
@@ -72,12 +72,12 @@ Copy this and fill in your Google credentials
 - User name + role badge
 - Logout button
 
-### DK (Teacher) Also Sees:
+### Teacher (Teacher) Also Sees:
 - Class Ingredients
 - Booking Calendar
 - Shopping List
 
-### VP (Admin) Also Sees:
+### Admin (Admin) Also Sees:
 - Admin Panel (staff, classes, recipes, upload)
 
 ### Public Users (Not Logged In) See:

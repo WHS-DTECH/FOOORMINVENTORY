@@ -82,8 +82,8 @@
                     {% if roles is defined %}
                         {% for role in roles %}
                             <option value="{{ role }}">
-                                {% if role == 'VP' %}Admin
-                                {% elif role == 'DK' %}Teacher
+                                {% if role == 'Admin' %}Admin
+                                {% elif role == 'Teacher' %}Teacher
                                 {% elif role == 'MU' %}Technician
                                 {% elif role == 'public' %}Public Access
                                 {% elif role == 'Recipe Editor' %}Recipe Editor

@@ -13,12 +13,12 @@ from psycopg2.extras import RealDictCursor
 
 # Role mapping between display names and legacy codes
 ROLE_NAME_TO_CODE = {
-    'Admin': 'VP',
-    'Teacher': 'DK',
+    'Admin': 'Admin',
+    'Teacher': 'Teacher',
     'Technician': 'MU',
     'Public Access': 'public',
-    'VP': 'VP',
-    'DK': 'DK',
+    'Admin': 'Admin',
+    'Teacher': 'Teacher',
     'MU': 'MU',
     'public': 'public',
 }
@@ -26,11 +26,11 @@ ROLE_CODE_TO_NAME = {v: k for k, v in ROLE_NAME_TO_CODE.items()}
 
 # Legacy fallback - now permissions are stored in database
 ROLE_PERMISSIONS = {
-    'VP': {
+    'Admin': {
         'name': 'Admin',
         'routes': ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'dashboard']
     },
-    'DK': {
+    'Teacher': {
         'name': 'Teacher',
         'routes': ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist']
     },
@@ -124,18 +124,18 @@ class User(UserMixin):
         return False
     
     def is_admin(self):
-        """Check if user is an admin (VP)."""
-        return 'VP' in self.get_all_roles()
+        """Check if user is an admin (Admin)."""
+        return 'Admin' in self.get_all_roles()
     
     def is_teacher(self):
         """Check if user is a teacher."""
         all_roles = self.get_all_roles()
-        return any(role in ['VP', 'DK'] for role in all_roles)
+        return any(role in ['Admin', 'Teacher'] for role in all_roles)
     
     def is_staff(self):
         """Check if user is staff."""
         all_roles = self.get_all_roles()
-        return any(role in ['VP', 'DK', 'MU'] for role in all_roles)
+        return any(role in ['Admin', 'Teacher', 'MU'] for role in all_roles)
 
 
 def get_user_by_google_id(google_id):

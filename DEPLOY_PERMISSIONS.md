@@ -29,8 +29,8 @@ python3 setup_database.py
 This will:
 - Create the `role_permissions` table if it doesn't exist
 - Insert default permissions:
-  - **VP**: All routes (recipes, recbk, class_ingredients, booking, shoplist, admin)
-  - **DK**: All except admin (recipes, recbk, class_ingredients, booking, shoplist)
+  - **Admin**: All routes (recipes, recbk, class_ingredients, booking, shoplist, admin)
+  - **Teacher**: All except admin (recipes, recbk, class_ingredients, booking, shoplist)
   - **MU**: Limited access (recbk, class_ingredients, booking, shoplist)
   - **public**: Recipe book only (recbk)
 
@@ -42,14 +42,14 @@ Go to the PythonAnywhere **Web** tab and click the **Reload** button for `whsdte
 
 ### Accessing the Manager
 
-1. Log in as a VP user
+1. Log in as a Admin user
 2. Go to Admin page
 3. Click **"🔐 Manage Role Permissions"** button
 
 ### Understanding the Permission Matrix
 
 The permission matrix shows:
-- **Rows**: Roles (VP, DK, MU, public)
+- **Rows**: Roles (Admin, Teacher, MU, public)
 - **Columns**: Routes/Pages (recipes, recbk, class_ingredients, booking, shoplist, admin)
 - **✓** = Access granted (green)
 - **✗** = Access denied (red)
@@ -75,8 +75,8 @@ Changes take effect immediately!
 
 ### Security Recommendations
 
-1. **VP role** should always have access to all pages, especially admin
-2. **Admin page** access should be restricted to VP only
+1. **Admin role** should always have access to all pages, especially admin
+2. **Admin page** access should be restricted to Admin only
 3. **Public role** controls what non-authenticated users can see
 4. Be careful removing your own access - you could lock yourself out!
 
@@ -86,8 +86,8 @@ The system starts with these defaults:
 
 | Role   | Description    | Default Access                                                    |
 |--------|----------------|-------------------------------------------------------------------|
-| VP     | Vice Principal | ALL pages (recipes, recbk, class_ingredients, booking, shoplist, admin) |
-| DK     | Teacher        | Most pages except admin                                           |
+| Admin     | Vice Principal | ALL pages (recipes, recbk, class_ingredients, booking, shoplist, admin) |
+| Teacher     | Teacher        | Most pages except admin                                           |
 | MU     | Booking Staff  | Limited (recbk, class_ingredients, booking, shoplist)            |
 | public | Non-logged in  | Recipe book only (recbk)                                         |
 
@@ -102,9 +102,9 @@ The system starts with these defaults:
 - Existing data won't be affected
 
 **Lost admin access?**
-- If you accidentally remove VP access to admin, you'll need to fix it via SSH:
+- If you accidentally remove Admin access to admin, you'll need to fix it via SSH:
   ```bash
-  sqlite3 ~/FOOORMINVENTORY/recipes.db "INSERT OR IGNORE INTO role_permissions (role, route) VALUES ('VP', 'admin');"
+  sqlite3 ~/FOOORMINVENTORY/recipes.db "INSERT OR IGNORE INTO role_permissions (role, route) VALUES ('Admin', 'admin');"
   ```
 
 ## Database Schema
@@ -122,9 +122,9 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 
 ## Testing
 
-1. Log in as VP and access the permission manager
-2. Try removing DK access to "recipes"
-3. Log in as a DK user and verify they can't access the Recipes page
+1. Log in as Admin and access the permission manager
+2. Try removing Teacher access to "recipes"
+3. Log in as a Teacher user and verify they can't access the Recipes page
 4. Add the permission back and verify access is restored
 
 ## Rollback (If Needed)

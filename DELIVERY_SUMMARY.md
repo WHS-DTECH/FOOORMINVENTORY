@@ -66,15 +66,15 @@ The Food Room Inventory system has been successfully enhanced with **Google OAut
 
 ### Authorization (RBAC)
 - **4 Permission Levels:**
-  - VP (Vice Principal): Full admin access
-  - DK (Teachers): Recipe/Booking/Shopping/Class access
+  - Admin (Vice Principal): Full admin access
+  - Teacher (Teachers): Recipe/Booking/Shopping/Class access
   - MU (Booking Staff): Booking/Shopping access
   - Public: Recipe Book view only
 
 - **18 Protected Routes:**
   - 8 Admin-only routes
-  - 5 Staff+ routes (VP, DK, MU)
-  - 3 Teacher+ routes (VP, DK)
+  - 5 Staff+ routes (Admin, Teacher, MU)
+  - 3 Teacher+ routes (Admin, Teacher)
   - 2 Public routes (no login)
 
 ### Data Protection
@@ -98,7 +98,7 @@ GET  /auth/callback    OAuth callback
 GET  /logout           Logout
 ```
 
-### Staff & Up (VP, DK, MU)
+### Staff & Up (Admin, Teacher, MU)
 ```
 GET  /recipes          Recipe search
 GET  /recipe/<id>      Recipe details
@@ -107,14 +107,14 @@ GET  /booking/export/ical    Export to calendar
 GET  /shoplist         Shopping list
 ```
 
-### Teachers & Up (VP, DK)
+### Teachers & Up (Admin, Teacher)
 ```
 GET/POST  /class_ingredients        Class ingredients
 POST      /class_ingredients/download   Download ingredients
 POST      /class_ingredients/save       Save booking
 ```
 
-### Admin Only (VP)
+### Admin Only (Admin)
 ```
 GET/POST  /admin                     Admin panel
 POST      /upload                    Upload recipe PDF
@@ -146,7 +146,7 @@ System fetches user info from Google
   ↓
 System looks up email in teachers table
   ↓
-Assigns role based on staff code (VP, DK, MU, or public)
+Assigns role based on staff code (Admin, Teacher, MU, or public)
   ↓
 User logged in, session created, role badges displayed
 ```
@@ -155,7 +155,7 @@ User logged in, session created, role badges displayed
 ```
 Google Account Email → teachers.email lookup
   ↓
-If found → Use teacher.code (VP, DK, MU, etc.)
+If found → Use teacher.code (Admin, Teacher, MU, etc.)
   ↓
 If not found → Assign "public" role (Recipe Book only)
   ↓
@@ -166,7 +166,7 @@ User role stored in session with timestamp
 ```
 Request arrives at protected route
   ↓
-@require_role('VP', 'DK') decorator checks session
+@require_role('Admin', 'Teacher') decorator checks session
   ↓
 If user role matches → Allow request
   ↓
@@ -224,8 +224,8 @@ FLASK_ENV=development
 ### Staff CSV Format (for role assignment)
 ```csv
 Code,Last Name,First Name,Email
-VP,Principal,Sarah,principal@school.edu
-DK,Teacher,John,jsmith@school.edu
+Admin,Principal,Sarah,principal@school.edu
+Teacher,Teacher,John,jsmith@school.edu
 MU,Booking,Mary,mjones@school.edu
 ```
 
@@ -250,7 +250,7 @@ MU,Booking,Mary,mjones@school.edu
 ### New UI Components
 - **Login Page**: Professional Google Sign-In button with access level info
 - **Navbar Updates**: User profile display + login/logout
-- **Role Badges**: Color-coded badges (VP=Red, DK=Green, MU=Blue)
+- **Role Badges**: Color-coded badges (Admin=Red, Teacher=Green, MU=Blue)
 - **Alert Messages**: Styled flash messages with categories
 
 ---
@@ -281,16 +281,16 @@ python-dotenv==1.2.1                 # Environment variables
 - ✅ Can view Recipe Book (/recbk) without login
 - ✅ Cannot access protected routes
 
-### Test Case 2: VP (Admin) Login
+### Test Case 2: Admin (Admin) Login
 - ✅ Login successful
 - ✅ Can access all routes
-- ✅ See "VP" role badge (red)
+- ✅ See "Admin" role badge (red)
 - ✅ Admin menu visible
 
-### Test Case 3: DK (Teacher) Login
+### Test Case 3: Teacher (Teacher) Login
 - ✅ Can access recipes, booking, shopping, classes
 - ✅ Cannot access admin
-- ✅ See "DK" role badge (green)
+- ✅ See "Teacher" role badge (green)
 
 ### Test Case 4: MU (Booking Staff) Login
 - ✅ Can access booking and shopping
@@ -353,8 +353,8 @@ cp .env.example .env
 ### 3. Upload Staff Data (5 minutes)
 ```csv
 Code,Last Name,First Name,Email
-VP,Admin,Test,admin@school.edu
-DK,Teacher,Test,teacher@school.edu
+Admin,Admin,Test,admin@school.edu
+Teacher,Teacher,Test,teacher@school.edu
 ```
 
 ### 4. Test (2 minutes)

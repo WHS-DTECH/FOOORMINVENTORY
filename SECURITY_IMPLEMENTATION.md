@@ -31,7 +31,7 @@ This document summarizes the Google OAuth 2.0 security implementation for the Fo
 - `@public_with_auth`: Allows public access with optional auth enhancement
 
 ### 5. Protected Routes
-**VP Only:**
+**Admin Only:**
 - `/admin` - Admin panel
 - `/uploadclass` - Class CSV upload
 - `/staff` - Staff management
@@ -41,7 +41,7 @@ This document summarizes the Google OAuth 2.0 security implementation for the Fo
 - `/load_recipe_from_url` - Recipe data loading
 - `/admin/recipe/<id>/edit` - Recipe editing
 
-**Staff (VP, DK, MU):**
+**Staff (Admin, Teacher, MU):**
 - `/recipes` - Recipe search and view
 - `/recipe/<id>` - Recipe details
 - `/booking` - Booking calendar
@@ -49,7 +49,7 @@ This document summarizes the Google OAuth 2.0 security implementation for the Fo
 - `/shoplist` - Shopping list
 - `/class_ingredients` - Class ingredients
 
-**Teachers Only (VP, DK):**
+**Teachers Only (Admin, Teacher):**
 - `/class_ingredients` (GET/POST forms)
 - `/class_ingredients/download` - Download functionality
 - `/class_ingredients/save` - Save bookings
@@ -82,8 +82,8 @@ This document summarizes the Google OAuth 2.0 security implementation for the Fo
 - Navbar styling with flexbox layout
 - User info display
 - Role badges with color coding:
-  - VP: Red (#d32f2f)
-  - DK: Green (#388e3c)
+  - Admin: Red (#d32f2f)
+  - Teacher: Green (#388e3c)
   - MU: Blue (#1976d2)
   - Public: Gray (#757575)
 - Alert messages with category-based colors
@@ -118,8 +118,8 @@ pip install flask-login google-auth-oauthlib google-auth-httplib2 google-api-pyt
 
 | Role | Name | Access |
 |------|------|--------|
-| **VP** | Vice Principal | All features, admin functions |
-| **DK** | Teacher | Recipes, booking, shopping list, class ingredients |
+| **Admin** | Vice Principal | All features, admin functions |
+| **Teacher** | Teacher | Recipes, booking, shopping list, class ingredients |
 | **MU** | Booking Staff | Booking calendar, shopping list |
 | **public** | Public User | Recipe book view only (no login) |
 
@@ -149,7 +149,7 @@ The system automatically looks up staff codes when users log in:
 -- Staff table structure
 CREATE TABLE teachers (
     id INTEGER PRIMARY KEY,
-    code TEXT UNIQUE,        -- VP, DK, MU, or custom code
+    code TEXT UNIQUE,        -- Admin, Teacher, MU, or custom code
     last_name TEXT,
     first_name TEXT,
     title TEXT,
@@ -223,11 +223,11 @@ CREATE TABLE teachers (
 3. **Upload Staff Data**
    - CSV file with Code, Last Name, First Name, Email
    - Use `/admin` page to upload
-   - Codes (VP, DK, MU) determine access levels
+   - Codes (Admin, Teacher, MU) determine access levels
 
 4. **Test All Roles**
-   - VP test account: Full access
-   - DK test account: Teacher access
+   - Admin test account: Full access
+   - Teacher test account: Teacher access
    - MU test account: Booking staff access
    - No account: Public recipe book access
 

@@ -115,7 +115,7 @@ def book_a_class():
                           pre_edit_booking_id=edit_booking_id)
 
 @book_a_class_bp.route('/class_ingredients/download', methods=['POST'])
-@require_role('VP', 'DK')
+@require_role('Admin', 'Teacher')
 def class_ingredients_download():
     # ...existing code from app.py class_ingredients_download()...
     data = request.get_json() or {}
@@ -207,7 +207,7 @@ def api_scheduled_bookings():
         return jsonify({'success': False, 'error': str(e)})
 
 @book_a_class_bp.route('/class_ingredients/save', methods=['POST'])
-@require_role('VP', 'DK')
+@require_role('Admin', 'Teacher')
 def class_ingredients_save():
     # ...existing code from app.py class_ingredients_save()...
     try:

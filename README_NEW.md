@@ -15,8 +15,8 @@ A comprehensive web application for managing recipes, class bookings, and food i
 ### Security & Access Control
 - **Google OAuth 2.0**: Secure login with Google accounts
 - **Role-Based Access Control (RBAC)**: Four permission levels:
-  - **VP (Vice Principal)**: Full admin access to all features
-  - **DK (Teachers)**: Access to recipes, bookings, class ingredients, shopping lists
+  - **Admin (Vice Principal)**: Full admin access to all features
+  - **Teacher (Teachers)**: Access to recipes, bookings, class ingredients, shopping lists
   - **MU (Booking Staff)**: Access to bookings and shopping lists
   - **Public**: Read-only access to Recipe Book (no login required)
 - **Session Management**: Flask-Login for secure user sessions
@@ -62,7 +62,7 @@ The app will be available at `http://localhost:5000`
 
 ### 4. Initial Data Setup
 
-1. Go to `/admin` (requires VP role or test login)
+1. Go to `/admin` (requires Admin role or test login)
 2. Upload staff CSV with columns: Code, Last Name, First Name, Email
 3. Upload class CSV with columns: ClassCode, LineNo, CourseName, etc.
 4. Add recipes via the admin panel or upload from URLs
@@ -98,7 +98,7 @@ FOOORMINVENTORY/
 
 ## User Roles & Permissions
 
-| Feature | Public | MU | DK | VP |
+| Feature | Public | MU | Teacher | Admin |
 |---------|--------|----|----|-----|
 | View Recipes | ✓ | ✓ | ✓ | ✓ |
 | Recipe Book | ✓ | ✓ | ✓ | ✓ |
@@ -163,7 +163,7 @@ The system uses SQLite3 with automatic schema creation:
 
 ### Permission Denied
 - Verify user's email is in the `teachers` table
-- Check that the staff code matches a configured role (VP, DK, MU)
+- Check that the staff code matches a configured role (Admin, Teacher, MU)
 - Role badges should appear in the top-right corner when logged in
 
 ### Database Issues

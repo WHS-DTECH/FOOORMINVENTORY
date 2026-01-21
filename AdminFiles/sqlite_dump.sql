@@ -9,20 +9,20 @@ CREATE TABLE class_bookings (
             desired_servings INTEGER,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         );
-INSERT INTO "class_bookings" VALUES(1,'Dk','100HOSP','2025-12-25',4,19,24,'2025-12-13 00:07:35');
-INSERT INTO "class_bookings" VALUES(2,'Dk','200HOSP','2025-12-25',3,21,24,'2025-12-13 01:28:54');
-INSERT INTO "class_bookings" VALUES(3,'Dk','100HOSP','2025-12-25',3,22,24,'2025-12-13 01:32:49');
-INSERT INTO "class_bookings" VALUES(4,'Dk','200HOSP','2025-12-25',3,8,24,'2025-12-13 01:49:19');
-INSERT INTO "class_bookings" VALUES(5,'VP','300HOSP','2025-12-16',5,4,24,'2025-12-13 01:53:55');
-INSERT INTO "class_bookings" VALUES(6,'VP','MFOOD','2025-12-17',2,19,24,'2025-12-13 01:54:17');
-INSERT INTO "class_bookings" VALUES(7,'VP','SDFOOD','2025-12-18',4,19,24,'2025-12-13 01:54:46');
-INSERT INTO "class_bookings" VALUES(8,'Dk','300HOSP','2025-12-19',4,3,24,'2025-12-13 02:37:59');
-INSERT INTO "class_bookings" VALUES(9,'VP','300HOSP','2025-12-16',3,1,24,'2025-12-16 20:23:59');
-INSERT INTO "class_bookings" VALUES(10,'VP','MFOOD','2025-12-23',2,5,24,'2025-12-16 20:58:00');
-INSERT INTO "class_bookings" VALUES(11,'VP','200HOSP','2026-01-07',1,16,24,'2025-12-16 20:59:09');
-INSERT INTO "class_bookings" VALUES(12,'VP','300HOSP','2025-12-18',1,22,4,'2025-12-18 19:19:27');
-INSERT INTO "class_bookings" VALUES(13,'Dk','300HOSP','2025-12-25',1,1,24,'2025-12-18 21:37:11');
-INSERT INTO "class_bookings" VALUES(14,'Dk','100HOSP','2025-12-19',1,19,48,'2025-12-19 02:14:08');
+INSERT INTO "class_bookings" VALUES(1,'Teacher','100HOSP','2025-12-25',4,19,24,'2025-12-13 00:07:35');
+INSERT INTO "class_bookings" VALUES(2,'Teacher','200HOSP','2025-12-25',3,21,24,'2025-12-13 01:28:54');
+INSERT INTO "class_bookings" VALUES(3,'Teacher','100HOSP','2025-12-25',3,22,24,'2025-12-13 01:32:49');
+INSERT INTO "class_bookings" VALUES(4,'Teacher','200HOSP','2025-12-25',3,8,24,'2025-12-13 01:49:19');
+INSERT INTO "class_bookings" VALUES(5,'Admin','300HOSP','2025-12-16',5,4,24,'2025-12-13 01:53:55');
+INSERT INTO "class_bookings" VALUES(6,'Admin','MFOOD','2025-12-17',2,19,24,'2025-12-13 01:54:17');
+INSERT INTO "class_bookings" VALUES(7,'Admin','SDFOOD','2025-12-18',4,19,24,'2025-12-13 01:54:46');
+INSERT INTO "class_bookings" VALUES(8,'Teacher','300HOSP','2025-12-19',4,3,24,'2025-12-13 02:37:59');
+INSERT INTO "class_bookings" VALUES(9,'Admin','300HOSP','2025-12-16',3,1,24,'2025-12-16 20:23:59');
+INSERT INTO "class_bookings" VALUES(10,'Admin','MFOOD','2025-12-23',2,5,24,'2025-12-16 20:58:00');
+INSERT INTO "class_bookings" VALUES(11,'Admin','200HOSP','2026-01-07',1,16,24,'2025-12-16 20:59:09');
+INSERT INTO "class_bookings" VALUES(12,'Admin','300HOSP','2025-12-18',1,22,4,'2025-12-18 19:19:27');
+INSERT INTO "class_bookings" VALUES(13,'Teacher','300HOSP','2025-12-25',1,1,24,'2025-12-18 21:37:11');
+INSERT INTO "class_bookings" VALUES(14,'Teacher','100HOSP','2025-12-19',1,19,48,'2025-12-19 02:14:08');
 CREATE TABLE classes (
             ClassCode TEXT NOT NULL,
             LineNo INTEGER,
@@ -39,7 +39,7 @@ CREATE TABLE classes (
             Misc3 TEXT,
             PRIMARY KEY (ClassCode, LineNo)
         );
-INSERT INTO "classes" VALUES('100COMP',0,'0','0','Computer Studies','NCEA Level 1',11,'Technology','VP',0,0,'2025TT','100COMP|VP||||VP||0|0||||2|0||');
+INSERT INTO "classes" VALUES('100COMP',0,'0','0','Computer Studies','NCEA Level 1',11,'Technology','Admin',0,0,'2025TT','100COMP|Admin||||Admin||0|0||||2|0||');
 INSERT INTO "classes" VALUES('SRREO',NULL,'0','1','Te Reo','Junior School',7,'Te Reo Māori','BP',19,19,'2025TT','SRREO|JSR||||BP|01|19|19||||2|0||');
 INSERT INTO "classes" VALUES('SRLITR',NULL,'0','1','Literacy','Junior School',8,'English and Languages','SR',19,19,'2025TT','SRLITR|JSR||||SR|01|19|19||||2|0||');
 INSERT INTO "classes" VALUES('SRMATH',NULL,'0','1','Mathematics','Junior School',8,'Mathematics','SR',19,19,'2025TT','SRMATH|JSR||||SR|01|19|19||||2|0||');
@@ -71,7 +71,7 @@ INSERT INTO "classes" VALUES('SDWRITE',NULL,'0','3','Literacy','Year 1',1,'Engli
 INSERT INTO "classes" VALUES('WHANAU',NULL,'0','3','Life Skills/Personal Development','Year 1',1,'English and Languages','SD',13,13,'2025TT','WHANAU|7WHAU||||SD|03|13|13||||2|0||');
 INSERT INTO "classes" VALUES('SDHOME',NULL,'0','3','SDHOME','0',0,'SDHOME','SD',19,19,'2025TT','SDHOME|JSD||||SD|03|19|19||||2|0||');
 INSERT INTO "classes" VALUES('MEET',NULL,'0','3','MEET','0',0,'MEET','SD',13,13,'2025TT','MEET|7WHAU||||SD|03|13|13||||2|0||');
-INSERT INTO "classes" VALUES('SDLITR',NULL,'0','3','Literacy','Year 8',8,'English and Languages','VP',19,19,'2025TT','SDLITR|JSD||||VP|03|19|19||||2|1||');
+INSERT INTO "classes" VALUES('SDLITR',NULL,'0','3','Literacy','Year 8',8,'English and Languages','Admin',19,19,'2025TT','SDLITR|JSD||||Admin|03|19|19||||2|1||');
 INSERT INTO "classes" VALUES('MIREO',NULL,'0','4','Te Reo Maori','Junior School',7,'Te Reo Māori','BP',20,20,'2025TT','MIREO|JMI||||BP|04|20|20||||2|0||');
 INSERT INTO "classes" VALUES('MICONS',NULL,'0','4','Conservation','Junior School',7,'Science','BT',20,20,'2025TT','MICONS|JMI||||BT|04|20|20||||2|0||');
 INSERT INTO "classes" VALUES('MILITR',NULL,'0','4','Literacy','Year 8',8,'English and Languages','MM',20,20,'2025TT','MILITR|JMI||||MM|04|20|20||||2|0||');
@@ -187,28 +187,28 @@ INSERT INTO "classes" VALUES('MCONS',NULL,'1','8a','Conservation','Middle School
 INSERT INTO "classes" VALUES('200HIST',5,'1','8a','History','NCEA Level 2',12,'Social Science','CY',7,7,'2025TT','200HIST||5|1|0|CY|8a|7|7||||1|0||');
 INSERT INTO "classes" VALUES('ESOL',0,'0','8a','ESOL','0',0,'ESOL','CY',6,6,'2025TT','ESOL|||||CY|8a|6|6|25094;23091;24067;25092;25091;25093|||3|0');
 INSERT INTO "classes" VALUES('RightTrack',0,'0','BMeet','RightTrack','0',0,'RightTrack','KV',4,4,'2025TT','RightTrack|||||KV|BMeet|4|4|23043;21029;21050;21009|||3|0');
-INSERT INTO "classes" VALUES('300COMP',8,'1','CW','Computer Studies','NCEA Level 3',13,'Technology','VP',0,0,'2025TT','300COMP||8|1|0|VP|CW|0|0||||1|0||');
-INSERT INTO "classes" VALUES('300DTECH',4,'1','CW','Digital Technologies','NCEA Level 3',13,'Technology','VP',1,5,'2025TT','300DTECH||4|1|0|VP|CW|1|5||||1|0||');
-INSERT INTO "classes" VALUES('300DTECH',1,'1','CW','Digital Technologies','NCEA Level 3',13,'Technology','VP',4,5,'2025TT','300DTECH||1|1|0|VP|CW|4|5||||1|0||');
-INSERT INTO "classes" VALUES('200COMP',8,'1','CW','Computer Studies','NCEA Level 2',12,'Technology','VP',0,0,'2025TT','200COMP||8|1|0|VP|CW|0|0||||1|0||');
-INSERT INTO "classes" VALUES('200DTECH',4,'1','CW','Digital Technologies','NCEA Level 2',12,'Technology','VP',3,11,'2025TT','200DTECH||4|1|0|VP|CW|3|11||||1|0||');
-INSERT INTO "classes" VALUES('200DTECH',1,'1','CW','Digital Technologies','NCEA Level 2',12,'Technology','VP',8,11,'2025TT','200DTECH||1|1|0|VP|CW|8|11||||1|0||');
-INSERT INTO "classes" VALUES('100DTECHS',9,'1','CW','Digital Technologies','NCEA Level 1',11,'Technology','VP',1,1,'2025TT','100DTECHS||9|1|0|VP|CW|1|1||||1|0||');
-INSERT INTO "classes" VALUES('100COMP',8,'1','CW','Computer Studies','NCEA Level 1',11,'Technology','VP',0,1,'2025TT','100COMP||8|1|0|VP|CW|0|1||||1|0||');
-INSERT INTO "classes" VALUES('100DTECH',4,'1','CW','Digital Technologies','NCEA Level 1',11,'Technology','VP',7,14,'2025TT','100DTECH||4|1|0|VP|CW|7|14||||1|0||');
-INSERT INTO "classes" VALUES('100DTECH',1,'1','CW','Digital Technologies','NCEA Level 1',11,'Technology','VP',7,14,'2025TT','100DTECH||1|1|0|VP|CW|7|14||||1|0||');
-INSERT INTO "classes" VALUES('MWEB',NULL,'1','CW','Web Design','Middle School',10,'Technology','VP',25,25,'2025TT','MWEB||81|1|4|VP|CW|25|25||||1|0||');
-INSERT INTO "classes" VALUES('MWEB',NULL,'1','CW','Web Design','Middle School',10,'Technology','VP',25,25,'2025TT','MWEB||81|1|3|VP|CW|25|25||||1|0||');
-INSERT INTO "classes" VALUES('MPROG',NULL,'1','CW','Middle DTECH - Programming','Middle School',10,'Technology','VP',24,24,'2025TT','MPROG||81|1|2|VP|CW|24|24||||1|0||');
-INSERT INTO "classes" VALUES('MPROG',NULL,'1','CW','Middle DTECH - Programming','Middle School',10,'Technology','VP',24,24,'2025TT','MPROG||81|1|1|VP|CW|24|24||||1|0||');
-INSERT INTO "classes" VALUES('SRDTECH',NULL,'0','CW','Digital Technology','Junior School',8,'Technology','VP',19,19,'2025TT','SRDTECH|JSR||||VP|CW|19|19||||2|0||');
-INSERT INTO "classes" VALUES('SDDTECH',NULL,'0','CW','Digital Technologies','Junior School',7,'Technology','VP',19,19,'2025TT','SDDTECH|JSD||||VP|CW|19|19||||2|0||');
-INSERT INTO "classes" VALUES('PIDTECH',NULL,'0','CW','Digital Technologies','Year 7',7,'Technology','VP',21,21,'2025TT','PIDTECH|JPI||||VP|CW|21|21||||2|0||');
-INSERT INTO "classes" VALUES('MIDTECH',NULL,'0','CW','Digital Technologies','Junior School',7,'Technology','VP',20,20,'2025TT','MIDTECH|JMI||||VP|CW|20|20||||2|0||');
-INSERT INTO "classes" VALUES('8SDTECH',NULL,'0','CW','Digital Technologies','Year 7',7,'Technology','VP',11,11,'2025TT','8SDTECH|8S||||VP|CW|11|11||||2|0||');
-INSERT INTO "classes" VALUES('7SDTECH',NULL,'0','CW','Digtal Technologies','Year 7',7,'Technology','VP',13,13,'2025TT','7SDTECH|7S||||VP|CW|13|13||||2|0||');
-INSERT INTO "classes" VALUES('WHANAU',NULL,'0','CW','Life Skills/Personal Development','Year 1',1,'English and Languages','VP',14,14,'2025TT','WHANAU|8WHAU||||VP|CW|14|14||||2|0||');
-INSERT INTO "classes" VALUES('MEET',NULL,'0','CW','MEET','0',0,'MEET','VP',14,14,'2025TT','MEET|8WHAU||||VP|CW|14|14||||2|0||');
+INSERT INTO "classes" VALUES('300COMP',8,'1','CW','Computer Studies','NCEA Level 3',13,'Technology','Admin',0,0,'2025TT','300COMP||8|1|0|Admin|CW|0|0||||1|0||');
+INSERT INTO "classes" VALUES('300DTECH',4,'1','CW','Digital Technologies','NCEA Level 3',13,'Technology','Admin',1,5,'2025TT','300DTECH||4|1|0|Admin|CW|1|5||||1|0||');
+INSERT INTO "classes" VALUES('300DTECH',1,'1','CW','Digital Technologies','NCEA Level 3',13,'Technology','Admin',4,5,'2025TT','300DTECH||1|1|0|Admin|CW|4|5||||1|0||');
+INSERT INTO "classes" VALUES('200COMP',8,'1','CW','Computer Studies','NCEA Level 2',12,'Technology','Admin',0,0,'2025TT','200COMP||8|1|0|Admin|CW|0|0||||1|0||');
+INSERT INTO "classes" VALUES('200DTECH',4,'1','CW','Digital Technologies','NCEA Level 2',12,'Technology','Admin',3,11,'2025TT','200DTECH||4|1|0|Admin|CW|3|11||||1|0||');
+INSERT INTO "classes" VALUES('200DTECH',1,'1','CW','Digital Technologies','NCEA Level 2',12,'Technology','Admin',8,11,'2025TT','200DTECH||1|1|0|Admin|CW|8|11||||1|0||');
+INSERT INTO "classes" VALUES('100DTECHS',9,'1','CW','Digital Technologies','NCEA Level 1',11,'Technology','Admin',1,1,'2025TT','100DTECHS||9|1|0|Admin|CW|1|1||||1|0||');
+INSERT INTO "classes" VALUES('100COMP',8,'1','CW','Computer Studies','NCEA Level 1',11,'Technology','Admin',0,1,'2025TT','100COMP||8|1|0|Admin|CW|0|1||||1|0||');
+INSERT INTO "classes" VALUES('100DTECH',4,'1','CW','Digital Technologies','NCEA Level 1',11,'Technology','Admin',7,14,'2025TT','100DTECH||4|1|0|Admin|CW|7|14||||1|0||');
+INSERT INTO "classes" VALUES('100DTECH',1,'1','CW','Digital Technologies','NCEA Level 1',11,'Technology','Admin',7,14,'2025TT','100DTECH||1|1|0|Admin|CW|7|14||||1|0||');
+INSERT INTO "classes" VALUES('MWEB',NULL,'1','CW','Web Design','Middle School',10,'Technology','Admin',25,25,'2025TT','MWEB||81|1|4|Admin|CW|25|25||||1|0||');
+INSERT INTO "classes" VALUES('MWEB',NULL,'1','CW','Web Design','Middle School',10,'Technology','Admin',25,25,'2025TT','MWEB||81|1|3|Admin|CW|25|25||||1|0||');
+INSERT INTO "classes" VALUES('MPROG',NULL,'1','CW','Middle DTECH - Programming','Middle School',10,'Technology','Admin',24,24,'2025TT','MPROG||81|1|2|Admin|CW|24|24||||1|0||');
+INSERT INTO "classes" VALUES('MPROG',NULL,'1','CW','Middle DTECH - Programming','Middle School',10,'Technology','Admin',24,24,'2025TT','MPROG||81|1|1|Admin|CW|24|24||||1|0||');
+INSERT INTO "classes" VALUES('SRDTECH',NULL,'0','CW','Digital Technology','Junior School',8,'Technology','Admin',19,19,'2025TT','SRDTECH|JSR||||Admin|CW|19|19||||2|0||');
+INSERT INTO "classes" VALUES('SDDTECH',NULL,'0','CW','Digital Technologies','Junior School',7,'Technology','Admin',19,19,'2025TT','SDDTECH|JSD||||Admin|CW|19|19||||2|0||');
+INSERT INTO "classes" VALUES('PIDTECH',NULL,'0','CW','Digital Technologies','Year 7',7,'Technology','Admin',21,21,'2025TT','PIDTECH|JPI||||Admin|CW|21|21||||2|0||');
+INSERT INTO "classes" VALUES('MIDTECH',NULL,'0','CW','Digital Technologies','Junior School',7,'Technology','Admin',20,20,'2025TT','MIDTECH|JMI||||Admin|CW|20|20||||2|0||');
+INSERT INTO "classes" VALUES('8SDTECH',NULL,'0','CW','Digital Technologies','Year 7',7,'Technology','Admin',11,11,'2025TT','8SDTECH|8S||||Admin|CW|11|11||||2|0||');
+INSERT INTO "classes" VALUES('7SDTECH',NULL,'0','CW','Digtal Technologies','Year 7',7,'Technology','Admin',13,13,'2025TT','7SDTECH|7S||||Admin|CW|13|13||||2|0||');
+INSERT INTO "classes" VALUES('WHANAU',NULL,'0','CW','Life Skills/Personal Development','Year 1',1,'English and Languages','Admin',14,14,'2025TT','WHANAU|8WHAU||||Admin|CW|14|14||||2|0||');
+INSERT INTO "classes" VALUES('MEET',NULL,'0','CW','MEET','0',0,'MEET','Admin',14,14,'2025TT','MEET|8WHAU||||Admin|CW|14|14||||2|0||');
 INSERT INTO "classes" VALUES('300MATS',5,'1','DR','Mathematics with Statistics','NCEA Level 3',13,'Mathematics','CL',16,16,'2025TT','300MATS||5|1|0|CL|DR|16|16||||1|0||');
 INSERT INTO "classes" VALUES('MDRAMA',NULL,'1','DR','Drama','Middle School',10,'Arts','JA',18,30,'2025TT','MDRAMA||81|1|4|JA|DR|18|30||||1|0||');
 INSERT INTO "classes" VALUES('MDRAMA',NULL,'1','DR','Drama','Middle School',10,'Arts','JA',17,30,'2025TT','MDRAMA||81|1|3|JA|DR|17|30||||1|0||');
@@ -220,22 +220,22 @@ INSERT INTO "classes" VALUES('MEET',NULL,'0','DR','MEET','0',0,'MEET','JA',11,11
 INSERT INTO "classes" VALUES('NETNZDRAMA',6,'1','DR','Drama','Year 1',1,'Arts','RS',1,6,'2025TT','NETNZDRAMA||6|1|0|RS|DR|1|6||||1|1||');
 INSERT INTO "classes" VALUES('NETNZDRAMA',4,'1','DR','Drama','Year 1',1,'Arts','RS',2,6,'2025TT','NETNZDRAMA||4|1|0|RS|DR|2|6||||1|1||');
 INSERT INTO "classes" VALUES('NETNZDRAMA',2,'1','DR','Drama','Year 1',1,'Arts','RS',1,6,'2025TT','NETNZDRAMA||2|1|0|RS|DR|1|6||||1|1||');
-INSERT INTO "classes" VALUES('300HOSP',1,'1','F','Hospitality','NCEA Level 3',13,'Technology','DK',18,18,'2025TT','300HOSP||1|1|0|DK|F|18|18||||1|0||');
-INSERT INTO "classes" VALUES('100HOSP',6,'1','F','Hospitality','NCEA Level 1',11,'Technology','DK',18,38,'2025TT','100HOSP||6|1|0|DK|F|18|38||||1|0||');
-INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','DK',23,83,'2025TT','MFOOD||82|1|4|DK|F|23|83||||1|0||');
-INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','DK',22,83,'2025TT','MFOOD||82|1|3|DK|F|22|83||||1|0||');
-INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','DK',22,83,'2025TT','MFOOD||82|1|2|DK|F|22|83||||1|0||');
-INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','DK',22,83,'2025TT','MFOOD||82|1|1|DK|F|22|83||||1|0||');
-INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','DK',24,83,'2025TT','MFOOD||81|1|4|DK|F|24|83||||1|0||');
-INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','DK',24,83,'2025TT','MFOOD||81|1|3|DK|F|24|83||||1|0||');
-INSERT INTO "classes" VALUES('MIFOOD',NULL,'0','F','Food and Nutrition','Junior School',8,'Technology','DK',20,20,'2025TT','MIFOOD|JMI||||DK|F|20|20||||2|0||');
-INSERT INTO "classes" VALUES('8SFOOD',NULL,'0','F','Year 8 Food Sm','Year 8',8,'Technology','DK',11,11,'2025TT','8SFOOD|8S||||DK|F|11|11||||2|0||');
-INSERT INTO "classes" VALUES('VEFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','DK',24,24,'2025TT','VEFOOD|JVE||||DK|F|24|24||||2|0||');
-INSERT INTO "classes" VALUES('SRFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','DK',19,19,'2025TT','SRFOOD|JSR||||DK|F|19|19||||2|0||');
-INSERT INTO "classes" VALUES('SDFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','DK',19,19,'2025TT','SDFOOD|JSD||||DK|F|19|19||||2|0||');
-INSERT INTO "classes" VALUES('7SFOOD',NULL,'0','F','Food and Nutrition','Year 1',1,'Technology','DK',13,13,'2025TT','7SFOOD|7S||||DK|F|13|13||||2|0||');
-INSERT INTO "classes" VALUES('WHANAU',NULL,'0','F','Life Skills/Personal Development','Year 1',1,'English and Languages','DK',13,13,'2025TT','WHANAU|11WHAU||||DK|F|13|13||||2|0||');
-INSERT INTO "classes" VALUES('MEET',NULL,'0','F','MEET','0',0,'MEET','DK',13,13,'2025TT','MEET|11WHAU||||DK|F|13|13||||2|0||');
+INSERT INTO "classes" VALUES('300HOSP',1,'1','F','Hospitality','NCEA Level 3',13,'Technology','Teacher',18,18,'2025TT','300HOSP||1|1|0|Teacher|F|18|18||||1|0||');
+INSERT INTO "classes" VALUES('100HOSP',6,'1','F','Hospitality','NCEA Level 1',11,'Technology','Teacher',18,38,'2025TT','100HOSP||6|1|0|Teacher|F|18|38||||1|0||');
+INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','Teacher',23,83,'2025TT','MFOOD||82|1|4|Teacher|F|23|83||||1|0||');
+INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','Teacher',22,83,'2025TT','MFOOD||82|1|3|Teacher|F|22|83||||1|0||');
+INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','Teacher',22,83,'2025TT','MFOOD||82|1|2|Teacher|F|22|83||||1|0||');
+INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','Teacher',22,83,'2025TT','MFOOD||82|1|1|Teacher|F|22|83||||1|0||');
+INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','Teacher',24,83,'2025TT','MFOOD||81|1|4|Teacher|F|24|83||||1|0||');
+INSERT INTO "classes" VALUES('MFOOD',NULL,'1','F','Food and Nutrition','Middle School',10,'Technology','Teacher',24,83,'2025TT','MFOOD||81|1|3|Teacher|F|24|83||||1|0||');
+INSERT INTO "classes" VALUES('MIFOOD',NULL,'0','F','Food and Nutrition','Junior School',8,'Technology','Teacher',20,20,'2025TT','MIFOOD|JMI||||Teacher|F|20|20||||2|0||');
+INSERT INTO "classes" VALUES('8SFOOD',NULL,'0','F','Year 8 Food Sm','Year 8',8,'Technology','Teacher',11,11,'2025TT','8SFOOD|8S||||Teacher|F|11|11||||2|0||');
+INSERT INTO "classes" VALUES('VEFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','Teacher',24,24,'2025TT','VEFOOD|JVE||||Teacher|F|24|24||||2|0||');
+INSERT INTO "classes" VALUES('SRFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','Teacher',19,19,'2025TT','SRFOOD|JSR||||Teacher|F|19|19||||2|0||');
+INSERT INTO "classes" VALUES('SDFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','Teacher',19,19,'2025TT','SDFOOD|JSD||||Teacher|F|19|19||||2|0||');
+INSERT INTO "classes" VALUES('7SFOOD',NULL,'0','F','Food and Nutrition','Year 1',1,'Technology','Teacher',13,13,'2025TT','7SFOOD|7S||||Teacher|F|13|13||||2|0||');
+INSERT INTO "classes" VALUES('WHANAU',NULL,'0','F','Life Skills/Personal Development','Year 1',1,'English and Languages','Teacher',13,13,'2025TT','WHANAU|11WHAU||||Teacher|F|13|13||||2|0||');
+INSERT INTO "classes" VALUES('MEET',NULL,'0','F','MEET','0',0,'MEET','Teacher',13,13,'2025TT','MEET|11WHAU||||Teacher|F|13|13||||2|0||');
 INSERT INTO "classes" VALUES('PIFOOD',NULL,'0','F','Food and Nutrition','Junior School',7,'Technology','HM',21,21,'2025TT','PIFOOD|JPI||||HM|F|21|21||||2|0||');
 INSERT INTO "classes" VALUES('200HOSP',4,'1','F','Hospitality','NCEA Level 2',12,'Technology','MK',18,18,'2025TT','200HOSP||4|1|0|MK|F|18|18||||1|0||');
 INSERT INTO "classes" VALUES('100HOSP',2,'1','F','Hospitality','NCEA Level 1',11,'Technology','MK',20,38,'2025TT','100HOSP||2|1|0|MK|F|20|38||||1|0||');
@@ -290,7 +290,7 @@ INSERT INTO "classes" VALUES('7SWOOD',NULL,'0','GR','Y7 Wood Technology SM','Yea
 INSERT INTO "classes" VALUES('WHANAU',NULL,'0','GR','Life Skills/Personal Development','Year 1',1,'English and Languages','MR',13,13,'2025TT','WHANAU|8WPAPA||||MR|GR|13|13||||2|0||');
 INSERT INTO "classes" VALUES('MEET',NULL,'0','GR','MEET','0',0,'MEET','MR',13,13,'2025TT','MEET|8WPAPA||||MR|GR|13|13||||2|0||');
 INSERT INTO "classes" VALUES('10ENGHE',0,'0','GR','10ENGHE','Year 10',10,'ENGHE','TJ',2,2,'2025TT','10ENGHE|||||TJ|GR|2|2|23053;23005|||3|0');
-INSERT INTO "classes" VALUES('100DVC',1,'1','GR','Design & Visual Communication','NCEA Level 1',11,'Technology','VP',5,5,'2025TT','100DVC||1|1|0|VP|GR|5|5||||1|1||');
+INSERT INTO "classes" VALUES('100DVC',1,'1','GR','Design & Visual Communication','NCEA Level 1',11,'Technology','Admin',5,5,'2025TT','100DVC||1|1|0|Admin|GR|5|5||||1|1||');
 INSERT INTO "classes" VALUES('WHANAU',NULL,'0','Green','Life Skills/Personal Development','Year 1',1,'English and Languages','LR',7,7,'2025TT','WHANAU|12LR||||LR|GREEN|7|7||||2|0||');
 INSERT INTO "classes" VALUES('MEET',NULL,'0','Green','MEET','0',0,'MEET','LR',7,7,'2025TT','MEET|12LR||||LR|GREEN|7|7||||2|0||');
 INSERT INTO "classes" VALUES('GATEWAY',3,'1','GW','Transition/Pre-Employment','NCEA Level 2',12,'GATEWAY','KV',2,22,'2025TT','Gateway||3|1|0|KV|GW|2|22||||1|0||');
@@ -336,7 +336,7 @@ INSERT INTO "classes" VALUES('WHANAU',NULL,'0','PAV','Life Skills/Personal Devel
 INSERT INTO "classes" VALUES('MEET',NULL,'0','PAV','MEET','0',0,'MEET','BT',13,13,'2025TT','MEET|7WWAI||||BT|PAV|13|13||||2|0||');
 INSERT INTO "classes" VALUES('RDA',0,'0','RDA','RDA','0',0,'RDA','CV',6,6,'2025TT','RDA|||||CV|RDA|6|6|24025;25030;24029;23096;19066;22019|||3|0');
 INSERT INTO "classes" VALUES('RDAVolunte',0,'0','RDA','RDAVolunte','0',0,'RDAVolunte','GH',1,1,'2025TT','RDAVolunte|||||GH|RDA|1|1|24119|||3|0');
-INSERT INTO "classes" VALUES('MITEXT',NULL,'0','TT','Textiles Technology','Junior School',8,'Technology','DK',20,20,'2025TT','MITEXT|JMI||||DK|TT|20|20||||2|0||');
+INSERT INTO "classes" VALUES('MITEXT',NULL,'0','TT','Textiles Technology','Junior School',8,'Technology','Teacher',20,20,'2025TT','MITEXT|JMI||||Teacher|TT|20|20||||2|0||');
 INSERT INTO "classes" VALUES('7STEXT',NULL,'0','TT','Textiles/Clothing','Year 7',7,'Technology','HM',13,13,'2025TT','7STEXT|7S||||HM|TT|13|13||||2|0||');
 INSERT INTO "classes" VALUES('SDDRAMA',NULL,'0','TT','Drama','Junior School',8,'Arts','JA',19,19,'2025TT','SDDRAMA|JSD||||JA|TT|19|19||||2|0||');
 INSERT INTO "classes" VALUES('TANURS3',9,'1','TT','Nursery Year 3','NCEA Level 3',13,'Trades Academy','RS',1,1,'2025TT','TANurs3||9|1|0|RS|TT|1|1||||1|0||');
@@ -468,7 +468,7 @@ INSERT INTO "classes" VALUES('NETNZDVC',1,'1','0','NETNZDVC','0',0,'NETNZDVC','J
 INSERT INTO "classes" VALUES('STUDY',1,'1','0','STUDY','0',0,'STUDY','JT',2,25,'2025TT','STUDY||1|1|0|JT||2|25||||1|0||');
 INSERT INTO "classes" VALUES('MackDL',NULL,'0','0','MackDL','0',0,'MackDL','KV',0,0,'2025TT','MackDL|KV||||KV||0|0||||2|0||');
 INSERT INTO "classes" VALUES('REVI',0,'0','0','REVI','0',0,'REVI','Michael',2,2,'2025TT','REVI|||||Michael||2|2|20061;20061|||3|0');
-INSERT INTO "classes" VALUES('GATESDT',0,'0','0','GATESDT','0',0,'GATESDT','VP',4,4,'2025TT','GATESDT|||||VP||4|4|20024;20039;20080;23112|||3|0');
+INSERT INTO "classes" VALUES('GATESDT',0,'0','0','GATESDT','0',0,'GATESDT','Admin',4,4,'2025TT','GATESDT|||||Admin||4|4|20024;20039;20080;23112|||3|0');
 INSERT INTO "classes" VALUES('MMUSIC',NULL,'1','0','Music','Middle School',10,'Arts','0',0,23,'2025TT','MMUSIC||81|1|2|||0|23||||1|0||');
 INSERT INTO "classes" VALUES('MMUSIC',NULL,'1','0','Music','Middle School',10,'Arts','0',0,23,'2025TT','MMUSIC||81|1|1|||0|23||||1|0||');
 CREATE TABLE ingredient_inventory (
@@ -620,31 +620,55 @@ oC or gas mark 5.
 5. Arrange the apple slices in the oven -proof dish, and then add the sultanas.
 6. Sprinkle the crumble topping over the apple slices.
 7. Bake for 25 -30 minutes, until the apple is soft and the crumble is golden.',NULL,'["Weighing scales", "sieve", "mixing bowl", "wooden spoon", "chopping board", "knife", "ovenproof dish", "baking tray.."]',NULL,NULL,NULL,NULL);
-INSERT INTO "recipes" VALUES(21,'OnePan Steak Caprese with Basil and Blistered Cherry Tomatoes','[{"quantity": "2", "unit": "no.", "ingredient": "Quality Mark beef eye fillet (about 170g each)"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "olive oil, divided"}, {"quantity": "2", "unit": "tsp", "ingredient": "salt, divided"}, {"quantity": "1", "unit": "tsp", "ingredient": "black pepper, divided, \u00bd tsp garlic powder"}, {"quantity": "2", "unit": "cups", "ingredient": "cherry tomatoes i ((different colours if you can get them))"}, {"quantity": "4", "unit": "no.", "ingredient": "garlic cloves, crushed"}, {"quantity": "200", "unit": "g", "ingredient": "mozzarella cheese (sliced), \u00bc cup fresh basil leaves, cracked pepper, glaze of balsamic vinegar (for garnish)"}]','Method1Remove steaks from the fridge and pat with paper towels to remove excess moisture. Leave to come up to room temperature.2Toss the tomatoes with olive oil, garlic, salt, and pepper.3Preheat your 26cm skillet (or dual handled pan) over medium-high heat, about 5 minutes.4Season steaks on all sides with salt, pepper, and garlic powder. Bring your oven rack to the highest level and set the grill to high.5Add 1 tablespoon olive oil to the skillet and sear the steaks for 4 minutes per side.  Depending on the thickness of your fillet, you may need to sear the sides as well.6Remove steaks and set aside to rest.7Reduce heat to medium, add tomatoes and cook undisturbed for 2-3 minutes. Stir the tomatoes and cook for 2 additional minutes. Remove from heat.8Slice filets into 1cm strips.9Layer the beef strips with mozzarella slices on top of the tomatoes and set the skillet in the oven.10Grill for 1-2 minutes or more, depending on desired doneness.11Remove the pan from the oven and sprinkle with salt and cracked pepper.12Top with basil and drizzle with balsamic glaze.
-Method1Remove steaks from the fridge and pat with paper towels to remove excess moisture. Leave to come up to room temperature.2Toss the tomatoes with olive oil, garlic, salt, and pepper.3Preheat your 26cm skillet (or dual handled pan) over medium-high heat, about 5 minutes.4Season steaks on all sides with salt, pepper, and garlic powder. Bring your oven rack to the highest level and set the grill to high.5Add 1 tablespoon olive oil to the skillet and sear the steaks for 4 minutes per side.  Depending on the thickness of your fillet, you may need to sear the sides as well.6Remove steaks and set aside to rest.7Reduce heat to medium, add tomatoes and cook undisturbed for 2-3 minutes. Stir the tomatoes and cook for 2 additional minutes. Remove from heat.8Slice filets into 1cm strips.9Layer the beef strips with mozzarella slices on top of the tomatoes and set the skillet in the oven.10Grill for 1-2 minutes or more, depending on desired doneness.11Remove the pan from the oven and sprinkle with salt and cracked pepper.12Top with basil and drizzle with balsamic glaze.
-1Remove steaks from the fridge and pat with paper towels to remove excess moisture. Leave to come up to room temperature.2Toss the tomatoes with olive oil, garlic, salt, and pepper.3Preheat your 26cm skillet (or dual handled pan) over medium-high heat, about 5 minutes.4Season steaks on all sides with salt, pepper, and garlic powder. Bring your oven rack to the highest level and set the grill to high.5Add 1 tablespoon olive oil to the skillet and sear the steaks for 4 minutes per side.  Depending on the thickness of your fillet, you may need to sear the sides as well.6Remove steaks and set aside to rest.7Reduce heat to medium, add tomatoes and cook undisturbed for 2-3 minutes. Stir the tomatoes and cook for 2 additional minutes. Remove from heat.8Slice filets into 1cm strips.9Layer the beef strips with mozzarella slices on top of the tomatoes and set the skillet in the oven.10Grill for 1-2 minutes or more, depending on desired doneness.11Remove the pan from the oven and sprinkle with salt and cracked pepper.12Top with basil and drizzle with balsamic glaze.
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
+INSERT INTO "recipes" VALUES(21,'OnePan Steak Caprese with Basil and Blistered Cherry Tomatoes','[{"quantity": "2", "unit": "no.", "ingredient": "Quality Mark beef eye fillet (about 170g each)"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "olive oil, divided"}, {"quantity": "2", "unit": "tsp", "ingredient": "salt, divided"}, {"quantity": "1", "unit": "tsp", "ingredient": "black pepper, divided, \u00bd tsp garlic powder"}, {"quantity": "2", "unit": "cups", "ingredient": "cherry tomatoes i ((different colours if you can get them))"}, {"quantity": "4", "unit": "no.", "ingredient": "garlic cloves, crushed"}, {"quantity": "200", "unit": "g", "ingredient": "mozzarella cheese (sliced), \u00bc cup fresh basil leaves, cracked pepper, glaze of balsamic vinegar (for garnish)"}]','Method1Remove steaks from the fridge and pat with paper towels to remove excess moisture. Leave to come up to room temperature.2Toss the tomatoes with olive oil, garlic, salt, and pepper.3Preheat your 26cm skillet (or dual handled pan) over medium-high heat, about 5 minutes.4Season steaks on all sides with salt, pepper, and garlic powder. Bring your oven rack to the highest level and set the grill to high.5Add 1 tablespoon olive oil to the skillet and sear the steaks for 4 minutes per side.  Depending on the thickness of your fillet, you may need to sear the sides as well.6Remove steaks and set aside to rest.7Reduce heat to medium, add tomatoes and cook undisturbed for 2-3 minutes. Stir the tomatoes and cook for 2 additional minutes. Remove from heat.8Slice filets into 1cm strips.9Layer the beef strips with mozzarella slices on top of the tomatoes and set the skillet in the oven.10Grill for 1-2 minutes or more, depending on desired doneness.11Remove the pan from the oven and sprinkle with salt and cracked pepper.12Top with basil and drizzle with balsamic glaze.
+
+Method1Remove steaks from the fridge and pat with paper towels to remove excess moisture. Leave to come up to room temperature.2Toss the tomatoes with olive oil, garlic, salt, and pepper.3Preheat your 26cm skillet (or dual handled pan) over medium-high heat, about 5 minutes.4Season steaks on all sides with salt, pepper, and garlic powder. Bring your oven rack to the highest level and set the grill to high.5Add 1 tablespoon olive oil to the skillet and sear the steaks for 4 minutes per side.  Depending on the thickness of your fillet, you may need to sear the sides as well.6Remove steaks and set aside to rest.7Reduce heat to medium, add tomatoes and cook undisturbed for 2-3 minutes. Stir the tomatoes and cook for 2 additional minutes. Remove from heat.8Slice filets into 1cm strips.9Layer the beef strips with mozzarella slices on top of the tomatoes and set the skillet in the oven.10Grill for 1-2 minutes or more, depending on desired doneness.11Remove the pan from the oven and sprinkle with salt and cracked pepper.12Top with basil and drizzle with balsamic glaze.
+
+1Remove steaks from the fridge and pat with paper towels to remove excess moisture. Leave to come up to room temperature.2Toss the tomatoes with olive oil, garlic, salt, and pepper.3Preheat your 26cm skillet (or dual handled pan) over medium-high heat, about 5 minutes.4Season steaks on all sides with salt, pepper, and garlic powder. Bring your oven rack to the highest level and set the grill to high.5Add 1 tablespoon olive oil to the skillet and sear the steaks for 4 minutes per side.  Depending on the thickness of your fillet, you may need to sear the sides as well.6Remove steaks and set aside to rest.7Reduce heat to medium, add tomatoes and cook undisturbed for 2-3 minutes. Stir the tomatoes and cook for 2 additional minutes. Remove from heat.8Slice filets into 1cm strips.9Layer the beef strips with mozzarella slices on top of the tomatoes and set the skillet in the oven.10Grill for 1-2 minutes or more, depending on desired doneness.11Remove the pan from the oven and sprinkle with salt and cracked pepper.12Top with basil and drizzle with balsamic glaze.
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
 12',4,'[]',NULL,NULL,NULL,NULL);
-INSERT INTO "recipes" VALUES(22,'Hot honey nuggets with brisket','[{"quantity": "500", "unit": "g", "ingredient": "Quality Mark beef steaks i (brisket, sirloin or chuck - cut into 2cm cubes)"}, {"quantity": "0.5", "unit": "tsp", "ingredient": "baking soda"}, {"quantity": "1", "unit": "Tbsp", "ingredient": "water"}, {"quantity": "1", "unit": "tsp", "ingredient": "apple cider vinegar"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "liquid honey"}, {"quantity": "1", "unit": "Tbsp", "ingredient": "soy sauce"}, {"quantity": "1", "unit": "to taste", "ingredient": "salt and pepper"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "cornflour i"}, {"quantity": "1", "unit": "to taste", "ingredient": "olive oil"}, {"quantity": "0.5", "unit": "cup", "ingredient": "liquid honey"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "cider vinegar"}, {"quantity": "1", "unit": "tsp", "ingredient": "garlic powder"}, {"quantity": "0.5", "unit": "tsp", "ingredient": "smoked paprika"}, {"quantity": "1", "unit": "tsp", "ingredient": "(\u00bd-1 range) chilli flakes i"}, {"quantity": "1", "unit": "pinch", "ingredient": "of salt"}]','Method1In a bowl, toss beef cubes with baking soda, water, vinegar, honey, soy sauce, salt and pepper.2Let it sit for 10 minutes to tenderise and get sticky.3Coat the marinated beef lightly in cornflour or rice flour — this helps form that crispy crust.4Heat a frying pan or air fryer to 200°C. Cook beef nuggets in a single layer until golden and caramelised, about 8–10 minutes, turning halfway.5While the beef cooks, make the hot honey: in a small saucepan, combine honey, cider vinegar, garlic powder, paprika, chilli flakes and salt.6Warm for 2–3 minutes until glossy and fragrant.7Drizzle the hot honey over the nuggets or toss them to coat.8Serve hot with kumara wedges and crunchy coleslaw.
-Method1In a bowl, toss beef cubes with baking soda, water, vinegar, honey, soy sauce, salt and pepper.2Let it sit for 10 minutes to tenderise and get sticky.3Coat the marinated beef lightly in cornflour or rice flour — this helps form that crispy crust.4Heat a frying pan or air fryer to 200°C. Cook beef nuggets in a single layer until golden and caramelised, about 8–10 minutes, turning halfway.5While the beef cooks, make the hot honey: in a small saucepan, combine honey, cider vinegar, garlic powder, paprika, chilli flakes and salt.6Warm for 2–3 minutes until glossy and fragrant.7Drizzle the hot honey over the nuggets or toss them to coat.8Serve hot with kumara wedges and crunchy coleslaw.
-1In a bowl, toss beef cubes with baking soda, water, vinegar, honey, soy sauce, salt and pepper.2Let it sit for 10 minutes to tenderise and get sticky.3Coat the marinated beef lightly in cornflour or rice flour — this helps form that crispy crust.4Heat a frying pan or air fryer to 200°C. Cook beef nuggets in a single layer until golden and caramelised, about 8–10 minutes, turning halfway.5While the beef cooks, make the hot honey: in a small saucepan, combine honey, cider vinegar, garlic powder, paprika, chilli flakes and salt.6Warm for 2–3 minutes until glossy and fragrant.7Drizzle the hot honey over the nuggets or toss them to coat.8Serve hot with kumara wedges and crunchy coleslaw.
-1
-2
-3
-4
-5
-6
-7
+INSERT INTO "recipes" VALUES(22,'Hot honey nuggets with brisket','[{"quantity": "500", "unit": "g", "ingredient": "Quality Mark beef steaks i (brisket, sirloin or chuck - cut into 2cm cubes)"}, {"quantity": "0.5", "unit": "tsp", "ingredient": "baking soda"}, {"quantity": "1", "unit": "Tbsp", "ingredient": "water"}, {"quantity": "1", "unit": "tsp", "ingredient": "apple cider vinegar"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "liquid honey"}, {"quantity": "1", "unit": "Tbsp", "ingredient": "soy sauce"}, {"quantity": "1", "unit": "to taste", "ingredient": "salt and pepper"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "cornflour i"}, {"quantity": "1", "unit": "to taste", "ingredient": "olive oil"}, {"quantity": "0.5", "unit": "cup", "ingredient": "liquid honey"}, {"quantity": "2", "unit": "Tbsp", "ingredient": "cider vinegar"}, {"quantity": "1", "unit": "tsp", "ingredient": "garlic powder"}, {"quantity": "0.5", "unit": "tsp", "ingredient": "smoked paprika"}, {"quantity": "1", "unit": "tsp", "ingredient": "(\u00bd-1 range) chilli flakes i"}, {"quantity": "1", "unit": "pinch", "ingredient": "of salt"}]','Method1In a bowl, toss beef cubes with baking soda, water, vinegar, honey, soy sauce, salt and pepper.2Let it sit for 10 minutes to tenderise and get sticky.3Coat the marinated beef lightly in cornflour or rice flour — this helps form that crispy crust.4Heat a frying pan or air fryer to 200°C. Cook beef nuggets in a single layer until golden and caramelised, about 8–10 minutes, turning halfway.5While the beef cooks, make the hot honey: in a small saucepan, combine honey, cider vinegar, garlic powder, paprika, chilli flakes and salt.6Warm for 2–3 minutes until glossy and fragrant.7Drizzle the hot honey over the nuggets or toss them to coat.8Serve hot with kumara wedges and crunchy coleslaw.
+
+Method1In a bowl, toss beef cubes with baking soda, water, vinegar, honey, soy sauce, salt and pepper.2Let it sit for 10 minutes to tenderise and get sticky.3Coat the marinated beef lightly in cornflour or rice flour — this helps form that crispy crust.4Heat a frying pan or air fryer to 200°C. Cook beef nuggets in a single layer until golden and caramelised, about 8–10 minutes, turning halfway.5While the beef cooks, make the hot honey: in a small saucepan, combine honey, cider vinegar, garlic powder, paprika, chilli flakes and salt.6Warm for 2–3 minutes until glossy and fragrant.7Drizzle the hot honey over the nuggets or toss them to coat.8Serve hot with kumara wedges and crunchy coleslaw.
+
+1In a bowl, toss beef cubes with baking soda, water, vinegar, honey, soy sauce, salt and pepper.2Let it sit for 10 minutes to tenderise and get sticky.3Coat the marinated beef lightly in cornflour or rice flour — this helps form that crispy crust.4Heat a frying pan or air fryer to 200°C. Cook beef nuggets in a single layer until golden and caramelised, about 8–10 minutes, turning halfway.5While the beef cooks, make the hot honey: in a small saucepan, combine honey, cider vinegar, garlic powder, paprika, chilli flakes and salt.6Warm for 2–3 minutes until glossy and fragrant.7Drizzle the hot honey over the nuggets or toss them to coat.8Serve hot with kumara wedges and crunchy coleslaw.
+Admin
+1Admin
+Admin
+2Admin
+Admin
+3Admin
+
+4
+
+5
+
+6
+
+7
+
 8',4,'[]',NULL,NULL,NULL,NULL);
 INSERT INTO "recipes" VALUES(23,'Lamb Salad','[{"quantity": 100.0, "unit": "g", "ingredient": "Quality Mark lamb mince"}, {"quantity": 0.25, "unit": "Tbsp", "ingredient": "olive oil"}, {"quantity": 0.25, "unit": "tsp", "ingredient": "ground cumin"}, {"quantity": 0.25, "unit": "tsp", "ingredient": "smoked paprika"}, {"quantity": 0.25, "unit": "tsp", "ingredient": "honey, pepper, to taste"}, {"quantity": 0.5, "unit": "whole", "ingredient": "telegraph cucumbers, cut into chunks"}, {"quantity": 62.5, "unit": "g", "ingredient": "cherry tomatoes, halved, \u00bd red onion, finely sliced, \u00bd cup fresh herbs, chopped, \u00bd cup olives, pitted and roughly chopped"}, {"quantity": 37.5, "unit": "g", "ingredient": "feta cheese, \u00bd cup Greek style yoghurt"}, {"quantity": 0.25, "unit": "Tbsp", "ingredient": "lemon juice"}, {"quantity": 0.25, "unit": "Tbsp", "ingredient": "olive oil, Hot honey"}, {"quantity": 1.0, "unit": "whole", "ingredient": "pita pockets, cut into triangles"}]','Mix ingredients and serve.',1,NULL,NULL,NULL,NULL,NULL);
 INSERT INTO "recipes" VALUES(24,'Perfect Pavlova','[{"quantity": "6", "unit": "item", "ingredient": "egg whites (at room temperature)"}, {"quantity": "2", "unit": "cups", "ingredient": "Chelsea Caster Sugar (450g)"}, {"quantity": "1", "unit": "tsp", "ingredient": "vanilla essence"}, {"quantity": "1", "unit": "tsp", "ingredient": "white vinegar"}, {"quantity": "2", "unit": "tsp", "ingredient": "Edmonds Fielder''s Cornflour"}, {"quantity": "300", "unit": "ml", "ingredient": "Meadow Fresh Original Cream, whipped"}, {"quantity": "1", "unit": "to taste", "ingredient": "Fruit, to decorate"}]','Preheat oven to 110ÂºC bake (not fan bake). Line a baking tray with baking paper. In a large metal, ceramic or glass bowl (not plastic), beat the egg whites until soft peaks form. Continue beating while adding theÂ Chelsea Caster Sugar a quarter of a cup at a time. The mixture should get glossier and thicker with each addition and this should take at least 10 minutes. Beat in the vanilla, vinegar and Edmonds Fielder''s Cornflour. Spoon mixture out onto the prepared tray into a dinner plate sized mound. Bake for approximately 1 1/2 hours, until dry and crisp and it lifts easily off the baking paper. Turn the oven off and leave the pavlova for at least an hour before removing from the oven. Finish cooling on a wire rack, then transfer to an airtight container. When ready to serve, place on a serving plate, swirl the top with the whippedÂ Meadow Fresh Original Cream and decorate with sliced or chopped fruit of your choice.',12,'[]',NULL,NULL,NULL,NULL);
@@ -660,17 +684,17 @@ INSERT INTO "role_permissions" VALUES(3,'VP','class_ingredients');
 INSERT INTO "role_permissions" VALUES(4,'VP','booking');
 INSERT INTO "role_permissions" VALUES(5,'VP','shoplist');
 INSERT INTO "role_permissions" VALUES(6,'VP','admin');
-INSERT INTO "role_permissions" VALUES(7,'DK','recipes');
-INSERT INTO "role_permissions" VALUES(8,'DK','recbk');
-INSERT INTO "role_permissions" VALUES(9,'DK','class_ingredients');
-INSERT INTO "role_permissions" VALUES(10,'DK','booking');
-INSERT INTO "role_permissions" VALUES(11,'DK','shoplist');
+INSERT INTO "role_permissions" VALUES(7,'Teacher','recipes');
+INSERT INTO "role_permissions" VALUES(8,'Teacher','recbk');
+INSERT INTO "role_permissions" VALUES(9,'Teacher','class_ingredients');
+INSERT INTO "role_permissions" VALUES(10,'Teacher','booking');
+INSERT INTO "role_permissions" VALUES(11,'Teacher','shoplist');
 INSERT INTO "role_permissions" VALUES(12,'MU','recipes');
 INSERT INTO "role_permissions" VALUES(13,'MU','recbk');
 INSERT INTO "role_permissions" VALUES(14,'MU','booking');
 INSERT INTO "role_permissions" VALUES(15,'MU','shoplist');
 INSERT INTO "role_permissions" VALUES(16,'public','recbk');
-INSERT INTO "role_permissions" VALUES(17,'DK','admin');
+INSERT INTO "role_permissions" VALUES(17,'Teacher','admin');
 INSERT INTO "role_permissions" VALUES(18,'public','recipes');
 INSERT INTO "role_permissions" VALUES(19,'public','class_ingredients');
 INSERT INTO "role_permissions" VALUES(20,'MU','class_ingredients');
@@ -722,11 +746,11 @@ INSERT INTO "teachers" VALUES(13,'Col','Colman','Cassandra','Ms','CassandraColma
 INSERT INTO "teachers" VALUES(14,'CB','Conn','Belinda','','belindaconn@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(15,'JC','Cook','Justin','Mr','JustinCook@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(16,'JD','Dalgarno','John','Mr','johndalgarno@westlandhigh.school.nz');
-INSERT INTO "teachers" VALUES(17,'Dk','Diplock','Maryke','Mrs','marykediplock@westlandhigh.school.nz');
+INSERT INTO "teachers" VALUES(17,'Teacher','Diplock','Maryke','Mrs','marykediplock@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(18,'SD','Dutt','Shalendra','Mr','ShalendraDutt@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(19,'AE','Evasco','Arleen','Ms','arleenevasco@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(20,'Gr','Greig','Annemarie','Mrs','annemariegreig@westlandhigh.school.nz');
-INSERT INTO "teachers" VALUES(21,'Hj','Harrison','Janice','Mrs','janiceharrison@westlandhigh.school.nz');
+INSERT INTO "teachers" VALUES(21,'Admin','Harrison','Janice','Mrs','janiceharrison@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(22,'MI','Hetherington','Michelle','Mrs','michellehetherington@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(23,'SH','Hilson','Sonica','Mrs','sonicahilson@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(24,'HE','Hulme','Monica','Ms','monicahulme@westlandhigh.school.nz');
@@ -762,7 +786,7 @@ INSERT INTO "teachers" VALUES(53,'RY','Ryan','Rebecca','Ms','beckryan@westlandhi
 INSERT INTO "teachers" VALUES(54,'SR','Sadler','Janice','Ms','janicesadler@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(55,'GS','Smith','Gus','Mr','GusSmith@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(56,'TB','Talbot','Mike','Mr','miketalbot@westlandhigh.school.nz');
-INSERT INTO "teachers" VALUES(57,'LT','Tame','Linda','Ms','LindaTame@westlandhigh.school.nz');
+INSERT INTO "teachers" VALUES(57,'LT','Tame','Linda','Ms','LindaTame@westlAdmindhigh.school.nz');
 INSERT INTO "teachers" VALUES(58,'BT','Tapper','Ben','M','bentapper@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(59,'Tm','Thompson','Steve','Mr','stevethompson@westlandhigh.school.nz');
 INSERT INTO "teachers" VALUES(60,'MTN','Thomson','Mike','Mr','mikethomson@westlandhigh.school.nz');
@@ -784,8 +808,8 @@ CREATE TABLE user_roles (
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(email, role)
         );
-INSERT INTO "user_roles" VALUES(1,'janetwebster@westlandhigh.school.nz','DK','2025-12-16 10:27:52');
-INSERT INTO "user_roles" VALUES(2,'adriennereeves@westlandhigh.school.nz','DK','2025-12-17 21:54:17');
+INSERT INTO "user_roles" VALUES(1,'janetwebster@westlandhigh.school.nz','Teacher','2025-12-16 10:27:52');
+INSERT INTO "user_roles" VALUES(2,'adriennereeves@westlandhigh.school.nz','Teacher','2025-12-17 21:54:17');
 INSERT INTO "user_roles" VALUES(3,'marykediplock@westlandhigh.school.nz','VP','2025-12-19 02:00:52');
 DELETE FROM "sqlite_sequence";
 INSERT INTO "sqlite_sequence" VALUES('teachers',73);

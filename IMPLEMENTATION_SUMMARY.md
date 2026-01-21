@@ -9,7 +9,7 @@ The Food Room Inventory system now has full Google OAuth 2.0 authentication with
 ### 🔐 Authentication System
 - **Google OAuth 2.0**: Industry-standard secure login
 - **Flask-Login Integration**: Session management and user persistence  
-- **Role-Based Access Control**: Four permission levels (VP, DK, MU, Public)
+- **Role-Based Access Control**: Four permission levels (Admin, Teacher, MU, Public)
 - **Email-Based Staff Lookup**: Automatic role assignment from staff database
 
 ### 🛡️ Security Features Implemented
@@ -25,13 +25,13 @@ The Food Room Inventory system now has full Google OAuth 2.0 authentication with
 - Modern login page with Google sign-in button
 - User profile display in navigation (name + role badge)
 - Login/logout links on all pages
-- Color-coded role badges (VP=Red, DK=Green, MU=Blue, Public=Gray)
+- Color-coded role badges (Admin=Red, Teacher=Green, MU=Blue, Public=Gray)
 - Responsive design for mobile and desktop
 
 ### 📊 Role-Based Access Control
 ```
-VP (Vice Principal)          → Full access to all features
-DK (Teachers)                → Recipes, Booking, Shopping, Classes
+Admin (Vice Principal)          → Full access to all features
+Teacher (Teachers)                → Recipes, Booking, Shopping, Classes
 MU (Booking Staff)           → Booking Calendar & Shopping Lists
 Public/Unauthenticated       → Recipe Book view only
 ```
@@ -109,8 +109,8 @@ FLASK_SECRET_KEY=your-secure-key
 ### 3. **Upload Staff Data** (2 minutes)
 ```csv
 Code,Last Name,First Name,Email
-VP,Principal,Sarah,sprincipal@school.edu
-DK,Teacher,John,jsmith@school.edu
+Admin,Principal,Sarah,sprincipal@school.edu
+Teacher,Teacher,John,jsmith@school.edu
 MU,BookingStaff,Mary,mjones@school.edu
 ```
 Upload via Admin panel at `/admin`
@@ -143,7 +143,7 @@ python app.py
 
 ## 🔒 Protected Routes
 
-### Admin Only (VP)
+### Admin Only (Admin)
 ```
 /admin                          → Admin panel
 /upload                         → Recipe upload
@@ -152,7 +152,7 @@ python app.py
 /admin/recipe/<id>/edit        → Recipe editing
 ```
 
-### Staff & Up (VP, DK, MU)
+### Staff & Up (Admin, Teacher, MU)
 ```
 /recipes                        → Recipe search
 /recipe/<id>                   → Recipe details
@@ -160,7 +160,7 @@ python app.py
 /shoplist                      → Shopping list
 ```
 
-### Teachers & Up (VP, DK)
+### Teachers & Up (Admin, Teacher)
 ```
 /class_ingredients             → Class ingredients
 /class_ingredients/download    → Download functionality
@@ -192,13 +192,13 @@ python app.py
 - Can view Recipe Book
 - All other pages show login requirement
 
-### Test Case 2: VP (Admin) Login
-- Login with VP staff code
+### Test Case 2: Admin (Admin) Login
+- Login with Admin staff code
 - Can access all pages including `/admin`
 - See admin options in sidebar
 
-### Test Case 3: DK (Teacher) Login
-- Login with DK staff code
+### Test Case 3: Teacher (Teacher) Login
+- Login with Teacher staff code
 - Can access recipes, booking, shopping list
 - Cannot access admin
 
@@ -219,7 +219,7 @@ python app.py
 | "Google OAuth not configured" | Add GOOGLE_CLIENT_ID/SECRET to .env, restart app |
 | "Invalid redirect URI" | Match GOOGLE_REDIRECT_URI exactly in both Google Console and .env |
 | "OAuth state mismatch" | Clear browser cookies, use same browser session |
-| "Login succeeds but cannot access protected pages" | Add user email to staff CSV, ensure staff code is VP/DK/MU |
+| "Login succeeds but cannot access protected pages" | Add user email to staff CSV, ensure staff code is Admin/Teacher/MU |
 | "Recipe Book showing blank" | Ensure `/recbk` route doesn't require login (it doesn't) |
 
 ## 📈 Performance Impact
@@ -250,7 +250,7 @@ python app.py
 
 ### For Development
 1. Follow QUICK_SETUP.md to get credentials
-2. Test with each role (VP, DK, MU)
+2. Test with each role (Admin, Teacher, MU)
 3. Verify access controls work
 4. Check all templates render correctly
 

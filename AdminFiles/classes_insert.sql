@@ -2,7 +2,7 @@
 -- Paste these into your SQL editor to restore the classes data
 
 INSERT INTO classes (ClassCode, LineNo, Misc1, RoomNo, CourseName, Misc2, Year, Dept, StaffCode, ClassSize, TotalSize, TimetableYear, Misc3) VALUES
-('100COMP',0,'0','0','Computer Studies','NCEA Level 1',11,'Technology','VP',0,0,'2025TT','100COMP|VP||||VP||0|0||||2|0||'),
+('100COMP',0,'0','0','Computer Studies','NCEA Level 1',11,'Technology','Admin',0,0,'2025TT','100COMP|Admin||||Admin||0|0||||2|0||'),
 ('SRREO',0,'0','1','Te Reo','Junior School',7,'Te Reo Māori','BP',19,19,'2025TT','SRREO|JSR||||BP|01|19|19||||2|0||'),
 ('SRLITR',0,'0','1','Literacy','Junior School',8,'English and Languages','SR',19,19,'2025TT','SRLITR|JSR||||SR|01|19|19||||2|0||'),
 ('SRMATH',0,'0','1','Mathematics','Junior School',8,'Mathematics','SR',19,19,'2025TT','SRMATH|JSR||||SR|01|19|19||||2|0||'),

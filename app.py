@@ -659,7 +659,7 @@ def categorize_ingredient(ingredient_name):
 
 
 @app.route('/api/update-recipe-tags/<int:recipe_id>', methods=['POST'])
-@require_role('VP', 'DK')
+@require_role('Admin', 'Teacher')
 def update_recipe_tags(recipe_id):
     """Quick API to update recipe dietary tags, cuisine, and difficulty."""
     data = request.get_json()

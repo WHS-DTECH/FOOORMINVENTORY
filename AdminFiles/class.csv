@@ -1,5 +1,5 @@
 ClassCode,LineNo,Misc1,RoomNo,CourseName,Misc2,Year,Dept,StaffCode,ClassSize,TotalSize,TimetableYear,Misc3
-100COMP,0,0,0,Computer Studies,NCEA Level 1,11,Technology,VP,0,0,2025TT,100COMP|VP||||VP||0|0||||2|0||
+100COMP,0,0,0,Computer Studies,NCEA Level 1,11,Technology,Admin,0,0,2025TT,100COMP|Admin||||Admin||0|0||||2|0||
 SRREO,JSR,0,1,Te Reo,Junior School,7,Te Reo Māori,BP,19,19,2025TT,SRREO|JSR||||BP|01|19|19||||2|0||
 SRLITR,JSR,0,1,Literacy,Junior School,8,English and Languages,SR,19,19,2025TT,SRLITR|JSR||||SR|01|19|19||||2|0||
 SRMATH,JSR,0,1,Mathematics,Junior School,8,Mathematics,SR,19,19,2025TT,SRMATH|JSR||||SR|01|19|19||||2|0||
@@ -31,7 +31,7 @@ SDWRITE,JSD,0,3,Literacy,Year 1,1,English and Languages,SD,19,19,2025TT,SDWRITE|
 WHANAU,7WHAU,0,3,Life Skills/Personal Development,Year 1,1,English and Languages,SD,13,13,2025TT,WHANAU|7WHAU||||SD|03|13|13||||2|0||
 SDHOME,JSD,0,3,SDHOME,0,0,SDHOME,SD,19,19,2025TT,SDHOME|JSD||||SD|03|19|19||||2|0||
 MEET,7WHAU,0,3,MEET,0,0,MEET,SD,13,13,2025TT,MEET|7WHAU||||SD|03|13|13||||2|0||
-SDLITR,JSD,0,3,Literacy,Year 8,8,English and Languages,VP,19,19,2025TT,SDLITR|JSD||||VP|03|19|19||||2|1||
+SDLITR,JSD,0,3,Literacy,Year 8,8,English and Languages,Admin,19,19,2025TT,SDLITR|JSD||||Admin|03|19|19||||2|1||
 MIREO,JMI,0,4,Te Reo Maori,Junior School,7,Te Reo Māori,BP,20,20,2025TT,MIREO|JMI||||BP|04|20|20||||2|0||
 MICONS,JMI,0,4,Conservation,Junior School,7,Science,BT,20,20,2025TT,MICONS|JMI||||BT|04|20|20||||2|0||
 MILITR,JMI,0,4,Literacy,Year 8,8,English and Languages,MM,20,20,2025TT,MILITR|JMI||||MM|04|20|20||||2|0||
@@ -147,28 +147,28 @@ MCONS,82A,1,8a,Conservation,Middle School,10,Social Science,BT,14,31,2025TT,MCON
 200HIST,5,1,8a,History,NCEA Level 2,12,Social Science,CY,7,7,2025TT,200HIST||5|1|0|CY|8a|7|7||||1|0||
 ESOL,0,0,8a,ESOL,0,0,ESOL,CY,6,6,2025TT,ESOL|||||CY|8a|6|6|25094;23091;24067;25092;25091;25093|||3|0
 RightTrack,0,0,BMeet,RightTrack,0,0,RightTrack,KV,4,4,2025TT,RightTrack|||||KV|BMeet|4|4|23043;21029;21050;21009|||3|0
-300COMP,8,1,CW,Computer Studies,NCEA Level 3,13,Technology,VP,0,0,2025TT,300COMP||8|1|0|VP|CW|0|0||||1|0||
-300DTECH,4,1,CW,Digital Technologies,NCEA Level 3,13,Technology,VP,1,5,2025TT,300DTECH||4|1|0|VP|CW|1|5||||1|0||
-300DTECH,1,1,CW,Digital Technologies,NCEA Level 3,13,Technology,VP,4,5,2025TT,300DTECH||1|1|0|VP|CW|4|5||||1|0||
-200COMP,8,1,CW,Computer Studies,NCEA Level 2,12,Technology,VP,0,0,2025TT,200COMP||8|1|0|VP|CW|0|0||||1|0||
-200DTECH,4,1,CW,Digital Technologies,NCEA Level 2,12,Technology,VP,3,11,2025TT,200DTECH||4|1|0|VP|CW|3|11||||1|0||
-200DTECH,1,1,CW,Digital Technologies,NCEA Level 2,12,Technology,VP,8,11,2025TT,200DTECH||1|1|0|VP|CW|8|11||||1|0||
-100DTECHS,9,1,CW,Digital Technologies,NCEA Level 1,11,Technology,VP,1,1,2025TT,100DTECHS||9|1|0|VP|CW|1|1||||1|0||
-100COMP,8,1,CW,Computer Studies,NCEA Level 1,11,Technology,VP,0,1,2025TT,100COMP||8|1|0|VP|CW|0|1||||1|0||
-100DTECH,4,1,CW,Digital Technologies,NCEA Level 1,11,Technology,VP,7,14,2025TT,100DTECH||4|1|0|VP|CW|7|14||||1|0||
-100DTECH,1,1,CW,Digital Technologies,NCEA Level 1,11,Technology,VP,7,14,2025TT,100DTECH||1|1|0|VP|CW|7|14||||1|0||
-MWEB,81D,1,CW,Web Design,Middle School,10,Technology,VP,25,25,2025TT,MWEB||81|1|4|VP|CW|25|25||||1|0||
-MWEB,81C,1,CW,Web Design,Middle School,10,Technology,VP,25,25,2025TT,MWEB||81|1|3|VP|CW|25|25||||1|0||
-MPROG,81B,1,CW,Middle DTECH - Programming,Middle School,10,Technology,VP,24,24,2025TT,MPROG||81|1|2|VP|CW|24|24||||1|0||
-MPROG,81A,1,CW,Middle DTECH - Programming,Middle School,10,Technology,VP,24,24,2025TT,MPROG||81|1|1|VP|CW|24|24||||1|0||
-SRDTECH,JSR,0,CW,Digital Technology,Junior School,8,Technology,VP,19,19,2025TT,SRDTECH|JSR||||VP|CW|19|19||||2|0||
-SDDTECH,JSD,0,CW,Digital Technologies,Junior School,7,Technology,VP,19,19,2025TT,SDDTECH|JSD||||VP|CW|19|19||||2|0||
-PIDTECH,JPI,0,CW,Digital Technologies,Year 7,7,Technology,VP,21,21,2025TT,PIDTECH|JPI||||VP|CW|21|21||||2|0||
-MIDTECH,JMI,0,CW,Digital Technologies,Junior School,7,Technology,VP,20,20,2025TT,MIDTECH|JMI||||VP|CW|20|20||||2|0||
-8SDTECH,8S,0,CW,Digital Technologies,Year 7,7,Technology,VP,11,11,2025TT,8SDTECH|8S||||VP|CW|11|11||||2|0||
-7SDTECH,7S,0,CW,Digtal Technologies,Year 7,7,Technology,VP,13,13,2025TT,7SDTECH|7S||||VP|CW|13|13||||2|0||
-WHANAU,8WHAU,0,CW,Life Skills/Personal Development,Year 1,1,English and Languages,VP,14,14,2025TT,WHANAU|8WHAU||||VP|CW|14|14||||2|0||
-MEET,8WHAU,0,CW,MEET,0,0,MEET,VP,14,14,2025TT,MEET|8WHAU||||VP|CW|14|14||||2|0||
+300COMP,8,1,CW,Computer Studies,NCEA Level 3,13,Technology,Admin,0,0,2025TT,300COMP||8|1|0|Admin|CW|0|0||||1|0||
+300DTECH,4,1,CW,Digital Technologies,NCEA Level 3,13,Technology,Admin,1,5,2025TT,300DTECH||4|1|0|Admin|CW|1|5||||1|0||
+300DTECH,1,1,CW,Digital Technologies,NCEA Level 3,13,Technology,Admin,4,5,2025TT,300DTECH||1|1|0|Admin|CW|4|5||||1|0||
+200COMP,8,1,CW,Computer Studies,NCEA Level 2,12,Technology,Admin,0,0,2025TT,200COMP||8|1|0|Admin|CW|0|0||||1|0||
+200DTECH,4,1,CW,Digital Technologies,NCEA Level 2,12,Technology,Admin,3,11,2025TT,200DTECH||4|1|0|Admin|CW|3|11||||1|0||
+200DTECH,1,1,CW,Digital Technologies,NCEA Level 2,12,Technology,Admin,8,11,2025TT,200DTECH||1|1|0|Admin|CW|8|11||||1|0||
+100DTECHS,9,1,CW,Digital Technologies,NCEA Level 1,11,Technology,Admin,1,1,2025TT,100DTECHS||9|1|0|Admin|CW|1|1||||1|0||
+100COMP,8,1,CW,Computer Studies,NCEA Level 1,11,Technology,Admin,0,1,2025TT,100COMP||8|1|0|Admin|CW|0|1||||1|0||
+100DTECH,4,1,CW,Digital Technologies,NCEA Level 1,11,Technology,Admin,7,14,2025TT,100DTECH||4|1|0|Admin|CW|7|14||||1|0||
+100DTECH,1,1,CW,Digital Technologies,NCEA Level 1,11,Technology,Admin,7,14,2025TT,100DTECH||1|1|0|Admin|CW|7|14||||1|0||
+MWEB,81D,1,CW,Web Design,Middle School,10,Technology,Admin,25,25,2025TT,MWEB||81|1|4|Admin|CW|25|25||||1|0||
+MWEB,81C,1,CW,Web Design,Middle School,10,Technology,Admin,25,25,2025TT,MWEB||81|1|3|Admin|CW|25|25||||1|0||
+MPROG,81B,1,CW,Middle DTECH - Programming,Middle School,10,Technology,Admin,24,24,2025TT,MPROG||81|1|2|Admin|CW|24|24||||1|0||
+MPROG,81A,1,CW,Middle DTECH - Programming,Middle School,10,Technology,Admin,24,24,2025TT,MPROG||81|1|1|Admin|CW|24|24||||1|0||
+SRDTECH,JSR,0,CW,Digital Technology,Junior School,8,Technology,Admin,19,19,2025TT,SRDTECH|JSR||||Admin|CW|19|19||||2|0||
+SDDTECH,JSD,0,CW,Digital Technologies,Junior School,7,Technology,Admin,19,19,2025TT,SDDTECH|JSD||||Admin|CW|19|19||||2|0||
+PIDTECH,JPI,0,CW,Digital Technologies,Year 7,7,Technology,Admin,21,21,2025TT,PIDTECH|JPI||||Admin|CW|21|21||||2|0||
+MIDTECH,JMI,0,CW,Digital Technologies,Junior School,7,Technology,Admin,20,20,2025TT,MIDTECH|JMI||||Admin|CW|20|20||||2|0||
+8SDTECH,8S,0,CW,Digital Technologies,Year 7,7,Technology,Admin,11,11,2025TT,8SDTECH|8S||||Admin|CW|11|11||||2|0||
+7SDTECH,7S,0,CW,Digtal Technologies,Year 7,7,Technology,Admin,13,13,2025TT,7SDTECH|7S||||Admin|CW|13|13||||2|0||
+WHANAU,8WHAU,0,CW,Life Skills/Personal Development,Year 1,1,English and Languages,Admin,14,14,2025TT,WHANAU|8WHAU||||Admin|CW|14|14||||2|0||
+MEET,8WHAU,0,CW,MEET,0,0,MEET,Admin,14,14,2025TT,MEET|8WHAU||||Admin|CW|14|14||||2|0||
 300MATS,5,1,DR,Mathematics with Statistics,NCEA Level 3,13,Mathematics,CL,16,16,2025TT,300MATS||5|1|0|CL|DR|16|16||||1|0||
 MDRAMA,81D,1,DR,Drama,Middle School,10,Arts,JA,18,30,2025TT,MDRAMA||81|1|4|JA|DR|18|30||||1|0||
 MDRAMA,81C,1,DR,Drama,Middle School,10,Arts,JA,17,30,2025TT,MDRAMA||81|1|3|JA|DR|17|30||||1|0||
@@ -183,22 +183,22 @@ NETNZDRAMA,2,1,DR,Drama,Year 1,1,Arts,JT,1,6,2025TT,NETNZDRAMA||2|1|0|JT|DR|1|6|
 NETNZDRAMA,6,1,DR,Drama,Year 1,1,Arts,RS,1,6,2025TT,NETNZDRAMA||6|1|0|RS|DR|1|6||||1|1||
 NETNZDRAMA,4,1,DR,Drama,Year 1,1,Arts,RS,2,6,2025TT,NETNZDRAMA||4|1|0|RS|DR|2|6||||1|1||
 NETNZDRAMA,2,1,DR,Drama,Year 1,1,Arts,RS,1,6,2025TT,NETNZDRAMA||2|1|0|RS|DR|1|6||||1|1||
-300HOSP,1,1,F,Hospitality,NCEA Level 3,13,Technology,DK,18,18,2025TT,300HOSP||1|1|0|DK|F|18|18||||1|0||
-100HOSP,6,1,F,Hospitality,NCEA Level 1,11,Technology,DK,18,38,2025TT,100HOSP||6|1|0|DK|F|18|38||||1|0||
-MFOOD,82D,1,F,Food and Nutrition,Middle School,10,Technology,DK,23,83,2025TT,MFOOD||82|1|4|DK|F|23|83||||1|0||
-MFOOD,82C,1,F,Food and Nutrition,Middle School,10,Technology,DK,22,83,2025TT,MFOOD||82|1|3|DK|F|22|83||||1|0||
-MFOOD,82B,1,F,Food and Nutrition,Middle School,10,Technology,DK,22,83,2025TT,MFOOD||82|1|2|DK|F|22|83||||1|0||
-MFOOD,82A,1,F,Food and Nutrition,Middle School,10,Technology,DK,22,83,2025TT,MFOOD||82|1|1|DK|F|22|83||||1|0||
-MFOOD,81D,1,F,Food and Nutrition,Middle School,10,Technology,DK,24,83,2025TT,MFOOD||81|1|4|DK|F|24|83||||1|0||
-MFOOD,81C,1,F,Food and Nutrition,Middle School,10,Technology,DK,24,83,2025TT,MFOOD||81|1|3|DK|F|24|83||||1|0||
-MIFOOD,JMI,0,F,Food and Nutrition,Junior School,8,Technology,DK,20,20,2025TT,MIFOOD|JMI||||DK|F|20|20||||2|0||
-8SFOOD,8S,0,F,Year 8 Food Sm,Year 8,8,Technology,DK,11,11,2025TT,8SFOOD|8S||||DK|F|11|11||||2|0||
-VEFOOD,JVE,0,F,Food and Nutrition,Junior School,7,Technology,DK,24,24,2025TT,VEFOOD|JVE||||DK|F|24|24||||2|0||
-SRFOOD,JSR,0,F,Food and Nutrition,Junior School,7,Technology,DK,19,19,2025TT,SRFOOD|JSR||||DK|F|19|19||||2|0||
-SDFOOD,JSD,0,F,Food and Nutrition,Junior School,7,Technology,DK,19,19,2025TT,SDFOOD|JSD||||DK|F|19|19||||2|0||
-7SFOOD,7S,0,F,Food and Nutrition,Year 1,1,Technology,DK,13,13,2025TT,7SFOOD|7S||||DK|F|13|13||||2|0||
-WHANAU,11WHAU,0,F,Life Skills/Personal Development,Year 1,1,English and Languages,DK,13,13,2025TT,WHANAU|11WHAU||||DK|F|13|13||||2|0||
-MEET,11WHAU,0,F,MEET,0,0,MEET,DK,13,13,2025TT,MEET|11WHAU||||DK|F|13|13||||2|0||
+300HOSP,1,1,F,Hospitality,NCEA Level 3,13,Technology,Teacher,18,18,2025TT,300HOSP||1|1|0|Teacher|F|18|18||||1|0||
+100HOSP,6,1,F,Hospitality,NCEA Level 1,11,Technology,Teacher,18,38,2025TT,100HOSP||6|1|0|Teacher|F|18|38||||1|0||
+MFOOD,82D,1,F,Food and Nutrition,Middle School,10,Technology,Teacher,23,83,2025TT,MFOOD||82|1|4|Teacher|F|23|83||||1|0||
+MFOOD,82C,1,F,Food and Nutrition,Middle School,10,Technology,Teacher,22,83,2025TT,MFOOD||82|1|3|Teacher|F|22|83||||1|0||
+MFOOD,82B,1,F,Food and Nutrition,Middle School,10,Technology,Teacher,22,83,2025TT,MFOOD||82|1|2|Teacher|F|22|83||||1|0||
+MFOOD,82A,1,F,Food and Nutrition,Middle School,10,Technology,Teacher,22,83,2025TT,MFOOD||82|1|1|Teacher|F|22|83||||1|0||
+MFOOD,81D,1,F,Food and Nutrition,Middle School,10,Technology,Teacher,24,83,2025TT,MFOOD||81|1|4|Teacher|F|24|83||||1|0||
+MFOOD,81C,1,F,Food and Nutrition,Middle School,10,Technology,Teacher,24,83,2025TT,MFOOD||81|1|3|Teacher|F|24|83||||1|0||
+MIFOOD,JMI,0,F,Food and Nutrition,Junior School,8,Technology,Teacher,20,20,2025TT,MIFOOD|JMI||||Teacher|F|20|20||||2|0||
+8SFOOD,8S,0,F,Year 8 Food Sm,Year 8,8,Technology,Teacher,11,11,2025TT,8SFOOD|8S||||Teacher|F|11|11||||2|0||
+VEFOOD,JVE,0,F,Food and Nutrition,Junior School,7,Technology,Teacher,24,24,2025TT,VEFOOD|JVE||||Teacher|F|24|24||||2|0||
+SRFOOD,JSR,0,F,Food and Nutrition,Junior School,7,Technology,Teacher,19,19,2025TT,SRFOOD|JSR||||Teacher|F|19|19||||2|0||
+SDFOOD,JSD,0,F,Food and Nutrition,Junior School,7,Technology,Teacher,19,19,2025TT,SDFOOD|JSD||||Teacher|F|19|19||||2|0||
+7SFOOD,7S,0,F,Food and Nutrition,Year 1,1,Technology,Teacher,13,13,2025TT,7SFOOD|7S||||Teacher|F|13|13||||2|0||
+WHANAU,11WHAU,0,F,Life Skills/Personal Development,Year 1,1,English and Languages,Teacher,13,13,2025TT,WHANAU|11WHAU||||Teacher|F|13|13||||2|0||
+MEET,11WHAU,0,F,MEET,0,0,MEET,Teacher,13,13,2025TT,MEET|11WHAU||||Teacher|F|13|13||||2|0||
 PIFOOD,JPI,0,F,Food and Nutrition,Junior School,7,Technology,HM,21,21,2025TT,PIFOOD|JPI||||HM|F|21|21||||2|0||
 200HOSP,4,1,F,Hospitality,NCEA Level 2,12,Technology,MK,18,18,2025TT,200HOSP||4|1|0|MK|F|18|18||||1|0||
 100HOSP,2,1,F,Hospitality,NCEA Level 1,11,Technology,MK,20,38,2025TT,100HOSP||2|1|0|MK|F|20|38||||1|0||
@@ -254,7 +254,7 @@ MIWOOD,JMI,0,GR,Hard Materials,Junior School,7,Technology,MR,20,20,2025TT,MIWOOD
 WHANAU,8WPAPA,0,GR,Life Skills/Personal Development,Year 1,1,English and Languages,MR,13,13,2025TT,WHANAU|8WPAPA||||MR|GR|13|13||||2|0||
 MEET,8WPAPA,0,GR,MEET,0,0,MEET,MR,13,13,2025TT,MEET|8WPAPA||||MR|GR|13|13||||2|0||
 10ENGHE,0,0,GR,10ENGHE,Year 10,10,ENGHE,TJ,2,2,2025TT,10ENGHE|||||TJ|GR|2|2|23053;23005|||3|0
-100DVC,1,1,GR,Design & Visual Communication,NCEA Level 1,11,Technology,VP,5,5,2025TT,100DVC||1|1|0|VP|GR|5|5||||1|1||
+100DVC,1,1,GR,Design & Visual Communication,NCEA Level 1,11,Technology,Admin,5,5,2025TT,100DVC||1|1|0|Admin|GR|5|5||||1|1||
 WHANAU,12LR,0,Green,Life Skills/Personal Development,Year 1,1,English and Languages,LR,7,7,2025TT,WHANAU|12LR||||LR|GREEN|7|7||||2|0||
 MEET,12LR,0,Green,MEET,0,0,MEET,LR,7,7,2025TT,MEET|12LR||||LR|GREEN|7|7||||2|0||
 GATEWAY,3,1,GW,Transition/Pre-Employment,NCEA Level 2,12,GATEWAY,KV,2,22,2025TT,Gateway||3|1|0|KV|GW|2|22||||1|0||
@@ -302,7 +302,7 @@ MEET,7WWAI,0,PAV,MEET,0,0,MEET,BT,13,13,2025TT,MEET|7WWAI||||BT|PAV|13|13||||2|0
 RDA,0,0,RDA,RDA,0,0,RDA,CV,6,6,2025TT,RDA|||||CV|RDA|6|6|24025;25030;24029;23096;19066;22019|||3|0
 RDAVolunte,0,0,RDA,RDAVolunte,0,0,RDAVolunte,GH,1,1,2025TT,RDAVolunte|||||GH|RDA|1|1|24119|||3|0
 TAAUTO1,8,1,TT,Automotive Year 1,NCEA Level 2,12,Trades Academy,BT,2,2,2025TT,TAAUTO1||8|1|0|BT|TT|2|2||||1|1||
-MITEXT,JMI,0,TT,Textiles Technology,Junior School,8,Technology,DK,20,20,2025TT,MITEXT|JMI||||DK|TT|20|20||||2|0||
+MITEXT,JMI,0,TT,Textiles Technology,Junior School,8,Technology,Teacher,20,20,2025TT,MITEXT|JMI||||Teacher|TT|20|20||||2|0||
 7STEXT,7S,0,TT,Textiles/Clothing,Year 7,7,Technology,HM,13,13,2025TT,7STEXT|7S||||HM|TT|13|13||||2|0||
 SDDRAMA,JSD,0,TT,Drama,Junior School,8,Arts,JA,19,19,2025TT,SDDRAMA|JSD||||JA|TT|19|19||||2|0||
 TANURS3,9,1,TT,Nursery Year 3,NCEA Level 3,13,Trades Academy,RS,1,1,2025TT,TANurs3||9|1|0|RS|TT|1|1||||1|0||
@@ -439,6 +439,6 @@ NETNZDVC,1,1,0,NETNZDVC,0,0,NETNZDVC,JT,1,1,2025TT,NETNZDVC||1|1|0|JT||1|1||||1|
 STUDY,1,1,0,STUDY,0,0,STUDY,JT,2,25,2025TT,STUDY||1|1|0|JT||2|25||||1|0||
 MackDL,KV,0,0,MackDL,0,0,MackDL,KV,0,0,2025TT,MackDL|KV||||KV||0|0||||2|0||
 REVI,0,0,0,REVI,0,0,REVI,Michael,2,2,2025TT,REVI|||||Michael||2|2|20061;20061|||3|0
-GATESDT,0,0,0,GATESDT,0,0,GATESDT,VP,4,4,2025TT,GATESDT|||||VP||4|4|20024;20039;20080;23112|||3|0
+GATESDT,0,0,0,GATESDT,0,0,GATESDT,Admin,4,4,2025TT,GATESDT|||||Admin||4|4|20024;20039;20080;23112|||3|0
 MMUSIC,81B,1,0,Music,Middle School,10,Arts,0,0,23,2025TT,MMUSIC||81|1|2|||0|23||||1|0||
 MMUSIC,81A,1,0,Music,Middle School,10,Arts,0,0,23,2025TT,MMUSIC||81|1|1|||0|23||||1|0||

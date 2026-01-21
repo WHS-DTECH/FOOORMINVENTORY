@@ -65,8 +65,8 @@ Users' staff codes are automatically looked up from their email address in the `
 
 ### Role Mapping:
 
-- **VP (Vice Principal)**: Full admin access to all features
-- **DK**: Teacher access (recipes, class ingredients, booking, shopping list)
+- **Admin (Vice Principal)**: Full admin access to all features
+- **Teacher**: Teacher access (recipes, class ingredients, booking, shopping list)
 - **MU**: Booking staff access (booking calendar, shopping list)
 - **No code**: Public access (recipe book only, no login required)
 

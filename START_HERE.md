@@ -39,8 +39,8 @@ Choose your path based on what you need:
 
 ### 🚀 Roles & Permissions
 ```
-VP (Administrator)      → Admin + All Features
-DK (Teachers)            → Recipes + Bookings + Lists
+Admin (Administrator)      → Admin + All Features
+Teacher (Teachers)            → Recipes + Bookings + Lists
 MU (Booking Staff)       → Bookings + Shopping Lists
 Public (No Login)        → Recipe Book Only
 ```
@@ -96,7 +96,7 @@ cp .env.example .env
 
 ### Step 3: Upload Staff Data (5 min)
 Upload CSV with columns: Code, Last Name, First Name, Email
-Use codes: VP (admin), DK (teacher), MU (booking)
+Use codes: Admin (admin), Teacher (teacher), MU (booking)
 
 ### Step 4: Test (2 min)
 ```bash
@@ -174,17 +174,17 @@ python app.py
 
 ### Login With Different Roles
 
-**VP (Admin)**
+**Admin (Admin)**
 ```
 Email: admin@school.edu
-Code in database: VP
+Code in database: Admin
 Access: Everything + Admin
 ```
 
-**DK (Teacher)**
+**Teacher (Teacher)**
 ```
 Email: jsmith@school.edu
-Code in database: DK
+Code in database: Teacher
 Access: Recipes, Booking, Shopping, Classes
 ```
 
