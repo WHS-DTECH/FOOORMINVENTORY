@@ -1,20 +1,4 @@
-# =======================
-# Catering Grid Route
-# =======================
-@app.route('/catering')
-def catering():
-    # Example data; replace with real DB queries
-    bookings = [
-        {"id": 1, "class": "10HOSP", "recipe": "Perfect Pavlova", "recipe_id": 1, "servings": 24, "day": "Monday", "period": 2},
-        {"id": 2, "class": "10COMP", "recipe": "Lemon Curd Muffins", "recipe_id": 2, "servings": 24, "day": "Tuesday", "period": 3},
-        {"id": 3, "class": "10TECH", "recipe": "Chelsea Sugar", "recipe_id": 3, "servings": 24, "day": "Wednesday", "period": 4},
-    ]
-    recipes = [
-        {"id": 1, "name": "Perfect Pavlova", "serving_size": 12},
-        {"id": 2, "name": "Lemon Curd Muffins", "serving_size": 24},
-        {"id": 3, "name": "Chelsea Sugar", "serving_size": 24},
-    ]
-    return render_template('catering.html', bookings=bookings, recipes=recipes)
+
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -176,6 +160,24 @@ def format_nz_week(label):
 # Features: Recipe Book Routes
 # =======================
 
+
+# =======================
+# Catering Grid Route
+# =======================
+@app.route('/catering')
+def catering():
+    # Example data; replace with real DB queries
+    bookings = [
+        {"id": 1, "class": "10HOSP", "recipe": "Perfect Pavlova", "recipe_id": 1, "servings": 24, "day": "Monday", "period": 2},
+        {"id": 2, "class": "10COMP", "recipe": "Lemon Curd Muffins", "recipe_id": 2, "servings": 24, "day": "Tuesday", "period": 3},
+        {"id": 3, "class": "10TECH", "recipe": "Chelsea Sugar", "recipe_id": 3, "servings": 24, "day": "Wednesday", "period": 4},
+    ]
+    recipes = [
+        {"id": 1, "name": "Perfect Pavlova", "serving_size": 12},
+        {"id": 2, "name": "Lemon Curd Muffins", "serving_size": 24},
+        {"id": 3, "name": "Chelsea Sugar", "serving_size": 24},
+    ]
+    return render_template('catering.html', bookings=bookings, recipes=recipes)
 # --- Delete flagged/test recipe from parser_test_recipes ---
 @app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
 @require_role('Admin')
