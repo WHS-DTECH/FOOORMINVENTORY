@@ -22,8 +22,16 @@
                         <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '' }}</td>
                         <td>{{ s.recipe_name }}</td>
                         <td>{{ s.suggested_by_name }}<br><span class="text-muted small">{{ s.suggested_by_email }}</span></td>
-                        <td>{% if s.recipe_url %}<a href="{{ s.recipe_url }}" target="_blank">View</a>{% endif %}</td>
-                        <td>{{ s.reason }}</td>
+                                                <td>
+                                                    {% if s.recipe_url %}
+                                                        <a href="{{ s.recipe_url }}" target="_blank">View</a>
+                                                        <form method="post" action="{{ url_for('load_recipe_url') }}" style="display:inline; margin-left:8px;">
+                                                            <input type="hidden" name="url" value="{{ s.recipe_url }}">
+                                                            <button type="submit" class="btn btn-success btn-sm">Load Recipe</button>
+                                                        </form>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ s.reason }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
