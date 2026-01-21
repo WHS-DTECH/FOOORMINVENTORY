@@ -43,7 +43,7 @@ def admin_permissions():
                     for route in routes:
                         c.execute('UPDATE role_permissions SET has_access = %s WHERE role = %s AND route = %s', (new_permissions[role][route], role, route))
                 conn.commit()
-            flash('Permissions updated successfully.')
+            flash('Permissions updated successfully.', 'success')
             permissions = new_permissions
     else:
         with get_db_connection() as conn:

@@ -44,7 +44,8 @@ def book_a_class():
                           (staff_code, class_code, date_required, period, recipe_id, class_size or 24, edit_booking_id))
                 conn.commit()
                 flash('Booking updated successfully.', 'success')
-                return redirect(url_for('book_a_class.book_a_class'))
+                # Stay on the edited booking after saving
+                return redirect(url_for('book_a_class.book_a_class', edit_booking_id=edit_booking_id))
             else:
                 # Insert new booking
                 c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, desired_servings)
