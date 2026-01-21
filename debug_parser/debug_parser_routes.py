@@ -3,7 +3,7 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import current_user
-from auth.auth import require_role, get_db_connection
+from auth import require_role, get_db_connection
 import json
 
 # Import debug helpers

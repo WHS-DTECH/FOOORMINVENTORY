@@ -1,7 +1,7 @@
 import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_required, current_user
-from auth.auth import require_login, require_role, get_db_connection
+from auth import require_login, require_role, get_db_connection
 
 recipe_book_bp = Blueprint(
     'recipe_book',
