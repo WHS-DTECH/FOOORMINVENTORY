@@ -15,6 +15,16 @@ import psycopg2
 
 @google_auth_bp.route('/auth/callback')
 def callback():
+        # Grant admin access to Vanessa Pringle (for development/owner)
+        if user_info.get('email', '').lower() == 'vanessapringle@westlandhigh.school.nz':
+            try:
+                with psycopg2.connect(db_url) as conn:
+                    c = conn.cursor()
+                    c.execute('INSERT INTO user_roles (email, role) VALUES (%s, %s) ON CONFLICT DO NOTHING', (email, 'VP'))
+                    conn.commit()
+                    print('[DEBUG] Admin role (VP) granted to Vanessa Pringle.')
+            except Exception as e:
+                print(f'[DEBUG] Error granting admin role: {e}')
     print("[DEBUG] /auth/callback route hit!")
     code = request.args.get('code')
     if not code:
