@@ -66,9 +66,9 @@
                 <label for="email" style="display: block; margin-bottom: 4px; font-weight: bold;">User Email:</label>
                 <select id="email" name="email" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <option value="">-- Select a user --</option>
-                    {% if teachers is defined %}
-                        {% for teacher in teachers %}
-                            <option value="{{ teacher.email }}">{{ teacher.email }} ({{ teacher.code }} - {{ teacher.last_name }}, {{ teacher.first_name }})</option>
+                    {% if users is defined %}
+                        {% for user in users %}
+                            <option value="{{ user.email }}">{{ user.email }}{% if user.name %} ({{ user.name }}){% endif %}</option>
                         {% endfor %}
                     {% endif %}
                 </select>

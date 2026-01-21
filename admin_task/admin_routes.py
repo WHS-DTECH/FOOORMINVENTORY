@@ -62,14 +62,13 @@ def admin_permissions():
 @require_role('Admin')
 def admin_user_roles():
     users = []
-    teachers = []
     roles = []
     with get_db_connection() as conn:
         c = conn.cursor()
-        # Get all staff for dropdown
-        c.execute('SELECT code, last_name, first_name, title, email FROM teachers WHERE email IS NOT NULL ORDER BY last_name, first_name')
-        teachers = [dict(row) for row in c.fetchall()]
-        staff_emails = [row['email'].strip().lower() for row in teachers]
+        # Get all registered/logged-in users from USERS table
+        c.execute('SELECT id, email, name, google_id, created_at, last_login FROM users ORDER BY name, email')
+        users = [dict(row) for row in c.fetchall()]
+        user_emails = [row['email'].strip().lower() for row in users]
         # Get all user roles
         c.execute('SELECT email, role FROM user_roles')
         user_roles = {}
@@ -79,14 +78,13 @@ def admin_user_roles():
             if email not in user_roles:
                 user_roles[email] = []
             user_roles[email].append(role)
-        # Build user list for template
-        for email in staff_emails:
-            user_roles_list = user_roles.get(email, ['Public Access'])
-            users.append({'email': email, 'roles': user_roles_list})
+        # Attach roles to user objects
+        for user in users:
+            user['roles'] = user_roles.get(user['email'].strip().lower(), ['Public Access'])
         # Get all unique roles for dropdown
         c.execute('SELECT DISTINCT role FROM role_permissions ORDER BY role')
         roles = [row['role'] for row in c.fetchall()]
-    return render_template('admin_task/admin_user_roles.html', users=users, teachers=teachers, roles=roles)
+    return render_template('admin_task/admin_user_roles.html', users=users, roles=roles)
 
 # --- Recipe Book Setup Page ---
 @admin_task_bp.route('/admin/recipe_book_setup')
