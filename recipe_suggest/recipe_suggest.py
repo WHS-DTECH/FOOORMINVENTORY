@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import current_user
-from auth import require_role, require_login, get_db_connection
+from auth.auth import require_role, require_login, get_db_connection
 
 recipe_suggest_bp = Blueprint(
     'recipe_suggest',

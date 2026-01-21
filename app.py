@@ -48,7 +48,7 @@ except ImportError:
     BeautifulSoup = None
 
 from recipe_parser_pdf import parse_recipes_from_text
-from auth import User, get_staff_code_from_email, require_login, require_role, get_db_connection
+from auth.auth import User, get_staff_code_from_email, require_login, require_role, get_db_connection
 # Register debug_source_url blueprint
 from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 from navigation_main.context_nav import nav_context_processor, nav_bp

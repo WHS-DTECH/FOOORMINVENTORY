@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import current_user
-from auth import require_role, get_db_connection
+from auth.auth import require_role, get_db_connection
 import json
 
 book_a_class_bp = Blueprint('book_a_class', __name__, template_folder='templates/book_a_class')

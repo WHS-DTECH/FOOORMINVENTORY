@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, request
 from . import shoppinglist
-from auth import get_db_connection
+from auth.auth import get_db_connection
 import datetime
 
 shoplist_bp = Blueprint('shoplist', __name__, template_folder='templates')
@@ -51,7 +51,7 @@ def get_original_recipes():
     return {"success": True, "recipes": recipes}
 from flask import Blueprint, render_template, request
 from . import shoppinglist
-from auth import get_db_connection
+from auth.auth import get_db_connection
 import datetime
 
 
