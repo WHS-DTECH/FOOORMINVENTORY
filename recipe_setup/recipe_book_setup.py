@@ -149,7 +149,16 @@ def upload():
                     if 'serving_size' not in recipe:
                         recipe['serving_size'] = ''
                     recipes_to_show.append(recipe)
-            session['recipes_to_save'] = recipes_to_show
+            # Store recipes_to_show in a temp file instead of session
+            import uuid, json
+            tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            recipes_to_save_filename = f"recipes_to_save_{uuid.uuid4().hex}.json"
+            recipes_to_save_path = os.path.join(tmp_dir, recipes_to_save_filename)
+            with open(recipes_to_save_path, 'w', encoding='utf-8') as f:
+                json.dump(recipes_to_show, f)
+            session['recipes_to_save_file'] = recipes_to_save_filename
             return render_template('upload_result.html', recipes=recipes_to_show, pdf_filename=pdf_filename, step='details')
         except Exception as e:
             print(f"[ERROR] Full details extraction failed: {e}")
@@ -157,7 +166,18 @@ def upload():
 
     # Step 3: Confirmed full details, save to DB
     if request.form.get('step') == 'details_confirmed':
-        recipes_to_save = session.get('recipes_to_save', [])
+        # Load recipes_to_save from temp file instead of session
+        import json
+        recipes_to_save = []
+        recipes_to_save_filename = session.get('recipes_to_save_file')
+        if recipes_to_save_filename:
+            tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+            recipes_to_save_path = os.path.join(tmp_dir, recipes_to_save_filename)
+            try:
+                with open(recipes_to_save_path, 'r', encoding='utf-8') as f:
+                    recipes_to_save = json.load(f)
+            except Exception as e:
+                print(f"[ERROR] Could not load recipes_to_save file: {e}")
         pdf_filename = session.get('pdf_filename', 'manual_upload')
         tmp_filename = session.get('pdf_tmpfile')
         tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
@@ -220,7 +240,16 @@ def upload():
         session.pop('pdf_tmpfile', None)
         session.pop('pdf_filename', None)
         session.pop('detected_titles', None)
-        session.pop('recipes_to_save', None)
+        # Remove temp file and session key
+        recipes_to_save_filename = session.pop('recipes_to_save_file', None)
+        if recipes_to_save_filename:
+            tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+            recipes_to_save_path = os.path.join(tmp_dir, recipes_to_save_filename)
+            try:
+                if os.path.exists(recipes_to_save_path):
+                    os.remove(recipes_to_save_path)
+            except Exception as e:
+                print(f"[WARN] Could not remove temp recipes_to_save file: {e}")
         return render_template('upload_result.html', recipes=recipes_to_save, pdf_filename=pdf_filename, step='done', saved_count=saved_count, skipped_count=skipped_count, errors=error_details)
 
     # Step 1: If PDF file, parse and return detected recipes for preview/correction

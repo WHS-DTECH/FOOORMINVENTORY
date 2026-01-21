@@ -228,7 +228,16 @@ def load_recipe_url():
             'source_url': url,
             'serving_size': serving_size
         }
-        session['raw_data'] = f'Invalid or missing URL: {url}'
+        # Store error in a temp file instead of session
+        import uuid
+        tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+        raw_data_filename = f"raw_data_{uuid.uuid4().hex}.txt"
+        raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+        with open(raw_data_path, 'w', encoding='utf-8') as f:
+            f.write(f'Invalid or missing URL: {url}')
+        session['raw_data_file'] = raw_data_filename
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
@@ -245,7 +254,16 @@ def load_recipe_url():
             'source_url': url,
             'serving_size': serving_size
         }
-        session['raw_data'] = 'Required libraries (requests, BeautifulSoup) not installed.'
+        # Store error in a temp file instead of session
+        import uuid
+        tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+        raw_data_filename = f"raw_data_{uuid.uuid4().hex}.txt"
+        raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+        with open(raw_data_path, 'w', encoding='utf-8') as f:
+            f.write('Required libraries (requests, BeautifulSoup) not installed.')
+        session['raw_data_file'] = raw_data_filename
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
@@ -264,7 +282,16 @@ def load_recipe_url():
                 'source_url': url,
                 'serving_size': serving_size
             }
-            session['raw_data'] = resp.text
+            # Store response text in a temp file instead of session
+            import uuid
+            tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            raw_data_filename = f"raw_data_{uuid.uuid4().hex}.txt"
+            raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+            with open(raw_data_path, 'w', encoding='utf-8') as f:
+                f.write(resp.text)
+            session['raw_data_file'] = raw_data_filename
             return render_template(
                 "review_recipe_url.html",
                 recipe_data=recipe_data,
@@ -282,7 +309,16 @@ def load_recipe_url():
             'source_url': url,
             'serving_size': serving_size
         }
-        session['raw_data'] = f'Exception fetching URL: {str(e)}'
+        # Store error in a temp file instead of session
+        import uuid
+        tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+        raw_data_filename = f"raw_data_{uuid.uuid4().hex}.txt"
+        raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+        with open(raw_data_path, 'w', encoding='utf-8') as f:
+            f.write(f'Exception fetching URL: {str(e)}')
+        session['raw_data_file'] = raw_data_filename
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data,
@@ -300,6 +336,16 @@ def load_recipe_url():
         'serving_size': serving_size
     }
     session['raw_data'] = html
+    # Store HTML in a temp file instead of session
+    import uuid
+    tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
+    raw_data_filename = f"raw_data_{uuid.uuid4().hex}.txt"
+    raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+    with open(raw_data_path, 'w', encoding='utf-8') as f:
+        f.write(html)
+    session['raw_data_file'] = raw_data_filename
     # Remove raw_data if present before passing to template
     recipe_data_no_raw = dict(recipe_data)
     recipe_data_no_raw.pop('raw_data', None)
@@ -348,7 +394,7 @@ def review_recipe_url_action():
         flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
         return redirect(url_for('admin_task.admin_recipe_book_setup'))
     elif action == 'flag':
-        # Insert recipe into parser_test_recipes for URL uploads: always use session['raw_data']
+        # Insert recipe into parser_test_recipes for URL uploads: always use session['raw_data_file']
         test_recipe_id = None
         try:
             import datetime as dt
@@ -365,7 +411,20 @@ def review_recipe_url_action():
             elif source_url.startswith('https://http://'):
                 source_url = source_url.replace('https://http://', 'http://', 1)
             # Use the same extraction logic as debug_extract_text
-            raw_data, error = extract_raw_text_from_url(source_url)
+            # Read raw_data from temp file
+            raw_data = ''
+            error = None
+            raw_data_filename = session.get('raw_data_file')
+            if raw_data_filename:
+                tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+                raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+                try:
+                    with open(raw_data_path, 'r', encoding='utf-8') as f:
+                        raw_data = f.read()
+                except Exception as e:
+                    error = f'Could not read raw_data file: {e}'
+            else:
+                error = 'No raw_data file found in session.'
             if error:
                 error_message = f'Error extracting raw data for parser testing: {error}'
                 return render_template(
@@ -596,6 +655,16 @@ def auth_callback():
 def logout():
     """Log out the current user."""
     logout_user()
+    # Remove temp raw_data file if present
+    raw_data_filename = session.get('raw_data_file')
+    if raw_data_filename:
+        tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+        raw_data_path = os.path.join(tmp_dir, raw_data_filename)
+        try:
+            if os.path.exists(raw_data_path):
+                os.remove(raw_data_path)
+        except Exception:
+            pass
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('recipe_book.recbk'))
