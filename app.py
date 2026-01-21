@@ -354,7 +354,6 @@ def load_recipe_url():
         'source_url': url,
         'serving_size': serving_size
     }
-    session['raw_data'] = html
     # Store HTML in a temp file instead of session
     import uuid
     tmp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
@@ -365,6 +364,28 @@ def load_recipe_url():
     with open(raw_data_path, 'w', encoding='utf-8') as f:
         f.write(html)
     session['raw_data_file'] = raw_data_filename
+
+    # Immediately add to parser_test_recipes for debug index
+    import datetime as dt
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id, raw_data)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', (
+                'url',
+                url,
+                getattr(current_user, 'email', 'unknown'),
+                dt.datetime.now(),
+                'Loaded from URL',
+                None,
+                html
+            ))
+            conn.commit()
+    except Exception as e:
+        print(f"[DEBUG] Could not insert into parser_test_recipes: {e}")
+
     # Remove raw_data if present before passing to template
     recipe_data_no_raw = dict(recipe_data)
     recipe_data_no_raw.pop('raw_data', None)
@@ -373,8 +394,6 @@ def load_recipe_url():
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data_no_raw,
-
-            # --- Admin routes and logic have been moved to admin_task/routes.py ---
             extraction_warning=extraction_warning if 'extraction_warning' in locals() else 'Unknown error occurred.'
         )
 
