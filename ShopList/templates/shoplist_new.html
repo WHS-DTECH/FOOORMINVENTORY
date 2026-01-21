@@ -175,7 +175,9 @@
           // Set recipe dropdown and servings input
           const recipeId = this.getAttribute('data-recipe-id');
           const servings = this.getAttribute('data-servings');
+          // Always re-render dropdown before setting value
           renderRecipeOptionsShopping();
+          // Wait for dropdown to be populated, then set value
           setTimeout(() => {
             let found = false;
             if (recipeId && recipeSelect.querySelector(`option[value="${recipeId}"]`)) {
@@ -203,8 +205,9 @@
             if (servingsInput && servings && !isNaN(servings)) {
               servingsInput.value = servings;
             }
+            // Always trigger calculation after setting dropdown
             recipeSelect.dispatchEvent(new Event('change'));
-          }, 0);
+          }, 50); // Slightly longer delay to ensure dropdown is ready
         } else {
           // If unchecked, reset recipe dropdown and ingredient panels
           if (recipeSelect) {
