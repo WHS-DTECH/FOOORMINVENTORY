@@ -84,7 +84,9 @@
         {# Only include minimal recipe data, excluding raw_data #}
         <textarea name="recipe_json" style="display:none;">{{ recipe_data | tojson }}</textarea>
         <button type="submit" name="action" value="confirm" class="btn btn-success">CONFIRM</button>
+        {% if not (show_debug_prompt and test_recipe_id) %}
         <button type="submit" name="action" value="flag" class="btn btn-warning ms-2">FLAG to TWEAK</button>
+        {% endif %}
     </form>
 
     {% if show_debug_prompt and test_recipe_id %}
