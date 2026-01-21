@@ -8,15 +8,24 @@
     align-items: flex-start;
     margin-top: 2em;
 }
-.recipe-setup-left,
+.recipe-setup-left {
+    flex: 0 0 290px;
+    min-width: 220px;
+    max-width: 320px;
+}
 .recipe-setup-right {
     flex: 1 1 0;
-    min-width: 320px;
+    min-width: 0;
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
     .recipe-setup-container {
         flex-direction: column;
         gap: 16px;
+    }
+    .recipe-setup-left, .recipe-setup-right {
+        max-width: 100%;
+        min-width: 0;
+        flex: 1 1 100%;
     }
 }
 </style>
@@ -80,11 +89,13 @@
                             <td style="padding: 10px;">{{ recipe.name }}</td>
                             <td style="padding: 10px;">{{ recipe.serving_size or 'N/A' }}</td>
                             <td style="padding: 10px; text-align: center;">
-                                <a href="{{ url_for('recipe_book.recipe_details', recipe_id=recipe.id) }}" class="btn btn-success btn-sm">View</a>
-                                {% if recipe.source_url %}
-                                <a href="{{ recipe.source_url }}" target="_blank" class="btn btn-info btn-sm">Source</a>
-                                {% endif %}
-                                <a href="{{ url_for('recipe_book.delete_recipe', recipe_id=recipe.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                                <div class="d-flex flex-row flex-nowrap justify-content-center align-items-center gap-2">
+                                    <a href="{{ url_for('recipe_book.recipe_details', recipe_id=recipe.id) }}" class="btn btn-success btn-sm">View</a>
+                                    {% if recipe.source_url %}
+                                    <a href="{{ recipe.source_url }}" target="_blank" class="btn btn-info btn-sm">Source</a>
+                                    {% endif %}
+                                    <a href="{{ url_for('recipe_book.delete_recipe', recipe_id=recipe.id) }}" class="btn btn-danger btn-sm">Delete</a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
