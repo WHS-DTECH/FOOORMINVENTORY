@@ -15,9 +15,13 @@ upload_url_bp.add_url_rule('/url_upload', view_func=get_url_upload, methods=['GE
 
 # Route: Handle URL upload POST
 def post_upload_url():
-    # Logic for handling URL upload POST
-    # ...
-    return render_template('upload_URL/upload_recipe_url.html')
+    # Get the submitted URL from the form
+    url = request.form.get('url')
+    if not url:
+        flash('No URL provided.', 'danger')
+        return redirect(url_for('upload_url.get_url_upload'))
+    # Redirect to the extraction/review route with the URL as a query parameter
+    return redirect(f"/load_recipe_url?url={url}")
 
 upload_url_bp.add_url_rule('/upload_url', view_func=post_upload_url, methods=['POST'])
 
