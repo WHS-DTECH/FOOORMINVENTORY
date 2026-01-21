@@ -16,7 +16,7 @@ def add_shoplist_to_gcal():
         last_day = datetime(year, month, monthrange(year, month)[1])
         with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+            c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.class_size AS servings
                          FROM class_bookings cb
                          LEFT JOIN recipes r ON cb.recipe_id = r.id
                          WHERE cb.date_required >= %s AND cb.date_required <= %s
@@ -84,7 +84,7 @@ def export_shoplist_ical():
     last_day = datetime(year, month, monthrange(year, month)[1])
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.desired_servings AS servings
+        c.execute('''SELECT cb.date_required, cb.period, cb.class_code, r.name AS recipe_name, cb.class_size AS servings
                      FROM class_bookings cb
                      LEFT JOIN recipes r ON cb.recipe_id = r.id
                      WHERE cb.date_required >= %s AND cb.date_required <= %s

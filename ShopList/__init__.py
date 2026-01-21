@@ -80,7 +80,7 @@ def book_the_shopping():
         c = conn.cursor()
         # Scheduled bookings for the week (for grid and modal)
         c.execute('''
-            SELECT cb.date_required, cb.period, cb.class_code, cb.staff_code, r.name AS recipe, cb.desired_servings AS servings, t.first_name, t.last_name
+            SELECT cb.date_required, cb.period, cb.class_code, cb.staff_code, r.name AS recipe, cb.class_size AS servings, t.first_name, t.last_name
             FROM class_bookings cb
             LEFT JOIN recipes r ON cb.recipe_id = r.id
             LEFT JOIN teachers t ON cb.staff_code = t.code
