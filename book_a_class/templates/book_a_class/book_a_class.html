@@ -151,11 +151,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var searchInput = document.getElementById('bookingSearch');
   if (searchInput) {
     searchInput.addEventListener('input', function() {
-      var filter = searchInput.value.toLowerCase();
+      var filter = searchInput.value.toLowerCase().replace(/\s+/g, ' ').trim();
       var table = document.getElementById('bookingsTable');
       var rows = table.tBodies[0].rows;
       for (var i = 0; i < rows.length; i++) {
-        var rowText = rows[i].innerText.toLowerCase();
+        var rowText = rows[i].innerText.toLowerCase().replace(/\s+/g, ' ').trim();
         rows[i].style.display = rowText.indexOf(filter) > -1 ? '' : 'none';
       }
     });
