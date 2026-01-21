@@ -31,7 +31,7 @@
         <h3>Selected Booking</h3>
         <div><b>Class:</b> <span id="selectedClass"></span></div>
         <div><b>Teacher:</b> <span id="selectedTeacher"></span></div>
-        <div><b>Recipe:</b> <span id="selectedRecipe"></span></div>
+        <div><b>Recipe:</b> <span id="selectedRecipe"></span> <span id="selectedRecipeId" style="color:#888;font-size:0.95em;"></span></div>
         <div><b>Serving Size:</b> <span id="selectedServings"></span></div>
         <form id="servingCalcForm" style="margin-top:1em;">
           <label>Desired Servings: <input type="number" id="desiredServings" min="1" value="" style="width:60px;"></label>
@@ -42,7 +42,7 @@
       </div>
       <div style="flex:1; min-width:320px; background:#f8f8f8; border-radius:8px; padding:1em;">
         <h4>Recipe Details</h4>
-        <div><b id="recipeDetailName"></b></div>
+        <div><b id="recipeDetailName"></b> <span id="recipeDetailId" style="color:#888;font-size:0.95em;"></span></div>
         <div><b>Ingredients:</b>
           <ul id="recipeDetailIngredients" style="margin:0.5em 0 0 1.2em;"></ul>
         </div>
@@ -73,6 +73,7 @@ function setupBookingClicks() {
       document.getElementById('selectedClass').textContent = this.dataset.class;
       document.getElementById('selectedTeacher').textContent = this.dataset.teacher || '';
       document.getElementById('selectedRecipe').textContent = this.dataset.recipe;
+      document.getElementById('selectedRecipeId').textContent = `(ID: ${this.dataset.recipeid})`;
       document.getElementById('selectedServings').textContent = this.dataset.servings || 'N/A';
       document.getElementById('desiredServings').value = this.dataset.servings || '';
       document.getElementById('calcResult').innerHTML = '';
@@ -83,6 +84,7 @@ function setupBookingClicks() {
       console.log('Available recipe ids:', recipes.map(r => r.id));
       const recipe = recipes.find(r => r.id === recipeId);
       document.getElementById('recipeDetailName').textContent = recipe ? recipe.name : '';
+      document.getElementById('recipeDetailId').textContent = recipe ? `(ID: ${recipe.id})` : '';
       const ingredList = document.getElementById('recipeDetailIngredients');
       ingredList.innerHTML = '';
       if (!recipe) {
