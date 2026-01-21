@@ -1,3 +1,26 @@
+# --- Load Recipe from URL: Insert into parser_test_recipes and redirect to parser_debug ---
+from flask import current_app
+from datetime import datetime
+
+@app.route('/load_recipe_url', methods=['POST'])
+@require_role('Admin')
+def load_recipe_url():
+    url = request.form.get('url') or request.args.get('url')
+    if not url:
+        flash('No URL provided', 'error')
+        return redirect(url_for('recipe_book_setup'))
+    user = getattr(current_user, 'email', 'unknown')
+    now = datetime.utcnow()
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('''
+            INSERT INTO parser_test_recipes (upload_source_detail, upload_source_type, uploaded_by, upload_date)
+            VALUES (%s, %s, %s, %s) RETURNING id
+        ''', (url, 'url', user, now))
+        new_id = c.fetchone()[0]
+        conn.commit()
+    flash('Recipe URL loaded for debugging.', 'success')
+    return redirect(url_for('debug_parser.parser_debug', test_recipe_id=new_id))
 # Recipe Book Setup Page Logic
 # Transferred from previous location (if applicable)
 # ...existing code from recipe_book_setup.py... 
