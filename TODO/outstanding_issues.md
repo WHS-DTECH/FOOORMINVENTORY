@@ -6,7 +6,7 @@
 ## Parser Debug / URL Upload Review
 - Need to get to the Flag window from the Parser Debug Index (see screenshot for current state). Ensure that clicking 'Debug' on a URL entry leads to the review/flagging workflow as intended.
 
-## Book a Class
+## Book a Class - FIXED
 - Edit function does not save edits to the existing record. (Editing a booking pre-fills the form, but saving does not update the record in the database.)
 
 ## Book the Shopping

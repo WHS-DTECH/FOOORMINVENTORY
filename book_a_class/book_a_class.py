@@ -1,7 +1,10 @@
+
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import current_user
 from auth import require_role, get_db_connection
 import json
+import io
+import csv
 
 book_a_class_bp = Blueprint('book_a_class', __name__, template_folder='templates/book_a_class')
 
@@ -18,6 +21,7 @@ def book_a_class():
     period = request.form.get('period') if request.method == 'POST' else None
     recipe_id = request.form.get('recipe') if request.method == 'POST' else None
     class_size = request.form.get('class_size') if request.method == 'POST' else None
+    desired_serving = request.form.get('desired_serving') if request.method == 'POST' else None
 
     # If editing, pre-fill form fields from booking ONLY on GET
     if edit_booking_id and request.method == 'GET':
@@ -32,6 +36,7 @@ def book_a_class():
                 period = str(booking['period']) if booking['period'] is not None else ''
                 recipe_id = booking['recipe_id']
                 class_size = booking['class_size']
+                desired_serving = booking.get('desired_serving') if 'desired_serving' in booking else ''
 
     # Standard form POST handling: insert or update booking
     if request.method == 'POST' and staff_code and class_code and date_required and period and recipe_id:
@@ -40,17 +45,17 @@ def book_a_class():
             c = conn.cursor()
             if edit_booking_id:
                 # Update existing booking
-                c.execute('''UPDATE class_bookings SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, class_size=%s WHERE id=%s''',
-                          (staff_code, class_code, date_required, period, recipe_id, class_size or 24, edit_booking_id))
+                c.execute('''UPDATE class_bookings SET staff_code=%s, class_code=%s, date_required=%s, period=%s, recipe_id=%s, class_size=%s, desired_serving=%s WHERE id=%s''',
+                          (staff_code, class_code, date_required, period, recipe_id, class_size or 24, desired_serving, edit_booking_id))
                 conn.commit()
                 flash('Booking updated successfully.', 'success')
                 # Stay on the edited booking after saving
                 return redirect(url_for('book_a_class.book_a_class', edit_booking_id=edit_booking_id))
             else:
                 # Insert new booking
-                c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, class_size)
-                             VALUES (%s, %s, %s, %s, %s, %s)''',
-                          (staff_code, class_code, date_required, period, recipe_id, class_size or 24))
+                c.execute('''INSERT INTO class_bookings (staff_code, class_code, date_required, period, recipe_id, class_size, desired_serving)
+                             VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                          (staff_code, class_code, date_required, period, recipe_id, class_size or 24, desired_serving))
                 conn.commit()
 
     with get_db_connection() as conn:
@@ -98,7 +103,7 @@ def book_a_class():
         c = conn.cursor()
         c.execute('''
             SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, \
-                   cb.recipe_id, cb.class_size, r.name as recipe_name,
+                   cb.recipe_id, cb.class_size, cb.desired_serving, r.name as recipe_name,
                    t.first_name, t.last_name
             FROM class_bookings cb
             LEFT JOIN recipes r ON cb.recipe_id = r.id
@@ -109,6 +114,7 @@ def book_a_class():
         for row in c.fetchall():
             booking = dict(row)
             booking['class_size'] = row['class_size']
+            booking['desired_serving'] = row.get('desired_serving') if 'desired_serving' in row else ''
             bookings.append(booking)
 
     return render_template('book_a_class.html', staff=staff, classes=classes, recipes=recipes,
@@ -117,6 +123,7 @@ def book_a_class():
                           pre_staff_code=staff_code, pre_class_code=class_code, 
                           pre_date_required=date_required, pre_period=period,
                           pre_recipe_id=recipe_id, pre_class_size=class_size or 24,
+                          pre_desired_serving=desired_serving,
                           pre_edit_booking_id=edit_booking_id)
 
 @book_a_class_bp.route('/class_ingredients/download', methods=['POST'])

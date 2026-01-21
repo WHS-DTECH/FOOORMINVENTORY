@@ -68,6 +68,10 @@
         <label for="classSize">Class Size</label><br>
         <input type="number" id="classSize" name="class_size" min="1" value="{{ pre_class_size|default(24) }}" style="min-width: 80px;">
       </div>
+      <div>
+        <label for="desiredServing">Desired Servings</label><br>
+        <input type="number" id="desiredServing" name="desired_serving" min="1" value="{{ pre_desired_serving|default('') }}" style="min-width: 80px;">
+      </div>
       <div style="flex: 1 1 100px; text-align: right;">
         <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-right: 8px;">Save booking</button>
         <button type="button" class="btn btn-secondary" id="reset-btn">RESET</button>
@@ -93,6 +97,7 @@
           <th>Staff</th>
           <th>Class</th>
           <th>Class Size</th>
+          <th>Desired Servings</th>
           <th>Recipe</th>
         </tr>
       </thead>
@@ -106,12 +111,14 @@
           data-period="{{ booking.period }}"
           data-recipe="{{ booking.recipe_id }}"
           data-servings="{{ booking.servings }}"
-          data-class-size="{{ booking.class_size or 24 }}">
+          data-class-size="{{ booking.class_size or 24 }}"
+          data-desired-serving="{{ booking.desired_serving or '' }}">
           <td>{{ booking.date_required }}</td>
           <td>{{ booking.period }}</td>
           <td>{{ booking.first_name }} {{ booking.last_name }}</td>
           <td>{{ booking.class_code }}</td>
           <td>{{ booking.class_size or 24 }}</td>
+          <td>{{ booking.desired_serving or '' }}</td>
           <td>{{ booking.recipe_name }}</td>
           <td>
             <form method="get" action="/book_a_class" style="display:inline;">
@@ -131,28 +138,29 @@
 
 <script>
 // RESET button functionality for Book a Class form
-document.addEventListener('DOMContentLoaded', function() {
-  const resetBtn = document.getElementById('reset-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', function() {
-      const form = resetBtn.closest('form');
-      if (form) {
-        // Reset all fields to their initial values
-        // Set staff to pre_staff_code
-        const staffSelect = document.getElementById('staff');
-        if (staffSelect) {
-          const preStaff = '{{ pre_staff_code|escapejs }}';
-          staffSelect.value = preStaff;
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        const form = resetBtn.closest('form');
+        if (form) {
+          // Set staff to pre_staff_code
+          const staffSelect = document.getElementById('staff');
+          if (staffSelect) {
+            const preStaff = '{{ pre_staff_code|escapejs }}';
+            staffSelect.value = preStaff;
+          }
+          // Reset class, date, period, recipe, class size
+          document.getElementById('classcode').selectedIndex = 0;
+          document.getElementById('date').value = '';
+          document.getElementById('period').selectedIndex = 0;
+          document.getElementById('recipeSelect').selectedIndex = 0;
+          document.getElementById('classSize').value = 24;
         }
-        // Reset class, date, period, recipe, class size
-        document.getElementById('classcode').selectedIndex = 0;
-        document.getElementById('date').value = '';
-        document.getElementById('period').selectedIndex = 0;
-        document.getElementById('recipeSelect').selectedIndex = 0;
-        document.getElementById('classSize').value = 24;
-      }
-    });
-  }
+      });
+    }
+  }, 0);
 });
 
 
