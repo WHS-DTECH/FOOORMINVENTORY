@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Recipe Source Details</h2>
+    {% if recipe %}
+        <table class="table table-bordered mt-3">
+            <tr><th>Name</th><td>{{ recipe.name }}</td></tr>
+            <tr><th>Source URL</th><td>{{ recipe.source_url or 'N/A' }}</td></tr>
+            <tr><th>Ingredients</th><td><pre>{{ recipe.ingredients }}</pre></td></tr>
+            <tr><th>Instructions</th><td><pre>{{ recipe.instructions }}</pre></td></tr>
+            <tr><th>Serving Size</th><td>{{ recipe.servings_size or 'N/A' }}</td></tr>
+            <tr><th>Equipment</th><td>{{ recipe.equipment or 'N/A' }}</td></tr>
+            <tr><th>Dietary Tags</th><td>{{ recipe.dietary_tags or 'N/A' }}</td></tr>
+            <tr><th>Cuisine</th><td>{{ recipe.cuisine or 'N/A' }}</td></tr>
+            <tr><th>Difficulty</th><td>{{ recipe.difficulty or 'N/A' }}</td></tr>
+        </table>
+        <a href="{{ url_for('recipe_book.recbk') }}" class="btn btn-secondary">Back to Recipe Book</a>
+    {% else %}
+        <div class="alert alert-danger">Recipe not found.</div>
+    {% endif %}
+</div>
+{% endblock %}
