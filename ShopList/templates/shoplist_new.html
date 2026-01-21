@@ -46,7 +46,7 @@
           {% for booking in tinfo.bookings %}
             <li style="display: flex; align-items: center; margin-bottom: 2px; cursor:pointer;" class="booking-class-item" data-recipe-id="{{ booking.recipe_id }}">
               <input type="checkbox" class="booking-checkbox" style="margin-right: 8px;" 
-                data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}" data-recipe-id="{{ booking.recipe_id }}">
+                data-date="{{ booking.date }}" data-class="{{ booking.class }}" data-recipe="{{ booking.recipe }}" data-recipe-id="{{ booking.recipe_id }}" data-servings="{{ booking.servings }}">
               <span>{{ booking.date }} | {{ booking.class }} | 
                 {% if booking.recipe_id %}
                   <a href="/recipe/{{ booking.recipe_id }}" target="_blank">{{ booking.recipe }}</a>
