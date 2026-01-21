@@ -1,4 +1,3 @@
-
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -63,6 +62,7 @@ from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
 from debug_parser.utils import extract_raw_text_from_url
 from auth.google_auth import google_auth_bp
+from ingredients.ingredients import ingredients_bp
 
 
 # =======================
@@ -127,6 +127,9 @@ app.register_blueprint(debug_parser_bp)
 
 # Register the google_auth blueprint so /auth/callback is handled.
 app.register_blueprint(google_auth_bp)
+
+# Register the ingredients blueprint
+app.register_blueprint(ingredients_bp)
 
 # Error Handlers
 @app.errorhandler(404)

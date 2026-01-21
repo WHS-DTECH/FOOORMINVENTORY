@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2em auto;">
+  <h1 style="font-size: 2em; font-weight: bold;">Ingredients Inventory</h1>
+  <table class="table table-striped" style="margin-top: 2em;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Quantity</th>
+        <th>Unit</th>
+        <th>Category</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ing in ingredients %}
+      <tr>
+        <td>{{ ing.ingredient_name }}</td>
+        <td>{{ ing.quantity or '' }}</td>
+        <td>{{ ing.unit or '' }}</td>
+        <td>{{ ing.category or '' }}</td>
+        <td>{{ ing.last_updated or '' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
