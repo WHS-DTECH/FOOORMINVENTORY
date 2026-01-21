@@ -162,46 +162,49 @@
 
   // Link class selector with recipe dropdown and auto-calculate
   document.addEventListener('DOMContentLoaded', function() {
-    // When a booking checkbox is checked, update the recipe dropdown and trigger calculation
+    // When a booking checkbox is checked, update the recipe dropdown and servings input
     document.querySelectorAll('.booking-checkbox').forEach(function(cb) {
       cb.addEventListener('change', function() {
         const recipeSelect = document.getElementById('recipeSelectShopping');
+        const servingsInput = document.getElementById('servingsInputShopping');
         if (this.checked) {
           // Uncheck all other checkboxes
           document.querySelectorAll('.booking-checkbox').forEach(function(other) {
             if (other !== cb) other.checked = false;
           });
-          // Set recipe dropdown and trigger change, ensuring dropdown is ready
+          // Set recipe dropdown and servings input
           const recipeId = this.getAttribute('data-recipe-id');
-          if (recipeSelect) {
-            renderRecipeOptionsShopping();
-            setTimeout(() => {
-              let found = false;
-              if (recipeId && recipeSelect.querySelector(`option[value="${recipeId}"]`)) {
-                recipeSelect.value = recipeId;
-                found = true;
-              }
-              // Fallback: try to match by recipe name if ID is missing or not found
-              if (!found) {
-                // Try to get recipe name from the parent li span
-                let recipeName = '';
-                const li = cb.closest('li');
-                if (li) {
-                  const span = li.querySelector('span');
-                  if (span) {
-                    recipeName = span.innerText.split('|').pop().trim();
-                  }
-                }
-                if (recipeName) {
-                  const rec = recipesShopping.find(r => r.name && r.name.trim() === recipeName);
-                  if (rec) {
-                    recipeSelect.value = rec.id;
-                  }
+          const servings = this.getAttribute('data-servings');
+          renderRecipeOptionsShopping();
+          setTimeout(() => {
+            let found = false;
+            if (recipeId && recipeSelect.querySelector(`option[value="${recipeId}"]`)) {
+              recipeSelect.value = recipeId;
+              found = true;
+            }
+            // Fallback: try to match by recipe name if ID is missing or not found
+            if (!found) {
+              let recipeName = '';
+              const li = cb.closest('li');
+              if (li) {
+                const span = li.querySelector('span');
+                if (span) {
+                  recipeName = span.innerText.split('|').pop().trim();
                 }
               }
-              recipeSelect.dispatchEvent(new Event('change'));
-            }, 0);
-          }
+              if (recipeName) {
+                const rec = recipesShopping.find(r => r.name && r.name.trim() === recipeName);
+                if (rec) {
+                  recipeSelect.value = rec.id;
+                }
+              }
+            }
+            // Set servings input if available
+            if (servingsInput && servings && !isNaN(servings)) {
+              servingsInput.value = servings;
+            }
+            recipeSelect.dispatchEvent(new Event('change'));
+          }, 0);
         } else {
           // If unchecked, reset recipe dropdown and ingredient panels
           if (recipeSelect) {
