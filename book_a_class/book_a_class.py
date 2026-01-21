@@ -123,14 +123,14 @@ def book_a_class():
     '''
     params = []
     if search:
-        query += '''WHERE (
-            LOWER(cb.class_code) LIKE ? OR
-            LOWER(r.name) LIKE ? OR
-            LOWER(t.first_name) LIKE ? OR
-            LOWER(t.last_name) LIKE ? OR
-            CAST(cb.period AS TEXT) LIKE ? OR
-            CAST(cb.class_size AS TEXT) LIKE ? OR
-            DATE(cb.date_required) LIKE ?
+        query += ''' WHERE (
+            LOWER(cb.class_code) LIKE %s OR
+            LOWER(r.name) LIKE %s OR
+            LOWER(t.first_name) LIKE %s OR
+            LOWER(t.last_name) LIKE %s OR
+            CAST(cb.period AS TEXT) LIKE %s OR
+            CAST(cb.class_size AS TEXT) LIKE %s OR
+            CAST(cb.date_required AS TEXT) LIKE %s
         )'''
         s = f"%{search.lower()}%"
         params = [s, s, s, s, s, s, s]
