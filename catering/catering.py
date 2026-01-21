@@ -40,7 +40,13 @@ def catering():
                 'class_size': row['class_size'],
                 'desired_serving': row['desired_serving'],
             })
-        # Also pass all recipes for lookup if needed
-        c.execute('SELECT id, name, serving_size FROM recipes ORDER BY LOWER(name)')
-        recipes = [dict(row) for row in c.fetchall()]
+        # Also pass all recipes for lookup if needed (with ingredients)
+        c.execute('SELECT id, name, ingredients, serving_size FROM recipes ORDER BY LOWER(name)')
+        recipes = []
+        for r in c.fetchall():
+            try:
+                ings = json.loads(r['ingredients'] or '[]')
+            except Exception:
+                ings = []
+            recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
     return render_template('catering.html', bookings=bookings, recipes=recipes)

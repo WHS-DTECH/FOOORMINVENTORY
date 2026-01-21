@@ -25,18 +25,29 @@
       </tbody>
     </table>
   </div>
-  <div id="bookingDetails" style="margin-top:2em; display:none;">
-    <h3>Selected Booking</h3>
-    <div><b>Class:</b> <span id="selectedClass"></span></div>
-    <div><b>Teacher:</b> <span id="selectedTeacher"></span></div>
-    <div><b>Recipe:</b> <span id="selectedRecipe"></span></div>
-    <div><b>Serving Size:</b> <span id="selectedServings"></span></div>
-    <form id="servingCalcForm" style="margin-top:1em;">
-      <label>Desired Servings: <input type="number" id="desiredServings" min="1" value="" style="width:60px;"></label>
-      <button type="submit">Calculate</button>
-      <button type="button" id="singleServeBtn">Single Serve</button>
-    </form>
-    <div id="calcResult" style="margin-top:1em;"></div>
+  <div id="bookingRow" style="margin-top:2em; display:none;">
+    <div style="display:flex; gap:2em; align-items:flex-start;">
+      <div style="flex:1; min-width:320px;">
+        <h3>Selected Booking</h3>
+        <div><b>Class:</b> <span id="selectedClass"></span></div>
+        <div><b>Teacher:</b> <span id="selectedTeacher"></span></div>
+        <div><b>Recipe:</b> <span id="selectedRecipe"></span></div>
+        <div><b>Serving Size:</b> <span id="selectedServings"></span></div>
+        <form id="servingCalcForm" style="margin-top:1em;">
+          <label>Desired Servings: <input type="number" id="desiredServings" min="1" value="" style="width:60px;"></label>
+          <button type="submit">Calculate</button>
+          <button type="button" id="singleServeBtn">Single Serve</button>
+        </form>
+        <div id="calcResult" style="margin-top:1em;"></div>
+      </div>
+      <div style="flex:1; min-width:320px; background:#f8f8f8; border-radius:8px; padding:1em;">
+        <h4>Recipe Details</h4>
+        <div><b id="recipeDetailName"></b></div>
+        <div><b>Ingredients:</b>
+          <ul id="recipeDetailIngredients" style="margin:0.5em 0 0 1.2em;"></ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <script>
@@ -58,13 +69,30 @@ function fillGrid() {
 function setupBookingClicks() {
   document.querySelectorAll('.booking-cell').forEach(el => {
     el.onclick = function() {
-      document.getElementById('bookingDetails').style.display = 'block';
+      document.getElementById('bookingRow').style.display = 'block';
       document.getElementById('selectedClass').textContent = this.dataset.class;
       document.getElementById('selectedTeacher').textContent = this.dataset.teacher || '';
       document.getElementById('selectedRecipe').textContent = this.dataset.recipe;
       document.getElementById('selectedServings').textContent = this.dataset.servings || 'N/A';
       document.getElementById('desiredServings').value = this.dataset.servings || '';
       document.getElementById('calcResult').innerHTML = '';
+      // Recipe details (right column)
+      const recipeId = parseInt(this.dataset.recipeid);
+      const recipe = recipes.find(r => r.id === recipeId);
+      document.getElementById('recipeDetailName').textContent = recipe ? recipe.name : '';
+      const ingredList = document.getElementById('recipeDetailIngredients');
+      ingredList.innerHTML = '';
+      if (recipe && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
+        recipe.ingredients.forEach(ing => {
+          const li = document.createElement('li');
+          li.textContent = ing;
+          ingredList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = 'No ingredients found.';
+        ingredList.appendChild(li);
+      }
       document.getElementById('servingCalcForm').onsubmit = function(e) {
         e.preventDefault();
         const desired = parseInt(document.getElementById('desiredServings').value) || 1;
