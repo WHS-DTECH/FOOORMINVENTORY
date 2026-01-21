@@ -17,6 +17,10 @@
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px 0;">
   <h1 style="font-size: 2.2em; font-weight: bold; margin-bottom: 18px;">Book a Class</h1>
   <style>
+        .sort-active {
+          color: #007bff !important;
+          font-weight: bold;
+        }
     .container { margin-left: 24px; margin-right: 24px; }
   </style>
   <form id="bookingForm" method="post" style="background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 24px 12px 24px; margin-bottom: 28px;">
@@ -184,6 +188,9 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Simple table sorting for Scheduled Bookings (global scope)
 var sortDirections = {};
+// Track the last sorted column for highlighting
+var lastSortedCol = null;
+
 function sortTable(col, type) {
   var table = document.getElementById('bookingsTable');
   var tbody = table.tBodies[0];
@@ -208,6 +215,16 @@ function sortTable(col, type) {
     return 0;
   });
   rows.forEach(function(row) { tbody.appendChild(row); });
+
+  // Highlight the active column header
+  var ths = table.tHead.rows[0].cells;
+  for (var i = 0; i < ths.length; i++) {
+    ths[i].classList.remove('sort-active');
+  }
+  if (ths[col]) {
+    ths[col].classList.add('sort-active');
+  }
+  lastSortedCol = col;
 }
 
 
