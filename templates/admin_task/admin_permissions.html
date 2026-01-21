@@ -61,63 +61,37 @@
         <a href="/admin" class="admin-btn">← Back to Admin</a>
     </div>
 
-    <div style="overflow-x: auto;">
-        <table id="permissions-table" style="width: 100%; border-collapse: collapse; margin: 20px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <thead>
-                <tr>
-                    <th style="padding: 14px; text-align: left; border: 1px solid #000;">Role</th>
-                    {% if routes is defined %}
+    <form method="post" action="" id="permissions-form">
+        <div style="overflow-x: auto;">
+            <table id="permissions-table" style="width: 100%; border-collapse: collapse; margin: 20px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <thead>
+                    <tr>
+                        <th style="padding: 14px; text-align: left; border: 1px solid #000;">Role</th>
                         {% for route in routes %}
                         <th style="padding: 14px; text-align: center; border: 1px solid #000;">{{ route|title }}</th>
                         {% endfor %}
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% if roles is defined and routes is defined and permissions is defined %}
+                    </tr>
+                </thead>
+                <tbody>
                     {% for role in roles %}
                     <tr style="border-bottom: 1px solid #ddd;">
                         <td style="padding: 12px; font-weight: bold; background-color: #f8f9fa; border: 1px solid #ddd;">
-                            {% if role == 'VP' %}
-                            Admin
-                            {% elif role == 'DK' %}
-                            Teacher
-                            {% elif role == 'MU' %}
-                            Technician
-                            {% elif role == 'public' %}
-                            Public Access
-                            {% else %}
                             {{ role }}
-                            {% endif %}
                         </td>
                         {% for route in routes %}
                         <td style="padding: 12px; text-align: center; border: 1px solid #ddd;">
-                            {% set has_permission = permissions.get(role, []) and route in permissions.get(role, []) %}
-                            {% if has_permission %}
-                                {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #00aa00; text-shadow: 0 0 2px rgba(0, 170, 0, 0.3);" %}
-                                {% set btn_title = "Click to remove access" %}
-                                {% set btn_icon = "✓" %}
-                                {% set action = "remove" %}
-                            {% else %}
-                                {% set btn_style = "background: none; border: none; cursor: pointer; font-size: 28px; padding: 0; font-weight: bold; color: #ff0000; text-shadow: 0 0 2px rgba(255, 0, 0, 0.3);" %}
-                                {% set btn_title = "Click to grant access" %}
-                                {% set btn_icon = "✗" %}
-                                {% set action = "add" %}
-                            {% endif %}
-                            <form method="post" style="display: inline;">
-                                <input type="hidden" name="role" value="{{ role }}">
-                                <input type="hidden" name="route" value="{{ route }}">
-                                <input type="hidden" name="action" value="{{ action }}">
-                                <button type="submit" style="{{ btn_style }}" title="{{ btn_title }}">{{ btn_icon }}</button>
-                            </form>
+                            <input type="checkbox" name="perm_{{ role }}_{{ route }}" value="1" {% if permissions[role][route] %}checked{% endif %}>
                         </td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin: 20px 0;">
+            <button type="submit" class="admin-btn">Save Changes</button>
+        </div>
+    </form>
 
     <div class="panel-info">
         <h3 style="margin-top: 0;">Route Descriptions</h3>

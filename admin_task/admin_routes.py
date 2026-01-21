@@ -10,10 +10,36 @@ from . import admin_task_bp
 @admin_task_bp.route('/admin/permissions')
 @require_role('Admin')
 def admin_permissions():
-    # Dummy data for now; replace with real DB logic as needed
     roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
-    permissions = {role: [] for role in roles}
     routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
+    permissions = {role: {route: False for route in routes} for role in roles}
+    if request.method == 'POST':
+        # Build new permissions from form data
+        new_permissions = {role: {route: False for route in routes} for role in roles}
+        for role in roles:
+            for route in routes:
+                key = f'perm_{role}_{route}'
+                if request.form.get(key) == '1':
+                    new_permissions[role][route] = True
+        # Update DB
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            for role in roles:
+                for route in routes:
+                    c.execute('UPDATE role_permissions SET has_access = ? WHERE role = ? AND route = ?', (new_permissions[role][route], role, route))
+            conn.commit()
+        flash('Permissions updated successfully.')
+        permissions = new_permissions
+    else:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT role, route, has_access FROM role_permissions')
+            for row in c.fetchall():
+                role = row['role']
+                route = row['route']
+                has_access = row['has_access']
+                if role in permissions and route in permissions[role]:
+                    permissions[role][route] = has_access
     return render_template('admin_task/admin_permissions.html', permissions=permissions, routes=routes, roles=roles)
 
 # --- Admin User Roles Page ---
