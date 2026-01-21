@@ -11,25 +11,40 @@ from . import admin_task_bp
 @require_role('Admin')
 def admin_permissions():
     roles = ['Admin', 'Teacher', 'Technician', 'Public Access']
-    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup']
+    routes = ['recipes', 'recbk', 'class_ingredients', 'booking', 'shoplist', 'admin', 'recipe_book_setup', 'recipe_editor']
     permissions = {role: {route: False for route in routes} for role in roles}
     if request.method == 'POST':
-        # Build new permissions from form data
-        new_permissions = {role: {route: False for route in routes} for role in roles}
-        for role in roles:
-            for route in routes:
-                key = f'perm_{role}_{route}'
-                if request.form.get(key) == '1':
-                    new_permissions[role][route] = True
-        # Update DB
-        with get_db_connection() as conn:
-            c = conn.cursor()
+        # Handle new role creation
+        if request.form.get('add_role') == '1':
+            new_role = request.form.get('new_role', '').strip()
+            if new_role and new_role not in roles:
+                roles.append(new_role)
+                with get_db_connection() as conn:
+                    c = conn.cursor()
+                    for route in routes:
+                        # Default: no access
+                        c.execute('INSERT INTO role_permissions (role, route, has_access) VALUES (%s, %s, %s)', (new_role, route, False))
+                    conn.commit()
+                flash(f'Role "{new_role}" added successfully.')
+            else:
+                flash('Role name is empty or already exists.', 'error')
+        else:
+            # Build new permissions from form data
+            new_permissions = {role: {route: False for route in routes} for role in roles}
             for role in roles:
                 for route in routes:
-                    c.execute('UPDATE role_permissions SET has_access = %s WHERE role = %s AND route = %s', (new_permissions[role][route], role, route))
-            conn.commit()
-        flash('Permissions updated successfully.')
-        permissions = new_permissions
+                    key = f'perm_{role}_{route}'
+                    if request.form.get(key) == '1':
+                        new_permissions[role][route] = True
+            # Update DB
+            with get_db_connection() as conn:
+                c = conn.cursor()
+                for role in roles:
+                    for route in routes:
+                        c.execute('UPDATE role_permissions SET has_access = %s WHERE role = %s AND route = %s', (new_permissions[role][route], role, route))
+                conn.commit()
+            flash('Permissions updated successfully.')
+            permissions = new_permissions
     else:
         with get_db_connection() as conn:
             c = conn.cursor()

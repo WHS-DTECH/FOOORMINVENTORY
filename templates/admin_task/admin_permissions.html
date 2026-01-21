@@ -62,13 +62,18 @@
     </div>
 
     <form method="post" action="" id="permissions-form">
+        <form method="post" action="" id="add-role-form" style="margin-bottom: 24px;">
+            <label for="new_role" style="font-weight: bold;">Add New Role:</label>
+            <input type="text" name="new_role" id="new_role" placeholder="Enter role name" style="margin-right: 8px;">
+            <button type="submit" name="add_role" value="1" class="admin-btn">Add Role</button>
+        </form>
         <div style="overflow-x: auto;">
             <table id="permissions-table" style="width: 100%; border-collapse: collapse; margin: 20px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <thead>
                     <tr>
                         <th style="padding: 14px; text-align: left; border: 1px solid #000;">Role</th>
                         {% for route in routes %}
-                        <th style="padding: 14px; text-align: center; border: 1px solid #000;">{{ route|title }}</th>
+                        <th style="padding: 14px; text-align: center; border: 1px solid #000;">{{ route|replace('_', ' ')|title }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -102,6 +107,7 @@
             <li><strong>booking:</strong> Class booking system for scheduling</li>
             <li><strong>shoplist:</strong> Shopping list generator for classes</li>
             <li><strong>admin:</strong> Administrative functions (staff/class upload, recipe management, permissions)</li>
+            <li><strong>recipe_editor:</strong> Recipe Editor - Edit recipes directly (limited editor access)</li>
         </ul>
     </div>
 
