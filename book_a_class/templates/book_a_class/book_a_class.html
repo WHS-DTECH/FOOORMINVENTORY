@@ -16,6 +16,9 @@
   {% endwith %}
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px 0;">
   <h1 style="font-size: 2.2em; font-weight: bold; margin-bottom: 18px;">Book a Class</h1>
+  <style>
+    .container { margin-left: 24px; margin-right: 24px; }
+  </style>
   <form id="bookingForm" method="post" style="background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 24px 12px 24px; margin-bottom: 28px;">
     {% set edit_id = request.args.get('edit_booking_id') or request.form.get('edit_booking_id') or pre_edit_booking_id %}
     {% if edit_id %}
@@ -95,7 +98,7 @@
           <th style="cursor:pointer" onclick="sortTable(3, 'text')">Class &#x25B2;&#x25BC;</th>
           <th style="cursor:pointer" onclick="sortTable(4, 'num')">Class Size &#x25B2;&#x25BC;</th>
           <!-- Desired Servings column removed as requested -->
-          <th style="cursor:pointer" onclick="sortTable(6, 'text')">Recipe &#x25B2;&#x25BC;</th>
+          <th style="cursor:pointer" onclick="sortTable(5, 'text')">Recipe &#x25B2;&#x25BC;</th>
           <th> </th>
         </tr>
       </thead>
@@ -148,33 +151,6 @@ window.addEventListener('DOMContentLoaded', function() {
           if (staffSelect) {
             const preStaff = '{{ pre_staff_code|escapejs }}';
             staffSelect.value = preStaff;
-          // Simple table sorting for Scheduled Bookings
-          let sortDirections = {};
-          function sortTable(col, type) {
-            const table = document.getElementById('bookingsTable');
-            const tbody = table.tBodies[0];
-            const rows = Array.from(tbody.rows);
-            sortDirections[col] = !sortDirections[col]; // toggle direction
-            const dir = sortDirections[col] ? 1 : -1;
-            rows.sort((a, b) => {
-              let aText = a.cells[col].innerText.trim();
-              let bText = b.cells[col].innerText.trim();
-              if(type === 'num') {
-                aText = parseFloat(aText) || 0;
-                bText = parseFloat(bText) || 0;
-              } else if(type === 'date') {
-                aText = Date.parse(aText) || 0;
-                bText = Date.parse(bText) || 0;
-              } else {
-                aText = aText.toLowerCase();
-                bText = bText.toLowerCase();
-              }
-              if(aText < bText) return -1 * dir;
-              if(aText > bText) return 1 * dir;
-              return 0;
-            });
-            rows.forEach(row => tbody.appendChild(row));
-          }
           }
           // Reset class, date, period, recipe, class size
           document.getElementById('classcode').selectedIndex = 0;
@@ -187,6 +163,34 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }, 0);
 });
+
+// Simple table sorting for Scheduled Bookings
+let sortDirections = {};
+function sortTable(col, type) {
+  const table = document.getElementById('bookingsTable');
+  const tbody = table.tBodies[0];
+  const rows = Array.from(tbody.rows);
+  sortDirections[col] = !sortDirections[col]; // toggle direction
+  const dir = sortDirections[col] ? 1 : -1;
+  rows.sort((a, b) => {
+    let aText = a.cells[col].innerText.trim();
+    let bText = b.cells[col].innerText.trim();
+    if(type === 'num') {
+      aText = parseFloat(aText) || 0;
+      bText = parseFloat(bText) || 0;
+    } else if(type === 'date') {
+      aText = Date.parse(aText) || 0;
+      bText = Date.parse(bText) || 0;
+    } else {
+      aText = aText.toLowerCase();
+      bText = bText.toLowerCase();
+    }
+    if(aText < bText) return -1 * dir;
+    if(aText > bText) return 1 * dir;
+    return 0;
+  });
+  rows.forEach(row => tbody.appendChild(row));
+}
 
 
 
