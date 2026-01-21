@@ -26,7 +26,7 @@ def admin_permissions():
             c = conn.cursor()
             for role in roles:
                 for route in routes:
-                    c.execute('UPDATE role_permissions SET has_access = ? WHERE role = ? AND route = ?', (new_permissions[role][route], role, route))
+                    c.execute('UPDATE role_permissions SET has_access = %s WHERE role = %s AND route = %s', (new_permissions[role][route], role, route))
             conn.commit()
         flash('Permissions updated successfully.')
         permissions = new_permissions
