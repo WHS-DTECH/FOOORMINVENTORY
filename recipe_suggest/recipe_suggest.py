@@ -14,7 +14,24 @@ recipe_suggest_bp = Blueprint(
 @recipe_suggest_bp.route('/admin/recipe_suggestions')
 @require_role('Admin')
 def recipe_suggestions():
-    return render_template('recipe_suggest/recipe_suggestions.html')
+    # Fetch all suggestions from the database
+    suggestions = []
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT created_at, recipe_name, suggested_by_name, suggested_by_email, recipe_url, reason FROM recipe_suggestions ORDER BY created_at DESC''')
+            for row in c.fetchall():
+                suggestions.append({
+                    'created_at': row['created_at'],
+                    'recipe_name': row['recipe_name'],
+                    'suggested_by_name': row['suggested_by_name'],
+                    'suggested_by_email': row['suggested_by_email'],
+                    'recipe_url': row['recipe_url'],
+                    'reason': row['reason'],
+                })
+    except Exception as e:
+        print(f"[ERROR] Could not fetch recipe suggestions: {e}")
+    return render_template('recipe_suggest/recipe_suggestions.html', suggestions=suggestions)
 
 @recipe_suggest_bp.route('/suggest_recipe', methods=['POST'])
 def suggest_recipe_modal():
