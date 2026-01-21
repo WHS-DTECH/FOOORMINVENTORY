@@ -17,8 +17,9 @@
 <div class="container" style="max-width: 900px; margin: 0 auto; padding: 24px 0;">
   <h1 style="font-size: 2.2em; font-weight: bold; margin-bottom: 18px;">Book a Class</h1>
   <form id="bookingForm" method="post" style="background: #f8fafc; border-radius: 10px; box-shadow: 0 2px 8px #e0e4ea; padding: 18px 24px 12px 24px; margin-bottom: 28px;">
-    {% if request.args.get('edit_booking_id') or request.form.get('edit_booking_id') %}
-      <input type="hidden" name="edit_booking_id" value="{{ request.args.get('edit_booking_id', request.form.get('edit_booking_id')) }}">
+    {% set edit_id = request.args.get('edit_booking_id') or request.form.get('edit_booking_id') or pre_edit_booking_id %}
+    {% if edit_id %}
+      <input type="hidden" name="edit_booking_id" value="{{ edit_id }}">
     {% endif %}
     <div style="display: flex; flex-wrap: wrap; gap: 18px 32px; align-items: flex-end;">
       <div>

@@ -111,7 +111,8 @@ def book_a_class():
                           most_used_staff_count=len(most_used_staff), most_used_classes_count=len(most_used_classes),
                           pre_staff_code=staff_code, pre_class_code=class_code, 
                           pre_date_required=date_required, pre_period=period,
-                          pre_recipe_id=recipe_id, pre_class_size=class_size or 24)
+                          pre_recipe_id=recipe_id, pre_class_size=class_size or 24,
+                          pre_edit_booking_id=edit_booking_id)
 
 @book_a_class_bp.route('/class_ingredients/download', methods=['POST'])
 @require_role('VP', 'DK')
