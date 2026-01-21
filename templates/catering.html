@@ -83,7 +83,13 @@ function setupBookingClicks() {
       console.log('Selected booking recipeId:', recipeId);
       console.log('Available recipe ids:', recipes.map(r => r.id));
       const recipe = recipes.find(r => r.id === recipeId);
-      document.getElementById('recipeDetailName').textContent = recipe ? recipe.name : '';
+      // Make recipe name a hyperlink to /recipe/<recipeId>
+      const recipeDetailName = document.getElementById('recipeDetailName');
+      if (recipe) {
+        recipeDetailName.innerHTML = `<a href="/recipe/${recipe.id}" target="_blank">${recipe.name}</a>`;
+      } else {
+        recipeDetailName.textContent = '';
+      }
       document.getElementById('recipeDetailId').textContent = recipe ? `(ID: ${recipe.id})` : '';
       const ingredList = document.getElementById('recipeDetailIngredients');
       ingredList.innerHTML = '';
