@@ -111,33 +111,24 @@
     <!-- Current User Roles -->
     <div class="panel">
         <h3>Users with Additional Roles</h3>
-        
         <table id="userRolesTable" style="width: 100%; border-collapse: collapse; margin-top: 12px;">
             <thead>
                 <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
                     <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Email</th>
                     <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Roles</th>
-                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% set role_map = {'VP': 'Admin', 'DK': 'Teacher', 'MU': 'Technician', 'public': 'Public Access'} %}
-                {% if all_users is defined %}
-                    {% for user in all_users %}
-                    <tr style="border-bottom: 1px solid #dee2e6;" data-roles="{{ user.all_roles }}">
-                        <td style="padding: 12px; border: 1px solid #dee2e6;">{{ user.email }}</td>
-                        <td style="padding: 12px; border: 1px solid #dee2e6;">
-                            {% set display_roles = user.all_roles.split(', ') %}
-                            {% for r in display_roles %}
-                                <span class="role-badge">{{ role_map.get(r, r) }}</span>
-                            {% endfor %}
-                        </td>
-                        <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                            <button onclick="showRemoveForm('{{ user.email }}', '{{ user.all_roles }}')" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Roles</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% endif %}
+                {% for user in users %}
+                <tr style="border-bottom: 1px solid #dee2e6;">
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">{{ user.email }}</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">
+                        {% for r in user.roles %}
+                            <span class="role-badge">{{ r }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
