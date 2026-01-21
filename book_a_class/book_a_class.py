@@ -19,8 +19,8 @@ def book_a_class():
     recipe_id = request.form.get('recipe') if request.method == 'POST' else None
     class_size = request.form.get('class_size') if request.method == 'POST' else None
 
-    # If editing, pre-fill form fields from booking
-    if edit_booking_id:
+    # If editing, pre-fill form fields from booking ONLY on GET
+    if edit_booking_id and request.method == 'GET':
         with get_db_connection() as conn:
             c = conn.cursor()
             c.execute('SELECT * FROM class_bookings WHERE id = %s', (edit_booking_id,))

@@ -70,7 +70,7 @@
       </div>
       <div style="flex: 1 1 100px; text-align: right;">
         <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-right: 8px;">Save booking</button>
-        <button type="button" class="btn btn-secondary" id="clear-btn">Clear</button>
+        <button type="button" class="btn btn-secondary" id="reset-btn">RESET</button>
       </div>
     </div>
     <div style="display: flex; gap: 32px; margin-top: 18px;">
@@ -130,20 +130,26 @@
   {% endblock %}
 
 <script>
-// Clear button functionality for Book a Class form
+// RESET button functionality for Book a Class form
 document.addEventListener('DOMContentLoaded', function() {
-  const clearBtn = document.getElementById('clear-btn');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', function() {
-      const form = clearBtn.closest('form');
+  const resetBtn = document.getElementById('reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      const form = resetBtn.closest('form');
       if (form) {
-        form.reset();
-        // Reset all selects
-        const selects = form.querySelectorAll('select');
-        selects.forEach(sel => {
-          sel.selectedIndex = 0;
-          sel.dispatchEvent(new Event('change'));
-        });
+        // Reset all fields to their initial values
+        // Set staff to pre_staff_code
+        const staffSelect = document.getElementById('staff');
+        if (staffSelect) {
+          const preStaff = '{{ pre_staff_code|escapejs }}';
+          staffSelect.value = preStaff;
+        }
+        // Reset class, date, period, recipe, class size
+        document.getElementById('classcode').selectedIndex = 0;
+        document.getElementById('date').value = '';
+        document.getElementById('period').selectedIndex = 0;
+        document.getElementById('recipeSelect').selectedIndex = 0;
+        document.getElementById('classSize').value = 24;
       }
     });
   }
