@@ -58,6 +58,7 @@ from book_a_class.book_a_class import book_a_class_bp
 from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
 from debug_parser.utils import extract_raw_text_from_url
+from auth.google_auth import google_auth_bp
 
 
 # =======================
@@ -119,6 +120,9 @@ app.register_blueprint(recipe_suggest_bp)
 # Register debug_parser blueprint
 from debug_parser import debug_parser_bp
 app.register_blueprint(debug_parser_bp)
+
+# Register the google_auth blueprint so /auth/callback is handled.
+app.register_blueprint(google_auth_bp)
 
 # Error Handlers
 @app.errorhandler(404)

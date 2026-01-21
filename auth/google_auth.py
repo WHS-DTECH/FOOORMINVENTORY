@@ -4,7 +4,12 @@
 def login():
     pass
 
+from flask import Blueprint
+google_auth_bp = Blueprint('google_auth', __name__)
+
+@google_auth_bp.route('/auth/callback')
 def callback():
+    print("[DEBUG] /auth/callback route hit!")
     import os
     import psycopg2
     from flask import request, session, redirect, url_for
