@@ -61,8 +61,25 @@ def admin_permissions():
 @admin_task_bp.route('/admin/user_roles')
 @require_role('Admin')
 def admin_user_roles():
-    # Dummy data for now; replace with real DB logic as needed
     users = []
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Get all staff emails from teachers table
+        c.execute('SELECT email FROM teachers WHERE email IS NOT NULL')
+        staff_emails = [row['email'].strip().lower() for row in c.fetchall()]
+        # Get all user roles
+        c.execute('SELECT email, role FROM user_roles')
+        user_roles = {}
+        for row in c.fetchall():
+            email = row['email'].strip().lower()
+            role = row['role']
+            if email not in user_roles:
+                user_roles[email] = []
+            user_roles[email].append(role)
+        # Build user list for template
+        for email in staff_emails:
+            roles = user_roles.get(email, ['Public Access'])
+            users.append({'email': email, 'roles': roles})
     return render_template('admin_task/admin_user_roles.html', users=users)
 
 # --- Recipe Book Setup Page ---
