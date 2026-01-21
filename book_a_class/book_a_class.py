@@ -99,22 +99,49 @@ def book_a_class():
             ings = []
         recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
 
+    # Server-side search and sort for Scheduled Bookings
+    search = request.args.get('search', '').strip()
+    sort_col = request.args.get('sort', 'date_required')
+    sort_dir = request.args.get('dir', 'desc')
+    valid_cols = {
+        'date_required': 'cb.date_required',
+        'period': 'cb.period',
+        'staff': 't.last_name',
+        'class': 'cb.class_code',
+        'class_size': 'cb.class_size',
+        'recipe': 'r.name'
+    }
+    order_by = valid_cols.get(sort_col, 'cb.date_required')
+    order_dir = 'ASC' if sort_dir == 'asc' else 'DESC'
+    query = '''
+        SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, \
+               cb.recipe_id, cb.class_size, r.name as recipe_name,
+               t.first_name, t.last_name
+        FROM class_bookings cb
+        LEFT JOIN recipes r ON cb.recipe_id = r.id
+        LEFT JOIN teachers t ON cb.staff_code = t.code
+    '''
+    params = []
+    if search:
+        query += '''WHERE (
+            LOWER(cb.class_code) LIKE ? OR
+            LOWER(r.name) LIKE ? OR
+            LOWER(t.first_name) LIKE ? OR
+            LOWER(t.last_name) LIKE ? OR
+            CAST(cb.period AS TEXT) LIKE ? OR
+            CAST(cb.class_size AS TEXT) LIKE ? OR
+            DATE(cb.date_required) LIKE ?
+        )'''
+        s = f"%{search.lower()}%"
+        params = [s, s, s, s, s, s, s]
+    query += f" ORDER BY {order_by} {order_dir}, cb.period ASC"
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('''
-            SELECT cb.id, cb.staff_code, cb.class_code, cb.date_required, cb.period, \
-                   cb.recipe_id, cb.class_size, cb.desired_serving, r.name as recipe_name,
-                   t.first_name, t.last_name
-            FROM class_bookings cb
-            LEFT JOIN recipes r ON cb.recipe_id = r.id
-            LEFT JOIN teachers t ON cb.staff_code = t.code
-            ORDER BY cb.date_required DESC, cb.period ASC
-        ''')
+        c.execute(query, params)
         bookings = []
         for row in c.fetchall():
             booking = dict(row)
             booking['class_size'] = row['class_size']
-            booking['desired_serving'] = row.get('desired_serving') if 'desired_serving' in row else ''
             bookings.append(booking)
 
     return render_template('book_a_class.html', staff=staff, classes=classes, recipes=recipes,
