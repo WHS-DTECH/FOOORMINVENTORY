@@ -68,10 +68,7 @@
         <label for="classSize">Class Size</label><br>
         <input type="number" id="classSize" name="class_size" min="1" value="{{ pre_class_size|default(24) }}" style="min-width: 80px;">
       </div>
-      <div>
-        <label for="desiredServing">Desired Servings</label><br>
-        <input type="number" id="desiredServing" name="desired_serving" min="1" value="{{ pre_desired_serving|default('') }}" style="min-width: 80px;">
-      </div>
+      <!-- Desired Servings field removed as requested -->
       <div style="flex: 1 1 100px; text-align: right;">
         <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-right: 8px;">Save booking</button>
         <button type="button" class="btn btn-secondary" id="reset-btn">RESET</button>
@@ -89,16 +86,17 @@
 
   <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 10px;">Scheduled Bookings</h2>
   <div style="overflow-x: auto;">
-    <table class="table table-striped" style="min-width: 700px; background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #e0e4ea;">
+    <table class="table table-striped" id="bookingsTable" style="min-width: 700px; background: #fff; border-radius: 8px; box-shadow: 0 1px 2px #e0e4ea;">
       <thead>
         <tr style="background: #f3f6fa;">
-          <th>Date</th>
-          <th>Period</th>
-          <th>Staff</th>
-          <th>Class</th>
-          <th>Class Size</th>
-          <th>Desired Servings</th>
-          <th>Recipe</th>
+          <th style="cursor:pointer" onclick="sortTable(0, 'date')">Date &#x25B2;&#x25BC;</th>
+          <th style="cursor:pointer" onclick="sortTable(1, 'num')">Period &#x25B2;&#x25BC;</th>
+          <th style="cursor:pointer" onclick="sortTable(2, 'text')">Staff &#x25B2;&#x25BC;</th>
+          <th style="cursor:pointer" onclick="sortTable(3, 'text')">Class &#x25B2;&#x25BC;</th>
+          <th style="cursor:pointer" onclick="sortTable(4, 'num')">Class Size &#x25B2;&#x25BC;</th>
+          <!-- Desired Servings column removed as requested -->
+          <th style="cursor:pointer" onclick="sortTable(6, 'text')">Recipe &#x25B2;&#x25BC;</th>
+          <th> </th>
         </tr>
       </thead>
       <tbody>
@@ -112,13 +110,13 @@
           data-recipe="{{ booking.recipe_id }}"
           data-servings="{{ booking.servings }}"
           data-class-size="{{ booking.class_size or 24 }}"
-          data-desired-serving="{{ booking.desired_serving or '' }}">
+          >
           <td>{{ booking.date_required }}</td>
           <td>{{ booking.period }}</td>
           <td>{{ booking.first_name }} {{ booking.last_name }}</td>
           <td>{{ booking.class_code }}</td>
           <td>{{ booking.class_size or 24 }}</td>
-          <td>{{ booking.desired_serving or '' }}</td>
+          <!-- Desired Servings cell removed as requested -->
           <td>{{ booking.recipe_name }}</td>
           <td>
             <form method="get" action="/book_a_class" style="display:inline;">
@@ -150,6 +148,33 @@ window.addEventListener('DOMContentLoaded', function() {
           if (staffSelect) {
             const preStaff = '{{ pre_staff_code|escapejs }}';
             staffSelect.value = preStaff;
+          // Simple table sorting for Scheduled Bookings
+          let sortDirections = {};
+          function sortTable(col, type) {
+            const table = document.getElementById('bookingsTable');
+            const tbody = table.tBodies[0];
+            const rows = Array.from(tbody.rows);
+            sortDirections[col] = !sortDirections[col]; // toggle direction
+            const dir = sortDirections[col] ? 1 : -1;
+            rows.sort((a, b) => {
+              let aText = a.cells[col].innerText.trim();
+              let bText = b.cells[col].innerText.trim();
+              if(type === 'num') {
+                aText = parseFloat(aText) || 0;
+                bText = parseFloat(bText) || 0;
+              } else if(type === 'date') {
+                aText = Date.parse(aText) || 0;
+                bText = Date.parse(bText) || 0;
+              } else {
+                aText = aText.toLowerCase();
+                bText = bText.toLowerCase();
+              }
+              if(aText < bText) return -1 * dir;
+              if(aText > bText) return 1 * dir;
+              return 0;
+            });
+            rows.forEach(row => tbody.appendChild(row));
+          }
           }
           // Reset class, date, period, recipe, class size
           document.getElementById('classcode').selectedIndex = 0;
