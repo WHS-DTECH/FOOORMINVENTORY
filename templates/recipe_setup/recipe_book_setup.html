@@ -94,7 +94,7 @@
                                 <div class="d-flex flex-row flex-nowrap justify-content-center align-items-center gap-2">
                                     <a href="{{ url_for('recipe_book.recipe_details', recipe_id=recipe.id) }}" class="btn btn-success btn-sm">View</a>
                                     {% if recipe.source_url %}
-                                    <a href="{{ recipe.source_url }}" target="_blank" class="btn btn-info btn-sm">Source</a>
+                                    <a href="{{ recipe.source_url }}" target="_blank" class="btn btn-info btn-sm">Upload Details</a>
                                     {% endif %}
                                     <a href="{{ url_for('recipe_book.delete_recipe', recipe_id=recipe.id) }}" class="btn btn-danger btn-sm">Delete</a>
                                 </div>
