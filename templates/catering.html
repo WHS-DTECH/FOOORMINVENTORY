@@ -78,11 +78,18 @@ function setupBookingClicks() {
       document.getElementById('calcResult').innerHTML = '';
       // Recipe details (right column)
       const recipeId = parseInt(this.dataset.recipeid);
+      // Debug output: show recipeId and all recipe ids
+      console.log('Selected booking recipeId:', recipeId);
+      console.log('Available recipe ids:', recipes.map(r => r.id));
       const recipe = recipes.find(r => r.id === recipeId);
       document.getElementById('recipeDetailName').textContent = recipe ? recipe.name : '';
       const ingredList = document.getElementById('recipeDetailIngredients');
       ingredList.innerHTML = '';
-      if (recipe && Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
+      if (!recipe) {
+        const li = document.createElement('li');
+        li.textContent = 'No recipe found for recipeId ' + recipeId + ' (check booking and recipe table IDs).';
+        ingredList.appendChild(li);
+      } else if (Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0) {
         recipe.ingredients.forEach(ing => {
           const li = document.createElement('li');
           li.textContent = ing;

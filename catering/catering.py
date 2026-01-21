@@ -49,4 +49,7 @@ def catering():
             except Exception:
                 ings = []
             recipes.append({'id': r['id'], 'name': r['name'], 'ingredients': ings, 'serving_size': r['serving_size']})
+    # Debug: print all recipe IDs and all booking recipe_ids
+    print('CATERING DEBUG: recipe IDs:', [r['id'] for r in recipes])
+    print('CATERING DEBUG: booking recipe_ids:', [b['recipe_id'] for b in bookings])
     return render_template('catering.html', bookings=bookings, recipes=recipes)
