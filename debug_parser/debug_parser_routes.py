@@ -105,7 +105,7 @@ def debug_title_route(test_recipe_id):
     # For now, use the first non-empty line as a best guess (placeholder for real strategy logic)
     best_guess = next((line for line in raw_data.split('\n') if line.strip()), '(No title found)')
     return render_template(
-        'debug_title.html',
+        'debug_parser/debug_title.html',
         test_recipe_id=test_recipe_id,
         raw_data=raw_data,
         best_guess=best_guess
