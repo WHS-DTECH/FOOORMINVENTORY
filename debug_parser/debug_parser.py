@@ -182,7 +182,15 @@ def confirm_field():
         row = c.fetchone()
         if row:
             confirmed = dict(row)
-    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
+    # Fetch parser_debug record for this test_recipe, if any
+    parser_debug = None
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+        debug_row = c.fetchone()
+        if debug_row:
+            parser_debug = dict(debug_row)
+    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed, parser_debug=parser_debug)
 
 # --- Debug Title Page (modular) ---
 @app.route('/debug_title/<int:test_recipe_id>')
