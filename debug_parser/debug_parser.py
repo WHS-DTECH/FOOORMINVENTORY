@@ -292,10 +292,11 @@ def parser_debug(test_recipe_id):
         if not test_recipe:
             return render_template('error.html', message='Test recipe not found.'), 404
         # Always fetch confirmed fields for this test_recipe_id
-        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+        c.execute('SELECT * FROM confirmed_parser_fields ORDER BY id')
         rows = c.fetchall()
         confirmed_list = [dict(row) for row in rows] if rows else []
-        confirmed = dict(rows[0]) if rows else {}
+        # For backward compatibility, keep confirmed as the first for this test_recipe_id if present
+        confirmed = next((dict(row) for row in rows if row['parser_test_recipe_id'] == test_recipe_id), {})
         # Fetch parser_debug info for this test_recipe_id
         c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
         parser_debug = c.fetchone()
