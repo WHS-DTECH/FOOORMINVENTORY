@@ -188,6 +188,36 @@ def confirm_field():
 @app.route('/debug_title/<int:test_recipe_id>')
 @require_role('Admin')
 def debug_title_route(test_recipe_id):
+    @app.route('/debug_title2/<int:test_recipe_id>')
+    @require_role('Admin')
+    def debug_title2_route(test_recipe_id):
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+            test_recipe = c.fetchone()
+            c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+            debug_row = c.fetchone()
+        if not test_recipe:
+            return render_template('error.html', message='Test recipe not found.'), 404
+        raw_title = test_recipe['upload_source_detail']
+        raw_data = test_recipe.get('raw_data') or ''
+        debugged_title = debug_title(raw_title, test_recipe_id)
+        debug_state = None
+        if debug_row:
+            debug_state = dict(debug_row)
+            if debug_state.get('strategies'):
+                try:
+                    debug_state['strategies'] = json.loads(debug_state['strategies'])
+                except Exception:
+                    pass
+        return render_template(
+            'debug_parser/debug_title.html',
+            raw_title=raw_title,
+            raw_data=raw_data,
+            debugged_title=debugged_title,
+            test_recipe_id=test_recipe_id,
+            debug_state=debug_state
+        )
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
