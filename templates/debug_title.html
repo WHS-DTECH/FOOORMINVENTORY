@@ -177,6 +177,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Accept button logic
+    const acceptBtns = document.querySelectorAll('.solvedBtn');
+    acceptBtns.forEach(btn => {
+        btn.onclick = function() {
+            const row = btn.closest('tr');
+            const result = row.querySelector('.result').textContent;
+            solutionInput.value = result;
+            // Disable all further Accept/Next buttons
+            Array.from(strategiesTable.querySelectorAll('.solved button')).forEach(btn => btn.disabled = true);
+            // Optionally, re-enable the Run Strategies button
+            if (runBtn) {
+                runBtn.disabled = false;
+                runBtn.textContent = 'Run Strategies';
+            }
+        };
+    });
+
     // Initial highlight for the first strategy
     highlightStrategyRow(0);
 });
