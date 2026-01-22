@@ -1,3 +1,20 @@
+
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from flask_login import current_user
+from auth import require_role, get_db_connection
+import json
+
+# Import debug helpers
+from debug_parser.parser_confirm_URL import confirm_url
+from debug_parser.parser_confirm_title import confirm_title
+from debug_parser.parser_confirm_serving import confirm_serving
+from debug_parser.parser_confirm_ingredients import confirm_ingredients
+from debug_parser.parser_confirm_instructions import confirm_instructions
+from debug_parser.debug_parser_title import debug_title
+
+bp = Blueprint('debug_parser', __name__, template_folder='templates')
+
 ## Moved below Blueprint definition
 # ...existing code...
 bp = Blueprint('debug_parser', __name__, template_folder='templates')
@@ -21,22 +38,6 @@ def delete_confirmed_parser_field(field_id):
     return redirect(url_for('admin_task.admin_recipe_book_setup'))
 # This file contains all debug_parser-related routes and logic extracted from app.py for modularization.
 # To be used as the Flask blueprint/module for debug_parser.
-
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-from flask_login import current_user
-from auth import require_role, get_db_connection
-import json
-
-# Import debug helpers
-from debug_parser.parser_confirm_URL import confirm_url
-from debug_parser.parser_confirm_title import confirm_title
-from debug_parser.parser_confirm_serving import confirm_serving
-from debug_parser.parser_confirm_ingredients import confirm_ingredients
-from debug_parser.parser_confirm_instructions import confirm_instructions
-from debug_parser.debug_parser_title import debug_title
-
-bp = Blueprint('debug_parser', __name__, template_folder='templates')
-
 
 # --- Delete parser_debug entry ---
 @bp.route('/delete_debug/<int:debug_id>', methods=['POST'])
