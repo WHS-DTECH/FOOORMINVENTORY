@@ -19,17 +19,22 @@ def load_recipe_url():
             VALUES (%s, %s, %s) RETURNING id
         ''', (url, 'Imported from URL', now))
         recipe_id = c.fetchone()[0]
-        # Insert into parser_test_recipes with recipe_id
+        # Insert into parser_debug and get its ID
         c.execute('''
-            INSERT INTO parser_test_recipes (upload_source_detail, upload_source_type, uploaded_by, upload_date, recipe_id)
+            INSERT INTO parser_debug (id) VALUES (DEFAULT) RETURNING id
+        ''')
+        parser_debug_id = c.fetchone()[0]
+        # Insert into parser_test_recipes with parser_debug_id
+        c.execute('''
+            INSERT INTO parser_test_recipes (parser_debug_id, upload_source_detail, upload_source_type, uploaded_by, upload_date)
             VALUES (%s, %s, %s, %s, %s) RETURNING id
-        ''', (url, 'url', user, now, recipe_id))
+        ''', (parser_debug_id, url, 'url', user, now))
         new_id = c.fetchone()[0]
-        # Also insert into parser_debug with upload_source_type 'url' and correct recipe_id
+        # Insert into recipe_upload with parser_debug_id
         c.execute('''
-            INSERT INTO parser_debug (recipe_id, upload_source_type, created_at)
-            VALUES (%s, %s, %s)
-        ''', (recipe_id, 'url', now))
+            INSERT INTO recipe_upload (parser_debug_id, upload_source_type, upload_source_detail, uploaded_by, upload_date)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (parser_debug_id, 'url', url, user, now))
         conn.commit()
     flash('Recipe URL loaded for debugging.', 'success')
     return redirect(url_for('debug_parser.parser_debug', test_recipe_id=new_id))
