@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user
 from auth import require_role, get_db_connection
 import json
+import re
 
 # Import debug helpers
 from debug_parser.parser_confirm_URL import confirm_url
@@ -237,3 +238,23 @@ def parser_test_decision():
             extraction_warning='Recipe stored in parser testing table as a test sample for future improvements.',
             show_debug_prompt=False,
             recipe_data={})
+
+@bp.route('/run_strategy/<int:test_recipe_id>')
+def run_strategy(test_recipe_id):
+    strategy = request.args.get('strategy')
+    # Fetch raw_data for the test_recipe
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if not row:
+            return jsonify({'error': 'Test recipe not found'}), 404
+        raw_data = row['raw_data']
+    result = ''
+    if strategy == 'URL: What is between the <title></title> tag.':
+        # Extract content between <title>...</title>
+        match = re.search(r'<title>(.*?)</title>', raw_data, re.IGNORECASE | re.DOTALL)
+        result = match.group(1).strip() if match else '(No <title> tag found)'
+    else:
+        result = f'(No logic implemented for strategy: {strategy})'
+    return jsonify({'result': result})
