@@ -293,14 +293,34 @@ def parser_debug(test_recipe_id):
             return render_template('error.html', message='Test recipe not found.'), 404
         # Always fetch confirmed fields for this test_recipe_id
         c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
-        row = c.fetchone()
-        confirmed = dict(row) if row else {}
+        rows = c.fetchall()
+        confirmed_list = [dict(row) for row in rows] if rows else []
+        confirmed = dict(rows[0]) if rows else {}
         # Fetch parser_debug info for this test_recipe_id
         c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
         parser_debug = c.fetchone()
-    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed, parser_debug=parser_debug)
+    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed, confirmed_list=confirmed_list, parser_debug=parser_debug)
 
-# --- Handle Yes/No debug prompt after flag ---
+@app.route('/delete_confirmed_parser_field', methods=['POST'])
+@require_role('Admin')
+def delete_confirmed_parser_field():
+    field_id = request.form.get('id')
+    if not field_id:
+        flash('No field id provided.', 'error')
+        return redirect(request.referrer or url_for('admin_task.admin_recipe_book_setup'))
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Get the parser_test_recipe_id before deleting for redirect
+        c.execute('SELECT parser_test_recipe_id FROM confirmed_parser_fields WHERE id = %s', (field_id,))
+        row = c.fetchone()
+        if not row:
+            flash('Confirmed field not found.', 'error')
+            return redirect(request.referrer or url_for('admin_task.admin_recipe_book_setup'))
+        test_recipe_id = row['parser_test_recipe_id']
+        c.execute('DELETE FROM confirmed_parser_fields WHERE id = %s', (field_id,))
+        conn.commit()
+    flash('Confirmed parser field deleted.', 'success')
+    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
 @app.route('/parser_test_decision', methods=['POST'])
 @require_role('Admin')
 def parser_test_decision():

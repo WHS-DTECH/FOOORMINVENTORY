@@ -73,23 +73,40 @@
         <form method="get" action="/parser_debug_raw/{{ test_recipe.id }}" style="margin-top:0.5em;">
             <button type="submit" class="btn btn-outline-dark btn-sm">View Raw Data</button>
         </form>
-        <!-- Confirmed Parser Fields Table -->
-        {% if confirmed %}
+        <!-- Confirmed Parser Fields Table (with delete) -->
+        {% if confirmed_list and confirmed_list|length > 0 %}
         <div style="margin-top:1.5em;">
             <h5>Confirmed Parser Fields</h5>
             <table class="table table-bordered table-sm" style="background:#fff;">
                 <thead>
                     <tr>
-                        <th>Field</th>
-                        <th>Value</th>
+                        <th>ID</th>
+                        <th>Test Recipe ID</th>
+                        <th>Title</th>
+                        <th>Serving Size</th>
+                        <th>Source URL</th>
+                        <th>Ingredients</th>
+                        <th>Instructions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for key, value in confirmed.items() %}
-                        <tr>
-                            <td>{{ key }}</td>
-                            <td>{{ value }}</td>
-                        </tr>
+                    {% for row in confirmed_list %}
+                    <tr>
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.parser_test_recipe_id }}</td>
+                        <td>{{ row.title or '' }}</td>
+                        <td>{{ row.serving_size or '' }}</td>
+                        <td>{{ row.source_url or '' }}</td>
+                        <td>{{ row.ingredients or '' }}</td>
+                        <td>{{ row.instructions or '' }}</td>
+                        <td>
+                            <form method="post" action="/delete_confirmed_parser_field" style="display:inline;">
+                                <input type="hidden" name="id" value="{{ row.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this confirmed field entry?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
