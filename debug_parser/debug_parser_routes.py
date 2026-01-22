@@ -140,16 +140,31 @@ def parser_debug(test_recipe_id):
         c = conn.cursor()
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
+        # Always fetch all confirmed_parser_fields for debug table
+        c.execute('SELECT * FROM confirmed_parser_fields')
+        all_confirmed_parser_fields = c.fetchall() or []
         if test_recipe:
             c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
             row = c.fetchone()
             confirmed = dict(row) if row else {}
-            return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed, parser_debug=None)
+            return render_template(
+                'parser_debug.html',
+                test_recipe=test_recipe,
+                confirmed=confirmed,
+                parser_debug=None,
+                all_confirmed_parser_fields=all_confirmed_parser_fields
+            )
         # If not found, try parser_debug table
         c.execute('SELECT * FROM parser_debug WHERE id = %s', (test_recipe_id,))
         debug_entry = c.fetchone()
         if debug_entry:
-            return render_template('parser_debug.html', test_recipe=None, confirmed={}, parser_debug=debug_entry)
+            return render_template(
+                'parser_debug.html',
+                test_recipe=None,
+                confirmed={},
+                parser_debug=debug_entry,
+                all_confirmed_parser_fields=all_confirmed_parser_fields
+            )
         return render_template('error.html', message='Test recipe not found.'), 404
 
 # --- Handle Yes/No debug prompt after flag ---
