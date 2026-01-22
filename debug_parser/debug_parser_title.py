@@ -1,3 +1,6 @@
+def debug_title(raw_title, test_recipe_id):
+    # Placeholder implementation; expand as needed for debugging
+    return raw_title
 """
 Debug logic for the Title field in the parser debug workflow.
 """
@@ -64,3 +67,4 @@ def infer_title_above(lines, start_idx, ingredient_block):
         if 2 < len(candidate) < 60:
             return candidate
     return 'Unknown Recipe'
+
