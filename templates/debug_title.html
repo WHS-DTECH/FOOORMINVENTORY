@@ -86,53 +86,37 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Alternative Run Strategies button logic (event delegation fallback)
+// Step-by-step strategy runner
+const STRATEGIES = [
+    'Is there matching words from the URL in the Raw Data?',
+    'Not a section header',
+    'Not all lowercase',
+    'Not too short (≥4 chars)',
+    'Not only digits/symbols',
+    'Prefers larger/bold lines',
+    'NLP noun phrase/WORK_OF_ART',
+    'Fallback: Uppercase start, not junk word',
+    'Up to 5 lines above first ingredient',
+    'Prefers food words from ingredient block',
+    'Closest non-empty line above ingredient block',
+    'If none, returns "Unknown Recipe"'
+];
+
 document.addEventListener('DOMContentLoaded', function() {
     var runBtn = document.getElementById('runStrategiesBtn');
     var testRecipeId = '{{ test_recipe_id }}';
-    function runStrategiesHandler() {
-        console.log('[DEBUG] Run Strategies button clicked');
-        runBtn.disabled = true;
-        runBtn.textContent = 'Running...';
-        console.log('Run Strategies clicked. test_recipe_id:', testRecipeId);
-        if (!testRecipeId || isNaN(Number(testRecipeId))) {
-            alert('Error: test_recipe_id is missing or invalid. Cannot run strategies.');
-            runBtn.disabled = false;
-            runBtn.textContent = 'Run Strategies';
-            return;
-        }
-        fetch(`/api/run_title_strategies/${testRecipeId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.lines) {
-                let likelyTitles = data.lines.filter(l => l.is_likely_title).map(l => l.line);
-                alert('Likely titles found:\n' + likelyTitles.join('\n'));
-                console.log('API response:', data);
-            }
-        })
-        .catch(err => {
-            console.error('Error running strategies:', err);
-            alert('Error running strategies!');
-        })
-        .finally(() => {
-            runBtn.disabled = false;
-            runBtn.textContent = 'Run Strategies';
+    var progressBar = document.getElementById('progressBar');
+    var progressBarContainer = document.getElementById('progressBarContainer');
+    var solutionInput = document.getElementById('solutionInput');
+    var strategiesTable = document.getElementById('strategiesTable');
+    let currentStrategy = 0;
+    let strategyResults = [];
+
+    function highlightStrategyRow(idx) {
+        Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row, i) => {
+            row.style.background = (i === idx) ? '#ffe082' : '';
         });
     }
-    if (runBtn) {
-        runBtn.removeEventListener('click', runStrategiesHandler); // Remove if already attached
-        runBtn.addEventListener('click', runStrategiesHandler);
-    } else {
-        // Fallback: event delegation
-        document.body.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'runStrategiesBtn') {
-                runStrategiesHandler();
-            }
-        });
-    }
-});
-</script>
-{% endblock %}
+
+    function setProgress(percent) {
+        if
