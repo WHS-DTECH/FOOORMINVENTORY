@@ -291,7 +291,6 @@ def parser_debug_raw(test_recipe_id):
 @app.route('/parser_debug/<int:test_recipe_id>')
 @require_role('Admin')
 def parser_debug(test_recipe_id):
-        print("[DEBUG] confirmed_list:", confirmed_list)
     # Fetch the flagged/test recipe from parser_test_recipes
     with get_db_connection() as conn:
         c = conn.cursor()
