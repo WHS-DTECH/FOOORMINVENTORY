@@ -1,3 +1,8 @@
+## Moved below Blueprint definition
+# ...existing code...
+bp = Blueprint('debug_parser', __name__, template_folder='templates')
+
+# --- Delete confirmed_parser_field entry ---
 @bp.route('/delete_confirmed_parser_field/<int:field_id>', methods=['POST'])
 @require_role('Admin')
 def delete_confirmed_parser_field(field_id):
