@@ -10,9 +10,9 @@ def confirm_title(raw_title, test_recipe_id):
         c = conn.cursor()
         # Upsert logic: update if exists, else insert
         c.execute('''
-            INSERT INTO confirmed_parser_fields (parser_test_recipe_id, title)
+            INSERT INTO confirmed_parser_fields (parser_debug_id, title)
             VALUES (%s, %s)
-            ON CONFLICT (parser_test_recipe_id) DO UPDATE SET title = EXCLUDED.title
+            ON CONFLICT (parser_debug_id) DO UPDATE SET title = EXCLUDED.title
         ''', (test_recipe_id, confirmed_title))
         conn.commit()
     return confirmed_title

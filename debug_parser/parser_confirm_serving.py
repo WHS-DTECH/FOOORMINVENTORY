@@ -10,9 +10,9 @@ def confirm_serving(raw_serving, test_recipe_id):
         c = conn.cursor()
         # Upsert logic: update if exists, else insert
         c.execute('''
-            INSERT INTO confirmed_parser_fields (parser_test_recipe_id, serving_size)
+            INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size)
             VALUES (%s, %s)
-            ON CONFLICT (parser_test_recipe_id) DO UPDATE SET serving_size = EXCLUDED.serving_size
+            ON CONFLICT (parser_debug_id) DO UPDATE SET serving_size = EXCLUDED.serving_size
         ''', (test_recipe_id, confirmed_serving))
         conn.commit()
     return confirmed_serving

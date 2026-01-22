@@ -10,9 +10,9 @@ def confirm_instructions(raw_instructions, test_recipe_id):
         c = conn.cursor()
         # Upsert logic: update if exists, else insert
         c.execute('''
-            INSERT INTO confirmed_parser_fields (parser_test_recipe_id, instructions)
+            INSERT INTO confirmed_parser_fields (parser_debug_id, instructions)
             VALUES (%s, %s)
-            ON CONFLICT (parser_test_recipe_id) DO UPDATE SET instructions = EXCLUDED.instructions
+            ON CONFLICT (parser_debug_id) DO UPDATE SET instructions = EXCLUDED.instructions
         ''', (test_recipe_id, confirmed_instructions))
         conn.commit()
     return confirmed_instructions
