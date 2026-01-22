@@ -109,7 +109,16 @@ def confirm_field():
         row = c.fetchone()
         if row:
             confirmed = dict(row)
-    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
+        # Fetch all confirmed_parser_fields for the table (for debug block and table)
+        c.execute('SELECT * FROM confirmed_parser_fields')
+        all_confirmed_parser_fields = c.fetchall() or []
+    return render_template(
+        'parser_debug.html',
+        test_recipe=test_recipe,
+        confirmed=confirmed,
+        parser_debug=None,
+        all_confirmed_parser_fields=all_confirmed_parser_fields
+    )
 
 # --- Debug Title Page (modular) ---
 @bp.route('/debug_title/<int:test_recipe_id>')
