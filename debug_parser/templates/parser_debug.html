@@ -29,6 +29,44 @@
   border: none;
   padding: 6px 16px;
   border-radius: 4px;
+        <!-- All Confirmed Parser Fields Table -->
+        <div style="margin-top:2em;">
+            <h5>All Confirmed Parser Fields (All Recipes)</h5>
+            <table class="table table-bordered table-sm" style="background:#fff;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Test Recipe ID</th>
+                        <th>Title</th>
+                        <th>Serving Size</th>
+                        <th>Source URL</th>
+                        <th>Ingredients</th>
+                        <th>Instructions</th>
+                        <th>Confirmed By</th>
+                        <th>Confirmed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if all_confirmed_parser_fields and all_confirmed_parser_fields|length > 0 %}
+                        {% for row in all_confirmed_parser_fields %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.parser_test_recipe_id }}</td>
+                            <td>{{ row.title }}</td>
+                            <td>{{ row.serving_size }}</td>
+                            <td>{{ row.source_url }}</td>
+                            <td>{{ row.ingredients }}</td>
+                            <td>{{ row.instructions }}</td>
+                            <td>{{ row.confirmed_by }}</td>
+                            <td>{{ row.confirmed_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="9" class="text-center text-muted">No records in confirmed_parser_fields table.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
 }
 .grey-btn {
     background: #757575;
