@@ -2,6 +2,22 @@
 from flask import jsonify
 from debug_parser.debug_parser_title import is_likely_title
 
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
+from flask_login import current_user
+from auth import require_role, get_db_connection
+import json
+
+# Import debug helpers
+from debug_parser.parser_confirm_URL import confirm_url
+from debug_parser.parser_confirm_title import confirm_title
+from debug_parser.parser_confirm_serving import confirm_serving
+from debug_parser.parser_confirm_ingredients import confirm_ingredients
+from debug_parser.parser_confirm_instructions import confirm_instructions
+from debug_parser.debug_parser_title import debug_title
+
+bp = Blueprint('debug_parser', __name__, template_folder='templates')
+
 @bp.route('/api/run_title_strategies/<int:test_recipe_id>', methods=['POST'])
 @require_role('Admin')
 def api_run_title_strategies(test_recipe_id):
@@ -24,26 +40,6 @@ def api_run_title_strategies(test_recipe_id):
         results.append(result)
     # Return all lines and which are likely titles
     return jsonify({'lines': results})
-
-
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-from flask_login import current_user
-from auth import require_role, get_db_connection
-import json
-
-# Import debug helpers
-from debug_parser.parser_confirm_URL import confirm_url
-from debug_parser.parser_confirm_title import confirm_title
-from debug_parser.parser_confirm_serving import confirm_serving
-from debug_parser.parser_confirm_ingredients import confirm_ingredients
-from debug_parser.parser_confirm_instructions import confirm_instructions
-from debug_parser.debug_parser_title import debug_title
-
-bp = Blueprint('debug_parser', __name__, template_folder='templates')
-
-## Moved below Blueprint definition
-# ...existing code...
-bp = Blueprint('debug_parser', __name__, template_folder='templates')
 
 # --- Delete confirmed_parser_field entry ---
 @bp.route('/delete_confirmed_parser_field/<int:field_id>', methods=['POST'])
