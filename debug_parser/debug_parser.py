@@ -203,6 +203,7 @@ def parser_debug_raw(test_recipe_id):
 
 
 # --- Parser Debug Page for flagged/test recipes ---
+
 @app.route('/parser_debug/<int:test_recipe_id>')
 @require_role('Admin')
 def parser_debug(test_recipe_id):
@@ -217,7 +218,10 @@ def parser_debug(test_recipe_id):
         c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
         row = c.fetchone()
         confirmed = dict(row) if row else {}
-    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed)
+        # Fetch parser_debug info for this test_recipe_id
+        c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+        parser_debug = c.fetchone()
+    return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed, parser_debug=parser_debug)
 
 # --- Handle Yes/No debug prompt after flag ---
 @app.route('/parser_test_decision', methods=['POST'])
