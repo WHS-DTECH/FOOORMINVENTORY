@@ -1,11 +1,20 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 	const runBtn = document.getElementById('runStrategiesBtn');
+	const testRecipeId = '{{ test_recipe_id }}';
 	if (runBtn) {
 		runBtn.addEventListener('click', function() {
+			console.log('[DEBUG] Run Strategies button clicked');
 			runBtn.disabled = true;
 			runBtn.textContent = 'Running...';
-			fetch(`/api/run_title_strategies/{{ test_recipe_id }}`, {
+			console.log('Run Strategies clicked. test_recipe_id:', testRecipeId);
+			if (!testRecipeId || isNaN(Number(testRecipeId))) {
+				alert('Error: test_recipe_id is missing or invalid. Cannot run strategies.');
+				runBtn.disabled = false;
+				runBtn.textContent = 'Run Strategies';
+				return;
+			}
+			fetch(`/api/run_title_strategies/${testRecipeId}`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 			})
@@ -15,9 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (data.lines) {
 					let likelyTitles = data.lines.filter(l => l.is_likely_title).map(l => l.line);
 					alert('Likely titles found:\n' + likelyTitles.join('\n'));
+					console.log('API response:', data);
 				}
 			})
-			.catch(err => { alert('Error running strategies!'); })
+			.catch(err => { 
+				console.error('Error running strategies:', err);
+				alert('Error running strategies!'); 
+			})
 			.finally(() => {
 				runBtn.disabled = false;
 				runBtn.textContent = 'Run Strategies';
