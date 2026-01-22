@@ -18,23 +18,24 @@ def api_save_title_solution(test_recipe_id):
     user_id = getattr(current_user, 'id', None)
     if not solution:
         return jsonify({'error': 'No solution provided.'}), 400
-    # Save to confirmed_parser_fields table
+    # Save to confirmed_parser_fields table using parser_debug_id
     from debug_parser.parser_confirm_title import confirm_title
-    confirm_title(solution, test_recipe_id)
+    parser_debug_id = test_recipe_id  # Now using parser_debug_id as the main reference
+    confirm_title(solution, parser_debug_id)
     # Save debug state to parser_debug table (upsert)
     with get_db_connection() as conn:
         c = conn.cursor()
         # Try update first
         c.execute('''
             UPDATE parser_debug SET raw_data=%s, extracted_title=%s, strategies=%s, solution=%s, user_id=%s, created_at=NOW()
-            WHERE recipe_id=%s
-        ''', (raw_data, extracted_title, json.dumps(strategies) if strategies else None, solution, user_id, test_recipe_id))
+            WHERE id=%s
+        ''', (raw_data, extracted_title, json.dumps(strategies) if strategies else None, solution, user_id, parser_debug_id))
         if c.rowcount == 0:
             # Insert if not exists
             c.execute('''
-                INSERT INTO parser_debug (recipe_id, raw_data, extracted_title, strategies, solution, user_id, created_at)
+                INSERT INTO parser_debug (id, raw_data, extracted_title, strategies, solution, user_id, created_at)
                 VALUES (%s, %s, %s, %s, %s, %s, NOW())
-            ''', (test_recipe_id, raw_data, extracted_title, json.dumps(strategies) if strategies else None, solution, user_id))
+            ''', (parser_debug_id, raw_data, extracted_title, json.dumps(strategies) if strategies else None, solution, user_id))
         conn.commit()
     return jsonify({'success': True, 'title': solution})
 
