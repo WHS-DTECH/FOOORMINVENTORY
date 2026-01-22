@@ -52,7 +52,7 @@
         <pre>{{ all_confirmed_parser_fields | tojson(indent=2) }}</pre>
         <!-- All Confirmed Parser Fields Table -->
         <div style="margin-top:2em;">
-            <h5>All Confirmed Parser Fields (All Recipes)</h5>
+            <h5>Confirmed Values Index</h5>
             <table class="table table-bordered table-sm" style="background:#fff;">
                 <thead>
                     <tr>
@@ -220,21 +220,7 @@
             </div>
         </div>
     </div>
-    <div class="parser-debug-col">
-        <div class="card mb-3">
-            <div class="card-header bg-primary text-white">Confirmed Values</div>
-            <div class="card-body">
-                <div><strong>Title:</strong> {{ confirmed.title or '' }}</div>
-                <div><strong>Serving Size:</strong> {{ confirmed.serving_size or '' }}</div>
-                <div><strong>Source URL:</strong> {{ confirmed.source_url or '' }}</div>
-                <div><strong>Ingredients:</strong> {{ confirmed.ingredients or '' }}</div>
-                <div><strong>Instructions:</strong> {{ confirmed.instructions or '' }}</div>
-            </div>
-        </div>
-        <div style="text-align:center; margin-top:1em;">
-            <button class="btn btn-primary" disabled>Upload Recipe</button>
-        </div>
-    </div>
+    <!-- Confirmed Values block removed as requested -->
 </div>
 </div>
 {% endblock %}
