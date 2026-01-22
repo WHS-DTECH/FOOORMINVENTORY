@@ -1,3 +1,29 @@
+# --- API: Run title extraction strategies ---
+from flask import jsonify
+from debug_parser.debug_parser_title import is_likely_title
+
+@bp.route('/api/run_title_strategies/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
+def api_run_title_strategies(test_recipe_id):
+    # Fetch raw_data for the test_recipe
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if not row:
+            return jsonify({'error': 'Test recipe not found'}), 404
+        raw_data = row['raw_data']
+    # Example: split lines and run is_likely_title on each
+    lines = (raw_data or '').split('\n')
+    results = []
+    for i, line in enumerate(lines):
+        result = {
+            'line': line,
+            'is_likely_title': is_likely_title(line)
+        }
+        results.append(result)
+    # Return all lines and which are likely titles
+    return jsonify({'lines': results})
 
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session

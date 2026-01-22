@@ -1,3 +1,31 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const runBtn = document.getElementById('runStrategiesBtn');
+	if (runBtn) {
+		runBtn.addEventListener('click', function() {
+			runBtn.disabled = true;
+			runBtn.textContent = 'Running...';
+			fetch(`/api/run_title_strategies/{{ test_recipe_id }}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			})
+			.then(response => response.json())
+			.then(data => {
+				// Example: highlight likely title lines in the raw data textarea
+				if (data.lines) {
+					let likelyTitles = data.lines.filter(l => l.is_likely_title).map(l => l.line);
+					alert('Likely titles found:\n' + likelyTitles.join('\n'));
+				}
+			})
+			.catch(err => { alert('Error running strategies!'); })
+			.finally(() => {
+				runBtn.disabled = false;
+				runBtn.textContent = 'Run Strategies';
+			});
+		});
+	}
+});
+</script>
 {% extends "base.html" %}
 {% block content %}
 <div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
