@@ -1,44 +1,3 @@
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-	const runBtn = document.getElementById('runStrategiesBtn');
-	const testRecipeId = '{{ test_recipe_id }}';
-	if (runBtn) {
-		runBtn.addEventListener('click', function() {
-			console.log('[DEBUG] Run Strategies button clicked');
-			runBtn.disabled = true;
-			runBtn.textContent = 'Running...';
-			console.log('Run Strategies clicked. test_recipe_id:', testRecipeId);
-			if (!testRecipeId || isNaN(Number(testRecipeId))) {
-				alert('Error: test_recipe_id is missing or invalid. Cannot run strategies.');
-				runBtn.disabled = false;
-				runBtn.textContent = 'Run Strategies';
-				return;
-			}
-			fetch(`/api/run_title_strategies/${testRecipeId}`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-			})
-			.then(response => response.json())
-			.then(data => {
-				// Example: highlight likely title lines in the raw data textarea
-				if (data.lines) {
-					let likelyTitles = data.lines.filter(l => l.is_likely_title).map(l => l.line);
-					alert('Likely titles found:\n' + likelyTitles.join('\n'));
-					console.log('API response:', data);
-				}
-			})
-			.catch(err => { 
-				console.error('Error running strategies:', err);
-				alert('Error running strategies!'); 
-			})
-			.finally(() => {
-				runBtn.disabled = false;
-				runBtn.textContent = 'Run Strategies';
-			});
-		});
-	}
-});
-</script>
 {% extends "base.html" %}
 {% block content %}
 <div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
@@ -116,4 +75,47 @@ document.addEventListener('DOMContentLoaded', function() {
 		</div>
 	</div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const runBtn = document.getElementById('runStrategiesBtn');
+	const testRecipeId = '{{ test_recipe_id }}';
+	if (runBtn) {
+		runBtn.addEventListener('click', function() {
+			console.log('[DEBUG] Run Strategies button clicked');
+			runBtn.disabled = true;
+			runBtn.textContent = 'Running...';
+			console.log('Run Strategies clicked. test_recipe_id:', testRecipeId);
+			if (!testRecipeId || isNaN(Number(testRecipeId))) {
+				alert('Error: test_recipe_id is missing or invalid. Cannot run strategies.');
+				runBtn.disabled = false;
+				runBtn.textContent = 'Run Strategies';
+				return;
+			}
+			fetch(`/api/run_title_strategies/${testRecipeId}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.lines) {
+					let likelyTitles = data.lines.filter(l => l.is_likely_title).map(l => l.line);
+					alert('Likely titles found:\n' + likelyTitles.join('\n'));
+					console.log('API response:', data);
+				}
+			})
+			.catch(err => { 
+				console.error('Error running strategies:', err);
+				alert('Error running strategies!'); 
+			})
+			.finally(() => {
+				runBtn.disabled = false;
+				runBtn.textContent = 'Run Strategies';
+			});
+		});
+	}
+});
+</script>
 {% endblock %}
