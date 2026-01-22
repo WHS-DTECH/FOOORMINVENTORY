@@ -129,73 +129,37 @@ document.addEventListener('DOMContentLoaded', function() {
         progressBar.style.width = percent + '%';
     }
 
-    runBtn.addEventListener('click', function() {
-        currentStrategy = 0;
-        strategyResults = [];
-        setProgress(0);
-        highlightStrategyRow(-1);
-        runBtn.disabled = true;
-
-        function runNextStrategy() {
-            if (currentStrategy < STRATEGIES.length) {
-                let strategy = STRATEGIES[currentStrategy];
-                fetch(`/run_strategy/${testRecipeId}?strategy=${encodeURIComponent(strategy)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        strategyResults.push(data);
-                        updateStrategyRow(currentStrategy, data);
-                        currentStrategy++;
-                        setProgress((currentStrategy / STRATEGIES.length) * 100);
-                        setTimeout(runNextStrategy, 500); // 500ms delay between strategies
-                    })
-                    .catch(error => {
-                        console.error('Error running strategy:', error);
-                        runBtn.disabled = false;
-                    });
-            } else {
-                runBtn.disabled = false;
-                highlightStrategyRow(-1);
-            }
+    function runStrategyStep(idx) {
+        if (idx >= STRATEGIES.length) {
+            showProgressBar(false);
+            highlightStrategyRow(-1);
+            return;
         }
-
-        runNextStrategy();
-    });
-
-    function updateStrategyRow(idx, data) {
-        let row = strategiesTable.querySelector(`tbody tr:nth-child(${idx + 1})`);
-        if (row) {
-            let appliedCell = row.querySelector('.applied');
-            let resultCell = row.querySelector('.result');
-            let solvedCell = row.querySelector('.solved');
-
-            appliedCell.textContent = '✔️';
-            resultCell.textContent = data.result || '—';
-            solvedCell.innerHTML = '<button class="nextBtn" style="display:block; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button>';
-
-            // Highlight the row
-            row.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+        currentStrategy = idx;
+        highlightStrategyRow(idx);
+        showProgressBar(true);
+        setProgress(((idx + 1) / STRATEGIES.length) * 100);
+        // Only run one strategy at a time, wait for user action
+        // Fetch result from backend if implemented
+        fetch(`/run_strategy/${testRecipeId}?strategy=${encodeURIComponent(STRATEGIES[idx])}`)
+            .then(response => response.json())
+            .then(data => {
+                showAcceptNextButtons(idx, data.result || '');
+                // Mark as applied and show result
+                const row = strategiesTable.querySelectorAll('tbody tr')[idx];
+                if (row) {
+                    row.querySelector('.applied').innerHTML = '&#10003;';
+                    row.querySelector('.result').textContent = data.result || '';
+                }
+            });
     }
 
-    // Accept button logic
-    const acceptBtns = document.querySelectorAll('.solvedBtn');
-    acceptBtns.forEach(btn => {
-        btn.onclick = function() {
-            const row = btn.closest('tr');
-            const result = row.querySelector('.result').textContent;
-            solutionInput.value = result;
-            // Disable all further Accept/Next buttons
-            Array.from(strategiesTable.querySelectorAll('.solved button')).forEach(btn => btn.disabled = true);
-            // Optionally, re-enable the Run Strategies button
-            if (runBtn) {
-                runBtn.disabled = false;
-                runBtn.textContent = 'Run Strategies';
-            }
-        };
-    });
-
-    // Initial highlight for the first strategy
-    highlightStrategyRow(0);
-});
-</script>
-{% endblock %}
+    if (runBtn) {
+        runBtn.addEventListener('click', function() {
+            runBtn.disabled = true;
+            runBtn.textContent = 'Running...';
+            // Reset all rows
+            Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row) => {
+                row.style.background = '';
+                let cell = row.querySelector('.solved');
+                if
