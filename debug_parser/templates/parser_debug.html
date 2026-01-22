@@ -48,6 +48,8 @@
 
  <body>
     <div class="container-fluid" style="padding:0 32px;">
+        <!-- Debug: Show raw JSON of all_confirmed_parser_fields -->
+        <pre>{{ all_confirmed_parser_fields | tojson(indent=2) }}</pre>
         <!-- All Confirmed Parser Fields Table -->
         <div style="margin-top:2em;">
             <h5>All Confirmed Parser Fields (All Recipes)</h5>
