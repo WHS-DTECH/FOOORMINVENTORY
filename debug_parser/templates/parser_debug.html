@@ -73,6 +73,28 @@
         <form method="get" action="/parser_debug_raw/{{ test_recipe.id }}" style="margin-top:0.5em;">
             <button type="submit" class="btn btn-outline-dark btn-sm">View Raw Data</button>
         </form>
+        <!-- Confirmed Parser Fields Table -->
+        {% if confirmed %}
+        <div style="margin-top:1.5em;">
+            <h5>Confirmed Parser Fields</h5>
+            <table class="table table-bordered table-sm" style="background:#fff;">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in confirmed.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
     </div>
 </div>
 <div class="parser-debug-container">
