@@ -76,3 +76,63 @@
 	</div>
 </div>
 {% endblock %}
+{% block scripts %}
+<script>
+// Hard refresh logic (like other pages)
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        window.location.reload(true); // true = hard reload
+    }
+});
+
+// Alternative Run Strategies button logic (event delegation fallback)
+document.addEventListener('DOMContentLoaded', function() {
+    var runBtn = document.getElementById('runStrategiesBtn');
+    var testRecipeId = '{{ test_recipe_id }}';
+    function runStrategiesHandler() {
+        console.log('[DEBUG] Run Strategies button clicked');
+        runBtn.disabled = true;
+        runBtn.textContent = 'Running...';
+        console.log('Run Strategies clicked. test_recipe_id:', testRecipeId);
+        if (!testRecipeId || isNaN(Number(testRecipeId))) {
+            alert('Error: test_recipe_id is missing or invalid. Cannot run strategies.');
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run Strategies';
+            return;
+        }
+        fetch(`/api/run_title_strategies/${testRecipeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.lines) {
+                let likelyTitles = data.lines.filter(l => l.is_likely_title).map(l => l.line);
+                alert('Likely titles found:\n' + likelyTitles.join('\n'));
+                console.log('API response:', data);
+            }
+        })
+        .catch(err => {
+            console.error('Error running strategies:', err);
+            alert('Error running strategies!');
+        })
+        .finally(() => {
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run Strategies';
+        });
+    }
+    if (runBtn) {
+        runBtn.removeEventListener('click', runStrategiesHandler); // Remove if already attached
+        runBtn.addEventListener('click', runStrategiesHandler);
+    } else {
+        // Fallback: event delegation
+        document.body.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'runStrategiesBtn') {
+                runStrategiesHandler();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
