@@ -51,6 +51,10 @@
 </div>
 <div style="width:100%; display:flex; justify-content:center; margin-bottom:2em;">
     <div style="max-width:700px; background:#fafafa; border-radius:6px; box-shadow:0 1px 4px #eee; padding:1em 2em; font-size:1rem; text-align:left;">
+        <div class="card mb-3" style="margin-bottom:1em;">
+            <div class="card-header bg-purple text-white">Serving Size</div>
+            <div class="card-body">{% if parser_debug %}{{ parser_debug.serving_size or 'N/A' }}{% else %}{{ test_recipe.serving_size or 'N/A' }}{% endif %}</div>
+        </div>
         {% if parser_debug %}
             <div><strong>Source Address:</strong> <a href="{{ parser_debug.extracted_title or '' }}" target="_blank">{{ parser_debug.extracted_title or '' }}</a></div>
             <div>Flagged by: {{ parser_debug.user_id or '' }}</div>
