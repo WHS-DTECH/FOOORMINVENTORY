@@ -211,7 +211,7 @@ def debug_title_route(test_recipe_id):
             except Exception:
                 pass
     return render_template(
-        'debug_title.html',
+        'debug_parser/debug_title.html',
         raw_title=raw_title,
         raw_data=raw_data,
         debugged_title=debugged_title,
