@@ -13,12 +13,19 @@ def load_recipe_url():
     now = datetime.utcnow()
     with get_db_connection() as conn:
         c = conn.cursor()
+        # Create a new recipe entry and get its ID
         c.execute('''
-            INSERT INTO parser_test_recipes (upload_source_detail, upload_source_type, uploaded_by, upload_date)
-            VALUES (%s, %s, %s, %s) RETURNING id
-        ''', (url, 'url', user, now))
+            INSERT INTO recipes (source_url, name, created_at)
+            VALUES (%s, %s, %s) RETURNING id
+        ''', (url, 'Imported from URL', now))
+        recipe_id = c.fetchone()[0]
+        # Insert into parser_test_recipes with recipe_id
+        c.execute('''
+            INSERT INTO parser_test_recipes (upload_source_detail, upload_source_type, uploaded_by, upload_date, recipe_id)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id
+        ''', (url, 'url', user, now, recipe_id))
         new_id = c.fetchone()[0]
-        # Also insert into parser_debug with upload_source_type 'url'
+        # Also insert into parser_debug with upload_source_type 'url' and recipe_id
         c.execute('''
             INSERT INTO parser_debug (recipe_id, upload_source_type, created_at)
             VALUES (%s, %s, %s)
