@@ -65,6 +65,7 @@
                         <th>Instructions</th>
                         <th>Confirmed By</th>
                         <th>Confirmed At</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,6 +81,11 @@
                             <td>{{ row.instructions }}</td>
                             <td>{{ row.confirmed_by }}</td>
                             <td>{{ row.confirmed_at }}</td>
+                            <td>
+                                <form method="post" action="/delete_confirmed_parser_field/{{ row.id }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this confirmed field record?');">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     {% else %}
