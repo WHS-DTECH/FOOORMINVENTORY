@@ -179,7 +179,7 @@ def confirm_field():
     # Fetch all confirmed fields for this test_recipe_id (always)
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
         row = c.fetchone()
         if row:
             confirmed = dict(row)
@@ -315,12 +315,12 @@ def delete_confirmed_parser_field():
     with get_db_connection() as conn:
         c = conn.cursor()
         # Get the parser_test_recipe_id before deleting for redirect
-        c.execute('SELECT parser_test_recipe_id FROM confirmed_parser_fields WHERE id = %s', (field_id,))
+        c.execute('SELECT parser_debug_id FROM confirmed_parser_fields WHERE id = %s', (field_id,))
         row = c.fetchone()
         if not row:
             flash('Confirmed field not found.', 'error')
             return redirect(request.referrer or url_for('admin_task.admin_recipe_book_setup'))
-        test_recipe_id = row['parser_test_recipe_id']
+        test_recipe_id = row['parser_debug_id']
         c.execute('DELETE FROM confirmed_parser_fields WHERE id = %s', (field_id,))
         conn.commit()
     flash('Confirmed parser field deleted.', 'success')
