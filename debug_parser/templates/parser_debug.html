@@ -126,6 +126,7 @@
                 <form method="get" action="/debug_title2/{{ parser_debug.id }}" style="display:inline-block; margin-left: 0.5em;">
                     <button type="submit" class="debug-btn" style="background:#388e3c; color:#fff;">DEBUG 2</button>
                 </form>
+                <div style="font-size:0.95em; color:#888; margin-left:0.5em;">[parser_debug.id={{ parser_debug.id }}, parser_debug.recipe_id={{ parser_debug.recipe_id }}]</div>
                 {% else %}
                 <button type="button" class="debug-btn" style="background:#388e3c; color:#fff; opacity:0.5; cursor:not-allowed; margin-left: 0.5em;" disabled>DEBUG 2</button>
                 {% endif %}
