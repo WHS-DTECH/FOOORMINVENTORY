@@ -98,9 +98,6 @@
                                         <form method="post" action="{{ url_for('recipe_book.delete_recipe', recipe_id=recipe.id) }}" style="display:inline;">
                                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this recipe?');">Delete</button>
                                         </form>
-                                        <a href="{{ url_for('recipe_book.recipe_source', recipe_id=recipe.id) }}" class="btn btn-info btn-sm">Upload Details</a>
-                                        <a href="{{ url_for('recipe_book.recipe_source', recipe_id=recipe.id) }}" class="btn btn-info btn-sm">Upload Details</a>
-                                        <a href="{{ url_for('recipe_book.recipe_source', recipe_id=recipe.id) }}" class="btn btn-info btn-sm">Upload Details</a>
                                 </div>
                             </td>
                         </tr>

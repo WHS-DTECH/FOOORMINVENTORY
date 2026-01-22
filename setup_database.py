@@ -3,6 +3,20 @@ import json
 
 
 def setup_database():
+            # Create confirmed_parser_fields table for parser debug confirmations
+            c.execute('''
+                CREATE TABLE IF NOT EXISTS confirmed_parser_fields (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    parser_debug_id INTEGER NOT NULL UNIQUE,
+                    title TEXT,
+                    serving_size TEXT,
+                    source_url TEXT,
+                    ingredients TEXT,
+                    instructions TEXT,
+                    confirmed_by TEXT,
+                    confirmed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
     # Use a context manager so the connection is committed/closed automatically
     with sqlite3.connect('recipes.db') as conn:
         c = conn.cursor()
