@@ -175,7 +175,7 @@ def confirm_field():
     elif field == 'instructions':
         raw_instructions = test_recipe['instructions']
         confirm_instructions(raw_instructions, test_recipe_id)
-            with get_db_connection() as conn:
+        with get_db_connection() as conn:
                 c = conn.cursor()
                 c.execute('''
                     UPDATE parser_debug SET instructions=%s WHERE recipe_id=%s
