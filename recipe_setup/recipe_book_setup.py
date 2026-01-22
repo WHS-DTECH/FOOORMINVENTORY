@@ -25,11 +25,11 @@ def load_recipe_url():
             VALUES (%s, %s, %s, %s, %s) RETURNING id
         ''', (url, 'url', user, now, recipe_id))
         new_id = c.fetchone()[0]
-        # Also insert into parser_debug with upload_source_type 'url' and recipe_id
+        # Also insert into parser_debug with upload_source_type 'url' and correct recipe_id
         c.execute('''
             INSERT INTO parser_debug (recipe_id, upload_source_type, created_at)
             VALUES (%s, %s, %s)
-        ''', (new_id, 'url', now))
+        ''', (recipe_id, 'url', now))
         conn.commit()
     flash('Recipe URL loaded for debugging.', 'success')
     return redirect(url_for('debug_parser.parser_debug', test_recipe_id=new_id))
