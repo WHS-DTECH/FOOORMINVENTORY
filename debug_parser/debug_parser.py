@@ -292,6 +292,7 @@ def parser_debug_raw(test_recipe_id):
 @require_role('Admin')
 def parser_debug(test_recipe_id):
     # Fetch the flagged/test recipe from parser_test_recipes
+    all_confirmed_parser_fields = []
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
@@ -301,7 +302,8 @@ def parser_debug(test_recipe_id):
         # Fetch all confirmed fields (all records, now using parser_debug_id)
         c.execute('SELECT * FROM confirmed_parser_fields ORDER BY id')
         all_rows = c.fetchall()
-        all_confirmed_parser_fields = [dict(row) for row in all_rows] if all_rows else []
+        if all_rows:
+            all_confirmed_parser_fields = [dict(row) for row in all_rows]
         # Fetch confirmed fields for this parser_debug_id only
         confirmed_list = [dict(row) for row in all_rows if row.get('parser_debug_id') == test_recipe_id] if all_rows else []
         confirmed = confirmed_list[0] if confirmed_list else {}
