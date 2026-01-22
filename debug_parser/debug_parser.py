@@ -122,50 +122,56 @@ def confirm_field():
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
     confirmed = {}
+    # Ensure parser_debug record exists for this test_recipe_id
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id FROM parser_debug WHERE id = %s', (test_recipe_id,))
+        if not c.fetchone():
+            # Insert minimal parser_debug record if missing
+            c.execute('INSERT INTO parser_debug (id, created_at) VALUES (%s, NOW())', (test_recipe_id,))
+            conn.commit()
     # Modular confirmation logic
     if field == 'source_url':
         raw_url = test_recipe['upload_source_detail']
         confirm_url(raw_url, test_recipe_id)
-            # Also update parser_debug table
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                c.execute('''
-                    UPDATE parser_debug SET source_url=%s WHERE recipe_id=%s
-                ''', (raw_url, test_recipe_id))
-                conn.commit()
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                UPDATE parser_debug SET source_url=%s WHERE recipe_id=%s
+            ''', (raw_url, test_recipe_id))
+            conn.commit()
     elif field == 'title':
         raw_title = test_recipe['upload_source_detail']
         confirm_title(raw_title, test_recipe_id)
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                c.execute('''
-                    UPDATE parser_debug SET title=%s WHERE recipe_id=%s
-                ''', (raw_title, test_recipe_id))
-                conn.commit()
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                UPDATE parser_debug SET title=%s WHERE recipe_id=%s
+            ''', (raw_title, test_recipe_id))
+            conn.commit()
     elif field == 'serving_size':
         raw_serving = test_recipe['serving_size']
         confirm_serving(raw_serving, test_recipe_id)
-            # Ensure integer for DB
+        serving_int = None
+        try:
+            serving_int = int(raw_serving)
+        except (TypeError, ValueError):
             serving_int = None
-            try:
-                serving_int = int(raw_serving)
-            except (TypeError, ValueError):
-                serving_int = None
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                c.execute('''
-                    UPDATE parser_debug SET serving_size=%s WHERE recipe_id=%s
-                ''', (serving_int, test_recipe_id))
-                conn.commit()
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                UPDATE parser_debug SET serving_size=%s WHERE recipe_id=%s
+            ''', (serving_int, test_recipe_id))
+            conn.commit()
     elif field == 'ingredients':
         raw_ingredients = test_recipe['ingredients']
         confirm_ingredients(raw_ingredients, test_recipe_id)
-            with get_db_connection() as conn:
-                c = conn.cursor()
-                c.execute('''
-                    UPDATE parser_debug SET ingredients=%s WHERE recipe_id=%s
-                ''', (raw_ingredients, test_recipe_id))
-                conn.commit()
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                UPDATE parser_debug SET ingredients=%s WHERE recipe_id=%s
+            ''', (raw_ingredients, test_recipe_id))
+            conn.commit()
     elif field == 'instructions':
         raw_instructions = test_recipe['instructions']
         confirm_instructions(raw_instructions, test_recipe_id)
