@@ -1,6 +1,6 @@
 # Outstanding Issues (as of 2026-01-20)
 
-## Parser Debug
+## Parser Debug - FIXED
 - General improvements, error handling, and workflow consistency for all debug/confirm actions. Ensure all debug routes and index actions work reliably and display clear errors or results.
 
 ## Parser Debug / URL Upload Review - FIXED
