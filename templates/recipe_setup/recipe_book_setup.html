@@ -74,6 +74,7 @@
     <div class="recipe-setup-right">
         <!-- Recipe Index Card -->
         <div class="card mb-4">
+            <hr>
             <div class="card-header" style="background: #007bff; color: #fff; font-weight: bold;">Recipe Index</div>
             <div class="card-body p-0">
                 {% if recipe_list %}
@@ -109,10 +110,12 @@
                 {% endif %}
             </div>
         </div>
+        <hr>
         <!-- Parser Debug Index Card as Table (actual columns) -->
         <div class="card mb-4">
             <div class="card-header bg-dark text-white">Parser Debug Index</div>
             <div class="card-body p-0">
+                <hr>
                 {% if parser_debugs %}
                 <table class="table mb-0">
                     <thead>
