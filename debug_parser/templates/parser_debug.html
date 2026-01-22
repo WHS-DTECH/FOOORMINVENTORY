@@ -52,14 +52,14 @@
 <div style="width:100%; display:flex; justify-content:center; margin-bottom:2em;">
     <div style="max-width:700px; background:#fafafa; border-radius:6px; box-shadow:0 1px 4px #eee; padding:1em 2em; font-size:1rem; text-align:left;">
         {% if parser_debug %}
-            <div><a href="{{ parser_debug.extracted_title or '' }}" target="_blank">{{ parser_debug.extracted_title or '' }}</a></div>
+            <div><strong>Source Address:</strong> <a href="{{ parser_debug.extracted_title or '' }}" target="_blank">{{ parser_debug.extracted_title or '' }}</a></div>
             <div>Flagged by: {{ parser_debug.user_id or '' }}</div>
             <div>Flagged at: {{ parser_debug.created_at or '' }}</div>
             <div><strong>Notes:</strong> {{ parser_debug.notes or '' }}</div>
             <div><strong>Source Type:</strong> {{ parser_debug.solution or '' }}</div>
             <div><strong>Recipe ID:</strong> {{ parser_debug.recipe_id or 'N/A' }}</div>
         {% else %}
-            <div><a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a></div>
+            <div><strong>Source Address:</strong> <a href="{{ test_recipe.upload_source_detail }}" target="_blank">{{ test_recipe.upload_source_detail }}</a></div>
             <div>Flagged by: {{ test_recipe.uploaded_by }}</div>
             <div>Flagged at: {{ test_recipe.upload_date }}</div>
             <div><strong>Notes:</strong> {{ test_recipe.notes }}</div>
