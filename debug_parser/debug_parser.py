@@ -293,16 +293,15 @@ def parser_debug(test_recipe_id):
         test_recipe = c.fetchone()
         if not test_recipe:
             return render_template('error.html', message='Test recipe not found.'), 404
-        # Fetch all confirmed fields (all records)
+        # Fetch all confirmed fields (all records, now using parser_debug_id)
         c.execute('SELECT * FROM confirmed_parser_fields ORDER BY id')
         all_rows = c.fetchall()
         all_confirmed_parser_fields = [dict(row) for row in all_rows] if all_rows else []
-        # Fetch confirmed fields for this test_recipe_id only
-        confirmed_list = [dict(row) for row in all_rows if row['parser_test_recipe_id'] == test_recipe_id] if all_rows else []
-        # For backward compatibility, keep confirmed as the first for this test_recipe_id if present
+        # Fetch confirmed fields for this parser_debug_id only
+        confirmed_list = [dict(row) for row in all_rows if row.get('parser_debug_id') == test_recipe_id] if all_rows else []
         confirmed = confirmed_list[0] if confirmed_list else {}
-        # Fetch parser_debug info for this test_recipe_id
-        c.execute('SELECT * FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+        # Fetch parser_debug info for this parser_debug_id
+        c.execute('SELECT * FROM parser_debug WHERE id = %s', (test_recipe_id,))
         parser_debug = c.fetchone()
     return render_template('parser_debug.html', test_recipe=test_recipe, confirmed=confirmed, confirmed_list=confirmed_list, parser_debug=parser_debug, all_confirmed_parser_fields=all_confirmed_parser_fields)
 
