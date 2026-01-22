@@ -64,7 +64,3 @@ def infer_title_above(lines, start_idx, ingredient_block):
         if 2 < len(candidate) < 60:
             return candidate
     return 'Unknown Recipe'
-
-def debug_title(raw_title, test_recipe_id):
-    # You can now use is_likely_title and infer_title_above for debugging
-    return raw_title
