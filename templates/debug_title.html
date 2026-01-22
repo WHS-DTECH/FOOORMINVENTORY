@@ -162,4 +162,30 @@ document.addEventListener('DOMContentLoaded', function() {
             Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row) => {
                 row.style.background = '';
                 let cell = row.querySelector('.solved');
-                if
+                if (cell) {
+                    cell.innerHTML = '';
+                }
+            });
+            // Start running strategies from the beginning
+            currentStrategy = 0;
+            setProgress(0);
+            showProgressBar(true);
+            runStrategyStep(0);
+        });
+    }
+
+    // Robust event delegation for Accept/Next buttons
+    document.body.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('solvedBtn') && !e.target.disabled) {
+            e.preventDefault();
+            e.target.click();
+        }
+        if (e.target && e.target.classList.contains('nextBtn') && !e.target.disabled) {
+            e.preventDefault();
+            e.target.click();
+        }
+    });
+});
+
+</script>
+{% endblock %}
