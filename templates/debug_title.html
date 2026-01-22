@@ -151,6 +151,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.querySelector('.applied').innerHTML = '&#10003;';
                     row.querySelector('.result').textContent = data.result || '';
                 }
+                // Re-enable Run Strategies button and reset text after result is shown
+                if (runBtn) {
+                    runBtn.disabled = false;
+                    runBtn.textContent = 'Run Strategies';
+                }
             });
     }
 
