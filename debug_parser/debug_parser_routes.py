@@ -1,26 +1,4 @@
-# --- API: Save solution as confirmed serving size ---
-@bp.route('/api/save_serving_solution/<int:test_recipe_id>', methods=['POST'])
-@require_role('Admin')
-def api_save_serving_solution(test_recipe_id):
-    data = request.get_json(force=True)
-    solution = data.get('solution', '').strip()
-    if not solution:
-        return jsonify({'success': False, 'error': 'No solution provided.'}), 400
-    # Save to confirmed_parser_fields (upsert for this parser_debug_id and column 'serving_size')
-    try:
-        with get_db_connection() as conn:
-            c = conn.cursor()
-            # Check if row exists for this parser_debug_id
-            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
-            row = c.fetchone()
-            if row:
-                c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE id = %s', (solution, row['id']))
-            else:
-                c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size) VALUES (%s, %s)', (test_recipe_id, solution))
-            conn.commit()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+
 # --- API: Run title extraction strategies ---
 from flask import jsonify
 from debug_parser.debug_parser_title import is_likely_title
@@ -45,6 +23,30 @@ bp = Blueprint('debug_parser', __name__, template_folder='templates')
 
 # Register the serving debug blueprint as a sub-blueprint
 bp.register_blueprint(debug_parser_serving_bp)
+
+# --- API: Save solution as confirmed serving size ---
+@bp.route('/api/save_serving_solution/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
+def api_save_serving_solution(test_recipe_id):
+    data = request.get_json(force=True)
+    solution = data.get('solution', '').strip()
+    if not solution:
+        return jsonify({'success': False, 'error': 'No solution provided.'}), 400
+    # Save to confirmed_parser_fields (upsert for this parser_debug_id and column 'serving_size')
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            # Check if row exists for this parser_debug_id
+            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
+            row = c.fetchone()
+            if row:
+                c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE id = %s', (solution, row['id']))
+            else:
+                c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size) VALUES (%s, %s)', (test_recipe_id, solution))
+            conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @bp.route('/api/run_title_strategies/<int:test_recipe_id>', methods=['POST'])
 @require_role('Admin')
