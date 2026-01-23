@@ -23,5 +23,6 @@ def debug_serving_size(test_recipe_id):
     return render_template(
         'debug_serving_size.html',
         test_recipe=test_recipe,
-        solution=solution
+        solution=solution,
+        test_recipe_id=test_recipe_id
     )
