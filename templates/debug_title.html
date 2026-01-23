@@ -74,7 +74,7 @@
 {% block scripts %}
 <script>
 // Set rawData as a global variable for use in DOMContentLoaded
-var rawData = "{{ raw_data | escapejs }}";
+var rawData = {{ raw_data | tojson | safe }};
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
