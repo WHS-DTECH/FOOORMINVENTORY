@@ -1,3 +1,15 @@
+# --- Upload Details Page ---
+@app.route('/upload_details/<int:recipe_id>')
+@require_role('Admin')
+def upload_details(recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
+        recipe = c.fetchone()
+    if not recipe:
+        flash('Recipe not found.', 'error')
+        return redirect(url_for('recipe_book.recbk'))
+    return render_template('recipe_setup/Upload_details.html', recipe=recipe)
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
