@@ -7,6 +7,7 @@ def inventory_page():
         ingredients = [dict(row) for row in c.fetchall()]
     return render_template('book_a_class/inventory.html', ingredients=ingredients)
 
+
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import current_user
 from auth import require_role, get_db_connection
