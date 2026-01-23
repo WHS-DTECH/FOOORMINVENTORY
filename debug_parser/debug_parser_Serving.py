@@ -105,8 +105,8 @@ def run_serving_strategy(test_recipe_id):
         label_tags = soup.find_all('label')
         for label in label_tags:
             label_text = label.get_text(strip=True).lower()
-            # Match any label containing 'serv' with any ending (wildcard)
-            if re.search(r'serv\w*', label_text):
+            # Match any label containing 'serving'
+            if 'serving' in label_text:
                 # Find the nearest number after the label
                 next_siblings = label.next_siblings
                 for sib in next_siblings:
@@ -123,7 +123,7 @@ def run_serving_strategy(test_recipe_id):
 
     label_serve_result = extract_label_serve_number(test_recipe['raw_data'])
     strategies.append({
-        'name': "Look for <label> with 'serv*' (wildcard) and get nearest number",
+        'name': "Look for <label> with 'Serving' and get nearest number",
         'applied': True,
         'result': label_serve_result or '—',
         'solved': bool(label_serve_result)
