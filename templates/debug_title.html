@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentStrategy = 0;
     let strategyResults = [];
 
+
     function highlightStrategyRow(idx) {
         Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row, i) => {
             row.style.background = (i === idx) ? '#ffe082' : '';
@@ -142,6 +143,15 @@ document.addEventListener('DOMContentLoaded', function() {
             progressBarContainer.style.display = 'block';
         }
         progressBar.style.width = percent + '%';
+    }
+
+    // Fix: Add missing showProgressBar function
+    function showProgressBar(show) {
+        if (show) {
+            progressBarContainer.style.display = '';
+        } else {
+            progressBarContainer.style.display = 'none';
+        }
     }
 
     // --- New: Stepwise strategy runner with current strategy box ---
