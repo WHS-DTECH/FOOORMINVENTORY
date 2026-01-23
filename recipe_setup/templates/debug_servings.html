@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
+	<div style="flex: 1; min-width: 400px;">
+		<div style="display: flex; justify-content: flex-end; margin-bottom: 1em; gap: 18px;">
+			<form method="get" action="/parser_debug_raw/{{ test_recipe_id }}" style="margin:0;">
+				<button type="submit" class="btn btn-outline-secondary" style="font-size:1em;">View Raw Data2</button>
+			</form>
+			<div style="display: flex; gap: 12px;">
+				<div style="min-width: 180px;">
+					<div id="servingBlockHeader" style="background: #8e24aa; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Serving Size</div>
+					<div id="servingBlockBox" style="border: 1px solid #8e24aa; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222; min-height: 48px; display: flex; align-items: center;">
+						<span id="servingBlockText">{{ best_guess or raw_serving or '(No serving size found)' }}</span>
+					</div>
+				</div>
+				<div style="min-width: 180px;">
+					<div style="background: #8e24aa; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Solution</div>
+					<div id="solutionBox" style="border: 1px solid #8e24aa; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222; min-height: 48px;">
+						<textarea id="solutionInput" style="width: 100%; min-height: 40px; resize: vertical; font-size: 1em;"></textarea>
+						<button id="sendSolutionBtn" style="margin-top: 10px; background: #8e24aa; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">SEND SOLUTION</button>
+					</div>
+				</div>
+			</div>
+		</div>
+        <h3>Raw Data (HTML/Text)</h3>
+        <div style="display: flex;">
+            <div id="lineNumbers" style="background: #f0f0f0; color: #888; padding: 1em 0.5em 1em 1em; border: 1px solid #ccc; border-right: none; text-align: right; user-select: none; font-family: monospace;"></div>
+            <textarea id="rawDataPreview" readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;"></textarea>
+        </div>
+        <button id="showMoreBtn" style="margin-top: 8px; display: none;">Show More</button>
+	</div>
+	<div style="flex: 1; min-width: 340px;">
+        <div style="margin-bottom: 12px;"><strong>Serving Size Extraction Strategies</strong></div>
+        <div id="currentStrategyBox" style="border: 2px solid #8e24aa; border-radius: 8px; padding: 18px 18px 12px 18px; margin-bottom: 18px; background: #f7faff; min-height: 80px; display: none;">
+            <div id="currentStrategyTitle" style="font-weight: bold; font-size: 1.1em; margin-bottom: 8px;"></div>
+            <div id="currentStrategyResult" style="font-family: monospace; color: #8e24aa; font-size: 1.05em; margin-bottom: 12px;"></div>
+            <div style="display: flex; gap: 18px;">
+                <button id="continueBtn" style="width: 60px; height: 60px; font-size: 1.1em; background: #8e24aa; color: #fff; border: none; border-radius: 8px; font-weight: bold;">Continue</button>
+                <button id="solvedBtn" style="width: 60px; height: 60px; font-size: 1.1em; background: #43a047; color: #fff; border: none; border-radius: 8px; font-weight: bold;">Solved</button>
+            </div>
+        </div>
+        <button id="runStrategiesBtn" style="margin-bottom: 10px; background: #8e24aa; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">Run Strategies</button>
+        <div id="progressBarContainer" style="width: 100%; height: 18px; background: #e0e0e0; border-radius: 8px; margin-bottom: 10px; display: none;">
+            <div id="progressBar" style="height: 100%; width: 0%; background: #8e24aa; border-radius: 8px;"></div>
+        </div>
+        <table id="strategiesTable" style="border-collapse: collapse; width: 100%;">
+            <thead>
+                <tr style="background: #e3eafc;">
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Strategy</th>
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Applied</th>
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Result</th>
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Solved</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Look for 'serves' or 'makes' in text</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Find numbers near 'serving' or 'portion'</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Check for numbers in title</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Fallback: Any number in first 10 lines</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>If none, returns "N/A"</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+            </tbody>
+        </table>
+    </div>
+	</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// Set rawData as a global variable for use in DOMContentLoaded
+window.rawData = {{ raw_data | tojson | safe }};
+</script>
+<script>
+// JS logic for stepwise serving size strategies, mirroring debug_title.html
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore debug state if present (future: if you add debug_state)
+    const solutionInput = document.getElementById('solutionInput');
+    const servingBlockText = document.getElementById('servingBlockText');
+    // SEND SOLUTION logic
+    const sendBtn = document.getElementById('sendSolutionBtn');
+    if (sendBtn) {
+        sendBtn.onclick = function() {
+            const solution = solutionInput ? solutionInput.value.trim() : '';
+            if (!solution) return;
+            const testRecipeId = window.location.pathname.match(/\d+$/);
+            const rawData = document.getElementById('rawDataPreview')?.value || '';
+            const extractedServing = servingBlockText ? servingBlockText.textContent : '';
+            const strategies = [];
+            document.querySelectorAll('#strategiesTable tbody tr').forEach(row => {
+                const strat = row.cells[0]?.textContent?.trim();
+                const applied = row.querySelector('.applied')?.textContent?.trim();
+                const result = row.querySelector('.result')?.textContent?.trim();
+                // solved: true if solvedBtn is disabled (if present), else false
+                let solved = false;
+                const solvedBtn = row.querySelector('.solvedBtn');
+                if (solvedBtn) solved = solvedBtn.disabled;
+                strategies.push({ strategy: strat, applied, result, solved });
+            });
+            fetch(`/api/save_serving_solution/${testRecipeId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ solution, raw_data: rawData, extracted_serving: extractedServing, strategies })
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `/parser_debug/${testRecipeId}`;
+                } else {
+                    alert(data.error || 'Failed to save solution.');
+                }
+            })
+            .catch(() => alert('Failed to save solution.'));
+        };
+    }
+
+    // Stepwise runner for strategies
+    const runBtn = document.getElementById('runStrategiesBtn');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const progressBar = document.getElementById('progressBar');
+    const table = document.getElementById('strategiesTable');
+    const rows = table.querySelectorAll('tbody tr');
+    let current = 0;
+
+    // Add solved/next buttons to each row (except last strategy)
+    rows.forEach((row, i) => {
+        if (!row.querySelector('.solvedBtn')) {
+            const td = row.querySelector('.solved') || row.insertCell(-1);
+            td.className = 'solved';
+            if (i < rows.length) {
+                const solvedBtn = document.createElement('button');
+                solvedBtn.className = 'solvedBtn';
+                solvedBtn.style.display = 'none';
+                solvedBtn.style.background = '#43a047';
+                solvedBtn.style.color = '#fff';
+                solvedBtn.style.border = 'none';
+                solvedBtn.style.borderRadius = '4px';
+                solvedBtn.style.padding = '2px 10px';
+                solvedBtn.style.fontSize = '0.95em';
+                solvedBtn.style.cursor = 'pointer';
+                solvedBtn.textContent = '✔️';
+                td.appendChild(solvedBtn);
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'nextBtn';
+                nextBtn.style.display = 'none';
+                nextBtn.style.background = '#8e24aa';
+                nextBtn.style.color = '#fff';
+                nextBtn.style.border = 'none';
+                nextBtn.style.borderRadius = '4px';
+                nextBtn.style.padding = '2px 10px';
+                nextBtn.style.fontSize = '0.95em';
+                nextBtn.style.cursor = 'pointer';
+                nextBtn.textContent = '➡️';
+                td.appendChild(nextBtn);
+            }
+        }
+    });
+
+    function resetTable() {
+        rows.forEach(row => {
+            row.querySelector('.applied').textContent = '—';
+            row.querySelector('.result').textContent = '—';
+            const solvedBtn = row.querySelector('.solvedBtn');
+            const nextBtn = row.querySelector('.nextBtn');
+            if (solvedBtn) {
+                solvedBtn.style.display = 'none';
+                solvedBtn.disabled = false;
+                solvedBtn.style.background = '#43a047';
+                solvedBtn.textContent = '✔️';
+            }
+            if (nextBtn) {
+                nextBtn.style.display = 'none';
+                nextBtn.disabled = false;
+            }
+        });
+    }
+
+    function runStrategies() {
+        resetTable();
+        progressBarContainer.style.display = '';
+        progressBar.style.width = '0%';
+        current = 0;
+        runNext();
+    }
+
+    function runNext() {
+        if (current >= rows.length) {
+            progressBar.style.width = '100%';
+            return;
+        }
+        const row = rows[current];
+        row.querySelector('.applied').textContent = '⏳';
+        // Call backend for each strategy step
+        const testRecipeId = window.location.pathname.match(/\d+$/);
+        fetch(`/run_serving_strategy/${testRecipeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ current_step: current, action: 'continue' })
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            row.querySelector('.applied').textContent = '✅';
+            row.querySelector('.result').textContent = data.result || '(no result)';
+            const solvedBtn = row.querySelector('.solvedBtn');
+            const nextBtn = row.querySelector('.nextBtn');
+            if (solvedBtn) solvedBtn.style.display = '';
+            if (nextBtn) nextBtn.style.display = '';
+            progressBar.style.width = Math.round(((current+1)/rows.length)*100) + '%';
+            if (solvedBtn) {
+                solvedBtn.onclick = () => {
+                    solvedBtn.style.background = '#388e3c';
+                    solvedBtn.textContent = '✔️ Solved';
+                    solvedBtn.disabled = true;
+                    // Auto-fill solution box with result if not empty
+                    if (data.result && data.result !== '(No match found)' && data.result !== '(No number found)' && data.result !== 'N/A') {
+                        solutionInput.value = data.result;
+                    }
+                };
+            }
+            if (nextBtn) {
+                nextBtn.onclick = () => {
+                    if (solvedBtn) solvedBtn.disabled = true;
+                    nextBtn.disabled = true;
+                    current++;
+                    runNext();
+                };
+            }
+        })
+        .catch(() => {
+            row.querySelector('.applied').textContent = '❌';
+            row.querySelector('.result').textContent = 'API error';
+            const solvedBtn = row.querySelector('.solvedBtn');
+            const nextBtn = row.querySelector('.nextBtn');
+            if (solvedBtn) solvedBtn.style.display = '';
+            if (nextBtn) nextBtn.style.display = '';
+        });
+    }
+
+    if (runBtn) {
+        runBtn.onclick = runStrategies;
+    }
+
+    // Line numbers for raw data preview
+    const rawDataPreview = document.getElementById('rawDataPreview');
+    const lineNumbers = document.getElementById('lineNumbers');
+    if (rawDataPreview && lineNumbers && window.rawData) {
+        rawDataPreview.value = window.rawData;
+        const lines = window.rawData.split('\n');
+        lineNumbers.innerHTML = '';
+        for (let i = 1; i <= lines.length; i++) {
+            const div = document.createElement('div');
+            div.style.minWidth = '2.5em';
+            div.textContent = i;
+            lineNumbers.appendChild(div);
+        }
+    }
+});
+</script>
+{% endblock %}
