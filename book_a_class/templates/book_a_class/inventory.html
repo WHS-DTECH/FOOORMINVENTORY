@@ -14,12 +14,33 @@
         <a href="/admin">Admin</a>
       </nav>
 
-<h2>Pantry Inventory</h2>  
-<ul>     
-  {% for ing in ingredients %}         
-  <li>{{ ing.quantity }} {{ ing.unit }} {{ ing.ingredient }}</li>     
-  {% endfor %} 
-</ul>
+<h2>Ingredients Inventory</h2>
+<table class="table table-striped" style="margin-top: 2em;">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Quantity</th>
+      <th>Unit</th>
+      <th>Category</th>
+      <th>Last Updated</th>
+      <th>Recipe ID</th>
+      <th>Found Ingredient</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ing in ingredients %}
+    <tr>
+      <td>{{ ing.ingredient_name }}</td>
+      <td>{{ ing.quantity or '' }}</td>
+      <td>{{ ing.unit or '' }}</td>
+      <td>{{ ing.category or '' }}</td>
+      <td>{{ ing.last_updated or '' }}</td>
+      <td>{{ ing.recipe_id or '' }}</td>
+      <td>{{ ing.found_ingredient or '' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
 </body>
 
