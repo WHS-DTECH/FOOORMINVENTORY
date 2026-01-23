@@ -1,3 +1,15 @@
+# =======================
+# Jinja2 Filters
+# =======================
+
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%Y-%m-%d %H:%M'):
+    if value is None:
+        return ''
+    try:
+        return value.strftime(format)
+    except Exception:
+        return str(value)
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
