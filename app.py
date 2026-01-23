@@ -1,15 +1,4 @@
-# =======================
-# Jinja2 Filters
-# =======================
 
-@app.template_filter('datetimeformat')
-def datetimeformat(value, format='%Y-%m-%d %H:%M'):
-    if value is None:
-        return ''
-    try:
-        return value.strftime(format)
-    except Exception:
-        return str(value)
 
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
@@ -159,7 +148,18 @@ def internal_error(error):
     """Render custom 500 error page."""
     return "An internal error occurred. Please try again later.", 500
 
+# =======================
+# Jinja2 Filters
+# =======================
 
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%Y-%m-%d %H:%M'):
+    if value is None:
+        return ''
+    try:
+        return value.strftime(format)
+    except Exception:
+        return str(value)
 
 # =======================
 # Test Routes
