@@ -123,6 +123,40 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 0;
     let totalStrategies = 13;
 
+    // --- SEND SOLUTION button logic ---
+    const sendSolutionBtn = document.getElementById('sendSolutionBtn');
+    sendSolutionBtn.addEventListener('click', function() {
+        const solution = solutionInput.value.trim();
+        if (!solution) {
+            alert('Please enter a solution before sending.');
+            return;
+        }
+        sendSolutionBtn.disabled = true;
+        sendSolutionBtn.textContent = 'Sending...';
+        fetch(`/api/save_title_solution/${testRecipeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ solution: solution })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                sendSolutionBtn.textContent = 'Sent!';
+                // Optionally reload or redirect
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                sendSolutionBtn.disabled = false;
+                sendSolutionBtn.textContent = 'SEND SOLUTION';
+                alert(data.error || 'Failed to save solution.');
+            }
+        })
+        .catch(() => {
+            sendSolutionBtn.disabled = false;
+            sendSolutionBtn.textContent = 'SEND SOLUTION';
+            alert('Failed to send solution.');
+        });
+    });
+
     function highlightStrategyRow(idx) {
         Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row, i) => {
             row.style.background = (i === idx) ? '#ffe082' : '';

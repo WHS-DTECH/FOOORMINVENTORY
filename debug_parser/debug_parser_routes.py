@@ -77,9 +77,27 @@ def delete_debug(debug_id):
 
 # --- API: Save solution as confirmed title ---
 @bp.route('/api/save_title_solution/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
 def api_save_title_solution(test_recipe_id):
-    # ...existing code from app.py...
-    pass
+    data = request.get_json(force=True)
+    solution = data.get('solution', '').strip()
+    if not solution:
+        return jsonify({'success': False, 'error': 'No solution provided.'}), 400
+    # Save to confirmed_parser_fields (upsert for this test_recipe_id and field 'title')
+    try:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            # Check if already exists
+            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s AND field = %s', (test_recipe_id, 'title'))
+            row = c.fetchone()
+            if row:
+                c.execute('UPDATE confirmed_parser_fields SET value = %s WHERE id = %s', (solution, row['id']))
+            else:
+                c.execute('INSERT INTO confirmed_parser_fields (parser_test_recipe_id, field, value) VALUES (%s, %s, %s)', (test_recipe_id, 'title', solution))
+            conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # --- API: Run second title extraction strategy ---
 @bp.route('/api/title_strategy/recipe_word/<int:test_recipe_id>', methods=['GET'])
