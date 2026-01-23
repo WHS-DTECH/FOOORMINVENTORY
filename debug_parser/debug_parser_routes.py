@@ -250,11 +250,113 @@ def run_strategy(test_recipe_id):
         if not row:
             return jsonify({'error': 'Test recipe not found'}), 404
         raw_data = row['raw_data']
+    lines = (raw_data or '').split('\n')
     result = ''
+    # Strategy 1: <title> tag
     if strategy == 'URL: What is between the <title></title> tag.':
-        # Extract content between <title>...</title>
         match = re.search(r'<title>(.*?)</title>', raw_data, re.IGNORECASE | re.DOTALL)
         result = match.group(1).strip() if match else '(No <title> tag found)'
+    # Strategy 2: Is there matching words from the URL in the Raw Data?
+    elif strategy == 'Is there matching words from the URL in the Raw Data?':
+        # Try to get a URL from the raw data (look for http/https)
+        url_match = re.search(r'(https?://\S+)', raw_data)
+        if url_match:
+            url = url_match.group(1)
+            url_words = re.findall(r'[a-zA-Z]+', url)
+            found = []
+            for word in url_words:
+                for line in lines:
+                    if word.lower() in line.lower():
+                        found.append(word)
+                        break
+            result = f"Words from URL found in raw data: {', '.join(found)}" if found else 'No URL words found in raw data.'
+        else:
+            result = 'No URL found in raw data.'
+    # Strategy 3: Not a section header
+    elif strategy == 'Not a section header':
+        # Use is_likely_title with a dummy detect_section function
+        def dummy_detect_section(line):
+            return bool(re.match(r'^(ingredients|instructions|method|directions)[:\s]*$', line.strip(), re.I))
+        candidates = [line for line in lines if line.strip() and not dummy_detect_section(line)]
+        result = candidates[0] if candidates else 'No non-section-header line found.'
+    # Strategy 4: Not all lowercase
+    elif strategy == 'Not all lowercase':
+        candidates = [line for line in lines if line.strip() and not line.islower()]
+        result = candidates[0] if candidates else 'No line found that is not all lowercase.'
+    # Strategy 5: Not too short (≥4 chars)
+    elif strategy == 'Not too short (≥4 chars)':
+        candidates = [line for line in lines if len(line.strip()) >= 4]
+        result = candidates[0] if candidates else 'No line found with ≥4 chars.'
+    # Strategy 6: Not only digits/symbols
+    elif strategy == 'Not only digits/symbols':
+        candidates = [line for line in lines if not re.match(r'^[\d\W]+$', line.strip())]
+        result = candidates[0] if candidates else 'No line found that is not only digits/symbols.'
+    # Strategy 7: Prefers larger/bold lines (not available, fallback to longest line)
+    elif strategy == 'Prefers larger/bold lines':
+        candidates = sorted([line for line in lines if line.strip()], key=lambda l: -len(l))
+        result = candidates[0] if candidates else 'No non-empty lines.'
+    # Strategy 8: NLP noun phrase/WORK_OF_ART
+    elif strategy == 'NLP noun phrase/WORK_OF_ART':
+        from debug_parser.debug_parser_title import nlp
+        if nlp:
+            for line in lines:
+                doc = nlp(line)
+                if any(ent.label_ == 'WORK_OF_ART' for ent in doc.ents):
+                    result = line
+                    break
+            else:
+                result = 'No WORK_OF_ART found.'
+        else:
+            result = 'spaCy NLP not available.'
+    # Strategy 9: Fallback: Uppercase start, not junk word
+    elif strategy == 'Fallback: Uppercase start, not junk word':
+        junk_words = ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']
+        for line in lines:
+            if line and line[0].isupper() and not any(x in line.lower() for x in junk_words):
+                result = line
+                break
+        else:
+            result = 'No suitable fallback line found.'
+    # Strategy 10: Up to 5 lines above first ingredient
+    elif strategy == 'Up to 5 lines above first ingredient':
+        # Find first line containing 'ingredient' or similar
+        idx = next((i for i, line in enumerate(lines) if re.search(r'ingredient', line, re.I)), None)
+        if idx is not None:
+            from debug_parser.debug_parser_title import infer_title_above
+            # Dummy ingredient block: lines containing numbers (simulate ingredients)
+            ingredient_block = [l for l in lines if re.search(r'\d', l)]
+            result = infer_title_above(lines, idx, ingredient_block)
+        else:
+            result = 'No ingredient block found.'
+    # Strategy 11: Prefers food words from ingredient block
+    elif strategy == 'Prefers food words from ingredient block':
+        # Dummy: just return first line containing a food word (simulate)
+        food_words = ['chicken', 'beef', 'pasta', 'salad', 'soup', 'cake', 'bread']
+        for line in lines:
+            if any(word in line.lower() for word in food_words):
+                result = line
+                break
+        else:
+            result = 'No food word found.'
+    # Strategy 12: Closest non-empty line above ingredient block
+    elif strategy == 'Closest non-empty line above ingredient block':
+        idx = next((i for i, line in enumerate(lines) if re.search(r'ingredient', line, re.I)), None)
+        if idx is not None:
+            for j in range(1, 6):
+                above = idx - j
+                if above < 0:
+                    break
+                candidate = lines[above].strip()
+                if candidate:
+                    result = candidate
+                    break
+            else:
+                result = 'No non-empty line found above ingredient block.'
+        else:
+            result = 'No ingredient block found.'
+    # Strategy 13: If none, returns "Unknown Recipe"
+    elif strategy == 'If none, returns "Unknown Recipe"':
+        result = 'Unknown Recipe'
     else:
         result = f'(No logic implemented for strategy: {strategy})'
     return jsonify({'result': result})
