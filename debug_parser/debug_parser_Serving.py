@@ -27,7 +27,7 @@ def debug_serving_size(test_recipe_id):
         'raw_data': sample_html,
     }
 
-    @debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
+@debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_serving_strategy(test_recipe_id):
     # For demonstration, use the same sample HTML as in debug_serving_size
     sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
