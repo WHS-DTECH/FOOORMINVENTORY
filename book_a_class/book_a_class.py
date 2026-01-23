@@ -1,13 +1,3 @@
-@book_a_class_bp.route('/book_a_class/inventory')
-@require_role('Admin', 'Teacher')
-def inventory_page():
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id, ingredient_name, quantity, unit, category, last_updated, recipe_id, found_ingredient FROM ingredient_inventory ORDER BY LOWER(ingredient_name)')
-        ingredients = [dict(row) for row in c.fetchall()]
-    return render_template('book_a_class/inventory.html', ingredients=ingredients)
-
-
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import current_user
 from auth import require_role, get_db_connection
