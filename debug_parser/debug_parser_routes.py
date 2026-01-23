@@ -83,17 +83,17 @@ def api_save_title_solution(test_recipe_id):
     solution = data.get('solution', '').strip()
     if not solution:
         return jsonify({'success': False, 'error': 'No solution provided.'}), 400
-    # Save to confirmed_parser_fields (upsert for this test_recipe_id and field 'title')
+    # Save to confirmed_parser_fields (upsert for this parser_debug_id and column 'title')
     try:
         with get_db_connection() as conn:
             c = conn.cursor()
-            # Check if already exists
-            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s AND field = %s', (test_recipe_id, 'title'))
+            # Check if row exists for this parser_debug_id
+            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
             row = c.fetchone()
             if row:
-                c.execute('UPDATE confirmed_parser_fields SET value = %s WHERE id = %s', (solution, row['id']))
+                c.execute('UPDATE confirmed_parser_fields SET title = %s WHERE id = %s', (solution, row['id']))
             else:
-                c.execute('INSERT INTO confirmed_parser_fields (parser_test_recipe_id, field, value) VALUES (%s, %s, %s)', (test_recipe_id, 'title', solution))
+                c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, title) VALUES (%s, %s)', (test_recipe_id, solution))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:
