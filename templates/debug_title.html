@@ -22,16 +22,12 @@
 				</div>
 			</div>
 		</div>
-		<h3>Raw Data (HTML/Text)</h3>
-		<div style="display: flex;">
-			<div style="background: #f0f0f0; color: #888; padding: 1em 0.5em 1em 1em; border: 1px solid #ccc; border-right: none; text-align: right; user-select: none; font-family: monospace;">
-				{% set lines = (raw_data or raw_title or '') .split('\n') %}
-				{% for i in range(1, lines|length + 1) %}
-					<div style="min-width: 2.5em;">{{ i }}</div>
-				{% endfor %}
-			</div>
-			<textarea readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;">{{ raw_data }}</textarea>
-		</div>
+        <h3>Raw Data (HTML/Text)</h3>
+        <div style="display: flex;">
+            <div id="lineNumbers" style="background: #f0f0f0; color: #888; padding: 1em 0.5em 1em 1em; border: 1px solid #ccc; border-right: none; text-align: right; user-select: none; font-family: monospace;"></div>
+            <textarea id="rawDataPreview" readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;"></textarea>
+        </div>
+        <button id="showMoreBtn" style="margin-top: 8px; display: none;">Show More</button>
 	</div>
 	<div style="flex: 1; min-width: 340px;">
 		<div style="margin-bottom: 12px;"><strong>Title Extraction Strategies</strong></div>
@@ -78,32 +74,52 @@
 {% endblock %}
 {% block scripts %}
 <script>
-// Hard refresh logic (like other pages)
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-        e.preventDefault();
-        window.location.reload(true); // true = hard reload
-    }
-});
-
-// Step-by-step strategy runner
-const STRATEGIES = [
-    'URL: What is between the <title></title> tag.',
-    'Is there matching words from the URL in the Raw Data?',
-    'Not a section header',
-    'Not all lowercase',
-    'Not too short (≥4 chars)',
-    'Not only digits/symbols',
-    'Prefers larger/bold lines',
-    'NLP noun phrase/WORK_OF_ART',
-    'Fallback: Uppercase start, not junk word',
-    'Up to 5 lines above first ingredient',
-    'Prefers food words from ingredient block',
-    'Closest non-empty line above ingredient block',
-    'If none, returns "Unknown Recipe"'
-];
-
 document.addEventListener('DOMContentLoaded', function() {
+    // --- Raw data preview logic for performance ---
+    const rawData = `{{ raw_data | replace('`', '\`') | replace('\r', '') }}`;
+    const lines = rawData.split('\n');
+    const previewLines = 50;
+    const lineNumbersDiv = document.getElementById('lineNumbers');
+    const rawDataPreview = document.getElementById('rawDataPreview');
+    const showMoreBtn = document.getElementById('showMoreBtn');
+    function renderPreview(count) {
+        let shownLines = lines.slice(0, count);
+        lineNumbersDiv.innerHTML = shownLines.map((_, i) => `<div style='min-width:2.5em;'>${i+1}</div>`).join('');
+        rawDataPreview.value = shownLines.join('\n');
+    }
+    renderPreview(previewLines);
+    if (lines.length > previewLines) {
+        showMoreBtn.style.display = '';
+        showMoreBtn.onclick = function() {
+            renderPreview(lines.length);
+            showMoreBtn.style.display = 'none';
+        };
+    }
+
+    // --- Hard refresh logic (like other pages) ---
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            window.location.reload(true); // true = hard reload
+        }
+    });
+
+    // --- Step-by-step strategy runner ---
+    const STRATEGIES = [
+        'URL: What is between the <title></title> tag.',
+        'Is there matching words from the URL in the Raw Data?',
+        'Not a section header',
+        'Not all lowercase',
+        'Not too short (≥4 chars)',
+        'Not only digits/symbols',
+        'Prefers larger/bold lines',
+        'NLP noun phrase/WORK_OF_ART',
+        'Fallback: Uppercase start, not junk word',
+        'Up to 5 lines above first ingredient',
+        'Prefers food words from ingredient block',
+        'Closest non-empty line above ingredient block',
+        'If none, returns "Unknown Recipe"'
+    ];
     var runBtn = document.getElementById('runStrategiesBtn');
     var testRecipeId = '{{ test_recipe_id }}';
     var progressBar = document.getElementById('progressBar');
