@@ -30,45 +30,44 @@
         <button id="showMoreBtn" style="margin-top: 8px; display: none;">Show More</button>
 	</div>
 	<div style="flex: 1; min-width: 340px;">
-		<div style="margin-bottom: 12px;"><strong>Title Extraction Strategies</strong></div>
-		<div style="margin-bottom: 10px; font-size: 0.98em; color: #333;">
-			<button id="runStrategiesBtn" style="margin-bottom: 10px; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">Run Strategies</button>
-			<div id="progressBarContainer" style="width: 100%; height: 18px; background: #e0e0e0; border-radius: 8px; margin-bottom: 10px; display: none;">
-				<div id="progressBar" style="height: 100%; width: 0%; background: #1976d2; border-radius: 8px;"></div>
-			</div>
-			<table id="strategiesTable" style="border-collapse: collapse; width: 100%;">
-				<thead>
-					<tr style="background: #e3eafc;">
-						<th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Strategy</th>
-						<th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Applied</th>
-						<th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Result</th>
-						<th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Solved</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>Is there matching words from the URL in the Raw Data?</td>
-						<td class="applied">—</td>
-						<td class="result">—</td>
-						<td class="solved">
-							<button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button>
-							<button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button>
-						</td>
-					</tr>
-					<tr><td>Not a section header</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Not all lowercase</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Not too short (≥4 chars)</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Not only digits/symbols</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Prefers larger/bold lines</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>NLP noun phrase/WORK_OF_ART</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Fallback: Uppercase start, not junk word</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Up to 5 lines above first ingredient</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Prefers food words from ingredient block</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>Closest non-empty line above ingredient block</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-					<tr><td>If none, returns "Unknown Recipe"</td><td class="applied">—</td><td class="result">—</td><td class="solved"><button class="solvedBtn" style="display:none; background: #43a047; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">✔️</button> <button class="nextBtn" style="display:none; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 0.95em; cursor: pointer;">➡️</button></td></tr>
-				</tbody>
-			</table>
-		</div>
+        <div style="margin-bottom: 12px;"><strong>Title Extraction Strategies</strong></div>
+        <div id="currentStrategyBox" style="border: 2px solid #1976d2; border-radius: 8px; padding: 18px 18px 12px 18px; margin-bottom: 18px; background: #f7faff; min-height: 80px; display: none;">
+            <div id="currentStrategyTitle" style="font-weight: bold; font-size: 1.1em; margin-bottom: 8px;"></div>
+            <div id="currentStrategyResult" style="font-family: monospace; color: #1976d2; font-size: 1.05em; margin-bottom: 12px;"></div>
+            <div style="display: flex; gap: 18px;">
+                <button id="continueBtn" style="width: 60px; height: 60px; font-size: 1.1em; background: #1976d2; color: #fff; border: none; border-radius: 8px; font-weight: bold;">Continue</button>
+                <button id="solvedBtn" style="width: 60px; height: 60px; font-size: 1.1em; background: #43a047; color: #fff; border: none; border-radius: 8px; font-weight: bold;">Solved</button>
+            </div>
+        </div>
+        <button id="runStrategiesBtn" style="margin-bottom: 10px; background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">Run Strategies</button>
+        <div id="progressBarContainer" style="width: 100%; height: 18px; background: #e0e0e0; border-radius: 8px; margin-bottom: 10px; display: none;">
+            <div id="progressBar" style="height: 100%; width: 0%; background: #1976d2; border-radius: 8px;"></div>
+        </div>
+        <table id="strategiesTable" style="border-collapse: collapse; width: 100%;">
+            <thead>
+                <tr style="background: #e3eafc;">
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Strategy</th>
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Applied</th>
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Result</th>
+                    <th style="border: 1px solid #b0b0b0; padding: 4px 8px;">Solved</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Is there matching words from the URL in the Raw Data?</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Not a section header</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Not all lowercase</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Not too short (≥4 chars)</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Not only digits/symbols</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Prefers larger/bold lines</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>NLP noun phrase/WORK_OF_ART</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Fallback: Uppercase start, not junk word</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Up to 5 lines above first ingredient</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Prefers food words from ingredient block</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>Closest non-empty line above ingredient block</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+                <tr><td>If none, returns "Unknown Recipe"</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+            </tbody>
+        </table>
+    </div>
 	</div>
 </div>
 {% endblock %}
@@ -145,33 +144,45 @@ document.addEventListener('DOMContentLoaded', function() {
         progressBar.style.width = percent + '%';
     }
 
+    // --- New: Stepwise strategy runner with current strategy box ---
+    const currentStrategyBox = document.getElementById('currentStrategyBox');
+    const currentStrategyTitle = document.getElementById('currentStrategyTitle');
+    const currentStrategyResult = document.getElementById('currentStrategyResult');
+    const continueBtn = document.getElementById('continueBtn');
+    const solvedBtn = document.getElementById('solvedBtn');
+    let running = false;
     function runStrategyStep(idx) {
         if (idx >= STRATEGIES.length) {
             showProgressBar(false);
             highlightStrategyRow(-1);
+            currentStrategyBox.style.display = 'none';
+            running = false;
             return;
         }
         currentStrategy = idx;
         highlightStrategyRow(idx);
         showProgressBar(true);
         setProgress(((idx + 1) / STRATEGIES.length) * 100);
-        // Only run one strategy at a time, wait for user action
-        // Fetch result from backend if implemented
+        // Show current strategy box
+        currentStrategyBox.style.display = '';
+        currentStrategyTitle.textContent = STRATEGIES[idx];
+        currentStrategyResult.textContent = '...';
+        continueBtn.disabled = true;
+        solvedBtn.disabled = true;
+        // Fetch result from backend
         fetch(`/run_strategy/${testRecipeId}?strategy=${encodeURIComponent(STRATEGIES[idx])}`)
             .then(response => response.json())
             .then(data => {
-                showAcceptNextButtons(idx, data.result || '');
-                // Mark as applied and show result
+                currentStrategyResult.textContent = data.result || '';
+                // Mark as applied and show result in table
                 const row = strategiesTable.querySelectorAll('tbody tr')[idx];
                 if (row) {
                     row.querySelector('.applied').innerHTML = '&#10003;';
                     row.querySelector('.result').textContent = data.result || '';
                 }
-                // Re-enable Run Strategies button and reset text after result is shown
-                if (runBtn) {
-                    runBtn.disabled = false;
-                    runBtn.textContent = 'Run Strategies';
-                }
+                continueBtn.disabled = false;
+                solvedBtn.disabled = false;
+                running = true;
             });
     }
 
@@ -183,9 +194,9 @@ document.addEventListener('DOMContentLoaded', function() {
             Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row) => {
                 row.style.background = '';
                 let cell = row.querySelector('.solved');
-                if (cell) {
-                    cell.innerHTML = '';
-                }
+                if (cell) cell.innerHTML = '';
+                row.querySelector('.applied').innerHTML = '—';
+                row.querySelector('.result').textContent = '—';
             });
             // Start running strategies from the beginning
             currentStrategy = 0;
@@ -194,6 +205,22 @@ document.addEventListener('DOMContentLoaded', function() {
             runStrategyStep(0);
         });
     }
+
+    // Continue and Solved button logic
+    continueBtn.addEventListener('click', function() {
+        if (!running) return;
+        runStrategyStep(currentStrategy + 1);
+    });
+    solvedBtn.addEventListener('click', function() {
+        if (!running) return;
+        // Move result to Solution box
+        solutionInput.value = currentStrategyResult.textContent;
+        // Optionally mark as solved in table
+        const row = strategiesTable.querySelectorAll('tbody tr')[currentStrategy];
+        if (row) row.querySelector('.solved').innerHTML = '<span style="font-size:1.5em;">✔️</span>';
+        running = false;
+        currentStrategyBox.style.display = 'none';
+    });
 
     // Robust event delegation for Accept/Next buttons
     document.body.addEventListener('click', function(e) {
