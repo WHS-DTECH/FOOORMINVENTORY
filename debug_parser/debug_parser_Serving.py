@@ -26,8 +26,159 @@ def debug_serving_size(test_recipe_id):
         'strategies': [],
         'raw_data': sample_html,
     }
-    # Always return a valid response
-    return render_template('debug_serving_size.html', test_recipe=test_recipe, test_recipe_id=test_recipe_id)
+
+    # Extraction strategy functions (must match backend runner)
+    def extract_hardcoded_servings_solution(html):
+        soup = BeautifulSoup(html, 'html.parser')
+        label_tags = soup.find_all('label', class_='label')
+        for label in label_tags:
+            if label.get_text(strip=True) == 'Servings':
+                next_el = label.find_next_sibling()
+                while next_el is not None:
+                    if getattr(next_el, 'name', None) == 'div' and 'solution' in next_el.get('class', []):
+                        match = re.search(r'(\d+)', next_el.get_text(strip=True))
+                        if match:
+                            return match.group(1)
+                        break
+                    next_el = next_el.find_next_sibling() if hasattr(next_el, 'find_next_sibling') else None
+        return None
+
+    def extract_label_servings_class_number(html):
+        soup = BeautifulSoup(html, 'html.parser')
+        label_tags = soup.find_all('label', class_='label')
+        for label in label_tags:
+            if label.get_text(strip=True).lower() == 'servings':
+                next_siblings = label.next_siblings
+                for sib in next_siblings:
+                    if isinstance(sib, str):
+                        match = re.search(r'(\d+)', sib)
+                        if match:
+                            return match.group(1)
+                    else:
+                        text = sib.get_text(strip=True) if hasattr(sib, 'get_text') else str(sib)
+                        match = re.search(r'(\d+)', text)
+                        if match:
+                            return match.group(1)
+        return None
+
+    def extract_label_serve_number(html):
+        soup = BeautifulSoup(html, 'html.parser')
+        label_tags = soup.find_all('label')
+        for label in label_tags:
+            label_text = label.get_text(strip=True).lower()
+            if 'serving' in label_text:
+                next_siblings = label.next_siblings
+                for sib in next_siblings:
+                    if isinstance(sib, str):
+                        match = re.search(r'(\d+)', sib)
+                        if match:
+                            return match.group(1)
+                    else:
+                        text = sib.get_text(strip=True) if hasattr(sib, 'get_text') else str(sib)
+                        match = re.search(r'(\d+)', text)
+                        if match:
+                            return match.group(1)
+        return None
+
+    def look_for_serves_or_makes(html):
+        match = re.search(r'(serves|makes)\s*(\d+)', html, re.IGNORECASE)
+        if match:
+            return match.group(2)
+        return None
+
+    def find_numbers_near_serving_or_portion(html):
+        match = re.search(r'(serving|portion)[^\d]*(\d+)', html, re.IGNORECASE)
+        if match:
+            return match.group(2)
+        return None
+
+    def check_numbers_in_title(html):
+        match = re.search(r'(\d+)', html[:100])
+        if match:
+            return match.group(1)
+        return None
+
+    def fallback_any_number_first_10_lines(html):
+        lines = html.splitlines()[:10]
+        for line in lines:
+            match = re.search(r'(\d+)', line)
+            if match:
+                return match.group(1)
+        return None
+
+    # Build strategies list in the same order as backend
+    strategies = []
+    hardcoded_servings_solution_result = extract_hardcoded_servings_solution(test_recipe['raw_data'])
+    strategies.append({
+        'name': 'Hard-coded: <label class="label">Servings</label> then <div class="solution">NUMBER</div>',
+        'applied': True,
+        'result': hardcoded_servings_solution_result or '—',
+        'solved': bool(hardcoded_servings_solution_result)
+    })
+    label_servings_class_result = extract_label_servings_class_number(test_recipe['raw_data'])
+    strategies.append({
+        'name': 'Look for <label class="label">Servings</label> and get nearest number',
+        'applied': False,
+        'result': label_servings_class_result or '—',
+        'solved': bool(label_servings_class_result)
+    })
+    label_serve_result = extract_label_serve_number(test_recipe['raw_data'])
+    strategies.append({
+        'name': "Look for <label> with 'Serving' and get nearest number",
+        'applied': False,
+        'result': label_serve_result or '—',
+        'solved': bool(label_serve_result)
+    })
+    serves_makes_result = look_for_serves_or_makes(test_recipe['raw_data'])
+    strategies.append({
+        'name': "Look for 'serves' or 'makes' in text",
+        'applied': False,
+        'result': serves_makes_result or '—',
+        'solved': bool(serves_makes_result)
+    })
+    near_serving_portion_result = find_numbers_near_serving_or_portion(test_recipe['raw_data'])
+    strategies.append({
+        'name': "Find numbers near 'serving' or 'portion'",
+        'applied': False,
+        'result': near_serving_portion_result or '—',
+        'solved': bool(near_serving_portion_result)
+    })
+    numbers_in_title_result = check_numbers_in_title(test_recipe['raw_data'])
+    strategies.append({
+        'name': "Check for numbers in title",
+        'applied': False,
+        'result': numbers_in_title_result or '—',
+        'solved': bool(numbers_in_title_result)
+    })
+    fallback_result = fallback_any_number_first_10_lines(test_recipe['raw_data'])
+    strategies.append({
+        'name': "Fallback: Any number in first 10 lines",
+        'applied': False,
+        'result': fallback_result or '—',
+        'solved': bool(fallback_result)
+    })
+    strategies.append({
+        'name': 'If none, returns "N/A"',
+        'applied': False,
+        'result': 'N/A',
+        'solved': not any(s['solved'] for s in strategies)
+    })
+
+    # Set serving_size to first solved strategy
+    serving_size = next((s['result'] for s in strategies if s['solved']), 'N/A')
+    test_recipe['serving_size'] = serving_size
+    test_recipe['strategies'] = strategies
+
+    solution = None
+    if request.method == 'POST':
+        solution = request.form.get('solution')
+        # Save solution logic here
+    return render_template(
+        'debug_serving_size.html',
+        test_recipe=test_recipe,
+        solution=solution,
+        test_recipe_id=test_recipe_id
+    )
 
 @debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_serving_strategy(test_recipe_id):
