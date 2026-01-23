@@ -1,7 +1,33 @@
-# API endpoint for stepwise serving size strategies
+
+# ...existing code...
+
 from flask import jsonify
 
-@debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
+
+# debug_parser_Serving.py
+# Layout and logic based on Title DEBUG code
+
+from flask import Blueprint, render_template, request
+from bs4 import BeautifulSoup
+import re
+
+debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_folder='templates')
+
+@debug_parser_serving_bp.route('/debug_serving_size/<int:test_recipe_id>', methods=['GET', 'POST'])
+def debug_serving_size(test_recipe_id):
+    # Example: fetch test_recipe from DB (replace with actual DB logic)
+    # For demonstration, use a sample HTML for raw_data
+    sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
+    test_recipe = {
+        'id': test_recipe_id,
+        'serving_size': 'N/A',
+        'upload_source_detail': '',
+        'confirmed': {},
+        'strategies': [],
+        'raw_data': sample_html,
+    }
+
+    @debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_serving_strategy(test_recipe_id):
     # For demonstration, use the same sample HTML as in debug_serving_size
     sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
@@ -67,28 +93,6 @@ def run_serving_strategy(test_recipe_id):
         return jsonify({'result': 'N/A'})
     else:
         return jsonify({'result': '(Invalid step)'})
-# debug_parser_Serving.py
-# Layout and logic based on Title DEBUG code
-
-from flask import Blueprint, render_template, request
-from bs4 import BeautifulSoup
-import re
-
-debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_folder='templates')
-
-@debug_parser_serving_bp.route('/debug_serving_size/<int:test_recipe_id>', methods=['GET', 'POST'])
-def debug_serving_size(test_recipe_id):
-    # Example: fetch test_recipe from DB (replace with actual DB logic)
-    # For demonstration, use a sample HTML for raw_data
-    sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
-    test_recipe = {
-        'id': test_recipe_id,
-        'serving_size': 'N/A',
-        'upload_source_detail': '',
-        'confirmed': {},
-        'strategies': [],
-        'raw_data': sample_html,
-    }
 
     # Stepwise strategies
     strategies = []
