@@ -3,9 +3,10 @@
 <div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
 	<div style="flex: 1; min-width: 400px;">
 		<div style="display: flex; justify-content: flex-end; margin-bottom: 1em; gap: 18px;">
-			<form method="get" action="/parser_debug_raw/{{ test_recipe_id }}" style="margin:0;">
-				<button type="submit" class="btn btn-outline-secondary" style="font-size:1em;">View Raw Data2</button>
-			</form>
+            <form method="get" action="/parser_debug_raw/{{ test_recipe_id }}" style="margin:0; display:inline-block;">
+                <button type="submit" class="btn btn-outline-secondary" style="font-size:1em; height:48px;">View Raw Data2</button>
+            </form>
+            <a href="{{ url_for('admin_task.admin_recipe_book_setup') }}" class="btn btn-secondary" style="font-size:1em; height:48px; display:inline-flex; align-items:center; margin-left:8px;">Back to Recipe Book Setup</a>
 			<div style="display: flex; gap: 12px;">
 				<div style="min-width: 180px;">
 					<div id="servingBlockHeader" style="background: #8e24aa; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Serving Size</div>
