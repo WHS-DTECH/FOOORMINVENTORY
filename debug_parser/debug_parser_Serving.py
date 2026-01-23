@@ -26,6 +26,8 @@ def debug_serving_size(test_recipe_id):
         'strategies': [],
         'raw_data': sample_html,
     }
+    # Always return a valid response
+    return render_template('debug_serving_size.html', test_recipe=test_recipe, test_recipe_id=test_recipe_id)
 
 @debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_serving_strategy(test_recipe_id):
