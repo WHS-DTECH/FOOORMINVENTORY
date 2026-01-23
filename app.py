@@ -1,5 +1,6 @@
 
 
+
 # =======================
 # DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
 # =======================
@@ -179,6 +180,10 @@ def format_nz_week(label):
 # =======================
 # Features: Recipe Book Routes
 # =======================
+
+from recipe_setup.inventory_routes import inventory_bp
+# Register blueprints
+app.register_blueprint(inventory_bp)
 
 # --- Upload Details Page ---
 @app.route('/upload_details/<int:recipe_id>')
