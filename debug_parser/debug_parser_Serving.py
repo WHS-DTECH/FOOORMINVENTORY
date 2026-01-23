@@ -45,12 +45,12 @@ def debug_serving_size(test_recipe_id):
         return None
 
     label_serve_result = extract_label_serve_number(test_recipe['raw_data'])
-    strategies.append({
-        'name': Look for <label> with \'Serve\' and get nearest number,
-        'applied': True,
-        'result': label_serve_result or '—',
-        'solved': bool(label_serve_result)
-    })
+        strategies.append({
+            'name': "Look for <label> with 'Serve' and get nearest number",
+            'applied': True,
+            'result': label_serve_result or '—',
+            'solved': bool(label_serve_result)
+        })
 
     # 2. Look for 'serves' or 'makes' in text (placeholder logic)
     # ...existing or placeholder logic for other strategies...
