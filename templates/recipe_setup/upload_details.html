@@ -19,7 +19,7 @@
                 {{ recipe.source or 'None' }}
             </div>
             <a href="{{ url_for('upload_url.view_raw_upload', source=recipe.source_url) }}" class="btn btn-dark mt-2 me-2">View Raw Extracted Data</a>
-            <a href="{{ url_for('recipe_details', recipe_id=request.view_args['recipe_id']) }}" class="btn btn-secondary mt-2">Back to Recipe</a>
+            <a href="{{ url_for('recipe_book.recipe_details', recipe_id=recipe.id) }}" class="btn btn-secondary mt-2">Back to Recipe</a>
         </div>
     </div>
 </div>
