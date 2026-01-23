@@ -239,9 +239,52 @@ def parser_test_decision():
             show_debug_prompt=False,
             recipe_data={})
 
-@bp.route('/run_strategy/<int:test_recipe_id>')
+
+# Backend-driven stepwise runner: accept current_step, return next step, button state
+@bp.route('/run_strategy/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
 def run_strategy(test_recipe_id):
-    strategy = request.args.get('strategy')
+    data = request.get_json(force=True)
+    current_step = data.get('current_step', 0)
+    action = data.get('action', 'continue')  # 'continue' or 'solved'
+    STRATEGIES = [
+        'URL: What is between the <title></title> tag.',
+        'Is there matching words from the URL in the Raw Data?',
+        'Not a section header',
+        'Not all lowercase',
+        'Not too short (≥4 chars)',
+        'Not only digits/symbols',
+        'Prefers larger/bold lines',
+        'NLP noun phrase/WORK_OF_ART',
+        'Fallback: Uppercase start, not junk word',
+        'Up to 5 lines above first ingredient',
+        'Prefers food words from ingredient block',
+        'Closest non-empty line above ingredient block',
+        'If none, returns "Unknown Recipe"'
+    ]
+    # If solved, just return solved state
+    if action == 'solved':
+        return jsonify({
+            'solved': True,
+            'current_step': current_step,
+            'strategy': STRATEGIES[current_step] if current_step < len(STRATEGIES) else None,
+            'result': data.get('result', ''),
+            'continue_enabled': False,
+            'solved_enabled': False,
+            'done': True
+        })
+    # Otherwise, run the strategy for current_step
+    if current_step >= len(STRATEGIES):
+        return jsonify({
+            'done': True,
+            'solved': False,
+            'current_step': current_step,
+            'strategy': None,
+            'result': '',
+            'continue_enabled': False,
+            'solved_enabled': False
+        })
+    strategy = STRATEGIES[current_step]
     # Fetch raw_data for the test_recipe
     with get_db_connection() as conn:
         c = conn.cursor()
@@ -252,13 +295,11 @@ def run_strategy(test_recipe_id):
         raw_data = row['raw_data']
     lines = (raw_data or '').split('\n')
     result = ''
-    # Strategy 1: <title> tag
+    # --- Strategy logic (same as before) ---
     if strategy == 'URL: What is between the <title></title> tag.':
         match = re.search(r'<title>(.*?)</title>', raw_data, re.IGNORECASE | re.DOTALL)
         result = match.group(1).strip() if match else '(No <title> tag found)'
-    # Strategy 2: Is there matching words from the URL in the Raw Data?
     elif strategy == 'Is there matching words from the URL in the Raw Data?':
-        # Try to get a URL from the raw data (look for http/https)
         url_match = re.search(r'(https?://\S+)', raw_data)
         if url_match:
             url = url_match.group(1)
@@ -272,30 +313,23 @@ def run_strategy(test_recipe_id):
             result = f"Words from URL found in raw data: {', '.join(found)}" if found else 'No URL words found in raw data.'
         else:
             result = 'No URL found in raw data.'
-    # Strategy 3: Not a section header
     elif strategy == 'Not a section header':
-        # Use is_likely_title with a dummy detect_section function
         def dummy_detect_section(line):
             return bool(re.match(r'^(ingredients|instructions|method|directions)[:\s]*$', line.strip(), re.I))
         candidates = [line for line in lines if line.strip() and not dummy_detect_section(line)]
         result = candidates[0] if candidates else 'No non-section-header line found.'
-    # Strategy 4: Not all lowercase
     elif strategy == 'Not all lowercase':
         candidates = [line for line in lines if line.strip() and not line.islower()]
         result = candidates[0] if candidates else 'No line found that is not all lowercase.'
-    # Strategy 5: Not too short (≥4 chars)
     elif strategy == 'Not too short (≥4 chars)':
         candidates = [line for line in lines if len(line.strip()) >= 4]
         result = candidates[0] if candidates else 'No line found with ≥4 chars.'
-    # Strategy 6: Not only digits/symbols
     elif strategy == 'Not only digits/symbols':
         candidates = [line for line in lines if not re.match(r'^[\d\W]+$', line.strip())]
         result = candidates[0] if candidates else 'No line found that is not only digits/symbols.'
-    # Strategy 7: Prefers larger/bold lines (not available, fallback to longest line)
     elif strategy == 'Prefers larger/bold lines':
         candidates = sorted([line for line in lines if line.strip()], key=lambda l: -len(l))
         result = candidates[0] if candidates else 'No non-empty lines.'
-    # Strategy 8: NLP noun phrase/WORK_OF_ART
     elif strategy == 'NLP noun phrase/WORK_OF_ART':
         from debug_parser.debug_parser_title import nlp
         if nlp:
@@ -308,7 +342,6 @@ def run_strategy(test_recipe_id):
                 result = 'No WORK_OF_ART found.'
         else:
             result = 'spaCy NLP not available.'
-    # Strategy 9: Fallback: Uppercase start, not junk word
     elif strategy == 'Fallback: Uppercase start, not junk word':
         junk_words = ['skills', 'worksheet', 'target', 'tick', 'review', 'technology', 'assessment', 'evaluation', 'scenario', 'brief', 'attributes', 'learning objective']
         for line in lines:
@@ -317,20 +350,15 @@ def run_strategy(test_recipe_id):
                 break
         else:
             result = 'No suitable fallback line found.'
-    # Strategy 10: Up to 5 lines above first ingredient
     elif strategy == 'Up to 5 lines above first ingredient':
-        # Find first line containing 'ingredient' or similar
         idx = next((i for i, line in enumerate(lines) if re.search(r'ingredient', line, re.I)), None)
         if idx is not None:
             from debug_parser.debug_parser_title import infer_title_above
-            # Dummy ingredient block: lines containing numbers (simulate ingredients)
             ingredient_block = [l for l in lines if re.search(r'\d', l)]
             result = infer_title_above(lines, idx, ingredient_block)
         else:
             result = 'No ingredient block found.'
-    # Strategy 11: Prefers food words from ingredient block
     elif strategy == 'Prefers food words from ingredient block':
-        # Dummy: just return first line containing a food word (simulate)
         food_words = ['chicken', 'beef', 'pasta', 'salad', 'soup', 'cake', 'bread']
         for line in lines:
             if any(word in line.lower() for word in food_words):
@@ -338,7 +366,6 @@ def run_strategy(test_recipe_id):
                 break
         else:
             result = 'No food word found.'
-    # Strategy 12: Closest non-empty line above ingredient block
     elif strategy == 'Closest non-empty line above ingredient block':
         idx = next((i for i, line in enumerate(lines) if re.search(r'ingredient', line, re.I)), None)
         if idx is not None:
@@ -354,9 +381,17 @@ def run_strategy(test_recipe_id):
                 result = 'No non-empty line found above ingredient block.'
         else:
             result = 'No ingredient block found.'
-    # Strategy 13: If none, returns "Unknown Recipe"
     elif strategy == 'If none, returns "Unknown Recipe"':
         result = 'Unknown Recipe'
     else:
         result = f'(No logic implemented for strategy: {strategy})'
-    return jsonify({'result': result})
+    # Return backend-driven state
+    return jsonify({
+        'done': False,
+        'solved': False,
+        'current_step': current_step,
+        'strategy': strategy,
+        'result': result,
+        'continue_enabled': current_step < len(STRATEGIES) - 1,
+        'solved_enabled': True
+    })
