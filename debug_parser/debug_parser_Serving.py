@@ -17,7 +17,7 @@ debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_f
 def debug_serving_size(test_recipe_id):
     # Example: fetch test_recipe from DB (replace with actual DB logic)
     # For demonstration, use a sample HTML for raw_data
-    sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
+    sample_html = '''<html><body><label class="label">Servings</label><div class="solution">24</div><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
     test_recipe = {
         'id': test_recipe_id,
         'serving_size': 'N/A',
@@ -269,7 +269,7 @@ def run_serving_strategy(test_recipe_id):
         return None
 
     # For demonstration, use the same sample HTML as in debug_serving_size
-    sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
+    sample_html = '''<html><body><label class="label">Servings</label><div class="solution">24</div><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
     # In production, fetch the real raw_data for the test_recipe_id
     raw_data = sample_html
     # Get the current step from the POST body
