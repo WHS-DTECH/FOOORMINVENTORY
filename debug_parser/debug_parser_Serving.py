@@ -31,6 +31,22 @@ def debug_serving_size(test_recipe_id):
 
 @debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_serving_strategy(test_recipe_id):
+        def extract_hardcoded_servings_solution(html):
+            """Hard-coded: Find <label class='label'>Servings</label> followed by <div class='solution'>NUMBER</div> and extract the number."""
+            soup = BeautifulSoup(html, 'html.parser')
+            label_tags = soup.find_all('label', class_='label')
+            for label in label_tags:
+                if label.get_text(strip=True) == 'Servings':
+                    # Look for the next div with class 'solution' after this label
+                    next_el = label.find_next_sibling()
+                    while next_el is not None:
+                        if getattr(next_el, 'name', None) == 'div' and 'solution' in next_el.get('class', []):
+                            match = re.search(r'(\d+)', next_el.get_text(strip=True))
+                            if match:
+                                return match.group(1)
+                            break
+                        next_el = next_el.find_next_sibling() if hasattr(next_el, 'find_next_sibling') else None
+            return None
     # For demonstration, use the same sample HTML as in debug_serving_size
     sample_html = '''<html><body><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
     # In production, fetch the real raw_data for the test_recipe_id
@@ -104,6 +120,7 @@ def run_serving_strategy(test_recipe_id):
                 return match.group(1)
         return None
     strategies = [
+        extract_hardcoded_servings_solution,
         extract_label_servings_class_number,
         extract_label_serve_number,
         look_for_serves_or_makes,
@@ -111,6 +128,14 @@ def run_serving_strategy(test_recipe_id):
         check_numbers_in_title,
         fallback_any_number_first_10_lines
     ]
+
+        hardcoded_servings_solution_result = extract_hardcoded_servings_solution(test_recipe['raw_data'])
+        strategies.append({
+            'name': 'Hard-coded: <label class="label">Servings</label> then <div class="solution">NUMBER</div>',
+            'applied': True,
+            'result': hardcoded_servings_solution_result or '—',
+            'solved': bool(hardcoded_servings_solution_result)
+        })
     if 0 <= current_step < len(strategies):
         result = strategies[current_step](raw_data)
         return jsonify({'result': result or '(No match found)'})
