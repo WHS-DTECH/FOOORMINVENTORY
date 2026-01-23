@@ -184,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
     if (runBtn) {
         runBtn.addEventListener('click', function() {
             runBtn.disabled = true;
@@ -196,6 +197,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.querySelector('.applied').innerHTML = '—';
                 row.querySelector('.result').textContent = '—';
             });
+            // Show the current strategy box immediately with loading state
+            currentStrategyBox.style.display = '';
+            currentStrategyTitle.textContent = 'Loading...';
+            currentStrategyResult.textContent = '';
+            continueBtn.disabled = true;
+            solvedBtn.disabled = true;
             // Start running strategies from the beginning
             currentStep = 0;
             setProgress(0);
