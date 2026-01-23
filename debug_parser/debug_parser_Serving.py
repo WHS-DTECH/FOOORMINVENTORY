@@ -169,14 +169,26 @@ def run_serving_strategy(test_recipe_id):
         return None
 
 
+
+    # 1. Hard-coded: <label class='label'>Servings</label> then <div class='solution'>NUMBER</div>
+    hardcoded_servings_solution_result = extract_hardcoded_servings_solution(test_recipe['raw_data'])
+    strategies.append({
+        'name': 'Hard-coded: <label class="label">Servings</label> then <div class="solution">NUMBER</div>',
+        'applied': True,
+        'result': hardcoded_servings_solution_result or '—',
+        'solved': bool(hardcoded_servings_solution_result)
+    })
+
+    # 2. Look for <label class="label">Servings</label> and get nearest number
     label_servings_class_result = extract_label_servings_class_number(test_recipe['raw_data'])
     strategies.append({
         'name': 'Look for <label class="label">Servings</label> and get nearest number',
-        'applied': True,
+        'applied': False,
         'result': label_servings_class_result or '—',
         'solved': bool(label_servings_class_result)
     })
 
+    # 3. Look for <label> with 'Serving' and get nearest number
     label_serve_result = extract_label_serve_number(test_recipe['raw_data'])
     strategies.append({
         'name': "Look for <label> with 'Serving' and get nearest number",
@@ -185,33 +197,43 @@ def run_serving_strategy(test_recipe_id):
         'solved': bool(label_serve_result)
     })
 
-    # 2. Look for 'serves' or 'makes' in text (placeholder logic)
-    # ...existing or placeholder logic for other strategies...
-    # For demonstration, add placeholder for other strategies
+    # 4. Look for 'serves' or 'makes' in text
+    serves_makes_result = look_for_serves_or_makes(test_recipe['raw_data'])
     strategies.append({
         'name': "Look for 'serves' or 'makes' in text",
         'applied': False,
-        'result': '—',
-        'solved': False
+        'result': serves_makes_result or '—',
+        'solved': bool(serves_makes_result)
     })
+
+    # 5. Find numbers near 'serving' or 'portion'
+    near_serving_portion_result = find_numbers_near_serving_or_portion(test_recipe['raw_data'])
     strategies.append({
         'name': "Find numbers near 'serving' or 'portion'",
         'applied': False,
-        'result': '—',
-        'solved': False
+        'result': near_serving_portion_result or '—',
+        'solved': bool(near_serving_portion_result)
     })
+
+    # 6. Check for numbers in title
+    numbers_in_title_result = check_numbers_in_title(test_recipe['raw_data'])
     strategies.append({
         'name': "Check for numbers in title",
         'applied': False,
-        'result': '—',
-        'solved': False
+        'result': numbers_in_title_result or '—',
+        'solved': bool(numbers_in_title_result)
     })
+
+    # 7. Fallback: Any number in first 10 lines
+    fallback_result = fallback_any_number_first_10_lines(test_recipe['raw_data'])
     strategies.append({
         'name': "Fallback: Any number in first 10 lines",
         'applied': False,
-        'result': '—',
-        'solved': False
+        'result': fallback_result or '—',
+        'solved': bool(fallback_result)
     })
+
+    # 8. If none, returns "N/A"
     strategies.append({
         'name': 'If none, returns "N/A"',
         'applied': False,
