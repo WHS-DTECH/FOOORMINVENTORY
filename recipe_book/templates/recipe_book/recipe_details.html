@@ -18,12 +18,16 @@
             {% endif %}
           </h3>
           <ul class="list-unstyled mb-4">
-            {% for ing in recipe.ingredients %}
-              <li class="mb-1">
-                <span class="badge bg-light text-dark border me-2" style="font-size:1em; min-width:60px;">{{ ing.quantity or '' }} {{ ing.unit or '' }}</span>
-                <span class="fw-semibold">{{ ing.name or ing.ingredient or ing }}</span>
-              </li>
-            {% endfor %}
+            {% if recipe.ingredients %}
+              {% for ing in recipe.ingredients %}
+                <li class="mb-1">
+                  <span class="badge bg-light text-dark border me-2" style="font-size:1em; min-width:60px;">{{ ing.quantity or '' }} {{ ing.unit or '' }}</span>
+                  <span class="fw-semibold">{{ ing.name or ing.ingredient or ing }}</span>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li><em>No ingredients found.</em></li>
+            {% endif %}
           </ul>
           <h3 class="mt-4 mb-2 text-info">Instructions</h3>
           <div class="recipe-instructions bg-light p-3 rounded shadow-sm mb-3" style="font-size:1.08em; line-height:1.7;">
