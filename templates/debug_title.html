@@ -73,9 +73,12 @@
 {% endblock %}
 {% block scripts %}
 <script>
+// Set rawData as a global variable for use in DOMContentLoaded
+var rawData = "{{ raw_data | escapejs }}";
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     // --- Raw data preview logic for performance ---
-    const rawData = `{{ raw_data | replace('`', '\`') | replace('\r', '') }}`;
     const lines = rawData.split('\n');
     const previewLines = 50;
     const lineNumbersDiv = document.getElementById('lineNumbers');
@@ -104,30 +107,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- Step-by-step strategy runner ---
-    const STRATEGIES = [
-        'URL: What is between the <title></title> tag.',
-        'Is there matching words from the URL in the Raw Data?',
-        'Not a section header',
-        'Not all lowercase',
-        'Not too short (≥4 chars)',
-        'Not only digits/symbols',
-        'Prefers larger/bold lines',
-        'NLP noun phrase/WORK_OF_ART',
-        'Fallback: Uppercase start, not junk word',
-        'Up to 5 lines above first ingredient',
-        'Prefers food words from ingredient block',
-        'Closest non-empty line above ingredient block',
-        'If none, returns "Unknown Recipe"'
-    ];
+
     var runBtn = document.getElementById('runStrategiesBtn');
     var testRecipeId = '{{ test_recipe_id }}';
     var progressBar = document.getElementById('progressBar');
     var progressBarContainer = document.getElementById('progressBarContainer');
     var solutionInput = document.getElementById('solutionInput');
     var strategiesTable = document.getElementById('strategiesTable');
-    let currentStrategy = 0;
-    let strategyResults = [];
-
+    const currentStrategyBox = document.getElementById('currentStrategyBox');
+    const currentStrategyTitle = document.getElementById('currentStrategyTitle');
+    const currentStrategyResult = document.getElementById('currentStrategyResult');
+    const continueBtn = document.getElementById('continueBtn');
+    const solvedBtn = document.getElementById('solvedBtn');
+    let running = false;
+    let currentStep = 0;
+    let totalStrategies = 13;
 
     function highlightStrategyRow(idx) {
         Array.from(strategiesTable.querySelectorAll('tbody tr')).forEach((row, i) => {
@@ -145,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function() {
         progressBar.style.width = percent + '%';
     }
 
-    // Fix: Add missing showProgressBar function
     function showProgressBar(show) {
         if (show) {
             progressBarContainer.style.display = '';
@@ -154,46 +147,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- New: Stepwise strategy runner with current strategy box ---
-    const currentStrategyBox = document.getElementById('currentStrategyBox');
-    const currentStrategyTitle = document.getElementById('currentStrategyTitle');
-    const currentStrategyResult = document.getElementById('currentStrategyResult');
-    const continueBtn = document.getElementById('continueBtn');
-    const solvedBtn = document.getElementById('solvedBtn');
-    let running = false;
-    function runStrategyStep(idx) {
-        if (idx >= STRATEGIES.length) {
-            showProgressBar(false);
-            highlightStrategyRow(-1);
-            currentStrategyBox.style.display = 'none';
-            running = false;
-            return;
-        }
-        currentStrategy = idx;
-        highlightStrategyRow(idx);
-        showProgressBar(true);
-        setProgress(((idx + 1) / STRATEGIES.length) * 100);
-        // Show current strategy box
-        currentStrategyBox.style.display = '';
-        currentStrategyTitle.textContent = STRATEGIES[idx];
-        currentStrategyResult.textContent = '...';
-        continueBtn.disabled = true;
-        solvedBtn.disabled = true;
-        // Fetch result from backend
-        fetch(`/run_strategy/${testRecipeId}?strategy=${encodeURIComponent(STRATEGIES[idx])}`)
-            .then(response => response.json())
-            .then(data => {
+    function runStrategyStep(step, action = 'continue', prevResult = '') {
+        fetch(`/run_strategy/${testRecipeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ current_step: step, action: action, result: prevResult })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                running = false;
+                return;
+            }
+            currentStep = data.current_step;
+            highlightStrategyRow(currentStep);
+            setProgress(((currentStep + 1) / totalStrategies) * 100);
+            currentStrategyBox.style.display = data.done ? 'none' : '';
+            if (!data.done) {
+                currentStrategyTitle.textContent = data.strategy;
                 currentStrategyResult.textContent = data.result || '';
+                continueBtn.disabled = !data.continue_enabled;
+                solvedBtn.disabled = !data.solved_enabled;
                 // Mark as applied and show result in table
-                const row = strategiesTable.querySelectorAll('tbody tr')[idx];
+                const row = strategiesTable.querySelectorAll('tbody tr')[currentStep];
                 if (row) {
                     row.querySelector('.applied').innerHTML = '&#10003;';
                     row.querySelector('.result').textContent = data.result || '';
                 }
-                continueBtn.disabled = false;
-                solvedBtn.disabled = false;
                 running = true;
-            });
+            } else {
+                showProgressBar(false);
+                highlightStrategyRow(-1);
+                running = false;
+            }
+        });
     }
 
     if (runBtn) {
@@ -209,30 +197,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.querySelector('.result').textContent = '—';
             });
             // Start running strategies from the beginning
-            currentStrategy = 0;
+            currentStep = 0;
             setProgress(0);
             showProgressBar(true);
             runStrategyStep(0);
         });
     }
 
-    // Continue and Solved button logic
     continueBtn.addEventListener('click', function() {
         if (!running) return;
-        runStrategyStep(currentStrategy + 1);
+        runStrategyStep(currentStep + 1, 'continue', currentStrategyResult.textContent);
     });
     solvedBtn.addEventListener('click', function() {
         if (!running) return;
-        // Move result to Solution box
         solutionInput.value = currentStrategyResult.textContent;
         // Optionally mark as solved in table
-        const row = strategiesTable.querySelectorAll('tbody tr')[currentStrategy];
+        const row = strategiesTable.querySelectorAll('tbody tr')[currentStep];
         if (row) row.querySelector('.solved').innerHTML = '<span style="font-size:1.5em;">✔️</span>';
+        runStrategyStep(currentStep, 'solved', currentStrategyResult.textContent);
         running = false;
         currentStrategyBox.style.display = 'none';
     });
 
-    // Robust event delegation for Accept/Next buttons
     document.body.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('solvedBtn') && !e.target.disabled) {
             e.preventDefault();
@@ -243,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.target.click();
         }
     });
-});
 
+});
 </script>
 {% endblock %}
