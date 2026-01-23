@@ -47,12 +47,14 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Look for &lt;label&gt; with 'Serve' and get nearest number</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
-                <tr><td>Look for 'serves' or 'makes' in text</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
-                <tr><td>Find numbers near 'serving' or 'portion'</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
-                <tr><td>Check for numbers in title</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
-                <tr><td>Fallback: Any number in first 10 lines</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
-                <tr><td>If none, returns "N/A"</td><td class="applied">—</td><td class="result">—</td><td class="solved"></td></tr>
+            {% for strat in test_recipe.strategies %}
+                <tr>
+                    <td>{{ strat.name }}</td>
+                    <td class="applied">{{ '✔' if strat.applied else '—' }}</td>
+                    <td class="result">{{ strat.result }}</td>
+                    <td class="solved">{{ '✔' if strat.solved else '' }}</td>
+                </tr>
+            {% endfor %}
             </tbody>
         </table>
         <h3>Raw Data (HTML/Text)</h3>
