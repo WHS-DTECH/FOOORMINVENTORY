@@ -39,12 +39,34 @@ def run_serving_strategy(test_recipe_id):
     data = request.get_json(force=True)
     current_step = int(data.get('current_step', 0))
     # Define strategies as functions
+    def extract_label_servings_class_number(html):
+        """Look for <label class=\"label\">Servings</label> and find the nearest number after it."""
+        soup = BeautifulSoup(html, 'html.parser')
+        label_tags = soup.find_all('label', class_='label')
+        for label in label_tags:
+            if label.get_text(strip=True).lower() == 'servings':
+                # Find the nearest number after the label
+                next_siblings = label.next_siblings
+                for sib in next_siblings:
+                    if isinstance(sib, str):
+                        match = re.search(r'(\d+)', sib)
+                        if match:
+                            return match.group(1)
+                    else:
+                        text = sib.get_text(strip=True) if hasattr(sib, 'get_text') else str(sib)
+                        match = re.search(r'(\d+)', text)
+                        if match:
+                            return match.group(1)
+        return None
+
     def extract_label_serve_number(html):
         soup = BeautifulSoup(html, 'html.parser')
         label_tags = soup.find_all('label')
         for label in label_tags:
             label_text = label.get_text(strip=True).lower()
-            if re.search(r'serv\w*', label_text):
+            # Match any label containing 'serving'
+            if 'serving' in label_text:
+                # Find the nearest number after the label
                 next_siblings = label.next_siblings
                 for sib in next_siblings:
                     if isinstance(sib, str):
@@ -82,6 +104,7 @@ def run_serving_strategy(test_recipe_id):
                 return match.group(1)
         return None
     strategies = [
+        extract_label_servings_class_number,
         extract_label_serve_number,
         look_for_serves_or_makes,
         find_numbers_near_serving_or_portion,
@@ -121,10 +144,19 @@ def run_serving_strategy(test_recipe_id):
                             return match.group(1)
         return None
 
+
+    label_servings_class_result = extract_label_servings_class_number(test_recipe['raw_data'])
+    strategies.append({
+        'name': 'Look for <label class="label">Servings</label> and get nearest number',
+        'applied': True,
+        'result': label_servings_class_result or '—',
+        'solved': bool(label_servings_class_result)
+    })
+
     label_serve_result = extract_label_serve_number(test_recipe['raw_data'])
     strategies.append({
         'name': "Look for <label> with 'Serving' and get nearest number",
-        'applied': True,
+        'applied': False,
         'result': label_serve_result or '—',
         'solved': bool(label_serve_result)
     })
