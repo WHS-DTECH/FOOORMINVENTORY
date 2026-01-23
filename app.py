@@ -179,7 +179,7 @@ def upload_details(recipe_id):
     if not recipe:
         flash('Recipe not found.', 'error')
         return redirect(url_for('recipe_book.recbk'))
-    return render_template('recipe_setup/Upload_details.html', recipe=recipe)
+    return render_template('recipe_setup/upload_details.html', recipe=recipe)
 
 # =======================
 # Catering Blueprint Registration
