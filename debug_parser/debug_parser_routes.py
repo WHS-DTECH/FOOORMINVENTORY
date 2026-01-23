@@ -16,8 +16,12 @@ from debug_parser.parser_confirm_serving import confirm_serving
 from debug_parser.parser_confirm_ingredients import confirm_ingredients
 from debug_parser.parser_confirm_instructions import confirm_instructions
 from debug_parser.debug_parser_title import debug_title
+from debug_parser.debug_parser_Serving import debug_parser_serving_bp
 
 bp = Blueprint('debug_parser', __name__, template_folder='templates')
+
+# Register the serving debug blueprint as a sub-blueprint
+bp.register_blueprint(debug_parser_serving_bp)
 
 @bp.route('/api/run_title_strategies/<int:test_recipe_id>', methods=['POST'])
 @require_role('Admin')
