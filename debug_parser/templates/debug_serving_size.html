@@ -63,7 +63,6 @@
 {% block scripts %}
 <script>
 // Set rawData as a global variable for use in DOMContentLoaded
-window.rawData = {{ raw_data | tojson | safe }};
 </script>
 <script>
 // JS logic for stepwise serving size strategies, mirroring debug_title.html
