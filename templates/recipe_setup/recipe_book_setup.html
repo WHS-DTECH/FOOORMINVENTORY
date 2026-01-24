@@ -148,6 +148,18 @@
                 {% endif %}
             </div>
         </div>
+        <!-- Extraction Buttons -->
+        <div class="mb-3">
+            {% if parser_debugs and parser_debugs|length > 0 %}
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/debug_source_url/{{ parser_debugs[0].id }}" class="btn btn-info">URL Extraction</a>
+                    <a href="/debug_title/{{ parser_debugs[0].id }}" class="btn btn-info">Title Extraction</a>
+                    <a href="/debug_serving_size/{{ parser_debugs[0].id }}" class="btn btn-info">Serving Size Extraction</a>
+                    <a href="/debug_ingredients/{{ parser_debugs[0].id }}" class="btn btn-info">Ingredients Extraction</a>
+                    <a href="/debug_instructions/{{ parser_debugs[0].id }}" class="btn btn-info">Instructions Extraction</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
     <hr>
 {% endblock %}
