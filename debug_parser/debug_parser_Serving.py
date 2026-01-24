@@ -15,17 +15,19 @@ debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_f
 
 @debug_parser_serving_bp.route('/debug_serving_size/<int:parser_debug_id>', methods=['GET', 'POST'])
 def debug_serving_size(parser_debug_id):
-    # Example: fetch test_recipe from DB (replace with actual DB logic)
-    # For demonstration, use a sample HTML for raw_data
-    sample_html = '''<html><body><label class="label">Servings</label><div class="solution">24</div><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
-    test_recipe = {
-        'id': parser_debug_id,
-        'serving_size': 'N/A',
-        'upload_source_detail': '',
-        'confirmed': {},
-        'strategies': [],
-        'raw_data': sample_html,
-    }
+    # Fetch test_recipe_id from parser_debug
+    from app import get_db_connection
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if not row:
+            return render_template('error.html', message='Debug record not found.'), 404
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
 
     # Extraction strategy functions (must match backend runner)
     def extract_hardcoded_servings_solution(html):
@@ -166,6 +168,7 @@ def debug_serving_size(parser_debug_id):
 
     # Set serving_size to first solved strategy
     serving_size = next((s['result'] for s in strategies if s['solved']), 'N/A')
+    test_recipe = dict(test_recipe)
     test_recipe['serving_size'] = serving_size
     test_recipe['strategies'] = strategies
 
@@ -187,7 +190,6 @@ def debug_serving_size(parser_debug_id):
         'debug_serving_size.html',
         test_recipe=test_recipe,
         solution=solution,
-        parser_debug_id=parser_debug_id,
         parser_debug_id=parser_debug_id
     )
 

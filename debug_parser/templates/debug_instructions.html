@@ -16,7 +16,7 @@
 <div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
     <div style="flex: 1; min-width: 400px;">
         <div style="display: flex; justify-content: flex-end; margin-bottom: 1em; gap: 18px;">
-            <a href="/parser_debug_raw/{{ parser_debug_id }}" class="btn btn-outline-secondary nav-btn-wide">View\nRaw\nData2</a>
+            <a href="/parser_debug_raw/{{ test_recipe.id }}" class="btn btn-outline-secondary nav-btn-wide">View\nRaw\nData2</a>
             <a href="{{ url_for('admin_task.admin_recipe_book_setup') }}" class="btn btn-secondary nav-btn-wide" style="margin-left:8px;">Back to\nRecipe Index</a>
             <a href="{{ url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id) }}" class="btn btn-secondary nav-btn-wide" style="margin-left:8px; background:#607d8b; color:#fff;">Back to\nParser DEBUG</a>
             <div style="display: flex; gap: 12px;">

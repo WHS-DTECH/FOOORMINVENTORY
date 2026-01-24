@@ -11,27 +11,19 @@ debug_parser_instructions_bp = Blueprint('debug_parser_instructions', __name__, 
 
 @debug_parser_instructions_bp.route('/debug_instructions/<int:parser_debug_id>', methods=['GET', 'POST'])
 def debug_instructions(parser_debug_id):
-    # Example: fetch test_recipe from DB (replace with actual DB logic)
-    sample_html = '''<html><body><div class="instructions">Step 1: Mix. Step 2: Bake.</div></body></html>'''
-    # Fetch parser_debug_id for this parser_debug_id if available
+    # Fetch test_recipe_id from parser_debug
     from app import get_db_connection
-    parser_debug_id = parser_debug_id
     with get_db_connection() as conn:
         c = conn.cursor()
-        # Try to find parser_debug_id for this parser_debug_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (parser_debug_id,))
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
         row = c.fetchone()
-        if row and 'id' in row:
-            parser_debug_id = row['id']
-    test_recipe = {
-        'id': parser_debug_id,
-        'parser_debug_id': parser_debug_id,
-        'instructions': 'N/A',
-        'upload_source_detail': '',
-        'confirmed': {},
-        'strategies': [],
-        'raw_data': sample_html,
-    }
+        if not row:
+            return render_template('error.html', message='Debug record not found.'), 404
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.'), 404
 
     # Extraction strategy functions (to be customized for instructions)
     import json
@@ -116,6 +108,7 @@ def debug_instructions(parser_debug_id):
 
     # Set instructions to first solved strategy
     instructions = next((s['result'] for s in strategies if s['solved']), 'N/A')
+    test_recipe = dict(test_recipe)
     test_recipe['instructions'] = instructions
     test_recipe['strategies'] = strategies
 
@@ -127,7 +120,6 @@ def debug_instructions(parser_debug_id):
         'debug_instructions.html',
         test_recipe=test_recipe,
         solution=solution,
-        parser_debug_id=parser_debug_id,
         parser_debug_id=parser_debug_id
     )
 

@@ -62,7 +62,13 @@ def api_run_title_strategies(parser_debug_id):
     # Fetch raw_data for the test_recipe
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
+        # parser_debug_id is the debug record; fetch test_recipe_id from parser_debug
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if not row:
+            return jsonify({'error': 'Debug record not found'}), 404
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         row = c.fetchone()
         if not row:
             return jsonify({'error': 'Test recipe not found'}), 404
@@ -156,9 +162,15 @@ def confirm_field():
     parser_debug_id = request.form.get('parser_debug_id')
     if not parser_debug_id or not field:
         return render_template('error.html', message='Missing field or parser_debug_id.'), 400
+    # Get test_recipe_id from parser_debug
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if not row:
+            return render_template('error.html', message='Debug record not found.'), 404
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
@@ -204,15 +216,17 @@ def confirm_field():
 def debug_title_route(parser_debug_id):
     # Minimal implementation: fetch raw title from parser_test_recipes and debug it
     # Fetch parser_debug_id for this parser_debug_id if available
+    # parser_debug_id is the debug record; fetch test_recipe_id from parser_debug
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
-        test_recipe = c.fetchone()
-        parser_debug_id = parser_debug_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (parser_debug_id,))
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
         row = c.fetchone()
-        if row and 'id' in row:
-            parser_debug_id = row['id']
+        if not row:
+            flash('Debug record not found.', 'danger')
+            return redirect(url_for('admin_task.admin_recipe_book_setup'))
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
     if not test_recipe:
         flash('Test recipe not found.', 'danger')
         return redirect(url_for('admin_task.admin_recipe_book_setup'))
@@ -222,8 +236,7 @@ def debug_title_route(parser_debug_id):
         'debug_title.html',
         parser_debug_id=parser_debug_id,
         raw_data=raw_data,
-        best_guess=best_guess,
-        parser_debug_id=parser_debug_id
+        best_guess=best_guess
     )
 
 # Route to render the debug extract text form
@@ -237,9 +250,15 @@ def debug_extract_text_form():
 @bp.route('/parser_debug_raw/<int:parser_debug_id>')
 @require_role('Admin')
 def parser_debug_raw(parser_debug_id):
+    # parser_debug_id is the debug record; fetch test_recipe_id from parser_debug
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if not row:
+            return render_template('error.html', message='Debug record not found.'), 404
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
@@ -251,9 +270,15 @@ def parser_debug_raw(parser_debug_id):
 @require_role('Admin')
 def parser_debug(parser_debug_id):
     # Fetch the flagged/test recipe from parser_test_recipes
+    # parser_debug_id is the debug record; fetch test_recipe_id from parser_debug
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if not row:
+            return render_template('error.html', message='Debug record not found.'), 404
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
         # Always fetch all confirmed_parser_fields for debug table
         c.execute('SELECT * FROM confirmed_parser_fields')
