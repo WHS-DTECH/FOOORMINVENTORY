@@ -43,8 +43,8 @@ debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_f
 def debug_serving_size(parser_debug_id):
     # Fetch test_recipe_id from parser_debug
     from app import get_db_connection
-    # Hard code parser_debug_id to 84 for all requests
-    parser_debug_id = 84
+    # Hard code parser_debug_id to 86 for all requests
+    parser_debug_id = 86
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT parser_test_recipe_id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (parser_debug_id,))
