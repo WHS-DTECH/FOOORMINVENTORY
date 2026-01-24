@@ -490,13 +490,8 @@ def review_recipe_url_action():
         except Exception as e:
             parser_debug_id = None
         if parser_debug_id:
-            return render_template(
-                "review_recipe_url.html",
-                recipe_data=recipe_data or {},
-                extraction_warning='Recipe confirmed and debug record loaded.',
-                show_debug_prompt=True,
-                parser_debug_id=parser_debug_id
-            )
+            # Redirect directly to debug_title page for seamless workflow
+            return redirect(f"/debug_title/{parser_debug_id}")
         else:
             return render_template(
                 "review_recipe_url.html",
