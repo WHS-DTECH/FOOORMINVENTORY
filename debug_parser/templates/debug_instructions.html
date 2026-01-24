@@ -100,47 +100,124 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
 
-        // Run Strategies button logic
-        const runStrategiesBtn = document.getElementById('runStrategiesBtn');
-        runStrategiesBtn.addEventListener('click', function() {
-                const parserDebugId = window.location.pathname.match(/\d+$/)[0];
-                const strategiesTable = document.getElementById('strategiesTable').getElementsByTagName('tbody')[0];
-                runStrategiesBtn.disabled = true;
-                runStrategiesBtn.textContent = 'Running...';
-                // For demo: run all strategies in order and update table
-                const strategyCount = strategiesTable.rows.length;
-                let step = 0;
-                function runStep() {
-                        fetch(`/run_instructions_strategy/${parserDebugId}`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ current_step: step })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                                // Update result cell for this strategy
-                                const row = strategiesTable.rows[step];
-                                if (row) {
-                                        row.cells[2].textContent = data.result;
-                                        row.cells[1].textContent = data.result !== '(No match found)' && data.result !== 'N/A' ? '✔' : '—';
-                                        row.cells[3].textContent = data.result !== '(No match found)' && data.result !== 'N/A' ? '✔' : '';
-                                }
-                                step++;
-                                if (step < strategyCount) {
-                                        runStep();
-                                } else {
-                                        runStrategiesBtn.disabled = false;
-                                        runStrategiesBtn.textContent = 'Run Strategies';
-                                }
-                        })
-                        .catch(() => {
-                                runStrategiesBtn.disabled = false;
-                                runStrategiesBtn.textContent = 'Run Strategies';
-                                alert('Failed to run strategy.');
-                        });
+        // Stepwise runner for Instructions strategies
+        const runBtn = document.getElementById('runStrategiesBtn');
+        const table = document.getElementById('strategiesTable');
+        const rows = table.querySelectorAll('tbody tr');
+        let current = 0;
+
+        // Add solved/next buttons to each row
+        rows.forEach((row, i) => {
+                if (!row.querySelector('.solvedBtn')) {
+                        const td = row.querySelector('td:last-child');
+                        if (td) {
+                                const solvedBtn = document.createElement('button');
+                                solvedBtn.className = 'solvedBtn';
+                                solvedBtn.style.display = 'none';
+                                solvedBtn.style.background = '#43a047';
+                                solvedBtn.style.color = '#fff';
+                                solvedBtn.style.border = 'none';
+                                solvedBtn.style.borderRadius = '4px';
+                                solvedBtn.style.padding = '2px 10px';
+                                solvedBtn.style.fontSize = '0.95em';
+                                solvedBtn.style.cursor = 'pointer';
+                                solvedBtn.textContent = '✔️';
+                                td.appendChild(solvedBtn);
+                                const nextBtn = document.createElement('button');
+                                nextBtn.className = 'nextBtn';
+                                nextBtn.style.display = 'none';
+                                nextBtn.style.background = '#8e24aa';
+                                nextBtn.style.color = '#fff';
+                                nextBtn.style.border = 'none';
+                                nextBtn.style.borderRadius = '4px';
+                                nextBtn.style.padding = '2px 10px';
+                                nextBtn.style.fontSize = '0.95em';
+                                nextBtn.style.cursor = 'pointer';
+                                nextBtn.textContent = '➡️';
+                                td.appendChild(nextBtn);
+                        }
                 }
-                runStep();
         });
+
+        function resetTable() {
+                rows.forEach(row => {
+                        row.cells[1].textContent = '—'; // Applied
+                        row.cells[2].textContent = '—'; // Result
+                        const solvedBtn = row.querySelector('.solvedBtn');
+                        const nextBtn = row.querySelector('.nextBtn');
+                        if (solvedBtn) {
+                                solvedBtn.style.display = 'none';
+                                solvedBtn.disabled = false;
+                                solvedBtn.style.background = '#43a047';
+                                solvedBtn.textContent = '✔️';
+                        }
+                        if (nextBtn) {
+                                nextBtn.style.display = 'none';
+                                nextBtn.disabled = false;
+                        }
+                });
+        }
+
+        function runStrategies() {
+                resetTable();
+                current = 0;
+                runNext();
+        }
+
+        function runNext() {
+                if (current >= rows.length) {
+                        return;
+                }
+                const row = rows[current];
+                row.cells[1].textContent = '⏳'; // Applied
+                // Call backend for each strategy step
+                const testRecipeId = window.location.pathname.match(/\d+$/);
+                fetch(`/run_instructions_strategy/${testRecipeId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ current_step: current })
+                })
+                .then(resp => resp.json())
+                .then(data => {
+                        row.cells[1].textContent = '✅'; // Applied
+                        row.cells[2].textContent = data.result || '(no result)'; // Result
+                        const solvedBtn = row.querySelector('.solvedBtn');
+                        const nextBtn = row.querySelector('.nextBtn');
+                        if (solvedBtn) solvedBtn.style.display = '';
+                        if (nextBtn) nextBtn.style.display = '';
+                        if (solvedBtn) {
+                                solvedBtn.onclick = () => {
+                                        solvedBtn.style.background = '#388e3c';
+                                        solvedBtn.textContent = '✔️ Solved';
+                                        solvedBtn.disabled = true;
+                                        // Auto-fill solution box with result if not empty
+                                        if (data.result && data.result !== '(No match found)' && data.result !== 'N/A') {
+                                                solutionInput.value = data.result;
+                                        }
+                                };
+                        }
+                        if (nextBtn) {
+                                nextBtn.onclick = () => {
+                                        if (solvedBtn) solvedBtn.disabled = true;
+                                        nextBtn.disabled = true;
+                                        current++;
+                                        runNext();
+                                };
+                        }
+                })
+                .catch(() => {
+                        row.cells[1].textContent = '❌';
+                        row.cells[2].textContent = 'API error';
+                        const solvedBtn = row.querySelector('.solvedBtn');
+                        const nextBtn = row.querySelector('.nextBtn');
+                        if (solvedBtn) solvedBtn.style.display = '';
+                        if (nextBtn) nextBtn.style.display = '';
+                });
+        }
+
+        if (runBtn) {
+                runBtn.onclick = runStrategies;
+        }
 });
 </script>
 {% endblock %}
