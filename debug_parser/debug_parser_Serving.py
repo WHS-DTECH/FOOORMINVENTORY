@@ -1,3 +1,29 @@
+# Wrapper for direct serving size extraction from raw_data
+def debug_serving(raw_data, test_recipe_id=None):
+    # Use the main extraction strategy directly on the raw_data (HTML/text)
+    # This is a simplified version; you can expand with more strategies as needed
+    from bs4 import BeautifulSoup
+    import re
+    soup = BeautifulSoup(raw_data, 'html.parser')
+    # Try to find a label 'Servings' and extract the next number
+    label_tags = soup.find_all('label', class_='label')
+    for label in label_tags:
+        if label.get_text(strip=True).lower() == 'servings':
+            next_el = label.find_next_sibling()
+            while next_el is not None:
+                if getattr(next_el, 'name', None) == 'div' and 'solution' in next_el.get('class', []):
+                    match = re.search(r'(\d+)', next_el.get_text(strip=True))
+                    if match:
+                        return match.group(1)
+                    break
+                next_el = next_el.find_next_sibling() if hasattr(next_el, 'find_next_sibling') else None
+    # Fallback: look for any number in the first 10 lines
+    lines = raw_data.split('\n')
+    for line in lines[:10]:
+        match = re.search(r'(serves|servings|portion|makes)\s*:?\s*(\d+)', line, re.I)
+        if match:
+            return match.group(2)
+    return 'N/A'
 
 # ...existing code...
 
