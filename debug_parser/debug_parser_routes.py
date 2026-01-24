@@ -346,12 +346,81 @@ def debug_serving_size_route(parser_debug_id):
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.')
     serving_size = test_recipe.get('serving_size', None)
-    # Add extraction logic here if needed
+    # Build strategies list using extraction functions from debug_parser_Serving.py
+    from debug_parser.debug_parser_Serving import (
+        extract_hardcoded_servings_solution,
+        extract_label_servings_class_number,
+        extract_label_serve_number,
+        look_for_serves_or_makes,
+        find_numbers_near_serving_or_portion,
+        check_numbers_in_title,
+        fallback_any_number_first_10_lines
+    )
+    strategies = []
+    raw_data = test_recipe.get('raw_data', '')
+    hardcoded_servings_solution_result = extract_hardcoded_servings_solution(raw_data)
+    strategies.append({
+        'name': 'Hard-coded: <label class="label">Servings</label> then <div class="solution">NUMBER</div>',
+        'applied': True,
+        'result': hardcoded_servings_solution_result or '—',
+        'solved': bool(hardcoded_servings_solution_result)
+    })
+    label_servings_class_result = extract_label_servings_class_number(raw_data)
+    strategies.append({
+        'name': 'Look for <label class="label">Servings</label> and get nearest number',
+        'applied': False,
+        'result': label_servings_class_result or '—',
+        'solved': bool(label_servings_class_result)
+    })
+    label_serve_result = extract_label_serve_number(raw_data)
+    strategies.append({
+        'name': "Look for <label> with 'Serving' and get nearest number", 
+        'applied': False,
+        'result': label_serve_result or '—',
+        'solved': bool(label_serve_result)
+    })
+    serves_makes_result = look_for_serves_or_makes(raw_data)
+    strategies.append({
+        'name': "Look for 'serves' or 'makes' in text",
+        'applied': False,
+        'result': serves_makes_result or '—',
+        'solved': bool(serves_makes_result)
+    })
+    near_serving_portion_result = find_numbers_near_serving_or_portion(raw_data)
+    strategies.append({
+        'name': "Find numbers near 'serving' or 'portion'",
+        'applied': False,
+        'result': near_serving_portion_result or '—',
+        'solved': bool(near_serving_portion_result)
+    })
+    numbers_in_title_result = check_numbers_in_title(raw_data)
+    strategies.append({
+        'name': "Check for numbers in title",
+        'applied': False,
+        'result': numbers_in_title_result or '—',
+        'solved': bool(numbers_in_title_result)
+    })
+    fallback_result = fallback_any_number_first_10_lines(raw_data)
+    strategies.append({
+        'name': "Fallback: Any number in first 10 lines",
+        'applied': False,
+        'result': fallback_result or '—',
+        'solved': bool(fallback_result)
+    })
+    # Extraction logic: get best guess for serving size from strategies
+    best_guess = None
+    for strategy in strategies:
+        if strategy['solved'] and strategy['result'] != '—':
+            best_guess = strategy['result']
+            break
+    if not best_guess:
+        best_guess = '(No serving size found)'
     return render_template(
         'debug_serving_size.html',
         parser_debug_id=parser_debug_id,
-        serving_size=serving_size,
-        test_recipe=test_recipe
+        serving_size=best_guess,
+        test_recipe=test_recipe,
+        strategies=strategies
     )
 
 # Backend-driven stepwise runner: accept current_step, return next step, button state
