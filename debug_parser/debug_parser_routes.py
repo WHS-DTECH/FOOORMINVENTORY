@@ -217,19 +217,19 @@ def debug_title_route(parser_debug_id):
     # Minimal implementation: fetch raw title from parser_test_recipes and debug it
     # Fetch parser_debug_id for this parser_debug_id if available
     # parser_debug_id is the debug record; fetch test_recipe_id from parser_debug
+    if not parser_debug_id or not str(parser_debug_id).isdigit():
+        return render_template('error.html', message='Invalid or missing debug record ID.')
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
         row = c.fetchone()
         if not row:
-            flash('Debug record not found.', 'danger')
-            return redirect(url_for('admin_task.admin_recipe_book_setup'))
+            return render_template('error.html', message='Debug record not found.')
         test_recipe_id = row['recipe_id']
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
     if not test_recipe:
-        flash('Test recipe not found.', 'danger')
-        return redirect(url_for('admin_task.admin_recipe_book_setup'))
+        return render_template('error.html', message='Test recipe not found.')
     raw_data = test_recipe.get('raw_data', '')
     best_guess = next((line for line in raw_data.split('\n') if line.strip()), '(No title found)')
     return render_template(
