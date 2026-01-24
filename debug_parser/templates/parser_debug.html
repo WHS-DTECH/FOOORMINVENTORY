@@ -170,12 +170,19 @@
                 </form>
                 <hr>
                 <form method="get" action="/debug_title/{{ parser_debug_id }}" style="display:inline-block;">
+                                <!-- Debug Info Block: Show all IDs being used -->
+                                <div class="mb-2" style="font-size:0.95em; color:#333; background:#f8f9fa; border:1px solid #ccc; padding:6px;">
+                                    <b>Debug Info:</b><br>
+                                    parser_debug_id: <span style="color:#1976d2; font-weight:bold;">{{ parser_debug_id }}</span><br>
+                                    test_recipe.id: <span style="color:#388e3c; font-weight:bold;">{{ test_recipe.id }}</span><br>
+                                    upload_source_detail: <span style="color:#8e24aa; font-weight:bold;">{{ test_recipe.upload_source_detail }}</span><br>
+                                </div>
                 {% if parser_debug_id %}
                     <form method="get" action="/debug_title/{{ parser_debug_id }}" style="display:inline-block;">
                         <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG</button>
                     </form>
                 {% else %}
-                    <button type="button" class="debug-btn" style="background:#1976d2; color:#fff;" disabled>Title DEBUG (ID missing)</button>
+                    <span class="text-danger" style="font-weight:bold;">Cannot debug title: missing debug record ID.</span>
                 {% endif %}
                 </form>
                 <!-- DEBUG 2 button removed -->
