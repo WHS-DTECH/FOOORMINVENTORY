@@ -126,10 +126,12 @@ def confirm_field():
     if test_recipe:
         with get_db_connection() as conn:
             c = conn.cursor()
-            c.execute('SELECT id FROM parser_debug WHERE id = %s', (parser_debug_id,))
-            if not c.fetchone():
-                c.execute('INSERT INTO parser_debug (id, created_at) VALUES (%s, NOW())', (parser_debug_id,))
-                conn.commit()
+            # Only insert if test_recipe exists and test_recipe['id'] is not None
+            if test_recipe and test_recipe.get('id') is not None:
+                c.execute('SELECT id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+                if not c.fetchone():
+                    c.execute('INSERT INTO parser_debug (id, created_at) VALUES (%s, NOW())', (parser_debug_id,))
+                    conn.commit()
     # Modular confirmation logic
     if field == 'source_url':
         raw_url = test_recipe['upload_source_detail']
