@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,3 +13,26 @@
     <p>Paste a recipe URL and click Extract Text to see all visible text (no filters) from the page or PDF.</p>
 </body>
 </html>
+
+<style>
+.nav-btn-wide {
+        min-width: 170px;
+        min-height: 48px;
+        font-size: 1em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        white-space: pre-line;
+        text-align: center;
+}
+</style>
+<div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start; margin-bottom: 2em;">
+    <div style="flex: 1; min-width: 400px;">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1em; gap: 18px;">
+            <a href="/parser_debug_raw/{{ test_recipe_id }}" class="btn btn-outline-secondary nav-btn-wide">View\nRaw\nData2</a>
+            <a href="{{ url_for('admin_task.admin_recipe_book_setup') }}" class="btn btn-secondary nav-btn-wide" style="margin-left:8px;">Back to\nRecipe Index</a>
+            <a href="{{ url_for('debug_parser.parser_debug', test_recipe_id=test_recipe_id) }}" class="btn btn-secondary nav-btn-wide" style="margin-left:8px; background:#607d8b; color:#fff;">Back to\nParser DEBUG</a>
+        </div>
+    </div>
+</div>

@@ -1,21 +1,80 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container-fluid" style="padding:0 32px;">
-    <h1 style="font-size:2.2rem; font-weight:bold; margin-bottom:0.5em;">Debug Instructions</h1>
-    <div style="margin-bottom:1em;">
-        <strong>Instructions Extraction Debugging</strong>
-        <p>Use this page to debug and confirm the extraction of instructions from the raw recipe data.</p>
+<style>
+.nav-btn-wide {
+        min-width: 170px;
+        min-height: 48px;
+        font-size: 1em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        white-space: pre-line;
+        text-align: center;
+}
+</style>
+<div style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
+    <div style="flex: 1; min-width: 400px;">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1em; gap: 18px;">
+            <a href="/parser_debug_raw/{{ test_recipe_id }}" class="btn btn-outline-secondary nav-btn-wide">View\nRaw\nData2</a>
+            <a href="{{ url_for('admin_task.admin_recipe_book_setup') }}" class="btn btn-secondary nav-btn-wide" style="margin-left:8px;">Back to\nRecipe Index</a>
+            <a href="{{ url_for('debug_parser.parser_debug', test_recipe_id=test_recipe_id) }}" class="btn btn-secondary nav-btn-wide" style="margin-left:8px; background:#607d8b; color:#fff;">Back to\nParser DEBUG</a>
+            <div style="display: flex; gap: 12px;">
+                <div style="min-width: 180px;">
+                    <div id="instructionsBlockHeader" style="background: #1976d2; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Instructions</div>
+                    <div id="instructionsBlockBox" style="border: 1px solid #1976d2; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222; min-height: 48px; display: flex; align-items: center;">
+                        <span id="instructionsBlockText">{{ best_guess or raw_instructions or '(No instructions found)' }}</span>
+                    </div>
+                </div>
+                <div style="min-width: 180px;">
+                    <div style="background: #8e24aa; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px 6px 0 0; margin-bottom: 0;">Solution</div>
+                    <div id="solutionBox" style="border: 1px solid #8e24aa; border-top: none; border-radius: 0 0 6px 6px; padding: 10px 12px 10px 12px; margin-bottom: 18px; font-size: 1em; background: #fff; color: #222; min-height: 48px;">
+                        <textarea id="solutionInput" style="width: 100%; min-height: 40px; resize: vertical; font-size: 1em;"></textarea>
+                        <button id="sendSolutionBtn" style="margin-top: 10px; background: #8e24aa; color: #fff; border: none; border-radius: 4px; padding: 6px 16px; font-weight: bold; cursor: pointer;">SEND SOLUTION</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div style="margin-bottom:1em;">
-        <label for="rawDataPreview"><strong>Raw Data (HTML/Text):</strong></label>
-        <textarea id="rawDataPreview" readonly rows="15" style="width:100%; font-family:monospace; font-size:14px; background:#fafbfc; border:1px solid #ddd; padding:10px;">{{ test_recipe.raw_data }}</textarea>
-    </div>
-    <div style="margin-bottom:1em;">
-        <label for="extractedInstructions"><strong>Extracted Instructions:</strong></label>
-        <textarea id="extractedInstructions" name="extractedInstructions" rows="10" style="width:100%; font-family:monospace; font-size:14px; border:1px solid #8e24aa; padding:10px;">{{ extracted_instructions or '' }}</textarea>
-    </div>
-    <form method="post" action="/api/save_instructions_solution/{{ test_recipe.id }}">
-        <button type="submit" class="btn btn-primary">Confirm Instructions</button>
-    </form>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+        const solutionInput = document.getElementById('solutionInput');
+        const instructionsBlockText = document.getElementById('instructionsBlockText');
+        const sendSolutionBtn = document.getElementById('sendSolutionBtn');
+        sendSolutionBtn.addEventListener('click', function() {
+                const solution = solutionInput.value.trim();
+                if (!solution) {
+                        alert('Please enter a solution before sending.');
+                        return;
+                }
+                sendSolutionBtn.disabled = true;
+                sendSolutionBtn.textContent = 'Sending...';
+                const parserDebugId = window.location.pathname.match(/\d+$/)[0];
+                fetch(`/api/save_instructions_solution/${parserDebugId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ solution: solution })
+                })
+                .then(response => response.json())
+                .then(data => {
+                        if (data.success) {
+                                sendSolutionBtn.textContent = 'Sent!';
+                                setTimeout(() => window.location.reload(), 800);
+                        } else {
+                                sendSolutionBtn.disabled = false;
+                                sendSolutionBtn.textContent = 'SEND SOLUTION';
+                                alert(data.error || 'Failed to save solution.');
+                        }
+                })
+                .catch(() => {
+                        sendSolutionBtn.disabled = false;
+                        sendSolutionBtn.textContent = 'SEND SOLUTION';
+                        alert('Failed to send solution.');
+                });
+        });
+});
+</script>
 {% endblock %}
