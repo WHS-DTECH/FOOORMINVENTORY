@@ -172,10 +172,10 @@ def confirm_field():
         value = test_recipe.get('instructions')
         confirm_instructions(value, test_recipe_id)
     # Add more fields as needed
-    # Fetch all confirmed fields for this test_recipe_id (always)
+    # Fetch all confirmed fields for this parser_debug_id (always)
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+        c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
         row = c.fetchone()
         if row:
             confirmed = dict(row)
@@ -245,7 +245,7 @@ def parser_debug(test_recipe_id):
         c.execute('SELECT * FROM confirmed_parser_fields')
         all_confirmed_parser_fields = c.fetchall() or []
         if test_recipe:
-            c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_test_recipe_id = %s', (test_recipe_id,))
+            c.execute('SELECT * FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
             row = c.fetchone()
             confirmed = dict(row) if row else {}
             return render_template(
