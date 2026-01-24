@@ -62,11 +62,14 @@ def debug_instructions(test_recipe_id):
     strategies = []
     # 1. New strategy: extract recipeInstructions from JSON-like text
     recipe_json_result = extract_recipe_instructions_json(test_recipe['raw_data'])
+    def is_solved(val):
+        return bool(val and val not in ['(No match found)', 'N/A', '—'])
+
     strategies.append({
         'name': 'Extract "recipeInstructions" from JSON',
         'applied': True,
         'result': recipe_json_result or '—',
-        'solved': bool(recipe_json_result)
+        'solved': is_solved(recipe_json_result)
     })
     # 2. Extract sentences starting with keywords
     keyword_sentences_result = extract_sentences_starting_with_keywords(test_recipe['raw_data'])
@@ -74,7 +77,7 @@ def debug_instructions(test_recipe_id):
         'name': 'Extract sentences starting with Preheat, Line, Beat, Add, Sift, Divide, Bake, Turn',
         'applied': False,
         'result': keyword_sentences_result or '—',
-        'solved': bool(keyword_sentences_result)
+        'solved': is_solved(keyword_sentences_result)
     })
     # 3. Existing: extract <div class="instructions">
     instructions_div_result = extract_instructions_div(test_recipe['raw_data'])
@@ -82,7 +85,7 @@ def debug_instructions(test_recipe_id):
         'name': 'Extract <div class="instructions">',
         'applied': False,
         'result': instructions_div_result or '—',
-        'solved': bool(instructions_div_result)
+        'solved': is_solved(instructions_div_result)
     })
     # 4. Fallback: Any text in first 10 lines
     fallback_result = fallback_any_text_first_10_lines(test_recipe['raw_data'])
@@ -90,7 +93,7 @@ def debug_instructions(test_recipe_id):
         'name': 'Fallback: Any text in first 10 lines',
         'applied': False,
         'result': fallback_result or '—',
-        'solved': bool(fallback_result)
+        'solved': is_solved(fallback_result)
     })
     # 5. If none, returns "N/A"
     strategies.append({
