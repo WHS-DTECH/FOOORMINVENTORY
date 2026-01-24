@@ -1,4 +1,3 @@
-
 # =======================
 # Debug Parser - Title Section
 # =======================
@@ -123,13 +122,14 @@ def confirm_field():
         return render_template('error.html', message='Test recipe not found.'), 404
     confirmed = {}
     # Ensure parser_debug record exists for this parser_debug_id
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id FROM parser_debug WHERE id = %s', (parser_debug_id,))
-        if not c.fetchone():
-            # Insert minimal parser_debug record if missing
-            c.execute('INSERT INTO parser_debug (id, created_at) VALUES (%s, NOW())', (parser_debug_id,))
-            conn.commit()
+    # Only insert minimal parser_debug record if parser_debug_id is valid and test_recipe exists
+    if test_recipe:
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('SELECT id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+            if not c.fetchone():
+                c.execute('INSERT INTO parser_debug (id, created_at) VALUES (%s, NOW())', (parser_debug_id,))
+                conn.commit()
     # Modular confirmation logic
     if field == 'source_url':
         raw_url = test_recipe['upload_source_detail']
