@@ -23,6 +23,15 @@ def debug_instructions(test_recipe_id):
     }
 
     # Extraction strategy functions (to be customized for instructions)
+    def extract_sentences_starting_with_keywords(html):
+        keywords = ["Preheat", "Line", "Beat", "Add", "Sift", "Divide", "Bake", "Turn"]
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.get_text(" ", strip=True)
+        # Split into sentences (naive split on period)
+        sentences = re.split(r'(?<=[.!?])\s+', text)
+        matched = [s for s in sentences if any(s.strip().startswith(k) for k in keywords)]
+        return " ".join(matched) if matched else None
+
     def extract_instructions_div(html):
         soup = BeautifulSoup(html, 'html.parser')
         div = soup.find('div', class_='instructions')
@@ -39,13 +48,23 @@ def debug_instructions(test_recipe_id):
 
     # Build strategies list
     strategies = []
+    # 1. New strategy: extract sentences starting with keywords
+    keyword_sentences_result = extract_sentences_starting_with_keywords(test_recipe['raw_data'])
+    strategies.append({
+        'name': 'Extract sentences starting with Preheat, Line, Beat, Add, Sift, Divide, Bake, Turn',
+        'applied': True,
+        'result': keyword_sentences_result or '—',
+        'solved': bool(keyword_sentences_result)
+    })
+    # 2. Existing: extract <div class="instructions">
     instructions_div_result = extract_instructions_div(test_recipe['raw_data'])
     strategies.append({
         'name': 'Extract <div class="instructions">',
-        'applied': True,
+        'applied': False,
         'result': instructions_div_result or '—',
         'solved': bool(instructions_div_result)
     })
+    # 3. Fallback: Any text in first 10 lines
     fallback_result = fallback_any_text_first_10_lines(test_recipe['raw_data'])
     strategies.append({
         'name': 'Fallback: Any text in first 10 lines',
@@ -53,6 +72,7 @@ def debug_instructions(test_recipe_id):
         'result': fallback_result or '—',
         'solved': bool(fallback_result)
     })
+    # 4. If none, returns "N/A"
     strategies.append({
         'name': 'If none, returns "N/A"',
         'applied': False,
@@ -78,6 +98,14 @@ def debug_instructions(test_recipe_id):
 
 @debug_parser_instructions_bp.route('/run_instructions_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_instructions_strategy(test_recipe_id):
+    def extract_sentences_starting_with_keywords(html):
+        keywords = ["Preheat", "Line", "Beat", "Add", "Sift", "Divide", "Bake", "Turn"]
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.get_text(" ", strip=True)
+        sentences = re.split(r'(?<=[.!?])\s+', text)
+        matched = [s for s in sentences if any(s.strip().startswith(k) for k in keywords)]
+        return " ".join(matched) if matched else None
+
     def extract_instructions_div(html):
         soup = BeautifulSoup(html, 'html.parser')
         div = soup.find('div', class_='instructions')
@@ -98,6 +126,7 @@ def run_instructions_strategy(test_recipe_id):
     current_step = int(data.get('current_step', 0))
 
     strategies = [
+        extract_sentences_starting_with_keywords,
         extract_instructions_div,
         fallback_any_text_first_10_lines
     ]
