@@ -201,6 +201,10 @@
         <div class="card mb-4">
             <div class="card-header bg-success text-white">CONFIRMED</div>
             <div class="card-body p-0">
+                <!-- Debug: Show raw JSON of all_confirmed_parser_fields -->
+                <pre style="background:#f8f9fa; color:#333; font-size:0.9em; padding:0.5em 1em; border-radius:4px; margin-bottom:1em;">
+                    {{ all_confirmed_parser_fields | tojson(indent=2) }}
+                </pre>
                 <hr>
                 {% if all_confirmed_parser_fields and all_confirmed_parser_fields|length > 0 %}
                 <table class="table mb-0">
