@@ -170,7 +170,13 @@
                 </form>
                 <hr>
                 <form method="get" action="/debug_title/{{ parser_debug_id }}" style="display:inline-block;">
-                    <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG</button>
+                {% if parser_debug_id %}
+                    <form method="get" action="/debug_title/{{ parser_debug_id }}" style="display:inline-block;">
+                        <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG</button>
+                    </form>
+                {% else %}
+                    <button type="button" class="debug-btn" style="background:#1976d2; color:#fff;" disabled>Title DEBUG (ID missing)</button>
+                {% endif %}
                 </form>
                 <!-- DEBUG 2 button removed -->
                 </form>
