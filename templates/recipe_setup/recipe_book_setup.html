@@ -1,5 +1,9 @@
-    <!-- DEBUG: Show raw confirmed_parser_fields data -->
-    <pre>{{ all_confirmed_parser_fields | tojson(indent=2) }}</pre>
+        <!-- DEBUG: Show raw confirmed_parser_fields data safely -->
+        <pre>
+        {% for row in all_confirmed_parser_fields %}
+            {{ row }}
+        {% endfor %}
+        </pre>
 <!-- Recipe Book Setup Admin Page -->
 {% extends "base.html" %}
 {% block content %}
