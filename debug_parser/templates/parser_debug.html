@@ -194,6 +194,22 @@
                     {% endfor %}
                     {% set next_debug_id = max_debug_id + 1 %}
                     <form method="get" action="/debug_title/{{ fallback_debug_id if fallback_debug_id else next_debug_id }}" style="display:inline-block;">
+                                        <!-- Debug Info Block: Show all IDs being used for Title DEBUG -->
+                                        {% set max_debug_id = 0 %}
+                                        {% for row in all_confirmed_parser_fields %}
+                                            {% if row.parser_debug_id and row.parser_debug_id > max_debug_id %}
+                                                {% set max_debug_id = row.parser_debug_id %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% set predicted_debug_id = max_debug_id + 1 %}
+                                        <div class="mb-2" style="font-size:0.95em; color:#333; background:#f8f9fa; border:1px solid #ccc; padding:6px;">
+                                            <b>Debug Info:</b><br>
+                                            parser_debug_id: <span style="color:#1976d2; font-weight:bold;">{{ parser_debug_id }}</span><br>
+                                            <span style="color:#888;">last known:</span> <span style="color:#1976d2; font-weight:bold;">{{ max_debug_id }}</span><br>
+                                            <span style="color:#888;">predicted id:</span> <span style="color:#1976d2; font-weight:bold;">{{ predicted_debug_id }}</span><br>
+                                            test_recipe.id: <span style="color:#388e3c; font-weight:bold;">{{ test_recipe.id }}</span><br>
+                                            upload_source_detail: <span style="color:#8e24aa; font-weight:bold;">{{ test_recipe.upload_source_detail }}</span><br>
+                                        </div>
                         <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG ({{ 'ID from confirmed' if fallback_debug_id else 'Predicted ID: ' ~ next_debug_id }})</button>
                     </form>
                 {% endif %}
@@ -207,6 +223,15 @@
                 </form>
                 <hr>
                 <form method="get" action="/debug_serving_size/{{ test_recipe.id }}" style="display:inline-block;">
+                                                    <!-- Debug Info Block: Show all IDs being used for Serving Size DEBUG -->
+                                                    <div class="mb-2" style="font-size:0.95em; color:#333; background:#f8f9fa; border:1px solid #ccc; padding:6px;">
+                                                        <b>Debug Info:</b><br>
+                                                        parser_debug_id: <span style="color:#1976d2; font-weight:bold;">{{ parser_debug_id }}</span><br>
+                                                        <span style="color:#888;">last known:</span> <span style="color:#1976d2; font-weight:bold;">{{ max_debug_id }}</span><br>
+                                                        <span style="color:#888;">predicted id:</span> <span style="color:#1976d2; font-weight:bold;">{{ predicted_debug_id }}</span><br>
+                                                        test_recipe.id: <span style="color:#388e3c; font-weight:bold;">{{ test_recipe.id }}</span><br>
+                                                        upload_source_detail: <span style="color:#8e24aa; font-weight:bold;">{{ test_recipe.upload_source_detail }}</span><br>
+                                                    </div>
                                     <!-- Debug Info Block: Show all IDs being used for Serving Size DEBUG -->
                                     {% set max_debug_id = 0 %}
                                     {% for row in all_confirmed_parser_fields %}
@@ -232,6 +257,15 @@
                 </form>
                 <hr>
                 <form method="get" action="/debug_ingredients/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <!-- Debug Info Block: Show all IDs being used for Ingredients DEBUG -->
+                                    <div class="mb-2" style="font-size:0.95em; color:#333; background:#f8f9fa; border:1px solid #ccc; padding:6px;">
+                                        <b>Debug Info:</b><br>
+                                        parser_debug_id: <span style="color:#1976d2; font-weight:bold;">{{ parser_debug_id }}</span><br>
+                                        <span style="color:#888;">last known:</span> <span style="color:#1976d2; font-weight:bold;">{{ max_debug_id }}</span><br>
+                                        <span style="color:#888;">predicted id:</span> <span style="color:#1976d2; font-weight:bold;">{{ predicted_debug_id }}</span><br>
+                                        test_recipe.id: <span style="color:#388e3c; font-weight:bold;">{{ test_recipe.id }}</span><br>
+                                        upload_source_detail: <span style="color:#8e24aa; font-weight:bold;">{{ test_recipe.upload_source_detail }}</span><br>
+                                    </div>
                     <button type="submit" class="debug-btn">Ingredients DEBUG</button>
                 </form>
                 <form method="post" action="/confirm_field" style="display:inline-block; margin-left: 0.5em;">
@@ -241,6 +275,15 @@
                 </form>
                 <hr>
                 <form method="get" action="/debug_instructions/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <!-- Debug Info Block: Show all IDs being used for Instructions DEBUG -->
+                                    <div class="mb-2" style="font-size:0.95em; color:#333; background:#f8f9fa; border:1px solid #ccc; padding:6px;">
+                                        <b>Debug Info:</b><br>
+                                        parser_debug_id: <span style="color:#1976d2; font-weight:bold;">{{ parser_debug_id }}</span><br>
+                                        <span style="color:#888;">last known:</span> <span style="color:#1976d2; font-weight:bold;">{{ max_debug_id }}</span><br>
+                                        <span style="color:#888;">predicted id:</span> <span style="color:#1976d2; font-weight:bold;">{{ predicted_debug_id }}</span><br>
+                                        test_recipe.id: <span style="color:#388e3c; font-weight:bold;">{{ test_recipe.id }}</span><br>
+                                        upload_source_detail: <span style="color:#8e24aa; font-weight:bold;">{{ test_recipe.upload_source_detail }}</span><br>
+                                    </div>
                     <button type="submit" class="debug-btn" style="background:#ffc107; color:#222;">Instructions DEBUG</button>
                 </form>
                 <form method="post" action="/confirm_field" style="display:inline-block; margin-left: 0.5em;">
