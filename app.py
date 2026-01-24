@@ -240,6 +240,47 @@ def flag_parser_issue(recipe_id):
         conn.commit()
     return redirect(url_for('recipe_index_view', recipe_id=recipe_id))
 
+# --- Direct Extraction Actions ---
+@app.route('/extract_url/<int:recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_url(recipe_id):
+    # Extraction logic for URL
+    # TODO: Implement actual extraction
+    flash('URL extracted for recipe.', 'success')
+    return redirect(url_for('upload_details', recipe_id=recipe_id))
+
+@app.route('/extract_title/<int:recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_title(recipe_id):
+    # Extraction logic for Title
+    # TODO: Implement actual extraction
+    flash('Title extracted for recipe.', 'success')
+    return redirect(url_for('upload_details', recipe_id=recipe_id))
+
+@app.route('/extract_serving/<int:recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_serving(recipe_id):
+    # Extraction logic for Serving Size
+    # TODO: Implement actual extraction
+    flash('Serving size extracted for recipe.', 'success')
+    return redirect(url_for('upload_details', recipe_id=recipe_id))
+
+@app.route('/extract_ingredients/<int:recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_ingredients(recipe_id):
+    # Extraction logic for Ingredients
+    # TODO: Implement actual extraction
+    flash('Ingredients extracted for recipe.', 'success')
+    return redirect(url_for('upload_details', recipe_id=recipe_id))
+
+@app.route('/extract_instructions/<int:recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_instructions(recipe_id):
+    # Extraction logic for Instructions
+    # TODO: Implement actual extraction
+    flash('Instructions extracted for recipe.', 'success')
+    return redirect(url_for('upload_details', recipe_id=recipe_id))
+
 
 # --- Recipe Source Page ---
 

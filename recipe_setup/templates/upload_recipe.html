@@ -49,6 +49,23 @@
                 <label for="original_serving">Original Serving Size:</label>
                 <input type="number" id="original_serving" name="serving_size" value="{{ prefilled_serving or 4 }}" min="1" required>
                 <br>
+                                <div style="margin: 1em 0;">
+                                    <form method="post" action="/extract_url/{{ recipe.id }}" style="display:inline-block;">
+                                        <button type="submit">URL Extraction</button>
+                                    </form>
+                                    <form method="post" action="/extract_title/{{ recipe.id }}" style="display:inline-block;">
+                                        <button type="submit">Title Extraction</button>
+                                    </form>
+                                    <form method="post" action="/extract_serving/{{ recipe.id }}" style="display:inline-block;">
+                                        <button type="submit">Serving Size Extraction</button>
+                                    </form>
+                                    <form method="post" action="/extract_ingredients/{{ recipe.id }}" style="display:inline-block;">
+                                        <button type="submit">Ingredients Extraction</button>
+                                    </form>
+                                    <form method="post" action="/extract_instructions/{{ recipe.id }}" style="display:inline-block;">
+                                        <button type="submit">Instructions Extraction</button>
+                                    </form>
+                                </div>
                 <h3>Equipment</h3>
                 <label for="equipment">List equipment (one per line):</label>
                 <textarea id="equipment" name="equipment" placeholder="List equipment (one per line)" rows="4"></textarea>

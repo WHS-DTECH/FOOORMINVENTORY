@@ -168,6 +168,22 @@
                     <input type="hidden" name="parser_debug_id" value="{{ parser_debug_id }}">
                     <button type="submit" class="grey-btn bg-secondary text-white">CONFIRM</button>
                 </form>
+                                <hr>
+                                <form method="post" action="/extract_url/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <button type="submit" class="btn btn-info">URL Extraction</button>
+                                </form>
+                                <form method="post" action="/extract_title/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <button type="submit" class="btn btn-info">Title Extraction</button>
+                                </form>
+                                <form method="post" action="/extract_serving/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <button type="submit" class="btn btn-info">Serving Size Extraction</button>
+                                </form>
+                                <form method="post" action="/extract_ingredients/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <button type="submit" class="btn btn-info">Ingredients Extraction</button>
+                                </form>
+                                <form method="post" action="/extract_instructions/{{ test_recipe.id }}" style="display:inline-block;">
+                                    <button type="submit" class="btn btn-info">Instructions Extraction</button>
+                                </form>
                 <hr>
                 <form method="get" action="/debug_title/{{ parser_debug_id }}" style="display:inline-block;">
                                 <!-- Debug Info Block: Show all IDs being used -->
