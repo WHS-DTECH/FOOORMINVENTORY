@@ -184,9 +184,8 @@
                 {% else %}
                     {% set fallback_debug_id = None %}
                     {% for row in all_confirmed_parser_fields|reverse %}
-                        {% if row.parser_debug_id %}
+                        {% if fallback_debug_id is none and row.parser_debug_id %}
                             {% set fallback_debug_id = row.parser_debug_id %}
-                            {% break %}
                         {% endif %}
                     {% endfor %}
                     <form method="get" action="/debug_title/{{ fallback_debug_id if fallback_debug_id else '' }}" style="display:inline-block;">
