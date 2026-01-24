@@ -39,45 +39,29 @@ import re
 
 debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_folder='templates')
 
-@debug_parser_serving_bp.route('/debug_serving_size/<int:parser_debug_id>', methods=['GET', 'POST'])
-def debug_serving_size(parser_debug_id):
-    # Fetch test_recipe_id from parser_debug
-    from app import get_db_connection
-    # Hard code parser_debug_id to 86 for all requests
-    parser_debug_id = 86
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT parser_test_recipe_id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (parser_debug_id,))
-        conf_row = c.fetchone()
-        if not conf_row:
-            return render_template('error.html', message='No confirmed_parser_fields entry for this parser_debug_id.'), 404
-        test_recipe_id = conf_row['parser_test_recipe_id']
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        test_recipe = c.fetchone()
-        if not test_recipe:
-            return render_template('error.html', message='Test recipe not found.'), 404
+# This blueprint route is now deprecated; use the modular route in debug_parser_routes.py
+# If needed, you can keep extraction helper functions here for import.
+## Extraction helper functions remain below
+def extract_hardcoded_servings_solution(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    label_tags = soup.find_all('label', class_='label')
+    for label in label_tags:
+        if label.get_text(strip=True) == 'Servings':
+            next_el = label.find_next_sibling()
+            while next_el is not None:
+                if getattr(next_el, 'name', None) == 'div' and 'solution' in next_el.get('class', []):
+                    match = re.search(r'(\d+)', next_el.get_text(strip=True))
+                    if match:
+                        return match.group(1)
+                    break
+                next_el = next_el.find_next_sibling() if hasattr(next_el, 'find_next_sibling') else None
+    return None
 
-    # Extraction strategy functions (must match backend runner)
-    def extract_hardcoded_servings_solution(html):
-        soup = BeautifulSoup(html, 'html.parser')
-        label_tags = soup.find_all('label', class_='label')
-        for label in label_tags:
-            if label.get_text(strip=True) == 'Servings':
-                next_el = label.find_next_sibling()
-                while next_el is not None:
-                    if getattr(next_el, 'name', None) == 'div' and 'solution' in next_el.get('class', []):
-                        match = re.search(r'(\d+)', next_el.get_text(strip=True))
-                        if match:
-                            return match.group(1)
-                        break
-                    next_el = next_el.find_next_sibling() if hasattr(next_el, 'find_next_sibling') else None
-        return None
-
-    def extract_label_servings_class_number(html):
-        soup = BeautifulSoup(html, 'html.parser')
-        label_tags = soup.find_all('label', class_='label')
-        for label in label_tags:
-            if label.get_text(strip=True).lower() == 'servings':
+def extract_label_servings_class_number(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    label_tags = soup.find_all('label', class_='label')
+    for label in label_tags:
+        if label.get_text(strip=True).lower() == 'servings':
                 next_siblings = label.next_siblings
                 for sib in next_siblings:
                     if isinstance(sib, str):
