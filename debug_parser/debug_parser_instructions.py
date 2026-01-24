@@ -150,8 +150,14 @@ def run_instructions_strategy(test_recipe_id):
                 return line.strip()
         return None
 
-    sample_html = '''<html><body><div class="instructions">Step 1: Mix. Step 2: Bake.</div></body></html>'''
-    raw_data = sample_html
+    # Fetch the actual raw_data for this test_recipe_id from the DB
+    from app import get_db_connection
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        raw_data = row['raw_data'] if row and 'raw_data' in row else ''
+
     data = request.get_json(force=True)
     current_step = int(data.get('current_step', 0))
 
