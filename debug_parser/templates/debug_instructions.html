@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid" style="padding:0 32px;">
+    <h1 style="font-size:2.2rem; font-weight:bold; margin-bottom:0.5em;">Debug Instructions</h1>
+    <div style="margin-bottom:1em;">
+        <strong>Instructions Extraction Debugging</strong>
+        <p>Use this page to debug and confirm the extraction of instructions from the raw recipe data.</p>
+    </div>
+    <div style="margin-bottom:1em;">
+        <label for="rawDataPreview"><strong>Raw Data (HTML/Text):</strong></label>
+        <textarea id="rawDataPreview" readonly rows="15" style="width:100%; font-family:monospace; font-size:14px; background:#fafbfc; border:1px solid #ddd; padding:10px;">{{ test_recipe.raw_data }}</textarea>
+    </div>
+    <div style="margin-bottom:1em;">
+        <label for="extractedInstructions"><strong>Extracted Instructions:</strong></label>
+        <textarea id="extractedInstructions" name="extractedInstructions" rows="10" style="width:100%; font-family:monospace; font-size:14px; border:1px solid #8e24aa; padding:10px;">{{ extracted_instructions or '' }}</textarea>
+    </div>
+    <form method="post" action="/api/save_instructions_solution/{{ test_recipe.id }}">
+        <button type="submit" class="btn btn-primary">Confirm Instructions</button>
+    </form>
+</div>
+{% endblock %}

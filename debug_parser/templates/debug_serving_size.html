@@ -77,42 +77,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Restore debug state if present (future: if you add debug_state)
     const solutionInput = document.getElementById('solutionInput');
     const servingBlockText = document.getElementById('servingBlockText');
-    // SEND SOLUTION logic
-    const sendBtn = document.getElementById('sendSolutionBtn');
-    if (sendBtn) {
-        sendBtn.onclick = function() {
-            const solution = solutionInput ? solutionInput.value.trim() : '';
-            if (!solution) return;
-            const testRecipeId = window.location.pathname.match(/\d+$/);
-            const rawData = document.getElementById('rawDataPreview')?.value || '';
-            const extractedServing = servingBlockText ? servingBlockText.textContent : '';
-            const strategies = [];
-            document.querySelectorAll('#strategiesTable tbody tr').forEach(row => {
-                const strat = row.cells[0]?.textContent?.trim();
-                const applied = row.querySelector('.applied')?.textContent?.trim();
-                const result = row.querySelector('.result')?.textContent?.trim();
-                // solved: true if solvedBtn is disabled (if present), else false
-                let solved = false;
-                const solvedBtn = row.querySelector('.solvedBtn');
-                if (solvedBtn) solved = solvedBtn.disabled;
-                strategies.push({ strategy: strat, applied, result, solved });
-            });
-            fetch(`/api/save_serving_solution/${testRecipeId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ solution, raw_data: rawData, extracted_serving: extractedServing, strategies })
-            })
-            .then(resp => resp.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = `/parser_debug/${testRecipeId}`;
-                } else {
-                    alert(data.error || 'Failed to save solution.');
-                }
-            })
-            .catch(() => alert('Failed to save solution.'));
-        };
-    }
+    // SEND SOLUTION logic (match Title SEND SOLUTION logic)
+    const sendSolutionBtn = document.getElementById('sendSolutionBtn');
+    sendSolutionBtn.addEventListener('click', function() {
+        const solution = solutionInput.value.trim();
+        if (!solution) {
+            alert('Please enter a solution before sending.');
+            return;
+        }
+        sendSolutionBtn.disabled = true;
+        sendSolutionBtn.textContent = 'Sending...';
+        // Get the parser_debug_id from the URL (same as Title logic)
+        const parserDebugId = window.location.pathname.match(/\d+$/)[0];
+        fetch(`/api/save_serving_solution/${parserDebugId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ solution: solution })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                sendSolutionBtn.textContent = 'Sent!';
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                sendSolutionBtn.disabled = false;
+                sendSolutionBtn.textContent = 'SEND SOLUTION';
+                alert(data.error || 'Failed to save solution.');
+            }
+        })
+        .catch(() => {
+            sendSolutionBtn.disabled = false;
+            sendSolutionBtn.textContent = 'SEND SOLUTION';
+            alert('Failed to send solution.');
+        });
+    });
 
     // Stepwise runner for strategies
     const runBtn = document.getElementById('runStrategiesBtn');
