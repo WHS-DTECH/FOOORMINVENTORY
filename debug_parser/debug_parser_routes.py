@@ -292,7 +292,8 @@ def parser_debug(parser_debug_id):
                 test_recipe=test_recipe,
                 confirmed=confirmed,
                 parser_debug=None,
-                all_confirmed_parser_fields=all_confirmed_parser_fields
+                all_confirmed_parser_fields=all_confirmed_parser_fields,
+                parser_debug_id=parser_debug_id
             )
         # If not found, try parser_debug table
         c.execute('SELECT * FROM parser_debug WHERE id = %s', (parser_debug_id,))
@@ -303,7 +304,8 @@ def parser_debug(parser_debug_id):
                 test_recipe=None,
                 confirmed={},
                 parser_debug=debug_entry,
-                all_confirmed_parser_fields=all_confirmed_parser_fields
+                all_confirmed_parser_fields=all_confirmed_parser_fields,
+                parser_debug_id=parser_debug_id
             )
         return render_template('error.html', message='Test recipe not found.'), 404
 
