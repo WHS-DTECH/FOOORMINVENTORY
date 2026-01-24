@@ -182,7 +182,21 @@
                         <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG</button>
                     </form>
                 {% else %}
-                    <span class="text-danger" style="font-weight:bold;">Cannot debug title: missing debug record ID.</span>
+                    {% set fallback_debug_id = None %}
+                    {% for row in all_confirmed_parser_fields %}
+                        {% if row.parser_test_recipe_id == test_recipe.id and row.parser_debug_id %}
+                            {% set fallback_debug_id = row.parser_debug_id %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if fallback_debug_id %}
+                        <form method="get" action="/debug_title/{{ fallback_debug_id }}" style="display:inline-block;">
+                            <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG (from confirmed)</button>
+                        </form>
+                    {% else %}
+                        <form method="get" action="/debug_title/" style="display:inline-block;">
+                            <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG (ID missing)</button>
+                        </form>
+                    {% endif %}
                 {% endif %}
                 </form>
                 <!-- DEBUG 2 button removed -->
