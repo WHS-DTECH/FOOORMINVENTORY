@@ -15,4 +15,4 @@ def debug_source_url(test_recipe_id):
         return render_template('error.html', message='Test recipe not found.'), 404
     raw_url = test_recipe['upload_source_detail']
     debug_result = confirm_source_url(raw_url)
-    return render_template('debug_source_url.html', test_recipe=test_recipe, debug_result=debug_result)
+    return render_template('debug_source_url.html', test_recipe=test_recipe, debug_result=debug_result, test_recipe_id=test_recipe_id)
