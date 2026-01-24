@@ -236,7 +236,8 @@ def debug_title_route(parser_debug_id):
         'debug_title.html',
         parser_debug_id=parser_debug_id,
         raw_data=raw_data,
-        best_guess=best_guess
+        best_guess=best_guess,
+        test_recipe=test_recipe
     )
 
 # Route to render the debug extract text form
