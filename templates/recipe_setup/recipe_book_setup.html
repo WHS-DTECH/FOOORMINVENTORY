@@ -160,6 +160,54 @@
                 </div>
             {% endif %}
         </div>
+        <!-- Confirmed Values Index Table -->
+        <div style="margin-top:2em;">
+            <h5>Confirmed Values Index</h5>
+            <table class="table table-bordered table-sm" style="background:#fff;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Parser Debug ID</th>
+                        <th>Parser Test Recipe ID</th>
+                        <th>Parser Debug</th>
+                        <th>Title</th>
+                        <th>Serving Size</th>
+                        <th>Source URL</th>
+                        <th>Ingredients</th>
+                        <th>Instructions</th>
+                        <th>Confirmed By</th>
+                        <th>Confirmed At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if all_confirmed_parser_fields and all_confirmed_parser_fields|length > 0 %}
+                        {% for row in all_confirmed_parser_fields %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.parser_debug_id }}</td>
+                            <td>{{ row.parser_parser_debug_id }}</td>
+                            <td>{{ row.parser_debug }}</td>
+                            <td>{{ row.title }}</td>
+                            <td>{{ row.serving_size }}</td>
+                            <td>{{ row.source_url }}</td>
+                            <td>{{ row.ingredients }}</td>
+                            <td>{{ row.instructions }}</td>
+                            <td>{{ row.confirmed_by }}</td>
+                            <td>{{ row.confirmed_at }}</td>
+                            <td>
+                                <form method="post" action="/delete_confirmed_parser_field/{{ row.id }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this confirmed field record?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="12" class="text-center text-muted">No records in confirmed_parser_fields table.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
     <hr>
 {% endblock %}
