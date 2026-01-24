@@ -67,7 +67,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
         const solutionInput = document.getElementById('solutionInput');
-        const instructionsBlockText = document.getElementById('instructionsBlockText');
         const sendSolutionBtn = document.getElementById('sendSolutionBtn');
         sendSolutionBtn.addEventListener('click', function() {
                 const solution = solutionInput.value.trim();
@@ -99,6 +98,48 @@ document.addEventListener('DOMContentLoaded', function() {
                         sendSolutionBtn.textContent = 'SEND SOLUTION';
                         alert('Failed to send solution.');
                 });
+        });
+
+        // Run Strategies button logic
+        const runStrategiesBtn = document.getElementById('runStrategiesBtn');
+        runStrategiesBtn.addEventListener('click', function() {
+                const parserDebugId = window.location.pathname.match(/\d+$/)[0];
+                const strategiesTable = document.getElementById('strategiesTable').getElementsByTagName('tbody')[0];
+                runStrategiesBtn.disabled = true;
+                runStrategiesBtn.textContent = 'Running...';
+                // For demo: run all strategies in order and update table
+                const strategyCount = strategiesTable.rows.length;
+                let step = 0;
+                function runStep() {
+                        fetch(`/run_instructions_strategy/${parserDebugId}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ current_step: step })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                                // Update result cell for this strategy
+                                const row = strategiesTable.rows[step];
+                                if (row) {
+                                        row.cells[2].textContent = data.result;
+                                        row.cells[1].textContent = data.result !== '(No match found)' && data.result !== 'N/A' ? '✔' : '—';
+                                        row.cells[3].textContent = data.result !== '(No match found)' && data.result !== 'N/A' ? '✔' : '';
+                                }
+                                step++;
+                                if (step < strategyCount) {
+                                        runStep();
+                                } else {
+                                        runStrategiesBtn.disabled = false;
+                                        runStrategiesBtn.textContent = 'Run Strategies';
+                                }
+                        })
+                        .catch(() => {
+                                runStrategiesBtn.disabled = false;
+                                runStrategiesBtn.textContent = 'Run Strategies';
+                                alert('Failed to run strategy.');
+                        });
+                }
+                runStep();
         });
 });
 </script>
