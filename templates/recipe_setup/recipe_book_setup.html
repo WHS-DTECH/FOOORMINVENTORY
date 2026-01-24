@@ -1,3 +1,5 @@
+    <!-- DEBUG: Show raw confirmed_parser_fields data -->
+    <pre>{{ all_confirmed_parser_fields | tojson(indent=2) }}</pre>
 <!-- Recipe Book Setup Admin Page -->
 {% extends "base.html" %}
 {% block content %}
@@ -184,22 +186,9 @@
                     {% if all_confirmed_parser_fields and all_confirmed_parser_fields|length > 0 %}
                         {% for row in all_confirmed_parser_fields %}
                         <tr>
-                                <td>{{ row.id }}</td>
-                                <td>{{ row.parser_debug_id }}</td>
-                                <td>{{ row.parser_test_recipe_id }}</td>
-                                <td>{{ row.recipe_id }}</td>
-                                <td>{{ row.title }}</td>
-                                <td>{{ row.serving_size }}</td>
-                                <td>{{ row.source_url }}</td>
-                                <td>{{ row.ingredients }}</td>
-                                <td>{{ row.instructions }}</td>
-                                <td>{{ row.confirmed_by }}</td>
-                                <td>{{ row.confirmed_at }}</td>
-                                <td>
-                                    <form method="post" action="/delete_confirmed_parser_field/{{ row.id }}" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this confirmed field record?');">Delete</button>
-                                    </form>
-                                </td>
+                            {% for value in row.values() %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
                         </tr>
                         {% endfor %}
                     {% else %}
