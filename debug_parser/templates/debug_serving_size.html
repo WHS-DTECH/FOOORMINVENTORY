@@ -104,8 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         sendSolutionBtn.disabled = true;
         sendSolutionBtn.textContent = 'Sending...';
-        // Get the parser_debug_id from the URL (same as Title logic)
-        const parserDebugId = window.location.pathname.match(/\d+$/)[0];
+        // Use parser_debug_id from template context if available
+        const parserDebugId = {{ parser_debug_id|tojson }};
         fetch(`/api/save_serving_solution/${parserDebugId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

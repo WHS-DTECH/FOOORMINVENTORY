@@ -173,11 +173,22 @@ def debug_serving_size(test_recipe_id):
     if request.method == 'POST':
         solution = request.form.get('solution')
         # Save solution logic here
+    # Fetch parser_debug_id for this test_recipe_id if available
+    from app import get_db_connection
+    parser_debug_id = test_recipe_id
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Try to find parser_debug_id for this test_recipe_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if row and 'id' in row:
+            parser_debug_id = row['id']
     return render_template(
         'debug_serving_size.html',
         test_recipe=test_recipe,
         solution=solution,
-        test_recipe_id=test_recipe_id
+        test_recipe_id=test_recipe_id,
+        parser_debug_id=parser_debug_id
     )
 
 @debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
