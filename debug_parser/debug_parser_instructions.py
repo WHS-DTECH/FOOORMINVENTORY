@@ -11,7 +11,8 @@ debug_parser_instructions_bp = Blueprint('debug_parser_instructions', __name__, 
 
 @debug_parser_instructions_bp.route('/debug_instructions/<int:parser_debug_id>', methods=['GET', 'POST'])
 def debug_instructions(parser_debug_id):
-    # Always use parser_test_recipe_id from confirmed_parser_fields for this parser_debug_id
+    # Hard code parser_debug_id to 84 for all requests
+    parser_debug_id = 84
     from app import get_db_connection
     with get_db_connection() as conn:
         c = conn.cursor()
