@@ -35,14 +35,14 @@ def load_recipe_url():
             INSERT INTO recipe_upload (parser_debug_id, upload_source_type, upload_source_detail, uploaded_by, upload_date)
             VALUES (%s, %s, %s, %s, %s)
         ''', (parser_debug_id, 'url', url, user, now))
-        # Insert into confirmed_parser_fields with parser_debug_id and recipe_id
+        # Directly insert into confirmed_parser_fields with parser_debug_id, recipe_id, and source_url
         c.execute('''
             INSERT INTO confirmed_parser_fields (parser_debug_id, parser_test_recipe_id, source_url, confirmed_by, confirmed_at)
             VALUES (%s, %s, %s, %s, %s)
         ''', (parser_debug_id, new_id, url, user, now))
         conn.commit()
-    flash('Recipe URL loaded for debugging.', 'success')
-    return redirect(url_for('debug_parser.parser_debug', parser_debug_id=new_id))
+    flash('Recipe URL loaded and confirmed.', 'success')
+    return redirect(url_for('admin_task.admin_recipe_book_setup'))
 # Recipe Book Setup Page Logic
 # Transferred from previous location (if applicable)
 # ...existing code from recipe_book_setup.py... 
