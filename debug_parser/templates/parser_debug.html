@@ -183,13 +183,18 @@
                     </form>
                 {% else %}
                     {% set fallback_debug_id = None %}
-                    {% for row in all_confirmed_parser_fields|reverse %}
+                    {% set max_debug_id = 0 %}
+                    {% for row in all_confirmed_parser_fields %}
+                        {% if row.parser_debug_id and row.parser_debug_id > max_debug_id %}
+                            {% set max_debug_id = row.parser_debug_id %}
+                        {% endif %}
                         {% if fallback_debug_id is none and row.parser_debug_id %}
                             {% set fallback_debug_id = row.parser_debug_id %}
                         {% endif %}
                     {% endfor %}
-                    <form method="get" action="/debug_title/{{ fallback_debug_id if fallback_debug_id else '' }}" style="display:inline-block;">
-                        <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG ({{ 'ID from confirmed' if fallback_debug_id else 'ID missing' }})</button>
+                    {% set next_debug_id = max_debug_id + 1 %}
+                    <form method="get" action="/debug_title/{{ fallback_debug_id if fallback_debug_id else next_debug_id }}" style="display:inline-block;">
+                        <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG ({{ 'ID from confirmed' if fallback_debug_id else 'Predicted ID: ' ~ next_debug_id }})</button>
                     </form>
                 {% endif %}
                 </form>
