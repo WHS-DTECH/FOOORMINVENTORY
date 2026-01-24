@@ -40,7 +40,7 @@ def api_save_serving_solution(test_recipe_id):
             c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
             row = c.fetchone()
             if row:
-                c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE id = %s', (solution, row['id']))
+                c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE parser_debug_id = %s', (solution, test_recipe_id))
             else:
                 c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size) VALUES (%s, %s)', (test_recipe_id, solution))
             conn.commit()
@@ -120,7 +120,7 @@ def api_save_title_solution(test_recipe_id):
             c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
             row = c.fetchone()
             if row:
-                c.execute('UPDATE confirmed_parser_fields SET title = %s WHERE id = %s', (solution, row['id']))
+                c.execute('UPDATE confirmed_parser_fields SET title = %s WHERE parser_debug_id = %s', (solution, test_recipe_id))
             else:
                 c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, title) VALUES (%s, %s)', (test_recipe_id, solution))
             conn.commit()
