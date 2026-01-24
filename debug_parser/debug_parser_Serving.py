@@ -202,17 +202,12 @@ def debug_serving_size(parser_debug_id):
     solution = None
     if request.method == 'POST':
         solution = request.form.get('solution')
-        # Save solution logic here
-    # Fetch parser_debug_id for this parser_debug_id if available
-    from app import get_db_connection
-    parser_debug_id = parser_debug_id
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        # Try to find parser_debug_id for this parser_debug_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (parser_debug_id,))
-        row = c.fetchone()
-        if row and 'id' in row:
-            parser_debug_id = row['id']
+        # Save solution to confirmed_parser_fields for this parser_debug_id
+        from app import get_db_connection
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE parser_debug_id = %s', (solution, parser_debug_id))
+            conn.commit()
     return render_template(
         'debug_serving_size.html',
         test_recipe=test_recipe,

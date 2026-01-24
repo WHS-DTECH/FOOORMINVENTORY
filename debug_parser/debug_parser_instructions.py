@@ -11,19 +11,19 @@ debug_parser_instructions_bp = Blueprint('debug_parser_instructions', __name__, 
 
 @debug_parser_instructions_bp.route('/debug_instructions/<int:parser_debug_id>', methods=['GET', 'POST'])
 def debug_instructions(parser_debug_id):
-    # Fetch test_recipe_id from parser_debug
+    # Always use parser_test_recipe_id from confirmed_parser_fields for this parser_debug_id
     from app import get_db_connection
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
-        row = c.fetchone()
-        if not row:
-            return render_template('error.html', message='Debug record not found.'), 404
-        test_recipe_id = row['recipe_id']
+        c.execute('SELECT parser_test_recipe_id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (parser_debug_id,))
+        conf_row = c.fetchone()
+        if not conf_row:
+            return render_template('error.html', message='No confirmed_parser_fields entry for this parser_debug_id.'), 404
+        test_recipe_id = conf_row['parser_test_recipe_id']
         c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         test_recipe = c.fetchone()
-    if not test_recipe:
-        return render_template('error.html', message='Test recipe not found.'), 404
+        if not test_recipe:
+            return render_template('error.html', message='Test recipe not found.'), 404
 
     # Extraction strategy functions (to be customized for instructions)
     import json
