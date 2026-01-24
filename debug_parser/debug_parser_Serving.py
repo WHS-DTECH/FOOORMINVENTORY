@@ -13,13 +13,13 @@ import re
 
 debug_parser_serving_bp = Blueprint('debug_parser_serving', __name__, template_folder='templates')
 
-@debug_parser_serving_bp.route('/debug_serving_size/<int:test_recipe_id>', methods=['GET', 'POST'])
-def debug_serving_size(test_recipe_id):
+@debug_parser_serving_bp.route('/debug_serving_size/<int:parser_debug_id>', methods=['GET', 'POST'])
+def debug_serving_size(parser_debug_id):
     # Example: fetch test_recipe from DB (replace with actual DB logic)
     # For demonstration, use a sample HTML for raw_data
     sample_html = '''<html><body><label class="label">Servings</label><div class="solution">24</div><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
     test_recipe = {
-        'id': test_recipe_id,
+        'id': parser_debug_id,
         'serving_size': 'N/A',
         'upload_source_detail': '',
         'confirmed': {},
@@ -173,13 +173,13 @@ def debug_serving_size(test_recipe_id):
     if request.method == 'POST':
         solution = request.form.get('solution')
         # Save solution logic here
-    # Fetch parser_debug_id for this test_recipe_id if available
+    # Fetch parser_debug_id for this parser_debug_id if available
     from app import get_db_connection
-    parser_debug_id = test_recipe_id
+    parser_debug_id = parser_debug_id
     with get_db_connection() as conn:
         c = conn.cursor()
-        # Try to find parser_debug_id for this test_recipe_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (test_recipe_id,))
+        # Try to find parser_debug_id for this parser_debug_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (parser_debug_id,))
         row = c.fetchone()
         if row and 'id' in row:
             parser_debug_id = row['id']
@@ -187,12 +187,12 @@ def debug_serving_size(test_recipe_id):
         'debug_serving_size.html',
         test_recipe=test_recipe,
         solution=solution,
-        test_recipe_id=test_recipe_id,
+        parser_debug_id=parser_debug_id,
         parser_debug_id=parser_debug_id
     )
 
-@debug_parser_serving_bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
-def run_serving_strategy(test_recipe_id):
+@debug_parser_serving_bp.route('/run_serving_strategy/<int:parser_debug_id>', methods=['POST'])
+def run_serving_strategy(parser_debug_id):
     def extract_hardcoded_servings_solution(html):
         """Hard-coded: Find <label class='label'>Servings</label> followed by <div class='solution'>NUMBER</div> and extract the number."""
         soup = BeautifulSoup(html, 'html.parser')
@@ -281,7 +281,7 @@ def run_serving_strategy(test_recipe_id):
 
     # For demonstration, use the same sample HTML as in debug_serving_size
     sample_html = '''<html><body><label class="label">Servings</label><div class="solution">24</div><label>Serving Size</label> 4 portions <label>Serves</label> 6</body></html>'''
-    # In production, fetch the real raw_data for the test_recipe_id
+    # In production, fetch the real raw_data for the parser_debug_id
     raw_data = sample_html
     # Get the current step from the POST body
     data = request.get_json(force=True)
@@ -416,5 +416,5 @@ def run_serving_strategy(test_recipe_id):
         'debug_serving_size.html',
         test_recipe=test_recipe,
         solution=solution,
-        test_recipe_id=test_recipe_id
+        parser_debug_id=parser_debug_id
     )

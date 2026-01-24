@@ -9,12 +9,23 @@ import re
 debug_parser_instructions_bp = Blueprint('debug_parser_instructions', __name__, template_folder='templates')
 
 
-@debug_parser_instructions_bp.route('/debug_instructions/<int:test_recipe_id>', methods=['GET', 'POST'])
-def debug_instructions(test_recipe_id):
+@debug_parser_instructions_bp.route('/debug_instructions/<int:parser_debug_id>', methods=['GET', 'POST'])
+def debug_instructions(parser_debug_id):
     # Example: fetch test_recipe from DB (replace with actual DB logic)
     sample_html = '''<html><body><div class="instructions">Step 1: Mix. Step 2: Bake.</div></body></html>'''
+    # Fetch parser_debug_id for this parser_debug_id if available
+    from app import get_db_connection
+    parser_debug_id = parser_debug_id
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Try to find parser_debug_id for this parser_debug_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if row and 'id' in row:
+            parser_debug_id = row['id']
     test_recipe = {
-        'id': test_recipe_id,
+        'id': parser_debug_id,
+        'parser_debug_id': parser_debug_id,
         'instructions': 'N/A',
         'upload_source_detail': '',
         'confirmed': {},
@@ -116,11 +127,12 @@ def debug_instructions(test_recipe_id):
         'debug_instructions.html',
         test_recipe=test_recipe,
         solution=solution,
-        test_recipe_id=test_recipe_id
+        parser_debug_id=parser_debug_id,
+        parser_debug_id=parser_debug_id
     )
 
-@debug_parser_instructions_bp.route('/run_instructions_strategy/<int:test_recipe_id>', methods=['POST'])
-def run_instructions_strategy(test_recipe_id):
+@debug_parser_instructions_bp.route('/run_instructions_strategy/<int:parser_debug_id>', methods=['POST'])
+def run_instructions_strategy(parser_debug_id):
     import json
     def extract_recipe_instructions_json(html):
         match = re.search(r'"recipeInstructions"\s*:\s*"([^"]+)"', html)
@@ -150,11 +162,11 @@ def run_instructions_strategy(test_recipe_id):
                 return line.strip()
         return None
 
-    # Fetch the actual raw_data for this test_recipe_id from the DB
+    # Fetch the actual raw_data for this parser_debug_id from the DB
     from app import get_db_connection
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
         row = c.fetchone()
         raw_data = row['raw_data'] if row and 'raw_data' in row else ''
 

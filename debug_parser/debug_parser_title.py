@@ -1,4 +1,4 @@
-def debug_title(raw_title, test_recipe_id):
+def debug_title(raw_title, parser_debug_id):
     # Placeholder implementation; expand as needed for debugging
     return raw_title
 """

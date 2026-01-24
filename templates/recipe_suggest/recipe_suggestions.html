@@ -52,8 +52,8 @@
                                     <span class="text-muted">Flagged by: {{ test.uploaded_by or 'Unknown' }} | {{ test.upload_date.strftime('%Y-%m-%d %H:%M') if test.upload_date else '' }}</span>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                        <a href="{{ url_for('debug_parser.debug_title_route', test_recipe_id=test.id) }}" class="btn btn-outline-primary btn-sm">Debug</a>
-                                        <form method="post" action="{{ url_for('delete_parser_test_recipe', test_recipe_id=test.id) }}" style="display:inline;">
+                                        <a href="{{ url_for('debug_parser.debug_title_route', parser_debug_id=test.id) }}" class="btn btn-outline-primary btn-sm">Debug</a>
+                                        <form method="post" action="{{ url_for('delete_parser_test_recipe', parser_debug_id=test.id) }}" style="display:inline;">
                                             <button type="submit" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this flagged/test recipe?');">Delete</button>
                                         </form>
                                 </div>

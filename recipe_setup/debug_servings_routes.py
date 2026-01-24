@@ -5,12 +5,12 @@ import re
 
 bp = Blueprint('debug_servings', __name__, template_folder='templates')
 
-@bp.route('/debug_servings/<int:test_recipe_id>')
+@bp.route('/debug_servings/<int:parser_debug_id>')
 @require_role('Admin')
-def debug_servings_route(test_recipe_id):
+def debug_servings_route(parser_debug_id):
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
         test_recipe = c.fetchone()
     if not test_recipe:
         return render_template('error.html', message='Test recipe not found.'), 404
@@ -24,14 +24,14 @@ def debug_servings_route(test_recipe_id):
             break
     return render_template(
         'debug_servings.html',
-        test_recipe_id=test_recipe_id,
+        parser_debug_id=parser_debug_id,
         raw_data=raw_data,
         best_guess=best_guess
     )
 
-@bp.route('/run_serving_strategy/<int:test_recipe_id>', methods=['POST'])
+@bp.route('/run_serving_strategy/<int:parser_debug_id>', methods=['POST'])
 @require_role('Admin')
-def run_serving_strategy(test_recipe_id):
+def run_serving_strategy(parser_debug_id):
     data = request.get_json(force=True)
     current_step = data.get('current_step', 0)
     action = data.get('action', 'continue')
@@ -65,7 +65,7 @@ def run_serving_strategy(test_recipe_id):
     strategy = STRATEGIES[current_step]
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
         row = c.fetchone()
         if not row:
             return jsonify({'error': 'Test recipe not found'}), 404
@@ -114,9 +114,9 @@ def run_serving_strategy(test_recipe_id):
         'solved_enabled': True
     })
 
-@bp.route('/api/save_serving_solution/<int:test_recipe_id>', methods=['POST'])
+@bp.route('/api/save_serving_solution/<int:parser_debug_id>', methods=['POST'])
 @require_role('Admin')
-def api_save_serving_solution(test_recipe_id):
+def api_save_serving_solution(parser_debug_id):
     data = request.get_json(force=True)
     solution = data.get('solution', '').strip()
     if not solution:
@@ -125,12 +125,12 @@ def api_save_serving_solution(test_recipe_id):
         with get_db_connection() as conn:
             c = conn.cursor()
             # Check if row exists for this parser_debug_id
-            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
+            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (parser_debug_id,))
             row = c.fetchone()
             if row:
                 c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE id = %s', (solution, row['id']))
             else:
-                c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size) VALUES (%s, %s)', (test_recipe_id, solution))
+                c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size) VALUES (%s, %s)', (parser_debug_id, solution))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:

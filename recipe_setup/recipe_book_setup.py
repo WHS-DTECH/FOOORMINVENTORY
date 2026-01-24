@@ -37,7 +37,7 @@ def load_recipe_url():
         ''', (parser_debug_id, 'url', url, user, now))
         conn.commit()
     flash('Recipe URL loaded for debugging.', 'success')
-    return redirect(url_for('debug_parser.parser_debug', test_recipe_id=new_id))
+    return redirect(url_for('debug_parser.parser_debug', parser_debug_id=new_id))
 # Recipe Book Setup Page Logic
 # Transferred from previous location (if applicable)
 # ...existing code from recipe_book_setup.py... 

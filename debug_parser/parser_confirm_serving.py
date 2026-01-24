@@ -2,7 +2,7 @@
 Confirmation logic for the Serving Size field in the parser debug workflow.
 """
 
-def confirm_serving(raw_serving, test_recipe_id):
+def confirm_serving(raw_serving, parser_debug_id):
     from app import get_db_connection  # Local import to avoid circular import
     confirmed_serving = raw_serving
     from flask_login import current_user
@@ -17,6 +17,6 @@ def confirm_serving(raw_serving, test_recipe_id):
                 serving_size = EXCLUDED.serving_size,
                 confirmed_by = EXCLUDED.confirmed_by,
                 confirmed_at = EXCLUDED.confirmed_at
-        ''', (test_recipe_id, confirmed_serving, confirmed_by))
+        ''', (parser_debug_id, confirmed_serving, confirmed_by))
         conn.commit()
     return confirmed_serving

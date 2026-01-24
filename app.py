@@ -209,12 +209,12 @@ def upload_details(recipe_id):
 from catering.catering import catering_bp
 app.register_blueprint(catering_bp)
 # --- Delete flagged/test recipe from parser_test_recipes ---
-@app.route('/parser_test_recipe/<int:test_recipe_id>/delete', methods=['POST'])
+@app.route('/parser_test_recipe/<int:parser_debug_id>/delete', methods=['POST'])
 @require_role('Admin')
-def delete_parser_test_recipe(test_recipe_id):
+def delete_parser_test_recipe(parser_debug_id):
     with get_db_connection() as conn:
         c = conn.cursor()
-        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
         conn.commit()
     flash('Flagged/test recipe deleted.', 'success')
     return redirect(url_for('admin_task.admin_recipe_book_setup'))
@@ -477,7 +477,7 @@ def review_recipe_url_action():
         return redirect(url_for('admin_task.admin_recipe_book_setup'))
     elif action == 'flag':
         # Insert recipe into parser_test_recipes for URL uploads: always use session['raw_data_file']
-        test_recipe_id = None
+        parser_debug_id = None
         try:
             import datetime as dt
             source_url = recipe_data.get('source_url') or recipe_data.get('title') or ''
@@ -530,7 +530,7 @@ def review_recipe_url_action():
                     None,
                     raw_data
                 ))
-                test_recipe_id = c.fetchone()['id']
+                parser_debug_id = c.fetchone()['id']
                 conn.commit()
         except Exception as e:
             error_message = f'Error saving flagged recipe for parser testing: {e}'
@@ -547,7 +547,7 @@ def review_recipe_url_action():
             recipe_data=recipe_data if recipe_data else {},
             extraction_warning='Recipe flagged for manual review and stored for parser testing.',
             show_debug_prompt=True,
-            test_recipe_id=test_recipe_id
+            parser_debug_id=parser_debug_id
         )
     else:
         error_message = 'Unknown action.'

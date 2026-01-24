@@ -134,7 +134,7 @@
                             <td>{{ debug.extracted_title or 'N/A' }}</td>
                             <td>{{ debug.solution or 'N/A' }}</td>
                             <td>
-                                <a href="{{ url_for('debug_parser.parser_debug', test_recipe_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
+                                <a href="{{ url_for('debug_parser.parser_debug', parser_debug_id=debug.id) }}" class="btn btn-info btn-sm">Debug</a>
                                                                 <form method="post" action="{{ url_for('debug_parser.delete_debug', debug_id=debug.id) }}" style="display:inline;">
                                                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                                                 </form>

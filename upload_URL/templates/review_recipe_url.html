@@ -84,15 +84,15 @@
         {# Only include minimal recipe data, excluding raw_data #}
         <textarea name="recipe_json" style="display:none;">{{ recipe_data | tojson }}</textarea>
         <button type="submit" name="action" value="confirm" class="btn btn-success">CONFIRM</button>
-        {% if not (show_debug_prompt and test_recipe_id) %}
+        {% if not (show_debug_prompt and parser_debug_id) %}
         <button type="submit" name="action" value="flag" class="btn btn-warning ms-2">FLAG to TWEAK</button>
         {% endif %}
     </form>
 
-    {% if show_debug_prompt and test_recipe_id %}
+    {% if show_debug_prompt and parser_debug_id %}
     <div class="alert alert-info mt-4">
         <form method="post" action="/parser_test_decision">
-            <input type="hidden" name="test_recipe_id" value="{{ test_recipe_id }}">
+            <input type="hidden" name="parser_debug_id" value="{{ parser_debug_id }}">
             <span>Recipe flagged for manual review and stored for parser testing.<br>Do you wish to debug the recipe now?</span><br>
             <button type="submit" name="debug_now" value="yes" class="btn btn-primary mt-2">Yes, debug now</button>
             <button type="submit" name="debug_now" value="no" class="btn btn-secondary mt-2">No, just store for future</button>

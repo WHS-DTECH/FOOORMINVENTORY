@@ -2,7 +2,7 @@
 Confirmation logic for the Instructions field in the parser debug workflow.
 """
 
-def confirm_instructions(raw_instructions, test_recipe_id):
+def confirm_instructions(raw_instructions, parser_debug_id):
     from app import get_db_connection  # Local import to avoid circular import
     confirmed_instructions = raw_instructions
     from flask_login import current_user
@@ -17,6 +17,6 @@ def confirm_instructions(raw_instructions, test_recipe_id):
                 instructions = EXCLUDED.instructions,
                 confirmed_by = EXCLUDED.confirmed_by,
                 confirmed_at = EXCLUDED.confirmed_at
-        ''', (test_recipe_id, confirmed_instructions, confirmed_by))
+        ''', (parser_debug_id, confirmed_instructions, confirmed_by))
         conn.commit()
     return confirmed_instructions
