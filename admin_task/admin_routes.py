@@ -92,6 +92,7 @@ def admin_user_roles():
 def admin_recipe_book_setup():
     recipe_list = []
     parser_debugs = []
+    all_confirmed_parser_fields = []
     try:
         with get_db_connection() as conn:
             c = conn.cursor()
@@ -101,9 +102,12 @@ def admin_recipe_book_setup():
             # Fetch parser debug/index data (match actual columns)
             c.execute('SELECT id, recipe_id, raw_data, extracted_title, strategies, solution FROM parser_debug ORDER BY id DESC')
             parser_debugs = [dict(row) for row in c.fetchall()]
+            # Fetch all confirmed_parser_fields for the CONFIRMED table
+            c.execute('SELECT * FROM confirmed_parser_fields ORDER BY id DESC')
+            all_confirmed_parser_fields = [dict(row) for row in c.fetchall()]
     except Exception as e:
         print(f"Error fetching data for recipe_book_setup: {e}")
-    return render_template('recipe_setup/recipe_book_setup.html', recipe_list=recipe_list, parser_debugs=parser_debugs)
+    return render_template('recipe_setup/recipe_book_setup.html', recipe_list=recipe_list, parser_debugs=parser_debugs, all_confirmed_parser_fields=all_confirmed_parser_fields)
 
 # --- Admin Utility: Fix Public Roles ---
 @admin_task_bp.route('/admin/fix_public_roles')
