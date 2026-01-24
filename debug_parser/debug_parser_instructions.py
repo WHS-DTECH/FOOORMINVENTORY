@@ -115,7 +115,12 @@ def debug_instructions(parser_debug_id):
     solution = None
     if request.method == 'POST':
         solution = request.form.get('solution')
-        # Save solution logic here
+        # Save solution to confirmed_parser_fields for this parser_debug_id
+        from app import get_db_connection
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            c.execute('UPDATE confirmed_parser_fields SET instructions = %s WHERE parser_debug_id = %s', (solution, parser_debug_id))
+            conn.commit()
     return render_template(
         'debug_instructions.html',
         test_recipe=test_recipe,
