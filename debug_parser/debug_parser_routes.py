@@ -91,16 +91,16 @@ def api_run_title_strategies(parser_debug_id):
 def delete_confirmed_parser_field(field_id):
     with get_db_connection() as conn:
         c = conn.cursor()
-        # Optionally fetch parser_parser_debug_id for redirect
-        c.execute('SELECT parser_parser_debug_id FROM confirmed_parser_fields WHERE id = %s', (field_id,))
+        # Optionally fetch parser_debug_id for redirect
+        c.execute('SELECT parser_debug_id FROM confirmed_parser_fields WHERE id = %s', (field_id,))
         row = c.fetchone()
-        parser_parser_debug_id = row['parser_parser_debug_id'] if row and 'parser_parser_debug_id' in row else None
+        parser_debug_id = row['parser_debug_id'] if row and 'parser_debug_id' in row else None
         c.execute('DELETE FROM confirmed_parser_fields WHERE id = %s', (field_id,))
         conn.commit()
     flash('Confirmed parser field record deleted.', 'success')
     # Redirect to the parser_debug page for the related test recipe if possible, else to admin_task
-    if parser_parser_debug_id:
-        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_parser_debug_id))
+    if parser_debug_id:
+        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
     return redirect(url_for('admin_task.admin_recipe_book_setup'))
 # This file contains all debug_parser-related routes and logic extracted from app.py for modularization.
 # To be used as the Flask blueprint/module for debug_parser.
