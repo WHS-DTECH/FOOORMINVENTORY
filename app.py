@@ -1,3 +1,7 @@
+from debug_parser.debug_parser_instructions import debug_instructions
+from recipe_parser_pdf import parse_recipes_from_text
+from debug_parser.debug_parser_Serving import debug_serving
+from debug_parser.debug_parser_title import debug_title
 
 
 
@@ -249,37 +253,85 @@ def extract_url(recipe_id):
     flash('URL extracted for recipe.', 'success')
     return redirect(url_for('upload_details', recipe_id=recipe_id))
 
-@app.route('/extract_title/<int:recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_title(recipe_id):
-    # Extraction logic for Title
-    # TODO: Implement actual extraction
-    flash('Title extracted for recipe.', 'success')
-    return redirect(url_for('upload_details', recipe_id=recipe_id))
 
-@app.route('/extract_serving/<int:recipe_id>', methods=['POST'])
+@app.route('/extract_title/<int:test_recipe_id>', methods=['POST'])
 @require_role('Admin')
-def extract_serving(recipe_id):
-    # Extraction logic for Serving Size
-    # TODO: Implement actual extraction
-    flash('Serving size extracted for recipe.', 'success')
-    return redirect(url_for('upload_details', recipe_id=recipe_id))
+def extract_title(test_recipe_id):
+    # Fetch the test recipe's raw data or URL
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT upload_source_detail FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if not row:
+            flash('Test recipe not found.', 'error')
+            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+        url = row['upload_source_detail']
+        # Use debug_title logic (for now, just pass the URL as raw_title)
+        extracted_title = debug_title(url, test_recipe_id)
+        c.execute('UPDATE parser_test_recipes SET title = %s WHERE id = %s', (extracted_title, test_recipe_id))
+        conn.commit()
+    flash(f'Title extracted: {extracted_title}', 'success')
+    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
 
-@app.route('/extract_ingredients/<int:recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_ingredients(recipe_id):
-    # Extraction logic for Ingredients
-    # TODO: Implement actual extraction
-    flash('Ingredients extracted for recipe.', 'success')
-    return redirect(url_for('upload_details', recipe_id=recipe_id))
 
-@app.route('/extract_instructions/<int:recipe_id>', methods=['POST'])
+@app.route('/extract_serving/<int:test_recipe_id>', methods=['POST'])
 @require_role('Admin')
-def extract_instructions(recipe_id):
-    # Extraction logic for Instructions
-    # TODO: Implement actual extraction
-    flash('Instructions extracted for recipe.', 'success')
-    return redirect(url_for('upload_details', recipe_id=recipe_id))
+def extract_serving(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if not row:
+            flash('Test recipe not found.', 'error')
+            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+        raw_data = row['raw_data']
+        serving_size = debug_serving(raw_data, test_recipe_id)
+        c.execute('UPDATE parser_test_recipes SET serving_size = %s WHERE id = %s', (serving_size, test_recipe_id))
+        conn.commit()
+    flash(f'Serving size extracted: {serving_size}', 'success')
+    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+
+
+
+@app.route('/extract_ingredients/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_ingredients(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if not row:
+            flash('Test recipe not found.', 'error')
+            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+        raw_data = row['raw_data']
+        recipes = parse_recipes_from_text(raw_data)
+        # Use the first recipe's ingredients if available
+        if recipes and isinstance(recipes, list) and len(recipes) > 0:
+            ingredients = '\n'.join(recipes[0].get('ingredients', []))
+        else:
+            ingredients = ''
+        c.execute('UPDATE parser_test_recipes SET ingredients = %s WHERE id = %s', (ingredients, test_recipe_id))
+        conn.commit()
+    flash('Ingredients extracted.', 'success')
+    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+
+
+@app.route('/extract_instructions/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
+def extract_instructions(test_recipe_id):
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        row = c.fetchone()
+        if not row:
+            flash('Test recipe not found.', 'error')
+            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+        raw_data = row['raw_data']
+        instructions = debug_instructions(raw_data, test_recipe_id)
+        c.execute('UPDATE parser_test_recipes SET instructions = %s WHERE id = %s', (instructions, test_recipe_id))
+        conn.commit()
+    flash('Instructions extracted.', 'success')
+    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
 
 
 # --- Recipe Source Page ---
