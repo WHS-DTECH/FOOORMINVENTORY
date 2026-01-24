@@ -23,6 +23,15 @@ def debug_instructions(test_recipe_id):
     }
 
     # Extraction strategy functions (to be customized for instructions)
+    import json
+    def extract_recipe_instructions_json(html):
+        # Try to find a JSON-like string with 'recipeInstructions' key
+        # This is a simple regex, not a full JSON parser
+        match = re.search(r'"recipeInstructions"\s*:\s*"([^"]+)"', html)
+        if match:
+            return match.group(1)
+        return None
+
     def extract_sentences_starting_with_keywords(html):
         keywords = ["Preheat", "Line", "Beat", "Add", "Sift", "Divide", "Bake", "Turn"]
         soup = BeautifulSoup(html, 'html.parser')
@@ -48,15 +57,23 @@ def debug_instructions(test_recipe_id):
 
     # Build strategies list
     strategies = []
-    # 1. New strategy: extract sentences starting with keywords
+    # 1. New strategy: extract recipeInstructions from JSON-like text
+    recipe_json_result = extract_recipe_instructions_json(test_recipe['raw_data'])
+    strategies.append({
+        'name': 'Extract "recipeInstructions" from JSON',
+        'applied': True,
+        'result': recipe_json_result or '—',
+        'solved': bool(recipe_json_result)
+    })
+    # 2. Extract sentences starting with keywords
     keyword_sentences_result = extract_sentences_starting_with_keywords(test_recipe['raw_data'])
     strategies.append({
         'name': 'Extract sentences starting with Preheat, Line, Beat, Add, Sift, Divide, Bake, Turn',
-        'applied': True,
+        'applied': False,
         'result': keyword_sentences_result or '—',
         'solved': bool(keyword_sentences_result)
     })
-    # 2. Existing: extract <div class="instructions">
+    # 3. Existing: extract <div class="instructions">
     instructions_div_result = extract_instructions_div(test_recipe['raw_data'])
     strategies.append({
         'name': 'Extract <div class="instructions">',
@@ -64,7 +81,7 @@ def debug_instructions(test_recipe_id):
         'result': instructions_div_result or '—',
         'solved': bool(instructions_div_result)
     })
-    # 3. Fallback: Any text in first 10 lines
+    # 4. Fallback: Any text in first 10 lines
     fallback_result = fallback_any_text_first_10_lines(test_recipe['raw_data'])
     strategies.append({
         'name': 'Fallback: Any text in first 10 lines',
@@ -72,7 +89,7 @@ def debug_instructions(test_recipe_id):
         'result': fallback_result or '—',
         'solved': bool(fallback_result)
     })
-    # 4. If none, returns "N/A"
+    # 5. If none, returns "N/A"
     strategies.append({
         'name': 'If none, returns "N/A"',
         'applied': False,
@@ -98,6 +115,13 @@ def debug_instructions(test_recipe_id):
 
 @debug_parser_instructions_bp.route('/run_instructions_strategy/<int:test_recipe_id>', methods=['POST'])
 def run_instructions_strategy(test_recipe_id):
+    import json
+    def extract_recipe_instructions_json(html):
+        match = re.search(r'"recipeInstructions"\s*:\s*"([^"]+)"', html)
+        if match:
+            return match.group(1)
+        return None
+
     def extract_sentences_starting_with_keywords(html):
         keywords = ["Preheat", "Line", "Beat", "Add", "Sift", "Divide", "Bake", "Turn"]
         soup = BeautifulSoup(html, 'html.parser')
@@ -126,6 +150,7 @@ def run_instructions_strategy(test_recipe_id):
     current_step = int(data.get('current_step', 0))
 
     strategies = [
+        extract_recipe_instructions_json,
         extract_sentences_starting_with_keywords,
         extract_instructions_div,
         fallback_any_text_first_10_lines
