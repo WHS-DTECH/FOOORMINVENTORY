@@ -472,9 +472,38 @@ def review_recipe_url_action():
         )
 
     if action == 'confirm':
-        # Here you would save the recipe to the database
-        flash('Recipe confirmed and ready for saving (not yet implemented).', 'success')
-        return redirect(url_for('admin_task.admin_recipe_book_setup'))
+        # After confirming, fetch the latest parser_debug_id for this recipe (if exists)
+        parser_debug_id = None
+        try:
+            with get_db_connection() as conn:
+                c = conn.cursor()
+                # Try to find the most recent parser_debug record for this recipe
+                source_url = recipe_data.get('source_url') or recipe_data.get('title') or ''
+                c.execute('SELECT id FROM parser_test_recipes WHERE upload_source_detail = %s ORDER BY id DESC LIMIT 1', (source_url,))
+                test_recipe_row = c.fetchone()
+                if test_recipe_row:
+                    test_recipe_id = test_recipe_row['id']
+                    c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
+                    debug_row = c.fetchone()
+                    if debug_row:
+                        parser_debug_id = debug_row['id']
+        except Exception as e:
+            parser_debug_id = None
+        if parser_debug_id:
+            return render_template(
+                "review_recipe_url.html",
+                recipe_data=recipe_data or {},
+                extraction_warning='Recipe confirmed and debug record loaded.',
+                show_debug_prompt=True,
+                parser_debug_id=parser_debug_id
+            )
+        else:
+            return render_template(
+                "review_recipe_url.html",
+                recipe_data=recipe_data or {},
+                extraction_warning='Recipe confirmed, but no debug record found.',
+                show_debug_prompt=False
+            )
     elif action == 'flag':
         # Insert recipe into parser_test_recipes for URL uploads: always use session['raw_data_file']
         parser_debug_id = None
