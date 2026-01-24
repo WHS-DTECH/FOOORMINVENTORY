@@ -1,4 +1,3 @@
-debug_parser_instructions_bp = Blueprint('debug_parser_instructions', __name__, template_folder='templates')
 
 # debug_parser_instructions.py
 # Layout and logic based on debug_parser_Serving.py
@@ -8,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 
 debug_parser_instructions_bp = Blueprint('debug_parser_instructions', __name__, template_folder='templates')
+
 
 @debug_parser_instructions_bp.route('/debug_instructions/<int:test_recipe_id>', methods=['GET', 'POST'])
 def debug_instructions(test_recipe_id):
