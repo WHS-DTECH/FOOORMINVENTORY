@@ -51,15 +51,15 @@ def api_save_serving_solution(test_recipe_id):
         return jsonify({'success': False, 'error': 'No solution provided.'}), 400
     # Save to confirmed_parser_fields (upsert for this parser_debug_id and column 'serving_size')
     try:
+        from flask_login import current_user
+        confirmed_by = getattr(current_user, 'id', 'admin')
         with get_db_connection() as conn:
             c = conn.cursor()
-            # Check if row exists for this parser_debug_id
-            c.execute('SELECT id FROM confirmed_parser_fields WHERE parser_debug_id = %s', (test_recipe_id,))
-            row = c.fetchone()
-            if row:
-                c.execute('UPDATE confirmed_parser_fields SET serving_size = %s WHERE parser_debug_id = %s', (solution, test_recipe_id))
-            else:
-                c.execute('INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size) VALUES (%s, %s)', (test_recipe_id, solution))
+            c.execute('''
+                INSERT INTO confirmed_parser_fields (parser_debug_id, serving_size, confirmed_by, confirmed_at)
+                VALUES (%s, %s, %s, NOW())
+                ON CONFLICT (parser_debug_id) DO UPDATE SET serving_size = EXCLUDED.serving_size, confirmed_by = EXCLUDED.confirmed_by, confirmed_at = EXCLUDED.confirmed_at
+            ''', (test_recipe_id, solution, confirmed_by))
             conn.commit()
         return jsonify({'success': True})
     except Exception as e:
