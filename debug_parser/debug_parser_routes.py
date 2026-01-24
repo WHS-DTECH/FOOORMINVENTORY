@@ -1,5 +1,3 @@
-
-
 # --- API: Run title extraction strategies ---
 from flask import jsonify
 from debug_parser.debug_parser_title import is_likely_title
@@ -328,6 +326,33 @@ def parser_test_decision():
             show_debug_prompt=False,
             recipe_data={})
 
+# --- Debug Serving Size Page (modular, like Title) ---
+@bp.route('/debug_serving_size/<int:parser_debug_id>')
+@require_role('Admin')
+def debug_serving_size_route(parser_debug_id):
+    # Fetch parser_debug_id for this parser_debug_id if available
+    if not parser_debug_id or not str(parser_debug_id).isdigit():
+        return render_template('error.html', message='Invalid or missing debug record ID.')
+    from app import get_db_connection
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT recipe_id FROM parser_debug WHERE id = %s', (parser_debug_id,))
+        row = c.fetchone()
+        if not row:
+            return render_template('error.html', message='Debug record not found.')
+        test_recipe_id = row['recipe_id']
+        c.execute('SELECT * FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
+        test_recipe = c.fetchone()
+    if not test_recipe:
+        return render_template('error.html', message='Test recipe not found.')
+    serving_size = test_recipe.get('serving_size', None)
+    # Add extraction logic here if needed
+    return render_template(
+        'debug_serving_size.html',
+        parser_debug_id=parser_debug_id,
+        serving_size=serving_size,
+        test_recipe=test_recipe
+    )
 
 # Backend-driven stepwise runner: accept current_step, return next step, button state
 @bp.route('/run_strategy/<int:parser_debug_id>', methods=['POST'])
