@@ -208,9 +208,18 @@
                 <hr>
                 <form method="get" action="/debug_serving_size/{{ test_recipe.id }}" style="display:inline-block;">
                                     <!-- Debug Info Block: Show all IDs being used for Serving Size DEBUG -->
+                                    {% set max_debug_id = 0 %}
+                                    {% for row in all_confirmed_parser_fields %}
+                                        {% if row.parser_debug_id and row.parser_debug_id > max_debug_id %}
+                                            {% set max_debug_id = row.parser_debug_id %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% set predicted_debug_id = max_debug_id + 1 %}
                                     <div class="mb-2" style="font-size:0.95em; color:#333; background:#f8f9fa; border:1px solid #ccc; padding:6px;">
                                         <b>Debug Info:</b><br>
                                         parser_debug_id: <span style="color:#1976d2; font-weight:bold;">{{ parser_debug_id }}</span><br>
+                                        <span style="color:#888;">last known:</span> <span style="color:#1976d2; font-weight:bold;">{{ max_debug_id }}</span><br>
+                                        <span style="color:#888;">predicted id:</span> <span style="color:#1976d2; font-weight:bold;">{{ predicted_debug_id }}</span><br>
                                         test_recipe.id: <span style="color:#388e3c; font-weight:bold;">{{ test_recipe.id }}</span><br>
                                         upload_source_detail: <span style="color:#8e24aa; font-weight:bold;">{{ test_recipe.upload_source_detail }}</span><br>
                                     </div>
