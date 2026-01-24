@@ -77,8 +77,11 @@
             <textarea id="rawDataPreview" readonly rows="30" style="width: 60vw; max-width: 700px; min-width: 350px; min-height: 600px; height: 100%; font-family: monospace; font-size: 14px; background: #fafbfc; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; resize: both;">{{ test_recipe.raw_data }}</textarea>
         </div>
         <button id="showMoreBtn" style="margin-top: 8px; display: none;">Show More</button>
-    </div>
+        </div>
 	</div>
+</div>
+<div style="display: flex; justify-content: flex-end; margin-top: 24px; gap: 18px;">
+    <a href="{{ url_for('debug_parser.debug_instructions', test_recipe_id=test_recipe_id) }}" class="btn btn-danger" style="min-width: 120px; min-height: 48px; font-size: 1.1em; font-weight: bold;">DEBUG</a>
 </div>
 {% endblock %}
 {% block scripts %}
