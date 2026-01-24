@@ -183,20 +183,12 @@
                     </form>
                 {% else %}
                     {% set fallback_debug_id = None %}
-                    {% for row in all_confirmed_parser_fields %}
-                        {% if row.parser_test_recipe_id == test_recipe.id and row.parser_debug_id %}
-                            {% set fallback_debug_id = row.parser_debug_id %}
-                        {% endif %}
-                    {% endfor %}
-                    {% if fallback_debug_id %}
-                        <form method="get" action="/debug_title/{{ fallback_debug_id }}" style="display:inline-block;">
-                            <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG (from confirmed)</button>
-                        </form>
-                    {% else %}
-                        <form method="get" action="/debug_title/" style="display:inline-block;">
-                            <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG (ID missing)</button>
-                        </form>
+                    {% if all_confirmed_parser_fields|length > 0 %}
+                        {% set fallback_debug_id = all_confirmed_parser_fields[-1].parser_debug_id %}
                     {% endif %}
+                    <form method="get" action="/debug_title/{{ fallback_debug_id if fallback_debug_id else '' }}" style="display:inline-block;">
+                        <button type="submit" class="debug-btn" style="background:#1976d2; color:#fff;">Title DEBUG ({{ 'ID from last confirmed' if fallback_debug_id else 'ID missing' }})</button>
+                    </form>
                 {% endif %}
                 </form>
                 <!-- DEBUG 2 button removed -->
