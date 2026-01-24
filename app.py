@@ -483,7 +483,6 @@ def review_recipe_url_action():
             source_url = recipe_data.get('source_url') or recipe_data.get('title') or ''
             # Sanitize the URL: remove duplicate protocols, strip whitespace
             source_url = source_url.strip()
-            # Remove duplicate protocol if present (e.g., https://https://...)
             if source_url.startswith('http://http://'):
                 source_url = source_url.replace('http://http://', 'http://', 1)
             elif source_url.startswith('https://https://'):
@@ -492,7 +491,6 @@ def review_recipe_url_action():
                 source_url = source_url.replace('http://https://', 'https://', 1)
             elif source_url.startswith('https://http://'):
                 source_url = source_url.replace('https://http://', 'http://', 1)
-            # Use the same extraction logic as debug_extract_text
             # Read raw_data from temp file
             raw_data = ''
             error = None
@@ -517,6 +515,7 @@ def review_recipe_url_action():
                 )
             with get_db_connection() as conn:
                 c = conn.cursor()
+                # Insert into parser_test_recipes and get test_recipe_id
                 c.execute('''
                     INSERT INTO parser_test_recipes (upload_source_type, upload_source_detail, uploaded_by, upload_date, notes, recipe_id, raw_data)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -530,18 +529,29 @@ def review_recipe_url_action():
                     None,
                     raw_data
                 ))
+                test_recipe_id = c.fetchone()['id']
+                # Insert into parser_debug and get parser_debug_id
+                c.execute('''
+                    INSERT INTO parser_debug (recipe_id, user_id, created_at, notes, solution)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                ''', (
+                    test_recipe_id,
+                    getattr(current_user, 'id', None),
+                    dt.datetime.now(),
+                    'Flagged for parser testing',
+                    None
+                ))
                 parser_debug_id = c.fetchone()['id']
                 conn.commit()
         except Exception as e:
             error_message = f'Error saving flagged recipe for parser testing: {e}'
-            # Do NOT redirect, just show error on the review page and keep the user there
             return render_template(
                 "review_recipe_url.html",
                 recipe_data=recipe_data or {},
                 extraction_warning=error_message,
                 show_debug_prompt=False
             )
-        # Always show Yes/No debug prompt and keep page open until user clicks a button
         return render_template(
             "review_recipe_url.html",
             recipe_data=recipe_data if recipe_data else {},
