@@ -1,3 +1,18 @@
+# --- API: Save solution as confirmed instructions ---
+from debug_parser.parser_confirm_instructions import confirm_instructions
+
+@bp.route('/api/save_instructions_solution/<int:test_recipe_id>', methods=['POST'])
+@require_role('Admin')
+def api_save_instructions_solution(test_recipe_id):
+    data = request.get_json(force=True)
+    solution = data.get('solution', '').strip()
+    if not solution:
+        return jsonify({'success': False, 'error': 'No solution provided.'}), 400
+    try:
+        confirm_instructions(solution, test_recipe_id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # --- API: Run title extraction strategies ---
 from flask import jsonify
