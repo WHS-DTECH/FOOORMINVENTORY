@@ -169,21 +169,11 @@
                     <button type="submit" class="grey-btn bg-secondary text-white">CONFIRM</button>
                 </form>
                                 <hr>
-                                <form method="post" action="/extract_url/{{ test_recipe.id }}" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-info">URL Extraction</button>
-                                </form>
-                                <form method="post" action="/extract_title/{{ test_recipe.id }}" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-info">Title Extraction</button>
-                                </form>
-                                <form method="post" action="/extract_serving/{{ test_recipe.id }}" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-info">Serving Size Extraction</button>
-                                </form>
-                                <form method="post" action="/extract_ingredients/{{ test_recipe.id }}" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-info">Ingredients Extraction</button>
-                                </form>
-                                <form method="post" action="/extract_instructions/{{ test_recipe.id }}" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-info">Instructions Extraction</button>
-                                </form>
+                                <a href="/debug_source_url/{{ parser_debug_id }}" class="btn btn-info" style="display:inline-block;">URL Extraction</a>
+                                <a href="/debug_title/{{ parser_debug_id }}" class="btn btn-info" style="display:inline-block;">Title Extraction</a>
+                                <a href="/debug_serving_size/{{ parser_debug_id }}" class="btn btn-info" style="display:inline-block;">Serving Size Extraction</a>
+                                <a href="/debug_ingredients/{{ parser_debug_id }}" class="btn btn-info" style="display:inline-block;">Ingredients Extraction</a>
+                                <a href="/debug_instructions/{{ parser_debug_id }}" class="btn btn-info" style="display:inline-block;">Instructions Extraction</a>
                 <hr>
                 <form method="get" action="/debug_title/{{ parser_debug_id }}" style="display:inline-block;">
                                 <!-- Debug Info Block: Show all IDs being used -->
