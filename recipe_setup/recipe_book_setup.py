@@ -35,6 +35,11 @@ def load_recipe_url():
             INSERT INTO recipe_upload (parser_debug_id, upload_source_type, upload_source_detail, uploaded_by, upload_date)
             VALUES (%s, %s, %s, %s, %s)
         ''', (parser_debug_id, 'url', url, user, now))
+        # Insert into confirmed_parser_fields with parser_debug_id and recipe_id
+        c.execute('''
+            INSERT INTO confirmed_parser_fields (parser_debug_id, parser_test_recipe_id, source_url, confirmed_by, confirmed_at)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (parser_debug_id, new_id, url, user, now))
         conn.commit()
     flash('Recipe URL loaded for debugging.', 'success')
     return redirect(url_for('debug_parser.parser_debug', parser_debug_id=new_id))
@@ -537,5 +542,26 @@ def extract_title_candidates(raw_html):
             best_guess = cand['value']
             break
     return candidates, best_guess or ''
+
+@app.route('/admin/recipe_book_setup', methods=['GET'])
+@require_role('Admin')
+def recipe_book_setup():
+    # Fetch all recipes for the index
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('SELECT id, name, serving_size FROM recipes ORDER BY name')
+        recipe_list = [dict(row) for row in c.fetchall()]
+        # Fetch all parser_debug entries for the debug index
+        c.execute('SELECT * FROM parser_debug ORDER BY id DESC')
+        parser_debugs = [dict(row) for row in c.fetchall()]
+        # Fetch all confirmed_parser_fields entries for the confirmed values index
+        c.execute('SELECT * FROM confirmed_parser_fields ORDER BY id DESC')
+        all_confirmed_parser_fields = [dict(row) for row in c.fetchall()]
+    return render_template(
+        'recipe_setup/recipe_book_setup.html',
+        recipe_list=recipe_list,
+        parser_debugs=parser_debugs,
+        all_confirmed_parser_fields=all_confirmed_parser_fields
+    )
 
 
