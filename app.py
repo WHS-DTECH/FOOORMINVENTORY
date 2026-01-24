@@ -257,21 +257,26 @@ def extract_url(recipe_id):
 @app.route('/extract_title/<int:test_recipe_id>', methods=['POST'])
 @require_role('Admin')
 def extract_title(test_recipe_id):
-    # Fetch the test recipe's raw data or URL
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('SELECT upload_source_detail FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
         row = c.fetchone()
         if not row:
             flash('Test recipe not found.', 'error')
-            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+            return redirect('/')
         url = row['upload_source_detail']
-        # Use debug_title logic (for now, just pass the URL as raw_title)
         extracted_title = debug_title(url, test_recipe_id)
         c.execute('UPDATE parser_test_recipes SET title = %s WHERE id = %s', (extracted_title, test_recipe_id))
+        # Find the parser_debug_id for this test_recipe_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
+        debug_row = c.fetchone()
+        parser_debug_id = debug_row['id'] if debug_row else None
         conn.commit()
     flash(f'Title extracted: {extracted_title}', 'success')
-    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+    if parser_debug_id:
+        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
+    else:
+        return redirect('/')
 
 
 @app.route('/extract_serving/<int:test_recipe_id>', methods=['POST'])
@@ -283,13 +288,20 @@ def extract_serving(test_recipe_id):
         row = c.fetchone()
         if not row:
             flash('Test recipe not found.', 'error')
-            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+            return redirect('/')
         raw_data = row['raw_data']
         serving_size = debug_serving(raw_data, test_recipe_id)
         c.execute('UPDATE parser_test_recipes SET serving_size = %s WHERE id = %s', (serving_size, test_recipe_id))
+        # Find the parser_debug_id for this test_recipe_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
+        debug_row = c.fetchone()
+        parser_debug_id = debug_row['id'] if debug_row else None
         conn.commit()
     flash(f'Serving size extracted: {serving_size}', 'success')
-    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+    if parser_debug_id:
+        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
+    else:
+        return redirect('/')
 
 
 
@@ -302,18 +314,24 @@ def extract_ingredients(test_recipe_id):
         row = c.fetchone()
         if not row:
             flash('Test recipe not found.', 'error')
-            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+            return redirect('/')
         raw_data = row['raw_data']
         recipes = parse_recipes_from_text(raw_data)
-        # Use the first recipe's ingredients if available
         if recipes and isinstance(recipes, list) and len(recipes) > 0:
             ingredients = '\n'.join(recipes[0].get('ingredients', []))
         else:
             ingredients = ''
         c.execute('UPDATE parser_test_recipes SET ingredients = %s WHERE id = %s', (ingredients, test_recipe_id))
+        # Find the parser_debug_id for this test_recipe_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
+        debug_row = c.fetchone()
+        parser_debug_id = debug_row['id'] if debug_row else None
         conn.commit()
     flash('Ingredients extracted.', 'success')
-    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+    if parser_debug_id:
+        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
+    else:
+        return redirect('/')
 
 
 @app.route('/extract_instructions/<int:test_recipe_id>', methods=['POST'])
@@ -325,13 +343,20 @@ def extract_instructions(test_recipe_id):
         row = c.fetchone()
         if not row:
             flash('Test recipe not found.', 'error')
-            return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+            return redirect('/')
         raw_data = row['raw_data']
         instructions = debug_instructions(raw_data, test_recipe_id)
         c.execute('UPDATE parser_test_recipes SET instructions = %s WHERE id = %s', (instructions, test_recipe_id))
+        # Find the parser_debug_id for this test_recipe_id
+        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
+        debug_row = c.fetchone()
+        parser_debug_id = debug_row['id'] if debug_row else None
         conn.commit()
     flash('Instructions extracted.', 'success')
-    return redirect(url_for('parser_debug', test_recipe_id=test_recipe_id))
+    if parser_debug_id:
+        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
+    else:
+        return redirect('/')
 
 
 # --- Recipe Source Page ---
