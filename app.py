@@ -35,11 +35,12 @@ from admin_task.utils import get_staff_code_from_email
 
 # Import AnonymousUser from auth.anonymous_user
 
-# Register authentication blueprint
+
+
+
+# After app is created and configured, register blueprints
 from auth.routes import auth_bp
 app.register_blueprint(auth_bp)
-
-# Register the ShopList blueprint after app is created
 app.register_blueprint(shoplist_bp)
 
 SCOPES = [
