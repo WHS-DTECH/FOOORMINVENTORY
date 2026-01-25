@@ -2,6 +2,9 @@
 {% block content %}
 <div class="container" style="max-width: 800px; margin: 2em auto;">
   <h1 style="font-size: 2em; font-weight: bold;">Ingredients Inventory</h1>
+  <form method="post" action="{{ url_for('ingredients.delete_all_ingredients') }}" style="margin-bottom:1em;">
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete ALL ingredients?');">Delete All</button>
+  </form>
   <table class="table table-striped" style="margin-top: 2em;">
     <thead>
       <tr>
