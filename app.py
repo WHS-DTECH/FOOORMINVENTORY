@@ -18,7 +18,6 @@ from book_a_class.book_a_class import book_a_class_bp
 from debug_parser.debug_parser_instructions import debug_parser_instructions_bp
 from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
-from recipe_book.routes import recipe_book_routes_bp, recipe_review_bp
 from debug_parser.utils import extract_raw_text_from_url
 from auth.google_auth import google_auth_bp
 from ingredients.ingredients import ingredients_bp
@@ -55,6 +54,7 @@ from api.routes import api_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
 app.register_blueprint(api_bp)
+app.register_blueprint(recipe_book_bp)
 
 # Register error handlers
 from error_handlers import not_found_error, internal_error
