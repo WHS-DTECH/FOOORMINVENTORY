@@ -9,11 +9,7 @@ from debug_parser.debug_parser_title import debug_title
 
 
 
-# =======================
-# DONT PUT NEW CODE HERE - put it in the appropriate section below!!!
-# =======================
 
-# =======================
 from utils import simple_similarity, categorize_ingredient
 from jinja_filters import datetimeformat, format_nz_week
 from auth import require_role, get_db_connection, User
@@ -38,10 +34,16 @@ from admin_task.utils import get_staff_code_from_email
 
 
 
+
 # After app is created and configured, register blueprints
 from auth.routes import auth_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
+
+# Register error handlers
+from error_handlers import not_found_error, internal_error
+app.register_error_handler(404, not_found_error)
+app.register_error_handler(500, internal_error)
 
 SCOPES = [
     'openid',
