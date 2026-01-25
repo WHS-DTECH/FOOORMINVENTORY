@@ -57,6 +57,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 # Register blueprint for debug source url
 app.register_blueprint(debug_source_url_bp)
 
