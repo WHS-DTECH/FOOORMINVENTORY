@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
 from debug_parser.debug_parser_URL import confirm_source_url
-from app import get_db_connection
+from auth import get_db_connection
 
 # Blueprint for debug source url
 bp = Blueprint('debug_source_url', __name__)
