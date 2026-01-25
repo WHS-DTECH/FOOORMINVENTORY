@@ -12,6 +12,7 @@ from utils import simple_similarity, categorize_ingredient
 from jinja_filters import datetimeformat, format_nz_week
 from auth import require_role, get_db_connection, User
 from book_a_class.book_a_class import book_a_class_bp
+from catering.catering import catering_bp
 from debug_parser.debug_parser_instructions import debug_parser_instructions_bp
 from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
@@ -66,8 +67,9 @@ from api.routes import api_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
 app.register_blueprint(api_bp)
-# Register book_a_class blueprint for navigation
+# Register book_a_class and catering blueprints for navigation
 app.register_blueprint(book_a_class_bp)
+app.register_blueprint(catering_bp)
 app.register_blueprint(recipe_book_bp)
 # ...register other blueprints as needed...
 
