@@ -1,4 +1,5 @@
 from debug_parser.debug_parser_instructions import debug_instructions
+from dotenv import load_dotenv
 from recipe_parser_pdf import parse_recipes_from_text
 from debug_parser.debug_parser_Serving import debug_serving
 from debug_parser.debug_parser_title import debug_title
