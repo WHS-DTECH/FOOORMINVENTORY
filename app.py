@@ -1,3 +1,9 @@
+# Ensure current_user is always available in templates
+from flask_login import current_user
+
+@app.context_processor
+def inject_current_user():
+    return dict(current_user=current_user)
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
 import os
 
@@ -73,7 +79,6 @@ SCOPES = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile'
 ]
-
 
 
 # Initialize Flask-Login
