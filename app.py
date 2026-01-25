@@ -10,59 +10,7 @@ from debug_parser.debug_parser_title import debug_title
 # =======================
 
 # =======================
-# Imports (Standard, Third-party, Local)
-# =======================
-
-import os
-import requests
-from bs4 import BeautifulSoup
-import re
-import datetime
-import json
-import csv
-import io
-try:
-    import uuid
-    import pytesseract
-    from PIL import Image
-except ImportError:
-    pytesseract = None
-    Image = None
-from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
-
-# Import and register admin_task blueprint early
-from admin_task import admin_task_bp
-
-
-app = Flask(__name__)
-# Ensure secret key is set from environment for session persistence
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key')
-app.register_blueprint(admin_task_bp)
-
-# Import the ShopList blueprint
-from ShopList import shoplist_bp
-from flask_login import LoginManager, login_user, logout_user, current_user
-from google_auth_oauthlib.flow import Flow
-import psycopg2
-import psycopg2.extras
-try:
-    import PyPDF2
-except ImportError:
-    PyPDF2 = None
-try:
-    import requests
-    from bs4 import BeautifulSoup
-except ImportError:
-    requests = None
-    BeautifulSoup = None
-
-from recipe_parser_pdf import parse_recipes_from_text
-from auth import User, get_staff_code_from_email, require_login, require_role, get_db_connection
-# Register debug_source_url blueprint
-from debug_parser.debug_source_url_route import bp as debug_source_url_bp
-from navigation_main.context_nav import nav_context_processor, nav_bp
-
+from utils import simple_similarity, categorize_ingredient
 
 from book_a_class.book_a_class import book_a_class_bp
 from debug_parser.debug_parser_instructions import debug_parser_instructions_bp
