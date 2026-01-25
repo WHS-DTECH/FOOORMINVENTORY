@@ -139,6 +139,7 @@ def format_nz_week(label):
         return ""
     import re
     match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
+    from flask_login import LoginManager
     if match:
         start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
         end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
