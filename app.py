@@ -112,14 +112,9 @@ app.register_blueprint(program_help_bp)
 from recipe_setup.recipe_book_setup import recipe_book_setup_bp
 app.register_blueprint(recipe_book_setup_bp)
 
-# Error Handlers
-@app.errorhandler(404)
-def not_found_error(error):
-    """Render custom 404 error page."""
-    return render_template('404.html'), 404
-
-
-
+from error_handlers import not_found_error, internal_error
+app.register_error_handler(404, not_found_error)
+app.register_error_handler(500, internal_error)
 
 # --- Review Recipe URL Action Route ---
 @app.route('/review_recipe_url_action', methods=['POST'])
