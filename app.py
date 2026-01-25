@@ -1,3 +1,7 @@
+# Redirect root URL to recipe book
+@app.route("/")
+def index():
+    return redirect(url_for('recipe_book.recbk'))
 from debug_parser.debug_parser_instructions import debug_instructions
 import os
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
