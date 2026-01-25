@@ -1,8 +1,9 @@
 # --- Load Recipe from URL: Insert into parser_test_recipes and redirect to parser_debug ---
-from flask import current_app
+from flask import Blueprint, current_app
 from datetime import datetime
+recipe_book_setup_bp = Blueprint('recipe_book_setup', __name__)
 
-@app.route('/load_recipe_url', methods=['POST'])
+@recipe_book_setup_bp.route('/load_recipe_url', methods=['POST'])
 @require_role('Admin')
 def load_recipe_url():
     url = request.form.get('url') or request.args.get('url')
@@ -47,7 +48,7 @@ def load_recipe_url():
 # Transferred from previous location (if applicable)
 # ...existing code from recipe_book_setup.py... 
 
-@app.route('/uploadclass', methods=['POST'])
+@recipe_book_setup_bp.route('/uploadclass', methods=['POST'])
 @require_role('Admin')
 def uploadclass():
     uploaded = request.files.get('csvfile')
@@ -125,7 +126,7 @@ def uploadclass():
     return render_template('admin.html', preview_data=rows, suggestions=suggestions)
 
 
-@app.route('/upload', methods=['GET', 'POST'], endpoint='main_upload')
+@recipe_book_setup_bp.route('/upload', methods=['GET', 'POST'], endpoint='main_upload')
 @require_role('Admin')
 def upload():
     # GET request - show the upload form
@@ -543,7 +544,7 @@ def extract_title_candidates(raw_html):
             break
     return candidates, best_guess or ''
 
-@app.route('/admin/recipe_book_setup', methods=['GET'])
+@recipe_book_setup_bp.route('/admin/recipe_book_setup', methods=['GET'])
 @require_role('Admin')
 def recipe_book_setup():
     # Fetch all recipes for the index

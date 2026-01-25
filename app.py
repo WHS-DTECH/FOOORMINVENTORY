@@ -148,6 +148,10 @@ app.register_blueprint(ingredients_bp)
 from program_help.program_help import program_help_bp
 app.register_blueprint(program_help_bp)
 
+# Register the recipe_book_setup blueprint
+from recipe_setup.recipe_book_setup import recipe_book_setup_bp
+app.register_blueprint(recipe_book_setup_bp)
+
 # Error Handlers
 @app.errorhandler(404)
 def not_found_error(error):
