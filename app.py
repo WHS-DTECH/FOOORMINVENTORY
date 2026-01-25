@@ -178,9 +178,7 @@ def categorize_ingredient(ingredient_name):
     return 'Other'
 
 
-@app.route('/api/update-recipe-tags/<int:recipe_id>', methods=['POST'])
-@require_role('Admin', 'Teacher')
-# ...existing code...
+
 
 # --- Redirect old /class_ingredients route to new /book_a_class route ---
 @app.route('/class_ingredients', methods=['GET', 'POST'])
