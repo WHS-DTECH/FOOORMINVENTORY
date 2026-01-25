@@ -32,7 +32,7 @@
         {% if current_user.is_authenticated %}
         <li class="nav-item nav-user">
           <span class="navbar-text fw-bold">{{ current_user.name or current_user.email }}</span>
-          <a class="nav-link logout-btn d-inline" href="{{ url_for('logout') }}">Logout</a>
+          <a class="nav-link logout-btn d-inline" href="{{ url_for('auth.logout') }}">Logout</a>
         </li>
         {% else %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
