@@ -14,6 +14,7 @@ from debug_parser.debug_parser_title import debug_title
 
 # =======================
 from utils import simple_similarity, categorize_ingredient
+from jinja_filters import datetimeformat, format_nz_week
 from auth import require_role
 
 from book_a_class.book_a_class import book_a_class_bp
@@ -58,6 +59,8 @@ def simple_similarity(a, b):
 load_dotenv()
 
 app = Flask(__name__)
+app.jinja_env.filters['datetimeformat'] = datetimeformat
+app.jinja_env.filters['format_nz_week'] = format_nz_week
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 # Register blueprint for debug source url
