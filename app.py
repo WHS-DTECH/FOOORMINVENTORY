@@ -51,8 +51,10 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 # Register blueprints after app is created
 from auth.routes import auth_bp
 from ShopList import shoplist_bp
+from api.routes import api_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
+app.register_blueprint(api_bp)
 
 # Register error handlers
 from error_handlers import not_found_error, internal_error
@@ -178,22 +180,7 @@ def categorize_ingredient(ingredient_name):
 
 @app.route('/api/update-recipe-tags/<int:recipe_id>', methods=['POST'])
 @require_role('Admin', 'Teacher')
-def update_recipe_tags(recipe_id):
-    """Quick API to update recipe dietary tags, cuisine, and difficulty."""
-    data = request.get_json()
-    
-    dietary_tags = data.get('dietary_tags', '')  # comma-separated
-    cuisine = data.get('cuisine', '')
-    difficulty = data.get('difficulty', '')
-    
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('''UPDATE recipes 
-                    SET dietary_tags = %s, cuisine = %s, difficulty = %s
-                    WHERE id = %s''',
-                 (dietary_tags, cuisine, difficulty, recipe_id))
-        conn.commit()
-    return jsonify({'success': True, 'message': 'Tags updated'})
+# ...existing code...
 
 # --- Redirect old /class_ingredients route to new /book_a_class route ---
 @app.route('/class_ingredients', methods=['GET', 'POST'])
