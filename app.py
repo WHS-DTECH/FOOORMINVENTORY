@@ -1,7 +1,6 @@
-# Redirect root URL to recipe book
-@app.route("/")
-def index():
-    return redirect(url_for('recipe_book.recbk'))
+from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
+import os
+
 from debug_parser.debug_parser_instructions import debug_instructions
 import os
 from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
@@ -10,9 +9,6 @@ from dotenv import load_dotenv
 from recipe_parser_pdf import parse_recipes_from_text
 from debug_parser.debug_parser_Serving import debug_serving
 from debug_parser.debug_parser_title import debug_title
-
-
-
 
 from utils import simple_similarity, categorize_ingredient
 from jinja_filters import datetimeformat, format_nz_week
@@ -29,19 +25,26 @@ from flask_login import current_user, login_user, logout_user
 from recipe_setup import recipe_book_setup
 from google_auth_oauthlib.flow import Flow
 
-
 from admin_task.utils import get_staff_code_from_email
 
+# ...existing code...
+app = Flask(__name__)
+app.jinja_env.filters['datetimeformat'] = datetimeformat
+app.jinja_env.filters['format_nz_week'] = format_nz_week
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
+# Redirect root URL to recipe book
+@app.route("/")
+def index():
+    return redirect(url_for('recipe_book.recbk'))
+# ...existing code...
+
 # Import AnonymousUser from auth.anonymous_user
-
-
-
-
-
 
 # =======================
 # App Creation & Configuration
 # =======================
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -89,7 +92,3 @@ def load_user(user_id):
             user_data.get('staff_code')
         )
     return None
-
-
-
-
