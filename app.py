@@ -118,8 +118,6 @@ def not_found_error(error):
     """Render custom 404 error page."""
     return render_template('404.html'), 404
 
-    else:
-        return redirect('/')
 
 
 
