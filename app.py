@@ -67,9 +67,10 @@ from api.routes import api_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
 app.register_blueprint(api_bp)
-# Register book_a_class and catering blueprints for navigation
+# Register book_a_class, catering, and ingredients blueprints for navigation
 app.register_blueprint(book_a_class_bp)
 app.register_blueprint(catering_bp)
+app.register_blueprint(ingredients_bp)
 app.register_blueprint(recipe_book_bp)
 # ...register other blueprints as needed...
 
