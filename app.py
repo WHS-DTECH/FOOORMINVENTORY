@@ -35,8 +35,22 @@ from admin_task.utils import get_staff_code_from_email
 
 
 
-# After app is created and configured, register blueprints
+
+# =======================
+# App Creation & Configuration
+# =======================
+load_dotenv()
+
+app = Flask(__name__)
+app.jinja_env.filters['datetimeformat'] = datetimeformat
+app.jinja_env.filters['format_nz_week'] = format_nz_week
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
+# Register blueprints after app is created
+
+# Register blueprints after app is created
 from auth.routes import auth_bp
+from ShopList import shoplist_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
 
@@ -51,6 +65,11 @@ SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile'
 ]
 
+
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -86,111 +105,12 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/auth/google')
-def auth_google():
-    """Initiate Google OAuth flow."""
-    if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-        flash('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.')
-        return redirect(url_for('login'))
-    
-    # Use Flow.from_client_config for direct configuration instead of file
-    client_config = {
-        'web': {
-            'client_id': GOOGLE_CLIENT_ID,
-            'client_secret': GOOGLE_CLIENT_SECRET,
-            'auth_uri': 'https://accounts.google.com/o/oauth2/auth',
-            'token_uri': 'https://accounts.google.com/o/oauth2/token',
-            'redirect_uris': [GOOGLE_REDIRECT_URI]
-        }
-    }
-    
-    # Use the full callback URL to avoid mismatches
-    redirect_uri = GOOGLE_REDIRECT_URI  # Use the configured URI from .env
-    
-    flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
-    
-    # Generate the authorization URL
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true',
-        prompt='select_account'
-    )
-    
-    session['oauth_state'] = state
-    session['redirect_uri'] = redirect_uri
-    return redirect(authorization_url)
+
+# Google OAuth routes are now handled in auth.routes (auth_bp)
 
 
-@app.route('/auth/callback')
-def auth_callback():
-    """Handle Google OAuth callback."""
-    # Verify state for security
-    state = session.get('oauth_state')
-    redirect_uri = session.get('redirect_uri', GOOGLE_REDIRECT_URI)  # Use configured URI
-    
-    if not state:
-        flash('OAuth state mismatch. Please try logging in again.')
-        return redirect(url_for('login'))
-    
-    try:
-        # Use the stored client config
-        client_config = {
-            'web': {
-                'client_id': GOOGLE_CLIENT_ID,
-                'client_secret': GOOGLE_CLIENT_SECRET,
-                'auth_uri': 'https://accounts.google.com/o/oauth2/auth',
-                'token_uri': 'https://accounts.google.com/o/oauth2/token',
-                'redirect_uris': [redirect_uri]
-            }
-        }
-        
-        flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri, state=state)
-        
-        # Get the authorization code from the callback
-        authorization_response = request.url.replace('http://', 'http://')  # Ensure consistent scheme
-        flow.fetch_token(authorization_response=authorization_response)
-        
-        # Get user info
-        credentials = flow.credentials
-        user_info_url = 'https://www.googleapis.com/oauth2/v1/userinfo'
-        import requests as req_lib
-        headers = {'Authorization': f'Bearer {credentials.token}'}
-        response = req_lib.get(user_info_url, headers=headers)
-        user_info = response.json()
-        
-        # Extract user data
-        google_id = user_info.get('id')
-        email = user_info.get('email')
-        name = user_info.get('name', email.split('@')[0])
-        
-        # Get staff code from email lookup
-        staff_code = get_staff_code_from_email(email)
-        
-        # Create user and store in session
-        user = User(google_id, email, name, staff_code)
-        session['user'] = {
-            'google_id': google_id,
-            'email': email,
-            'name': name,
-            'staff_code': staff_code,
-            'role': user.role
-        }
-        # Store Google OAuth credentials for calendar integration
-        session['google_creds'] = {
-            'token': credentials.token,
-            'refresh_token': getattr(credentials, 'refresh_token', None),
-            'token_uri': credentials.token_uri,
-            'client_id': credentials.client_id,
-            'client_secret': credentials.client_secret,
-            'scopes': credentials.scopes
-        }
-        login_user(user, remember=True)
-        flash(f'Welcome, {name}!', 'success')
-        return redirect(url_for('recipe_book.recbk'))
-    
-    except Exception as e:
-        flash(f'Authentication error: {str(e)}')
-        return redirect(url_for('login'))
+
+# Google OAuth callback is now handled in auth.routes (auth_bp)
 
 
 
