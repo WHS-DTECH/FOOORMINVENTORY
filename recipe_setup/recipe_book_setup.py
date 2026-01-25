@@ -1,6 +1,6 @@
 # --- Load Recipe from URL: Insert into parser_test_recipes and redirect to parser_debug ---
 from flask import Blueprint, current_app
-from auth.google_auth import require_role
+from auth import require_role
 from datetime import datetime
 recipe_book_setup_bp = Blueprint('recipe_book_setup', __name__)
 
