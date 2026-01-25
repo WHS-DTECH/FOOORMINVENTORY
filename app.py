@@ -71,6 +71,7 @@ from recipe_book import recipe_book_bp
 from debug_parser.utils import extract_raw_text_from_url
 from auth.google_auth import google_auth_bp
 from ingredients.ingredients import ingredients_bp
+from recipe_setup import recipe_book_setup
 
 
 # =======================
