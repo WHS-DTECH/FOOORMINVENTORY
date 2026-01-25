@@ -61,6 +61,7 @@ from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 # Register blueprint for debug source url
 app.register_blueprint(debug_source_url_bp)
 
+from navigation_main.context_nav import nav_context_processor
 # Register navigation context processor and blueprint
 app.context_processor(nav_context_processor)
 app.register_blueprint(nav_bp)
