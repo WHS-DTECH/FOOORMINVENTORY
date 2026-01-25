@@ -32,14 +32,9 @@ from google_auth_oauthlib.flow import Flow
 
 
 from admin_task.utils import get_staff_code_from_email
-class AnonymousUser:
-    is_authenticated = False
-    def is_admin(self):
-        return False
-    def is_teacher(self):
-        return False
-    def is_staff(self):
-        return False
+
+# Import AnonymousUser from auth.anonymous_user
+from auth.anonymous_user import AnonymousUser
 
         
 # =======================
@@ -59,10 +54,16 @@ def simple_similarity(a, b):
 # =======================
 load_dotenv()
 
+
 app = Flask(__name__)
 app.jinja_env.filters['datetimeformat'] = datetimeformat
 app.jinja_env.filters['format_nz_week'] = format_nz_week
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
+
+# Set Flask-Login anonymous user class
+login_manager = LoginManager(app)
+login_manager.anonymous_user = AnonymousUser
+
 from debug_parser.debug_source_url_route import bp as debug_source_url_bp
 # Register blueprint for debug source url
 app.register_blueprint(debug_source_url_bp)
