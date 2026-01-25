@@ -20,6 +20,7 @@ from debug_parser.utils import extract_raw_text_from_url
 from auth.google_auth import google_auth_bp
 from ingredients.ingredients import ingredients_bp
 from program_help.program_help import program_help_bp
+from admin_task import admin_task_bp
 from recipe_setup import recipe_book_setup
 from admin_task.utils import get_staff_code_from_email
 # ...other imports as needed...
@@ -68,11 +69,12 @@ from api.routes import api_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(shoplist_bp)
 app.register_blueprint(api_bp)
-# Register book_a_class, catering, ingredients, and program_help blueprints for navigation
+# Register book_a_class, catering, ingredients, program_help, and admin_task blueprints for navigation
 app.register_blueprint(book_a_class_bp)
 app.register_blueprint(catering_bp)
 app.register_blueprint(ingredients_bp)
 app.register_blueprint(program_help_bp)
+app.register_blueprint(admin_task_bp)
 app.register_blueprint(recipe_book_bp)
 # ...register other blueprints as needed...
 
