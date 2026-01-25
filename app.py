@@ -20,6 +20,7 @@ from book_a_class.book_a_class import book_a_class_bp
 from debug_parser.debug_parser_instructions import debug_parser_instructions_bp
 from upload_URL import upload_url_bp
 from recipe_book import recipe_book_bp
+from recipe_book.routes import recipe_book_routes_bp
 from debug_parser.utils import extract_raw_text_from_url
 from auth.google_auth import google_auth_bp
 from ingredients.ingredients import ingredients_bp
@@ -83,6 +84,7 @@ app.register_blueprint(upload_url_bp)
 
 # Register recipe_book blueprint
 app.register_blueprint(recipe_book_bp)
+app.register_blueprint(recipe_book_routes_bp)
 
 # Register recipe_suggest blueprint
 from recipe_suggest.recipe_suggest import recipe_suggest_bp
@@ -112,209 +114,6 @@ def not_found_error(error):
     """Render custom 404 error page."""
     return render_template('404.html'), 404
 
-@app.errorhandler(500)
-def internal_error(error):
-    """Render custom 500 error page."""
-    return "An internal error occurred. Please try again later.", 500
-
-# =======================
-# Jinja2 Filters
-# =======================
-
-@app.template_filter('datetimeformat')
-def datetimeformat(value, format='%Y-%m-%d %H:%M'):
-    if value is None:
-        return ''
-    try:
-        return value.strftime(format)
-    except Exception:
-        return str(value)
-
-# =======================
-# Test Routes
-@app.template_filter('format_nz_week')
-def format_nz_week(label):
-    """Format NZ week label from yyyy-mm-dd to dd-mm-yyyy."""
-    if not label or not isinstance(label, str):
-        return ""
-    import re
-    match = re.match(r"(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})", label)
-    from flask_login import LoginManager
-    if match:
-        start = f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
-        end = f"{match.group(6)}-{match.group(5)}-{match.group(4)}"
-        return f"{start} to {end}"
-    return label
-
-# =======================
-# Features: Recipe Book Routes
-# =======================
-
-from recipe_setup.inventory_routes import inventory_bp
-# Register blueprints
-app.register_blueprint(inventory_bp)
-
-# --- Upload Details Page ---
-@app.route('/upload_details/<int:recipe_id>')
-@require_role('Admin')
-def upload_details(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
-        recipe = c.fetchone()
-    if not recipe:
-        flash('Recipe not found.', 'error')
-        return redirect(url_for('recipe_book.recbk'))
-    return render_template('recipe_setup/upload_details.html', recipe=recipe)
-
-# =======================
-# Catering Blueprint Registration
-# =======================
-from catering.catering import catering_bp
-app.register_blueprint(catering_bp)
-# --- Delete flagged/test recipe from parser_test_recipes ---
-@app.route('/parser_test_recipe/<int:parser_debug_id>/delete', methods=['POST'])
-@require_role('Admin')
-def delete_parser_test_recipe(parser_debug_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM parser_test_recipes WHERE id = %s', (parser_debug_id,))
-        conn.commit()
-    flash('Flagged/test recipe deleted.', 'success')
-    return redirect(url_for('admin_task.admin_recipe_book_setup'))
-
-
-# --- Recipe Index Draft/Test View ---
-@app.route('/recipe_index/<int:recipe_id>')
-@require_role('Admin')
-def recipe_index_view(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT * FROM recipes WHERE id = %s', (recipe_id,))
-        recipe = c.fetchone()
-    return render_template('recipe_index_view.html', recipe=recipe)
-
-# --- Flag/Unflag Parser Issue ---
-@app.route('/flag_parser_issue/<int:recipe_id>', methods=['POST'])
-@require_role('Admin')
-def flag_parser_issue(recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('UPDATE recipes SET parser_issue_flag = NOT COALESCE(parser_issue_flag, FALSE) WHERE id = %s', (recipe_id,))
-        conn.commit()
-    return redirect(url_for('recipe_index_view', recipe_id=recipe_id))
-
-# --- Direct Extraction Actions ---
-@app.route('/extract_url/<int:recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_url(recipe_id):
-    # Extraction logic for URL
-    # TODO: Implement actual extraction
-    flash('URL extracted for recipe.', 'success')
-    return redirect(url_for('upload_details', recipe_id=recipe_id))
-
-
-@app.route('/extract_title/<int:test_recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_title(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT upload_source_detail FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        row = c.fetchone()
-        if not row:
-            flash('Test recipe not found.', 'error')
-            return redirect('/')
-        url = row['upload_source_detail']
-        extracted_title = debug_title(url, test_recipe_id)
-        c.execute('UPDATE parser_test_recipes SET title = %s WHERE id = %s', (extracted_title, test_recipe_id))
-        # Find the parser_debug_id for this test_recipe_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
-        debug_row = c.fetchone()
-        parser_debug_id = debug_row['id'] if debug_row else None
-        conn.commit()
-    flash(f'Title extracted: {extracted_title}', 'success')
-    if parser_debug_id:
-        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
-    else:
-        return redirect('/')
-
-
-@app.route('/extract_serving/<int:test_recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_serving(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        row = c.fetchone()
-        if not row:
-            flash('Test recipe not found.', 'error')
-            return redirect('/')
-        raw_data = row['raw_data']
-        serving_size = debug_serving(raw_data, test_recipe_id)
-        c.execute('UPDATE parser_test_recipes SET serving_size = %s WHERE id = %s', (serving_size, test_recipe_id))
-        # Find the parser_debug_id for this test_recipe_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
-        debug_row = c.fetchone()
-        parser_debug_id = debug_row['id'] if debug_row else None
-        conn.commit()
-    flash(f'Serving size extracted: {serving_size}', 'success')
-    if parser_debug_id:
-        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
-    else:
-        return redirect('/')
-
-
-
-@app.route('/extract_ingredients/<int:test_recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_ingredients(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        row = c.fetchone()
-        if not row:
-            flash('Test recipe not found.', 'error')
-            return redirect('/')
-        raw_data = row['raw_data']
-        recipes = parse_recipes_from_text(raw_data)
-        if recipes and isinstance(recipes, list) and len(recipes) > 0:
-            ingredients = '\n'.join(recipes[0].get('ingredients', []))
-        else:
-            ingredients = ''
-        c.execute('UPDATE parser_test_recipes SET ingredients = %s WHERE id = %s', (ingredients, test_recipe_id))
-        # Find the parser_debug_id for this test_recipe_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
-        debug_row = c.fetchone()
-        parser_debug_id = debug_row['id'] if debug_row else None
-        conn.commit()
-    flash('Ingredients extracted.', 'success')
-    if parser_debug_id:
-        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
-    else:
-        return redirect('/')
-
-
-@app.route('/extract_instructions/<int:test_recipe_id>', methods=['POST'])
-@require_role('Admin')
-def extract_instructions(test_recipe_id):
-    with get_db_connection() as conn:
-        c = conn.cursor()
-        c.execute('SELECT raw_data FROM parser_test_recipes WHERE id = %s', (test_recipe_id,))
-        row = c.fetchone()
-        if not row:
-            flash('Test recipe not found.', 'error')
-            return redirect('/')
-        raw_data = row['raw_data']
-        instructions = debug_instructions(raw_data, test_recipe_id)
-        c.execute('UPDATE parser_test_recipes SET instructions = %s WHERE id = %s', (instructions, test_recipe_id))
-        # Find the parser_debug_id for this test_recipe_id
-        c.execute('SELECT id FROM parser_debug WHERE recipe_id = %s ORDER BY id DESC LIMIT 1', (test_recipe_id,))
-        debug_row = c.fetchone()
-        parser_debug_id = debug_row['id'] if debug_row else None
-        conn.commit()
-    flash('Instructions extracted.', 'success')
-    if parser_debug_id:
-        return redirect(url_for('debug_parser.parser_debug', parser_debug_id=parser_debug_id))
     else:
         return redirect('/')
 
