@@ -1,6 +1,6 @@
 from debug_parser.debug_parser_instructions import debug_instructions
 import os
-from flask import Flask
+from flask import Flask, request, render_template, redirect, url_for, session, flash, jsonify
 from flask_login import LoginManager
 from dotenv import load_dotenv
 from recipe_parser_pdf import parse_recipes_from_text
@@ -16,7 +16,7 @@ from debug_parser.debug_parser_title import debug_title
 # =======================
 from utils import simple_similarity, categorize_ingredient
 from jinja_filters import datetimeformat, format_nz_week
-from auth import require_role
+from auth import require_role, get_db_connection, User
 
 from book_a_class.book_a_class import book_a_class_bp
 from debug_parser.debug_parser_instructions import debug_parser_instructions_bp
@@ -26,12 +26,12 @@ from recipe_book.routes import recipe_book_routes_bp
 from debug_parser.utils import extract_raw_text_from_url
 from auth.google_auth import google_auth_bp
 from ingredients.ingredients import ingredients_bp
+from flask_login import current_user, login_user, logout_user
 from recipe_setup import recipe_book_setup
+from google_auth_oauthlib.flow import Flow
 
 
-# =======================
-# AnonymousUser Class for Flask-Login
-# =======================
+from admin_task.utils import get_staff_code_from_email
 class AnonymousUser:
     is_authenticated = False
     def is_admin(self):
@@ -113,8 +113,12 @@ from recipe_setup.recipe_book_setup import recipe_book_setup_bp
 app.register_blueprint(recipe_book_setup_bp)
 
 from error_handlers import not_found_error, internal_error
+
 app.register_error_handler(404, not_found_error)
 app.register_error_handler(500, internal_error)
+# Register ShopList blueprint at the end to avoid circular import issues
+from ShopList import shoplist_bp
+app.register_blueprint(shoplist_bp)
 
 # --- Review Recipe URL Action Route ---
 @app.route('/review_recipe_url_action', methods=['POST'])
