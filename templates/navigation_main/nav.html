@@ -1,1 +1,54 @@
+{# navigation_main/nav.html #}
+<nav class="navbar navbar-expand-lg navbar-light bg-light main-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Food Room inventory</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('recipe_book.recbk') }}">Recipe Book</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('book_a_class.book_a_class') }}">Book a Class</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('shoplist.book_the_shopping') }}">Book the Shopping</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('catering.catering') }}">Catering</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('ingredients.ingredients_page') }}">Ingredients</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('program_help.program_help') }}">Program Help</a></li>
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+          <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+            <li><a class="dropdown-item" href="{{ url_for('admin_task.admin') }}">Admin Dashboard</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin_task.admin_recipe_book_setup') }}">Recipe Book Setup</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin_task.admin_permissions') }}">Manage Role Permissions</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('admin_task.admin_user_roles') }}">Manage User Roles</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('recipe_suggest.recipe_suggestions') }}">Recipe Suggestions</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_task.admin') }}">Admin</a></li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        {% if current_user.is_authenticated %}
+        <li class="nav-item nav-user">
+          <span class="navbar-text fw-bold">{{ current_user.name or current_user.email }}</span>
+          <a class="nav-link logout-btn d-inline" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+<style>
+.main-navbar {
+  border-bottom: 1px solid #e0e4ea;
+}
+.nav-user .logout-btn {
+  margin-left: 0.7em;
+  color: #e53935;
+  font-size: 0.95em;
+}
+</style>
 
