@@ -14,6 +14,7 @@ from debug_parser.debug_parser_title import debug_title
 
 # =======================
 from utils import simple_similarity, categorize_ingredient
+from auth import require_role
 
 from book_a_class.book_a_class import book_a_class_bp
 from debug_parser.debug_parser_instructions import debug_parser_instructions_bp
